@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${workspaceFolder}"
+      ]
+    },
+    "shell": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-shell"
+      ],
+      "env": {
+        "SHELL": "/bin/zsh",
+        "MCP_SERVER_SHELL_WORKING_DIRECTORY": "${workspaceFolder}"
+      }
+    }
+  }
+}
