@@ -34,3 +34,15 @@ ${VERBOSE}.SILENT: \
 	config \
 	dependencies \
 	deploy \
+
+.PHONY: mcp-install
+mcp-install: ## Install MCP filesystem server
+	@./scripts/install-mcp-server.sh
+
+.PHONY: mcp-list
+mcp-list: ## List repository files via MCP
+	@./scripts/mcp-server.py list
+
+.PHONY: mcp-structure
+mcp-structure: ## Show repository structure via MCP
+	@./scripts/mcp-server.py structure
