@@ -1,0 +1,672 @@
+Mutelist:
+  Accounts:
+    '*':
+      Checks:
+        ########################### START - AWS CONTROL TOWER ###########################
+        ################### Add new custom rules to the bottom of the file ###################
+        ### The following entries includes all resources created by AWS Control Tower when setting up a landing zone ###
+        # https://docs.aws.amazon.com/controltower/latest/userguide/shared-account-resources.html #
+        'cloudtrail_s3_dataevents_write_enabled':
+          Regions:
+            - 'us-east-1'
+          Resources:
+            - '*'
+          Description: 'Disable as controlled externally'
+        'vpc_endpoint_connections_trust_boundaries':
+          Regions:
+            - '*'
+          Resources:
+            - 'vpce-0e7acbb0178645068' # Prod
+            - 'vpce-08414cf922e0ebcd3' # Test
+            - 'vpce-0f97570cbd1750b39' # Int
+            - 'vpce-0c8ef83202455779e' # Poc
+          Description: 'Findings related to VPC Endpoint Connections Trust Boundaries muted by default for Control Tower resources'
+        'awslambda_function_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower-NotificationForwarder'
+          Description: 'Checks from AWS lambda functions deployed by Control Tower muted by default'
+        'cloudformation_stack*':
+          Regions:
+            - '*'
+          Resources:
+            - 'StackSet-AWSControlTowerGuardrailAWS-*'
+            - 'StackSet-AWSControlTowerBP-*'
+            - 'StackSet-AWSControlTowerSecurityResources-*'
+            - 'StackSet-AWSControlTowerLoggingResources-*'
+            - 'StackSet-AWSControlTowerExecutionRole-*'
+            - 'AWSControlTowerBP-BASELINE-CLOUDTRAIL-MASTER*'
+            - 'AWSControlTowerBP-BASELINE-CONFIG-MASTER*'
+            - 'StackSet-AWSControlTower*'
+            - 'CLOUDTRAIL-ENABLED-ON-SHARED-ACCOUNTS-*'
+            - 'AFT-Backend*'
+            - '*tenable*'
+            - '*ResourceExplorer*'
+            - '*CDKToolki*'
+            - '*CSOC*'
+            - '*ccoe*'
+        'cloudtrail_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower-BaselineCloudTrail'
+        'cloudwatch_log_group_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower/CloudTrailLogs'
+            - '/aws/lambda/aws-controltower-NotificationForwarder'
+            - 'StackSet-AWSControlTowerBP-*'
+        'iam_inline_policy_no_administrative_privileges':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower-ForwardSnsNotificationRole/sns'
+            - 'aws-controltower-AuditAdministratorRole/AssumeRole-aws-controltower-AuditAdministratorRole'
+            - 'aws-controltower-AuditReadOnlyRole/AssumeRole-aws-controltower-AuditReadOnlyRole'
+        'iam.*policy_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'AWSControlTowerAccountServiceRolePolicy'
+            - 'AWSControlTowerServiceRolePolicy'
+            - 'AWSControlTowerStackSetRolePolicy'
+            - 'AWSControlTowerAdminPolicy'
+            - 'AWSLoadBalancerControllerIAMPolicy'
+            - 'AWSControlTowerCloudTrailRolePolicy'
+        'iam_role_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower-AdministratorExecutionRole'
+            - 'aws-controltower-AuditAdministratorRole'
+            - 'aws-controltower-AuditReadOnlyRole'
+            - 'aws-controltower-CloudWatchLogsRole'
+            - 'aws-controltower-ConfigRecorderRole'
+            - 'aws-controltower-ForwardSnsNotificationRole'
+            - 'aws-controltower-ReadOnlyExecutionRole'
+            - 'AWSControlTower_VPCFlowLogsRole'
+            - 'AWSControlTowerExecution'
+            - 'AWSControlTowerCloudTrailRole'
+            - 'AWSControlTowerConfigAggregatorRoleForOrganizations'
+            - 'AWSControlTowerStackSetRole'
+            - 'AWSControlTowerAdmin'
+            - 'AWSAFTAdmin'
+            - 'AWSAFTExecution'
+            - 'AWSAFTService'
+            - 'ResourceExplorer'
+        's3_bucket_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower-logs-*'
+            - 'aws-controltower-s3-access-logs-*'
+        'sns_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'aws-controltower-AggregateSecurityNotifications'
+            - 'aws-controltower-AllConfigNotifications'
+            - 'aws-controltower-SecurityNotifications'
+        'vpc_*':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Tags:
+            - 'Name=aws-controltower-VPC'
+        'iam_role_administratoraccess_policy':
+          Regions:
+            - '*'
+          Resources:
+            # exact names or patterns of approved admin roles
+            - 'AWSReservedSSO_AWSAdministratorAccess_*'
+            - 'AWSReservedSSO_NonProd-Admins_*'
+            - 'AWSReservedSSO_Prod-Admins_*'
+            - 'AWSReservedSSO_Admin_*'
+            - 'OrganizationAccountAccessRole'
+            - 'stacksets-exec-*'
+            - 'AWS-QuickSetup-StackSet-Local-ExecutionRole'
+          Description: 'Org-approved admin roles controlled via SCP; mute Prowler finding'
+        'iam_policy_allows_privilege_escalation':
+          Regions:
+            - '*'
+          Resources:
+            - '*-cdk-bootstrapping-cdk-exec-role-policy'
+            - 'oidc-iam-role-restricted-admin-policy2'
+            - 'DNHC-PlatformSupport'
+          Description: 'Deployment-related OIDC and bootstrap policies require limited privilege-escalation and role-assumption permissions for cross-account automation; controlled via SCP and explicit trust policies'
+        'iam_inline_policy_allows_privilege_escalation':
+          Regions:
+            - '*'
+          Resources:
+            - 'cdk-hnb659fds-deploy-role-*-us-east-1'
+            - 'cdk-hnb659fds-deploy-role-*-eu-west-2'
+            - 'aft-account-prep'
+          Description: 'Deployment/AFT roles need inline permissions for cross-account automation; risk constrained by SCPs and explicit trust policies'
+        'iam_aws_attached_policy_no_administrative_privileges':
+          Regions:
+            - '*'
+          Resources:
+            - 'AdministratorAccess'
+          Description: 'Mute policy-level AdminAccess finding; role-level check remains enforced and scoped via approved admin roles'
+        ########################### END - AWS CONTROL TOWER ###########################
+        ################### Add new rules to the bottom of the file ###################
+        's3_bucket_lifecycle_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - 'cdk-*-assets-*'
+          Description: 'CDK-managed buckets do not require lifecycle policies'
+        's3_bucket_object_versioning':
+          Regions:
+            - '*'
+          Resources:
+            - '*-nhc-emis-request-payload-bucket'
+            - '*-s3-access-bucket-logs'
+            - 'nhs-dhc-tfstate-*'
+            - '*-destination-access-bucket-logs'
+            - '*-macie-exports'
+            - '*-nhc-reporting-data'
+            - '*-email-verification'
+            - '*-nhc-evaluator-data-export'
+            - '*-firehose-splunk'
+            - '*-nhc-db-data-load-bucket'
+            - '*-nhc-auto-db-data-load-bucket'
+            - 'cdk-*-assets-*'
+            - '*-nhc-selected-cohort'
+            - '*-backup-reports'
+            - '*-nhc-ui-bucket'
+            - '*-nhc-athena-output-data'
+          Exceptions:
+            Accounts:
+              - '992382726377' # prod account
+              - '637423296417' # test account
+          Description: 'Versioning not required for these buckets in nonprod environments'
+        's3_bucket_kms_encryption':
+          Regions:
+            - '*'
+          Resources:
+            - 'cdk-*-assets-*'
+            - '*-nhc-ui-bucket'
+            - '*-truststore-bucket'
+          Exceptions:
+            Resources:
+            - '*prod-truststore-bucket'
+          Description: 'No sensitive data stored, access is already logged, and other compensating controls in place'
+        's3_bucket_kms_encrypt*':
+          Regions:
+            - '*'
+          Resources:
+            - '*-truststore-bucket'
+          Exceptions:
+            Accounts:
+              - '992382726377' # prod account
+              - '637423296417' # test account
+              - '899411341184' # int account
+          Description: 'Truststore bucket uses SSE-S3 encryption in POC environments; KMS encryption required everywhere else'
+        's3_bucket_object_lock':
+          Regions:
+            - '*'
+          Resources:
+            - '*-nhc-emis-request-payload-bucket'
+            - '*-s3-access-bucket-logs'
+            - '*-truststore-bucket'
+            - 'nhs-dhc-tfstate-*'
+            - '*-destination-access-bucket-logs'
+            - '*-macie-exports'
+            - '*-nhc-reporting-data'
+            - '*-email-verification'
+            - '*-nhc-evaluator-data-export'
+            - '*-firehose-splunk'
+            - '*-nhc-db-data-load-bucket'
+            - '*-nhc-auto-db-data-load-bucket'
+            - 'cdk-*-assets-*'
+            - '*-nhc-selected-cohort'
+            - '*-backup-reports'
+            - '*-nhc-ui-bucket'
+            - '*-nhc-athena-output-data'
+          Description: 'No use case for object lock on these buckets. Also will conflict with lifecycle policies.'
+        's3_bucket_event_notifications_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*-nhc-emis-request-payload-bucket'
+            - '*-s3-access-bucket-logs'
+            - '*-truststore-bucket'
+            - 'nhs-dhc-tfstate-*'
+            - '*-destination-access-bucket-logs'
+            - '*-macie-exports'
+            - '*-nhc-reporting-data'
+            - '*-email-verification'
+            - '*-nhc-evaluator-data-export'
+            - '*-firehose-splunk'
+            - '*-nhc-db-data-load-bucket'
+            - 'cdk-*-assets-*'
+            - '*-nhc-selected-cohort'
+            - '*-backup-reports'
+            - '*-nhc-ui-bucket'
+            - '*-nhc-athena-output-data'
+          Description: 'Ignore findings where event notifications not required'
+        's3_bucket_no_mfa_delete':
+          Regions:
+            - '*'
+          Resources:
+            - '*-nhc-emis-request-payload-bucket'
+            - '*-s3-access-bucket-logs'
+            - '*-truststore-bucket'
+            - 'nhs-dhc-tfstate-*'
+            - '*-destination-access-bucket-logs'
+            - '*-macie-exports'
+            - '*-nhc-reporting-data'
+            - '*-email-verification'
+            - '*-nhc-evaluator-data-export'
+            - '*-firehose-splunk'
+            - '*-nhc-db-data-load-bucket'
+            - '*-nhc-auto-db-data-load-bucket'
+            - 'cdk-*-assets-*'
+            - '*-nhc-selected-cohort'
+            - '*-backup-reports'
+            - '*-nhc-ui-bucket'
+            - '*-nhc-athena-output-data'
+          Description: 'MFA Delete is not supported by lifecycle actions, and is not required due to other controls in place'
+        'apigateway_restapi_public':
+          Regions:
+            - '*'
+          Resources:
+            - '*-health-check-api'
+            - '*-health-check-results-mtls-api'
+            - '*-health-check-results-api'
+            - '*-callback-api-gateway'
+          Description: 'Listed API gateways are expected to be public with proper controls in place'
+        'apigateway_restapi_client_certificate_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*-health-check-api'
+            - '*-health-check-results-mtls-api'
+            - '*-health-check-results-api'
+            - '*-callback-api-gateway'
+          Description: 'APIGW without client certificate is allowed to call lambdas'
+        'cognito_*':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Description: 'Disable findings for Cognito resources it is being replaced'
+        'ec2_ebs_volume_protected_by_backup_plan':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Tags:
+            - 'Name=*power-bi-ec2-instance'
+          Description: 'Disable for instances where no data is stored'
+        'apigateway_restapi_authorizers_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*-health-check-api'
+            - '*-health-check-results-mtls-api'
+          Description: 'APIGW without authorizer is an accepted pattern for our APIs'
+        'apigateway_restapi_public_with_authorizer':
+          Regions:
+            - '*'
+          Resources:
+            - '*-health-check-api'
+            - '*-health-check-results-mtls-api'
+          Description: 'APIGW without authorizer is an accepted pattern for our APIs'
+        'awslambda_function_inside_vpc':
+          Regions:
+            - '*'
+          Resources:
+            - 'CustomCDKBucket'
+            - 'CustomCross*'
+            - 'CustomS3Auto*'
+            - 'BucketNotifications'
+            - 'SecurityCustomCross'
+            - '*-nhc-result-stack-*AWS' # This generic one belongs to UserPool.addClient() custom resource
+            - '*-nhc-reporting-stack-*AWS' # This generic one belongs to describe rum log group custom resource
+            - '*-nhc-monitoring-dash*AWS*' # Created by cdk-managed custom resource
+            - '*-nhc-describe-rum-log-groups-custom-resource' # Belongs to custom resource
+            - '*-nhc-register-patch-group-custom-resource' # Belongs to custom resource
+          Description: 'There is no native way to manage cdk-managed roles'
+        'cloudwatch_log_group_kms_encryption_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '/aws/macie/*'
+            - '/aws/transfer/*'
+            - '/aws-dynamodb/*'
+            - '/aws/vendedlogs/RUMService*'
+            - '/aws/vendedlogs/states/*'
+            - '/aws/application-signals/*'
+            - 'API-Gateway-Execution-Logs*'
+            - 'CustomCDKBucket'
+            - 'CustomCross*'
+            - 'CustomS3Auto*'
+            - 'BucketNotifications'
+            - '*-nhc-result-stack-*AWS' # This generic one belongs to UserPool.addClient() custom
+            - '*-nhc-monitoring-dash*AWS*' # Created by cdk-managed custom resource
+            - '*-nhc-reporting-stack-*AWS*' # Created by cdk-managed custom resource
+            - 'NHSDAudit_trail_log_group' # Managed by NHS admins
+            - '/aws/chatbot/*' # Managed by AWS Chatbot service
+            - '/aws/cloudfront/function/*' # Managed by CDK and no param available to change
+          Description: 'Disable findings for AWS- or cdk-managed log groups'
+        'cloudwatch_alarm_actions_alarm_state_configured':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Accounts:
+              - '992382726377' # prod account
+          Description: 'Disable alarm state configuration findings for nonprod CloudWatch alarms'
+        'cloudwatch_alarm_actions_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Accounts:
+              - '992382726377' # prod account
+          Description: 'Disable alarm actions findings for nonprod CloudWatch alarms'
+        'dynamodb_table_protected_by_backup_plan':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Description: 'Disable backup findings for DynamoDB tables as reports false-positives'
+        'dynamodb_tables_pitr_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*-nhc-townsend-dev-db'
+            - 'nhs-dhc-tfstate-*'
+          Description: 'Disable PITR findings for DynamoDB tables where PITR is not required'
+        'ec2_instance_detailed_monitoring_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Accounts:
+              - '992382726377' # prod account
+          Description: 'Disable detailed monitoring findings for nonprod accounts'
+        's3_bucket_server_access_logging_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*-destination-access-bucket-logs'
+            - 'cdk-*-assets-*'
+          Description: 'Disable S3 access logging findings for final buckets with logs'
+        'secretsmanager_automatic_rotation_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - 'results-cognito-client-secret'
+            - 'nhc/*/mtls-rootCA'
+            - 'thriva/*/auth-request'
+            - 'nhc/*/emis-public-cert'
+            - 'nhc/*/nhs-api-key'
+            - 'nhc/*/auth-cookie-signing-secret'
+            - 'nhc/*/results-cognito-client-id'
+            - 'nhc/*/emis-private-key'
+            - 'nhc/*/jwks-public-keys'
+            - 'nhc/*/dnhc-smtp-username'
+            - 'nhc/*/auth-cookie-signing-private-keys'
+            - 'nhc/*/mtls-results-client-private-key'
+            - 'nhc/*/nhs-api-platform-application-id'
+            - 'nhc/*/user-credentials'
+            - 'nhc/*/auth-cookie-signing-public-keys'
+            - 'nhc/*/bi-reporting-private-key'
+            - 'nhc/*/qcalc-api-key'
+            - 'nhc/*/thriva-client-id'
+            - 'nhc/*/nhs-api-platform-private-key'
+            - 'nhc/*/thriva-secret'
+            - 'nhc/*/nhs-api-platform-api-key'
+            - 'nhc/*/os-places-api-key'
+            - '*/splunk-token'
+            - 'nhc/*/dnhc-smtp-password'
+            - 'nhc/*/mtls-results-client-certificate'
+            - 'nhc/*/nhs-login-public-key'
+            - 'nhc/*/nhs-login-*-public-key'
+            - 'nhc/*/nhs-login-private-key'
+            - 'nhc/*/nhs-login-*-private-key'
+            - '*/pentests'
+            - 'nhc/*/notify-callback*-api-key'
+            - 'nhc/*/notify-public-api-key*'
+            - 'nhc/*/bi-reporting-gateway-recovery-key'
+            - 'apim-*-consumer-private-key*'
+            - 'apim-*-consumer-api-key*'
+            - 'SMTP-Secret*'
+          Description: 'Disable rotation secrets findings for manually managed secrets'
+        'secretsmanager_secret_rotated_periodically':
+          Regions:
+            - '*'
+          Resources:
+            - 'results-cognito-client-secret'
+            - 'nhc/*/mtls-rootCA'
+            - 'thriva/*/auth-request'
+            - 'nhc/*/emis-public-cert'
+            - 'nhc/*/nhs-api-key'
+            - 'nhc/*/auth-cookie-signing-secret'
+            - 'nhc/*/results-cognito-client-id'
+            - 'nhc/*/emis-private-key'
+            - 'nhc/*/jwks-public-keys'
+            - 'nhc/*/dnhc-smtp-username'
+            - 'nhc/*/auth-cookie-signing-private-keys'
+            - 'nhc/*/mtls-results-client-private-key'
+            - 'nhc/*/nhs-api-platform-application-id'
+            - 'nhc/*/user-credentials'
+            - 'nhc/*/auth-cookie-signing-public-keys'
+            - 'nhc/*/bi-reporting-private-key'
+            - 'nhc/*/qcalc-api-key'
+            - 'nhc/*/thriva-client-id'
+            - 'nhc/*/nhs-api-platform-private-key'
+            - 'nhc/*/thriva-secret'
+            - 'nhc/*/nhs-api-platform-api-key'
+            - 'nhc/*/os-places-api-key'
+            - '*/splunk-token'
+            - 'nhc/*/dnhc-smtp-password'
+            - 'nhc/*/mtls-results-client-certificate'
+            - 'nhc/*/nhs-login-public-key'
+            - 'nhc/*/nhs-login-*-public-key'
+            - 'nhc/*/nhs-login-private-key'
+            - 'nhc/*/nhs-login-*-private-key'
+            - '*/pentests'
+            - 'nhc/*/notify-callback*-api-key'
+            - 'nhc/*/notify-public-api-key*'
+            - 'nhc/*/bi-reporting-gateway-recovery-key'
+            - 'apim-*-consumer-private-key*'
+            - 'apim-*-consumer-api-key*'
+            - 'SMTP-Secret*'
+          Description: 'Disable rotation secrets findings for manually managed secrets'
+        'iam_user_*':
+          Regions:
+            - '*'
+          Resources:
+            - 'dnhc-smtp-user'
+          Description: 'Findings related to the dnhc-smtp-user IAM user will be muted'
+        'iam_rotate_access_key_90_days':
+          Regions:
+            - '*'
+          Resources:
+            - 'dnhc-smtp-user'
+          Description: 'Static key is expected for this role'
+        'iam_role_cross_service_confused_deputy_prevention':
+          Regions:
+            - '*'
+          Resources:
+            - 'CustomCDKBucket'
+            - 'CustomCross*'
+            - 'CustomS3AutoDelete'
+            - 'Lambda'
+            - 'CloudTrail_CloudWatch'
+            - 'AWSBackupDefaultServiceRole'
+            - 'aws-waf-logs'
+            - 'nhc-evaluator-export-scheduler-role'
+            - 'metric-stream-to-firehose'
+            - '*-firehose-splunk'
+            - 'multi-ssm-role'
+            - 'nhc-ods-code-db-reporting-pipe-role'
+            - 'observability-chatbot-role'
+            - 'pbi-ec2-manual-automation-role'
+            - 'nhc-power-bi-gateway-*-role'
+            - '*-bi-reporting-ec2-association-role'
+            - 'nhc-dlm-service-role'
+            - 'nhc-evaluator-export-runbook-role'
+            - 'nhc-audit-event-db-reporting-pipe-role'
+            - 'vpc-flow-log-role'
+            - 'cfn-exec-role'
+            - 'splunk-metrics-transform'
+            - 'nhc-*-api-gateway-cw-role'
+            - '*-nhc-evaluator-export-sftp-role'
+            - '*-nhc-evaluator-export-user-role'
+            - '*-nhc-health-check-db-reporting-pipe-role'
+            - '*-nhc-service-state-switch-runbook-role'
+            - '*-nhc-update-power-bi-instance-runbook-role'
+            - '*-nhc-monitoring-dash*AWS*'
+            - '*-nhc-reporting-stack-*ssmservicerole'
+            - '*-nhc-order-stack-*laborderapiCloudWatch'
+            - '*-nhc-mocks-stack-*nhcmocksapiCloudWatch'
+            - '*-nhc-gp-partial-*gppartialupdate*'
+            - '*-nhc-reminders-stack-*schedulerole'
+            - '*-nhc-result-stack-*AWS*' # This generic one belongs to UserPool.addClient() custom resource
+            - '*-nhc-result-stack-*healthcheckresultsapi'
+            - '*-nhc-result-stack-*riskcalclambda'
+            - '*-nhc-result-stack-*processlabresultlambda'
+            - '*-nhc-result-stack-*autogponboardinglambda'
+            - '*-nhc-reporting-stack-*reportinglambda'
+            - '*-nhc-pdm-integration-*pdmintegrationlambda'
+            - '*-nhc-order-stack-*laborderplacementlambda'
+            - '*-nhc-expired-data*dataexpirylambda*'
+            - '*-nhc-event-stack-*eventcreatelambda'
+            - '*-nhc-backend-stack-*notifycallbackslambda'
+            - '*-nhc-backend-stack-*logoutlambda'
+            - '*-nhc-backend-stack-*healthcheckgetlambda'
+            - '*-nhc-backend-stack-*healthcheckbloodtest'
+            - '*-nhc-backend-stack-*gpupdateschedulerlambda'
+            - '*-nhc-backend-stack-*getpatientinfolambda'
+            - '*-nhc-backend-stack-*eventauditlambda'
+            - '*-nhc-backend-stack-*authkeypairgenerator'
+            - '*-nhc-monitoring-not-*gponboardingslack'
+            - '*-nhc-reporting-stack-*patchfailuresnsrole'
+            - '*-nhc-reporting-stack-*AWS'
+            - '*-nhc-backend-stack-*healthchecksgetlambda'
+            - '*-nhc-monitoring-not-*slackchannel'
+            - '*-nhc-external-stack-*externalapiCloudWatch'
+            - '*-nhc-backend-stack-*loginlambda'
+            - '*-nhc-result-stack-*updatepatientrecordlambda'
+            - '*-nhc-result-stack-*communicationsendlambda'
+            - '*-nhc-backend-stack-*addresslookuplambda'
+            - '*-nhc-result-stack-*getactiveuserlambda'
+            - '*-nhc-backend-stack-*rumidentitylambda'
+            - '*-nhc-data-load-stack-*dbdataloadlambda'
+            - '*-nhc-result-stack-*gpnotificationlambda'
+            - '*-nhc-backend-stack-*updatepatientinfolambda'
+            - '*-nhc-backend-stack-*healthcheckapiCloudWatc'
+            - '*-nhc-backend-stack-*healthcheckversion'
+            - '*-nhc-backend-stack-*healthcheckquestionnaire'
+            - '*-nhc-email-verifica-*emailverification'
+            - '*-nhc-gp-partial-*gpupdateschedule*'
+            - '*-nhc-backend-stack-*notifyauthorizerlambda'
+            - '*-nhc-backend-stack-*healthcheckinitiatel'
+            - '*-nhc-backend-stack-*jwkslambdaServiceRole'
+            - '*-nhc-monitoring-stack-*redrivedlqmessages'
+            - '*-nhc-data-load-stack-*BucketNotifications'
+            - '*-nhc-backend-stack-*refreshtokenlambda'
+            - '*-nhc-data-load-stack-*autodbdataloadlambda'
+            - '*-nhc-monitoring-stack-*collectdlqmessages'
+            - '*-nhc-reminders-stack-*identifynudgeslambda'
+            - '*-config-cloudwatch-log-group-retention-evaluator'
+            - '*-config-log-group-retention-remediation'
+            - '*-nhc-reporting-stack-*AthenaQueryRunnerRole*'
+            - '*-nhc-reporting-stack-*createathenaviewlambda*'
+            - '*-nhc-mns-stack-*mnsmessageconsumerlambda*'
+            - '*-nhc-mns-stack-*mnsmessageproducerlambda*'
+            - '*NhcHealthCheckApiGatewayLogs-csoc-role'
+            - '*NhcResultsApiGatewayLogs-csoc-role'
+          Description: 'Findings related to confused-deputy for service roles will be muted'
+        'iam_no_custom_policy_permissive_role_assumption':
+          Regions:
+            - '*'
+          Resources:
+            - 'oidc-iam-role-restricted-admin-policy2'
+          Description: 'Policy expects allowing assuming roles'
+        'inspector2_is_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Description: 'This is related to LambdaCode that is not enbaled by design'
+        'backup_plans_exist':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Accounts:
+              - '992382726377' # prod account
+          Description: 'Disable backup plan findings for nonprod accounts'
+        'athena_workgroup_enforce_configuration':
+          Regions:
+            - '*'
+          Resources:
+            - '*-evaluator-export'
+          Description: 'Athena workgroup for evaluator exports requires multiple output paths inside the same bucket'
+        'cloudformation_stacks_termination_protection_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*-nhc-*-stack'
+          Exceptions:
+            Accounts:
+              - '992382726377' # PROD
+              - '637423296417' # TEST
+            Resources:
+              - 'shared-nhc-*-stack' # do NOT mute shared stacks
+              - 'Security*' # do NOT mute security stacks
+          Description: 'Mute termination protection findings for all NHC stacks except TEST, PROD, and shared stacks'
+        'guardduty_is_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Regions:
+              - 'eu-west-2'
+          Description: 'Expected to be only enabled in London'
+        'securityhub_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Regions:
+              - 'eu-west-2'
+          Description: 'Expected to be only enabled in London'
+        'dynamodb_table_deletion_protection_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*tfstate*'
+            - '*nhc-townsend-dev-db'
+          Description: 'Not needed for tfstate tables'
+        'dynamodb_table_deletion_protection*':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Exceptions:
+            Accounts:
+              - '992382726377' # PROD
+              - '637423296417' # TEST
+          Description: 'Only required in test and prod'
+        'cloudfront_distributions_logging_enabled':
+          Regions:
+            - '*'
+          Resources:
+            - '*'
+          Description: 'Reports false-positives despite having logging enabled'

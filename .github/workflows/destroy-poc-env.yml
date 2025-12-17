@@ -1,0 +1,113 @@
+name: Destroy environment
+run-name: Delete POC environment - ${{ inputs.environment }}
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: string
+        default: ''
+
+env:
+  OPENSSL_ENCRYPTION_KEY: ${{ secrets.OPENSSL_ENCRYPTION_KEY }}
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  IS_RUN_FROM_PIPELINE: true
+  ACCOUNT: poc
+  SLACK_CHANNEL_NAME: '#hc-env-notifications-poc'
+
+jobs:
+  delete:
+    name: destroy-poc-env
+    runs-on: ubuntu-latest
+    environment: poc
+
+    steps:
+      - name: Stop run if shared environment
+        if: ${{ inputs.environment == 'demo' || inputs.environment == 'develop'}}
+        run: |
+          echo "Destruction of shared environments is not allowed."
+          exit 1
+
+      - name: secrets
+        run: |
+          echo "NONPROD_INTEGRATOR_WAF_SECRET=${{ secrets.NONPROD_INTEGRATOR_WAF_SECRET }}" >> $GITHUB_ENV
+
+      - name: Print deployment details
+        run: |
+          echo "env name: ${{ inputs.environment }}"
+          echo "AWS account name: ${{ env.ACCOUNT }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install AWS CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install UI dependencies
+        run: npm ci
+        working-directory: ui
+
+      - name: Build UI
+        run: npm run build
+        working-directory: ui
+
+      - name: Set up SSH key
+        uses: ./.github/actions/add-ssh-keys
+        with:
+          private-key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+
+      - name: Set AWS Region
+        run: |
+          export AWS_REGION=eu-west-2
+          export AWS_DEFAULT_REGION=eu-west-2
+          echo "Region set to: $AWS_REGION"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      - name: Make destroy script executable
+        run: chmod +x ./scripts/destroy-env.sh
+
+      - name: Destroy environment
+        run: ./scripts/destroy-env.sh ${{ inputs.environment }} ${{ env.ACCOUNT }}
+
+      - name: Archive npm failure logs
+        uses: actions/upload-artifact@v4.3.0
+        if: failure()
+        with:
+          retention-days: 1
+          name: npm-logs
+          path: /home/runner/.npm/_logs
+
+      - name: Report result to Slack
+        if: always()
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: Delete POC Environment ${{ inputs.environment }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ inputs.environment }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          branch-tag: ${{ github.ref_name }}

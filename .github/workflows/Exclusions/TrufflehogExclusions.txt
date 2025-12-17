@@ -1,0 +1,4 @@
+lambdas/__tests__/mock_private.key
+lambdas/__tests__/nhc-results-stack/update-patient-records-lambda/file-record-integration.test.ts
+lambdas/__tests__/nhc-results-stack/update-patient-records-lambda/get-record-integration.test.ts
+tests/certs/invalid

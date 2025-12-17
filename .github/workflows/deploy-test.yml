@@ -1,0 +1,38 @@
+name: Deploy to Test (Test)
+run-name: Deploy - test - ${{ inputs.ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        default: ''
+      run-tests:
+        description: 'Run regression tests'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  deploy-test-job:
+    name: Deploy Test Environment
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      env: test
+      account: test
+    secrets: inherit
+
+  run-regression-tests:
+    name: Run Automated Regression Tests on Ubuntu and Chromium
+    needs: deploy-test-job
+    if: ${{ inputs.run-tests }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: test
+      account: test
+      os: 'ubuntu-latest'
+      browser: 'chromium'
+      testsToCover: 'All'
+    secrets: inherit

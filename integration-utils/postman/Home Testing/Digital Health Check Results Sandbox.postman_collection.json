@@ -1,0 +1,551 @@
+{
+  "info": {
+    "_postman_id": "6b49f461-42f1-4dca-adac-060fa2d0f7d1",
+    "name": "Digital Health Check Results Sandbox",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "23223363"
+  },
+  "item": [
+    {
+      "name": "/results - full success",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"order-id\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": 4.0,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - full fail",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"order-id\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": true,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GBHI\",\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated due to ...\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated due to ...\"\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated due to ...\"\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated due to ...\"\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - partial fail",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"order-id\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - basic validation on required fields",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"order-id\",\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - invalid results",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"400InvalidResult\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - invalid external reference",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"400InvalidOrderExternalReference\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - body parsing error",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"400UnknownBodyParsingError\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - results already submitted",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"400ResultsAlreadySubmitted\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - results not expected",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"400ResultsNotExpected\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - missing biomarkers",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"400MissingBiomarkers\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - request too large",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"413RequestTooLarge\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/results - server error",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"orderId\": \"500ServerError\",\n    \"orderExternalReference\": \"external-reference-id\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sandbox.api.service.nhs.uk/home-testing/results",
+          "protocol": "https",
+          "host": ["sandbox", "api", "service", "nhs", "uk"],
+          "path": ["home-testing", "results"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

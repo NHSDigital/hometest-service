@@ -1,0 +1,10 @@
+{
+  "name": "home-testing-sandbox",
+  "version": "1.0.0",
+  "description": "Digital Health Checks Results Sandbox",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^5.2.0",
+    "morgan": "^1.10.1"
+  }
+}

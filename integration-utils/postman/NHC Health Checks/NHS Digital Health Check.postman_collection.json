@@ -1,0 +1,1503 @@
+{
+  "info": {
+    "_postman_id": "c5140f7a-1188-46eb-a10c-0a0e3d799b76",
+    "name": "NHS Digital Health Check",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+    "_exporter_id": "3570035"
+  },
+  "item": [
+    {
+      "name": "health-check-results-api (called from the lab)",
+      "item": [
+        {
+          "name": "/results send results (hba1c and cholesterol)",
+          "request": {
+            "auth": {
+              "type": "oauth2",
+              "oauth2": {
+                "clientSecret": "{{resultsCognitoClientSecret}}",
+                "clientId": "{{resultsCognitoClientId}}",
+                "accessTokenUrl": "{{resultsCognitoAuthUrl}}",
+                "scope": "results/write",
+                "grant_type": "client_credentials",
+                "addTokenTo": "header"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"thriva-order-id\",\n    \"orderExternalReference\": \"{orderId}\",\n    \"pendingReorder\": true,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{resultsApiUrl}}/results"
+          },
+          "response": []
+        },
+        {
+          "name": "/results - send results (cholesterol only)",
+          "request": {
+            "auth": {
+              "type": "oauth2",
+              "oauth2": {
+                "clientSecret": "{{resultsCognitoClientSecret}}",
+                "clientId": "{{resultsCognitoClientId}}",
+                "accessTokenUrl": "{{resultsCognitoAuthUrl}}",
+                "scope": "results/write",
+                "grant_type": "client_credentials",
+                "addTokenTo": "header"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"thriva-order-id\",\n    \"orderExternalReference\": \"{orderId}\",\n    \"pendingReorder\": false,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{resultsApiUrl}}/results"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "health-check-results-api APIM proxy (called from the lab)",
+      "item": [
+        {
+          "name": "APIM /results send results via APIM",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var uuid = require('uuid');",
+                  "",
+                  "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+                  "var envName = pm.environment.get('apim_env_name') || '';",
+                  "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+                  "",
+                  "if (!privateKey) {",
+                  "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+                  "}",
+                  "",
+                  "if (!apiKeyValue) {",
+                  "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+                  "}",
+                  "",
+                  "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+                  "",
+                  "console.log(auth_url);",
+                  "",
+                  "var navigator = {};",
+                  "var window = {};",
+                  "const interval = setTimeout(() => {}, 2147483647);",
+                  "",
+                  "return new Promise((resolve, reject) => {        ",
+                  "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+                  "        return resolve();",
+                  "    }",
+                  "",
+                  "    pm.sendRequest(",
+                  "        {",
+                  "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+                  "            method: 'GET'",
+                  "        }, function (err, res) {",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            pm.globals.set('jsrsasign-js', res.text());            ",
+                  "            return resolve();",
+                  "        }",
+                  "    );",
+                  "}).then(() => {             ",
+                  "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+                  "",
+                  "    // Set headers for JWT",
+                  "    var header = {",
+                  "        'typ': 'JWT',",
+                  "        'alg': 'RS512',",
+                  "        'kid': 'dev-1'",
+                  "    };",
+                  "",
+                  "    // Prepare timestamp in seconds",
+                  "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+                  "    var uuid = require('uuid');",
+                  "    var jti_value = uuid.v4();",
+                  "    var data = {",
+                  "        'sub': apiKeyValue,",
+                  "        'iss': apiKeyValue,",
+                  "        'jti': jti_value,",
+                  "        'aud': auth_url,",
+                  "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+                  "    }    ",
+                  "",
+                  "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+                  "    return new Promise((resolve, reject) => {                              ",
+                  "        pm.sendRequest({",
+                  "            url: auth_url,",
+                  "            method: \"POST\",",
+                  "            header: {",
+                  "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+                  "            },",
+                  "            body: {",
+                  "                mode: \"urlencoded\",",
+                  "                urlencoded: [",
+                  "                    {",
+                  "                        key: \"grant_type\",",
+                  "                        value: \"client_credentials\"",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion_type\",",
+                  "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion\",",
+                  "                        value: sJWT",
+                  "                    }",
+                  "                ]",
+                  "            }",
+                  "        }, function (err, res) {                                            ",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            //assign the authorization header value",
+                  "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+                  "",
+                  "            //assign the message batch reference",
+                  "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+                  "",
+                  "            //assign the message reference",
+                  "            pm.environment.set(\"message_reference\", uuid.v4());",
+                  "",
+                  "            //generate a correlation identifier",
+                  "            pm.environment.set(\"correlation_id\", uuid.v4());",
+                  "",
+                  "            return resolve();",
+                  "        });        ",
+                  "    });",
+                  "}).then(() => {    ",
+                  "    clearTimeout(interval);",
+                  "}).catch((err) => {     ",
+                  "    console.error(err); ",
+                  "    clearTimeout(interval);    ",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{authorization_header_value}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"thriva-order-id\",\n    \"orderExternalReference\": \"{orderId}\",\n    \"pendingReorder\": true,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "https://{{apim_env_name}}.api.service.nhs.uk/home-testing/results"
+          },
+          "response": []
+        },
+        {
+          "name": "MTLS /results direct call to our endpoint",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"thriva-order-id\",\n    \"orderExternalReference\": \"{orderId}\",\n    \"pendingReorder\": true,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mtlsResultsApiUrl}}/results"
+          },
+          "response": []
+        },
+        {
+          "name": "MTLS /_status direct call to our endpoint (healthcheck)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/health+json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/health+json",
+                "type": "text"
+              }
+            ],
+            "url": "{{mtlsResultsApiUrl}}/_status"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "health-check-api (backend)",
+      "item": [
+        {
+          "name": "/login - login the user",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"code\": \"<provide auth code from nhs login or mock scenario code>\",\n    \"source\": \"browser\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/login"
+          },
+          "response": []
+        },
+        {
+          "name": "/refresh-token - refresh the token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}; auth_refresh={{authRefreshCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/refresh-token"
+          },
+          "response": []
+        },
+        {
+          "name": "/logout - ends users session",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}",
+                "disabled": true
+              }
+            ],
+            "url": "{{backendApiUrl}}/logout"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks - get health checks for patient",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "url": "{{backendApiUrl}}/health-checks"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks - initiate new health check",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "url": "{{backendApiUrl}}/health-checks"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks/{id} - get patient health check by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "url": "{{backendApiUrl}}/health-checks/{id}"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks/{id}/version - update health check version to the latest release",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            },
+            "url": "{{backendApiUrl}}/health-checks/7ca1a598-9170-4d04-97c3-f9d48ad10336/version"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks/{id}/schedule-gp-update - schedule GP update for health check with id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"scheduleReason\": \"urgentHighBP\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/health-checks/{id}/schedule-gp-update"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks/{id}/questionnaire - update health check questionnaire",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"weight\": 66,\n    \"height\": 185,\n    \"sex\": \"Female\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/health-checks/{id}/questionnaire"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks/{id}/questionnaire/submit - submit health check questionnaire",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "url": "{{backendApiUrl}}/health-checks/{id}/questionnaire/submit"
+          },
+          "response": []
+        },
+        {
+          "name": "/health-checks/{id}/blood-test - update health check lab order details",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"address\": {\r\n        \"addressLine1\": \"Blake Road\",\r\n        \"addressLine2\": \"Hamillton Building A\",\r\n        \"addressLine3\": \"Hamillton Street\",\r\n        \"townCity\": \"Redwood\",\r\n        \"postcode\": \"   BS1 1ad   \"\r\n    },\r\n    \"isBloodTestSectionSubmitted\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/health-checks/{id}/blood-test"
+          },
+          "response": []
+        },
+        {
+          "name": "/patient - get patient info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "url": "{{backendApiUrl}}/patient"
+          },
+          "response": []
+        },
+        {
+          "name": "/patient - update patient info",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"termsAccepted\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/patient"
+          },
+          "response": []
+        },
+        {
+          "name": "/events - create new audit event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"healthCheckId\": \"{id}\",\r\n    \"eventType\" : \"AddressLookupPerformed\",\r\n    \"details\": {\r\n        \"filteredResults\": 13,\r\n        \"totalResults\": 13\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{backendApiUrl}}/events"
+          },
+          "response": []
+        },
+        {
+          "name": "/address - get addresses for postcode",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "auth={{authCookie}}",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{backendApiUrl}}/address?postcode=RG17AU",
+              "host": ["{{backendApiUrl}}"],
+              "path": ["address"],
+              "query": [
+                {
+                  "key": "postcode",
+                  "value": "RG17AU"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/.well-known/jwks.json",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{backendApiUrl}}/.well-known/jwks.json"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "health-check-callbacks-api",
+      "item": [
+        {
+          "name": "/message-status - send notification status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "let requestBody = '';",
+                  "if (pm.request.body && pm.request.body.mode === 'raw' && pm.request.body.raw) {",
+                  "    requestBody = pm.request.body.raw;",
+                  "}",
+                  "",
+                  "let applicationId = pm.environment.get('notifyApplicationId');",
+                  "let apiKey = pm.environment.get('notifyApiKey');",
+                  "",
+                  "if (!applicationId || !apiKey) {",
+                  "    console.error('Missing applicationId or apiKey environment variables.');",
+                  "    postman.setNextRequest(null);",
+                  "    throw new Error('Missing required environment variables.');",
+                  "}",
+                  "",
+                  "let secret = `${applicationId}.${apiKey}`;",
+                  "",
+                  "let signature = CryptoJS.HmacSHA256(requestBody, secret).toString(CryptoJS.enc.Hex);",
+                  "",
+                  "pm.request.headers.add({",
+                  "    key: 'x-hmac-sha256-signature',",
+                  "    value: signature",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{notifyApiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"type\": \"MessageStatus\",\n      \"attributes\": {\n        \"messageId\": \"2WL3qFTEFM0qMY8xjRbt1LIKCzM\",\n        \"messageReference\": \"{fillInWithMessageReference}\",\n        \"messageStatus\": \"delivered\",\n        \"messageStatusDescription\": \" \",\n        \"channels\": [\n          {\n            \"type\": \"email\",\n            \"channelStatus\": \"delivered\"\n          }\n        ],\n        \"timestamp\": \"2023-11-17T14:27:51.413Z\",\n        \"routingPlan\": {\n          \"id\": \"b838b13c-f98c-4def-93f0-515d4e4f4ee1\",\n          \"name\": \"Plan Abc\",\n          \"version\": \"ztoe2qRAM8M8vS0bqajhyEBcvXacrGPp\",\n          \"createdDate\": \"2023-11-17T14:27:51.413Z\"\n        }\n      },\n      \"links\": {\n        \"message\": \"https://api.service.nhs.uk/comms/v1/messages/2WL3qFTEFM0qMY8xjRbt1LIKCzM\"\n      },\n      \"meta\": {\n        \"idempotencyKey\": \"2515ae6b3a08339fba3534f3b17cd57cd573c57d25b25b9aae08e42dc9f0a445\"\n      }\n    },\n    {\n      \"type\": \"MessageStatus\",\n      \"attributes\": {\n        \"messageId\": \"2WL3qFTEFM0qMY8xjRbt1LIKCzM\",\n        \"messageReference\": \"{fillInWithMessageReference}\",\n        \"messageStatus\": \"delivered\",\n        \"messageStatusDescription\": \" \",\n        \"channels\": [\n          {\n            \"type\": \"email\",\n            \"channelStatus\": \"delivered\"\n          }\n        ],\n        \"timestamp\": \"2023-11-17T14:27:51.413Z\",\n        \"routingPlan\": {\n          \"id\": \"b838b13c-f98c-4def-93f0-515d4e4f4ee1\",\n          \"name\": \"Plan Abc\",\n          \"version\": \"ztoe2qRAM8M8vS0bqajhyEBcvXacrGPp\",\n          \"createdDate\": \"2023-11-17T14:27:51.413Z\"\n        }\n      },\n      \"links\": {\n        \"message\": \"https://api.service.nhs.uk/comms/v1/messages/2WL3qFTEFM0qMY8xjRbt1LIKCzM\"\n      },\n      \"meta\": {\n        \"idempotencyKey\": \"2515ae6b3a08339fba3534f3b17cd57cd573c57d25b25b9aae08e42dc9f0a445\"\n      }\n    },\n    {\n      \"type\": \"MessageStatus\",\n      \"attributes\": {\n        \"messageId\": \"2WL3qFTEFM0qMY8xjRbt1LIKCzM\",\n        \"messageReference\": \"{fillInWithMessageReference}\",\n        \"messageStatus\": \"failed\",\n        \"messageStatusDescription\": \" \",\n        \"channels\": [\n          {\n            \"type\": \"email\",\n            \"channelStatus\": \"delivered\"\n          }\n        ],\n        \"timestamp\": \"2023-11-17T14:27:51.413Z\",\n        \"routingPlan\": {\n          \"id\": \"b838b13c-f98c-4def-93f0-515d4e4f4ee1\",\n          \"name\": \"Plan Abc\",\n          \"version\": \"ztoe2qRAM8M8vS0bqajhyEBcvXacrGPp\",\n          \"createdDate\": \"2023-11-17T14:27:51.413Z\"\n        }\n      },\n      \"links\": {\n        \"message\": \"https://api.service.nhs.uk/comms/v1/messages/2WL3qFTEFM0qMY8xjRbt1LIKCzM\"\n      },\n      \"meta\": {\n        \"idempotencyKey\": \"2515ae6b3a08339fba3534f3b17cd57cd573c57d25b25b9aae08e42dc9f0a445\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{callbacksApiUrl}}/notify/message-status"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "_mocks",
+      "item": [
+        {
+          "name": "thriva",
+          "item": [
+            {
+              "name": "/lab/thriva/oauth/token",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"grant_type\": \"client_credentials\",\n    \"client_id\": \"DNHC_THRIVA_CLIENT_ID\",\n    \"client_secret\": \"DNHC_THRIVA_CLIENT_SECRET\",\n    \"audience\": \"https://api.euw2.sandbox.thriva.io\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{mockApiUrl}}/lab/thriva/oauth/token"
+              },
+              "response": []
+            },
+            {
+              "name": "/lab/thriva/dhc/orders (both tests)",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": {
+                    "token": "THRIVA_TOKEN"
+                  }
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/vnd.api+json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/vnd.api+json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"type\": \"order\", \n    \"attributes\": {\n      \"delivery_address\": {\n        \"name\": \"Mr Joe Blogs\",\n        \"line1\": \"3rd Floor\",\n        \"line2\": \"White Collar Factory\",\n        \"line3\": \"1 Old Street Yard\",\n        \"city\": \"London\",\n        \"postcode\": \"EC1Y 8AF\",\n        \"country\": \"GB\"\n      },\n      \"user\": {\n        \"contact\": {\n            \"first_name\": \"Joe\",\n            \"last_name\": \"Blogs\",\n            \"email\": \"joe@blogs.com\",\n            \"mobile_phone_number\": \"+447123456789\"\n        },\n        \"date_of_birth\": \"1980-01-01\",\n        \"sex\": \"male\",\n        \"user_external_reference\": \"000000000001\"\n      },\n      \"test\": {\n          \"test_profiles\": [\n            \"TCHDL\", \"GHB\"\n          ]\n      },\n      \"order_external_reference\": \"839028403820\"\n    }\n  }\n} ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{mockApiUrl}}/lab/thriva/dhc/orders"
+              },
+              "response": []
+            },
+            {
+              "name": "/lab/thriva/dhc/orders (only cholesterol)",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": {
+                    "token": "THRIVA_TOKEN"
+                  }
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/vnd.api+json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/vnd.api+json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"data\": {\n    \"type\": \"order\", \n    \"attributes\": {\n      \"delivery_address\": {\n        \"name\": \"Mr Joe Blogs\",\n        \"line1\": \"3rd Floor\",\n        \"line2\": \"White Collar Factory\",\n        \"line3\": \"1 Old Street Yard\",\n        \"city\": \"London\",\n        \"postcode\": \"EC1Y 8AF\",\n        \"country\": \"GB\"\n      },\n      \"user\": {\n        \"contact\": {\n            \"first_name\": \"Joe\",\n            \"last_name\": \"Blogs\",\n            \"email\": \"joe@blogs.com\",\n            \"mobile_phone_number\": \"+447123456789\"\n        },\n        \"date_of_birth\": \"1980-01-01\",\n        \"sex\": \"male\",\n        \"user_external_reference\": \"000000000001\"\n      },\n      \"test\": {\n          \"test_profiles\": [\n            \"TCHDL\"\n          ]\n      },\n      \"order_external_reference\": \"839028403820\"\n    }\n  }\n} ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{mockApiUrl}}/lab/thriva/dhc/orders"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "perf",
+          "item": [
+            {
+              "name": "GET orderId by healthCheckId",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mockApiUrl}}/perf/healthcheck/:healthcheckId/order",
+                  "host": ["{{mockApiUrl}}"],
+                  "path": ["perf", "healthcheck", ":healthcheckId", "order"],
+                  "variable": [
+                    {
+                      "key": "healthcheckId"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "pdm",
+          "item": [
+            {
+              "name": "GET resourceType/resourceId",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{mockApiUrl}}/nhs-api-platform/patient-data-manager/FHIR/R4/MessageHeader/negative-business-ack"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GET /nhs-login/start",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{mockApiUrl}}/nhs-login/start"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /emis-transaction-api",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <soap:Header>\n    <MessageID xmlns=\"http://www.w3.org/2005/08/addressing\">53B98379-99CD-4E48-89C6-C02CD96ECC86</MessageID>\n    <Action xmlns=\"http://www.w3.org/2005/08/addressing\">emis:transactionim:records:req_GetActiveUsers_V1_0</Action>\n    <To xmlns=\"http://www.w3.org/2005/08/addressing\">http://3.11.93.54/ITK</To>\n    <From xmlns=\"http://www.w3.org/2005/08/addressing\">http://127.0.0.1:4848/syncsoap/</From>\n    <ReplyTo xmlns=\"http://www.w3.org/2005/08/addressing\">\n      <Address>http://www.w3.org/2005/08/addressing/anonymous</Address>\n    </ReplyTo>\n  </soap:Header>\n  <soap:Body>\n    <itk:DistributionEnvelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:itk=\"urn:nhs-itk:ns:201005\">\n      <itk:header trackingid=\"4092F938-3B0D-4A4B-BA02-DC3C65DCE968\" service=\"emis:transactionim:records:req_GetActiveUsers_V1_0\">\n        <itk:addresslist>\n          <itk:address uri=\"urn:nhs-uk:addressing:ods:A28579\" />\n        </itk:addresslist>\n        <itk:auditIdentity>\n          <itk:id uri=\"emisweb\" />\n        </itk:auditIdentity>\n        <itk:manifest count=\"1\">\n          <itk:manifestitem id=\"uuid_E808A967-49B2-498B-AD75-1D7A0F1262D7\" mimetype=\"application/xml\" />\n        </itk:manifest>\n        <itk:senderAddress uri=\"urn:nhs-uk:addressing:ods:A28579\" />\n        <itk:handlingSpecification>\n          <itk:spec key=\"emis:BinarySecurityToken\" value=\"\" />\n          <itk:spec key=\"emis:MessageDigest\" value=\"\" />\n          <itk:spec key=\"emis:Signature\" value=\"\" />\n        </itk:handlingSpecification>\n      </itk:header>\n      <itk:payloads count=\"1\">\n        <itk:payload id=\"uuid_E808A967-49B2-498B-AD75-1D7A0F1262D7\">\n          <EWDS xmlns=\"urn:nhs-itk:ns:201005\">\n            <RequestHeader>\n              <ExternalUserName>DNHSHC_A1234</ExternalUserName>\n              <MachineName>O_o</MachineName>\n            </RequestHeader>\n            <RequestBody>\n              <RequestMethod>\n                <MethodDefinition>\n                  <Name>Emis.Interop.PatientAPI.GetActiveUsers</Name>\n                  <Version>1.0.0.0</Version>\n                </MethodDefinition>\n                <Content>\n                  <PatientAPI>\n                    <SmartCardTokenId></SmartCardTokenId>\n                  </PatientAPI>\n                </Content>\n              </RequestMethod>\n            </RequestBody>\n          </EWDS>\n        </itk:payload>\n      </itk:payloads>\n    </itk:DistributionEnvelope>\n  </soap:Body>\n</soap:Envelope>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": "{{mockApiUrl}}/emis-transaction-api"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /riskScores/Prediction",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mockApiUrl}}/riskScores/Prediction"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /address/postcode",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mockApiUrl}}/address"
+          },
+          "response": []
+        },
+        {
+          "name": "MNS Create Event",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"specversion\": \"1.0\",\n    \"id\": \"236a1d4a-5d69-4fa9-9c7f-e72bf505aa5b\",\n    \"type\": \"nhshco-hc-complete-1-ack-1\",\n    \"subject\": \"9912003888\",\n    \"filtering\": {      \n      \"gppractice\": \"G12345\"\n    },\n    \"source\": \"TO BE DEFINED\",\n    \"time\": \"2025-04-05T17:31:00.000Z\",\n    \"dataref\": \"https://int.api.service.nhs.uk/Composition/b0b97bff-e3d7-4744-a09a-e55781886dd0/$document\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mockApiUrl}}/nhs-api-platform/multicast-notification-service/events"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "_third_party",
+      "item": [
+        {
+          "name": "[NHS Tools] BMI calculation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "https://nhsuk-apim-dev-uks.azure-api.net/tools/bmit/calculate-body-mass-index"
+          },
+          "response": []
+        },
+        {
+          "name": "[Endeavour Predict] POST /Prediction QRisk3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Gravitee-Api-Key",
+                "value": "{{qRiskApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestedEngines\": [\n        \"QRisk3\"\n    ],\n    \"cvd\": false,\n    \"sex\": \"Male\",\n    \"age\": 68,\n    \"atrialFibrillation\": false,\n    \"atypicalAntipsychoticMedication\": false,\n    \"systemicCorticosteroids\": false,\n    \"impotence\": true,\n    \"migraines\": true,\n    \"rheumatoidArthritis\": false,\n    \"chronicRenalDisease\": false,\n    \"severeMentalIllness\": true,\n    \"systemicLupusErythematosus\": true,\n    \"bloodPressureTreatment\": false,\n    \"diabetesStatus\": \"None\",\n    \"bmi\": 0,\n    \"ethnicity\": \"British\",\n    \"familyHistoryCHD\": true,\n    \"cholesterolRatio\": 0,\n    \"systolicBloodPressures\": [ 0 ],\n    \"systolicBloodPressureMean\": 200,\n    \"systolicBloodPressureStDev\": 1,\n    \"smokingStatus\": \"NonSmoker\",\n    \"townsendScore\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "https://api.endeavourpredict.org/dev/epredict/Prediction"
+          },
+          "response": []
+        },
+        {
+          "name": "[NHS Notify][Sandbox] POST /messages",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"data\": {\n        \"type\": \"Message\",\n        \"attributes\": {\n            \"routingPlanId\": \"b838b13c-f98c-4def-93f0-515d4e4f4ee1\",\n            \"messageReference\": \"703b8008-545d-4a04-bb90-1f2946ce1575\",\n            \"recipient\": {\n                \"nhsNumber\": \"9990548609\"\n            },\n            \"personalisation\": {}\n        }\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "https://sandbox.api.service.nhs.uk/comms/v1/messages"
+          },
+          "response": []
+        },
+        {
+          "name": "[NHS Notify][Int] POST /messages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer XXX"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"data\": {\n        \"type\": \"Message\",\n        \"attributes\": {\n            \"routingPlanId\": \"b838b13c-f98c-4def-93f0-515d4e4f4ee1\",\n            \"messageReference\": \"703b8008-545d-4a04-bb90-1f2946ce1575\",\n            \"recipient\": {\n                \"nhsNumber\": \"9990548609\"\n            },\n            \"personalisation\": {}\n        }\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "https://int.api.service.nhs.uk/comms/v1/messages"
+          },
+          "response": []
+        },
+        {
+          "name": "[NHS Notify][Int] POST /oauth2/token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text"
+                },
+                {
+                  "key": "client_assertion_type",
+                  "value": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                  "type": "text"
+                },
+                {
+                  "key": "client_assertion",
+                  "value": "",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "https://int.api.service.nhs.uk/oauth2/token"
+          },
+          "response": []
+        },
+        {
+          "name": "[OS Places] GET /postcode",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.os.uk/search/places/v1/postcode?key=&postcode=CR0&lr=EN",
+              "protocol": "https",
+              "host": ["api", "os", "uk"],
+              "path": ["search", "places", "v1", "postcode"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": ""
+                },
+                {
+                  "key": "postcode",
+                  "value": "CR0"
+                },
+                {
+                  "key": "lr",
+                  "value": "EN"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[NHS MNS][Int] POST /subscriptions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var uuid = require('uuid');",
+                  "",
+                  "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+                  "var envName = pm.environment.get('apim_env_name') || '';",
+                  "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+                  "",
+                  "if (!privateKey) {",
+                  "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+                  "}",
+                  "",
+                  "if (!apiKeyValue) {",
+                  "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+                  "}",
+                  "",
+                  "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+                  "",
+                  "console.log(auth_url);",
+                  "",
+                  "var navigator = {};",
+                  "var window = {};",
+                  "const interval = setTimeout(() => {}, 2147483647);",
+                  "",
+                  "return new Promise((resolve, reject) => {        ",
+                  "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+                  "        return resolve();",
+                  "    }",
+                  "",
+                  "    pm.sendRequest(",
+                  "        {",
+                  "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+                  "            method: 'GET'",
+                  "        }, function (err, res) {",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            pm.globals.set('jsrsasign-js', res.text());            ",
+                  "            return resolve();",
+                  "        }",
+                  "    );",
+                  "}).then(() => {             ",
+                  "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+                  "",
+                  "    // Set headers for JWT",
+                  "    var header = {",
+                  "        'typ': 'JWT',",
+                  "        'alg': 'RS512',",
+                  "        'kid': 'dev-1'",
+                  "    };",
+                  "",
+                  "    // Prepare timestamp in seconds",
+                  "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+                  "    var uuid = require('uuid');",
+                  "    var jti_value = uuid.v4();",
+                  "    var data = {",
+                  "        'sub': apiKeyValue,",
+                  "        'iss': apiKeyValue,",
+                  "        'jti': jti_value,",
+                  "        'aud': auth_url,",
+                  "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+                  "    }    ",
+                  "",
+                  "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+                  "    return new Promise((resolve, reject) => {                              ",
+                  "        pm.sendRequest({",
+                  "            url: auth_url,",
+                  "            method: \"POST\",",
+                  "            header: {",
+                  "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+                  "            },",
+                  "            body: {",
+                  "                mode: \"urlencoded\",",
+                  "                urlencoded: [",
+                  "                    {",
+                  "                        key: \"grant_type\",",
+                  "                        value: \"client_credentials\"",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion_type\",",
+                  "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion\",",
+                  "                        value: sJWT",
+                  "                    }",
+                  "                ]",
+                  "            }",
+                  "        }, function (err, res) {                                            ",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            //assign the authorization header value",
+                  "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+                  "",
+                  "            //assign the message batch reference",
+                  "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+                  "",
+                  "            //assign the message reference",
+                  "            pm.environment.set(\"message_reference\", uuid.v4());",
+                  "",
+                  "            //generate a correlation identifier",
+                  "            pm.environment.set(\"correlation_id\", uuid.v4());",
+                  "",
+                  "            return resolve();",
+                  "        });        ",
+                  "    });",
+                  "}).then(() => {    ",
+                  "    clearTimeout(interval);",
+                  "}).catch((err) => {     ",
+                  "    console.error(err); ",
+                  "    clearTimeout(interval);    ",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/fhir+json",
+                "type": "text"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{UUID}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{authorization_header_value}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"resourceType\": \"Subscription\",\n    \"status\": \"requested\",\n    \"reason\": \"A good descriptive reason for the subscription, useful in future to help track down subscribers\",\n    \"criteria\": \"eventType=mns-test-signal-1\",\n    \"channel\": {\n        \"type\": \"message\",\n        \"endpoint\": \"arn:aws:sqs:eu-west-2:899411341184:intNhcMnsInbound\",\n        \"payload\": \"application/json\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "https://{{apim_env_name}}.api.service.nhs.uk/multicast-notification-service/subscriptions"
+          },
+          "response": []
+        },
+        {
+          "name": "[NHS MNS][Int] DELETE /subscriptions/{id}",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var uuid = require('uuid');",
+                  "",
+                  "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+                  "var envName = pm.environment.get('apim_env_name') || '';",
+                  "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+                  "",
+                  "if (!privateKey) {",
+                  "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+                  "}",
+                  "",
+                  "if (!apiKeyValue) {",
+                  "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+                  "}",
+                  "",
+                  "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+                  "",
+                  "console.log(auth_url);",
+                  "",
+                  "var navigator = {};",
+                  "var window = {};",
+                  "const interval = setTimeout(() => {}, 2147483647);",
+                  "",
+                  "return new Promise((resolve, reject) => {        ",
+                  "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+                  "        return resolve();",
+                  "    }",
+                  "",
+                  "    pm.sendRequest(",
+                  "        {",
+                  "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+                  "            method: 'GET'",
+                  "        }, function (err, res) {",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            pm.globals.set('jsrsasign-js', res.text());            ",
+                  "            return resolve();",
+                  "        }",
+                  "    );",
+                  "}).then(() => {             ",
+                  "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+                  "",
+                  "    // Set headers for JWT",
+                  "    var header = {",
+                  "        'typ': 'JWT',",
+                  "        'alg': 'RS512',",
+                  "        'kid': 'dev-1'",
+                  "    };",
+                  "",
+                  "    // Prepare timestamp in seconds",
+                  "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+                  "    var uuid = require('uuid');",
+                  "    var jti_value = uuid.v4();",
+                  "    var data = {",
+                  "        'sub': apiKeyValue,",
+                  "        'iss': apiKeyValue,",
+                  "        'jti': jti_value,",
+                  "        'aud': auth_url,",
+                  "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+                  "    }    ",
+                  "",
+                  "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+                  "    return new Promise((resolve, reject) => {                              ",
+                  "        pm.sendRequest({",
+                  "            url: auth_url,",
+                  "            method: \"POST\",",
+                  "            header: {",
+                  "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+                  "            },",
+                  "            body: {",
+                  "                mode: \"urlencoded\",",
+                  "                urlencoded: [",
+                  "                    {",
+                  "                        key: \"grant_type\",",
+                  "                        value: \"client_credentials\"",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion_type\",",
+                  "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion\",",
+                  "                        value: sJWT",
+                  "                    }",
+                  "                ]",
+                  "            }",
+                  "        }, function (err, res) {                                            ",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            //assign the authorization header value",
+                  "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+                  "",
+                  "            //assign the message batch reference",
+                  "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+                  "",
+                  "            //assign the message reference",
+                  "            pm.environment.set(\"message_reference\", uuid.v4());",
+                  "",
+                  "            //generate a correlation identifier",
+                  "            pm.environment.set(\"correlation_id\", uuid.v4());",
+                  "",
+                  "            return resolve();",
+                  "        });        ",
+                  "    });",
+                  "}).then(() => {    ",
+                  "    clearTimeout(interval);",
+                  "}).catch((err) => {     ",
+                  "    console.error(err); ",
+                  "    clearTimeout(interval);    ",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{authorization_header_value}}",
+                "type": "text"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{UUID}",
+                "type": "text"
+              }
+            ],
+            "url": "https://{{apim_env_name}}.api.service.nhs.uk/multicast-notification-service/subscriptions/f26c5758-7367-4482-8fc0-b008a562928a"
+          },
+          "response": []
+        },
+        {
+          "name": "[NHS MNS][Int] GET /subscriptions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var uuid = require('uuid');",
+                  "",
+                  "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+                  "var envName = pm.environment.get('apim_env_name') || '';",
+                  "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+                  "",
+                  "if (!privateKey) {",
+                  "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+                  "}",
+                  "",
+                  "if (!apiKeyValue) {",
+                  "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+                  "}",
+                  "",
+                  "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+                  "",
+                  "console.log(auth_url);",
+                  "",
+                  "var navigator = {};",
+                  "var window = {};",
+                  "const interval = setTimeout(() => {}, 2147483647);",
+                  "",
+                  "return new Promise((resolve, reject) => {        ",
+                  "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+                  "        return resolve();",
+                  "    }",
+                  "",
+                  "    pm.sendRequest(",
+                  "        {",
+                  "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+                  "            method: 'GET'",
+                  "        }, function (err, res) {",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            pm.globals.set('jsrsasign-js', res.text());            ",
+                  "            return resolve();",
+                  "        }",
+                  "    );",
+                  "}).then(() => {             ",
+                  "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+                  "",
+                  "    // Set headers for JWT",
+                  "    var header = {",
+                  "        'typ': 'JWT',",
+                  "        'alg': 'RS512',",
+                  "        'kid': 'dev-1'",
+                  "    };",
+                  "",
+                  "    // Prepare timestamp in seconds",
+                  "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+                  "    var uuid = require('uuid');",
+                  "    var jti_value = uuid.v4();",
+                  "    var data = {",
+                  "        'sub': apiKeyValue,",
+                  "        'iss': apiKeyValue,",
+                  "        'jti': jti_value,",
+                  "        'aud': auth_url,",
+                  "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+                  "    }    ",
+                  "",
+                  "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+                  "    return new Promise((resolve, reject) => {                              ",
+                  "        pm.sendRequest({",
+                  "            url: auth_url,",
+                  "            method: \"POST\",",
+                  "            header: {",
+                  "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+                  "            },",
+                  "            body: {",
+                  "                mode: \"urlencoded\",",
+                  "                urlencoded: [",
+                  "                    {",
+                  "                        key: \"grant_type\",",
+                  "                        value: \"client_credentials\"",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion_type\",",
+                  "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+                  "                    },",
+                  "                    {",
+                  "                        key: \"client_assertion\",",
+                  "                        value: sJWT",
+                  "                    }",
+                  "                ]",
+                  "            }",
+                  "        }, function (err, res) {                                            ",
+                  "            if (err) {",
+                  "                return reject(err);",
+                  "            }",
+                  "",
+                  "            //assign the authorization header value",
+                  "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+                  "",
+                  "            //assign the message batch reference",
+                  "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+                  "",
+                  "            //assign the message reference",
+                  "            pm.environment.set(\"message_reference\", uuid.v4());",
+                  "",
+                  "            //generate a correlation identifier",
+                  "            pm.environment.set(\"correlation_id\", uuid.v4());",
+                  "",
+                  "            return resolve();",
+                  "        });        ",
+                  "    });",
+                  "}).then(() => {    ",
+                  "    clearTimeout(interval);",
+                  "}).catch((err) => {     ",
+                  "    console.error(err); ",
+                  "    clearTimeout(interval);    ",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{authorization_header_value}}",
+                "type": "text"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{UUID}",
+                "type": "text"
+              }
+            ],
+            "url": "https://{{apim_env_name}}.api.service.nhs.uk/multicast-notification-service/subscriptions"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

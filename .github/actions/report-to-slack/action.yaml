@@ -1,0 +1,99 @@
+name: 'Send to Slack'
+
+inputs:
+  job-status:
+    type: string
+    required: true
+  job-name:
+    type: string
+    required: true
+  job-url:
+    type: string
+    required: true
+  environment:
+    type: string
+    required: true
+  slack-channel:
+    type: string
+    required: true
+  slack-token:
+    type: string
+    required: true
+  triggeredBy:
+    type: string
+    required: true
+  branch-tag:
+    type: string
+    required: false
+  blocks:
+    type: string
+    required: false
+  blocks_base64:
+    type: string
+    required: false
+  include_main_block:
+    type: boolean
+    required: false
+    default: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Send message to Slack'
+      shell: bash
+      run: |
+        if [ "${{ inputs.job-status }}" == "success" ]; then
+          STATUS=":white_check_mark:"
+        else
+          STATUS=":red_negative_cross:"
+        fi
+
+        if [ -n "${{ inputs.branch-tag }}" ]; then
+          BRANCH_TEXT="of *${{ inputs.branch-tag }}*"
+        else
+          BRANCH_TEXT=""
+        fi
+
+        MAIN_BLOCK="{
+          \"type\": \"section\",
+          \"text\": {
+            \"type\": \"mrkdwn\",
+            \"text\": \"${STATUS} *${{ inputs.environment }}* - ${{ inputs.job-name }} ${BRANCH_TEXT} triggered by *${{ inputs.triggeredBy }}* - <${{ inputs.job-url }}|view details>\"
+          }
+        }"
+
+        BLOCKS_BASE64="${{ inputs.blocks_base64 }}"
+        BLOCKS_INPUT=$(cat <<'EOF'
+        ${{ inputs.blocks }}
+        EOF
+        )
+
+        if [[ -n "$BLOCKS_BASE64" ]]; then
+          INPUT_BLOCKS="$(echo "$BLOCKS_BASE64" | base64 -d)"
+        elif [[ -n "$BLOCKS_INPUT" ]]; then
+          INPUT_BLOCKS="$BLOCKS_INPUT"
+        else
+          INPUT_BLOCKS=""
+        fi
+
+        if [[ -n "$INPUT_BLOCKS" ]]; then
+          # Clean up input blocks: removes first and last brackets if present
+          INPUT_BLOCKS="${INPUT_BLOCKS#[}"
+          INPUT_BLOCKS="${INPUT_BLOCKS%]}"
+
+          if [[ "${{ inputs.include_main_block }}" == "true" ]]; then
+            BLOCKS="[$MAIN_BLOCK,$INPUT_BLOCKS]"
+          else
+            BLOCKS="[$INPUT_BLOCKS]"
+          fi
+        else
+          BLOCKS="[$MAIN_BLOCK]"
+        fi
+
+        BLOCKS="$(echo "$BLOCKS" | tr -d '\n')"
+
+        curl -X POST \
+          -H "Authorization: Bearer ${{ inputs.slack-token }}" \
+          -H "Content-type: application/json" \
+          --data "{\"channel\": \"${{ inputs.slack-channel }}\", \"blocks\": $BLOCKS}" \
+          https://slack.com/api/chat.postMessage

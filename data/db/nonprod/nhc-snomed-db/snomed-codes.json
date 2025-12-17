@@ -1,0 +1,296 @@
+{
+  "inserts": [
+    {
+      "id": "height",
+      "name": "height",
+      "code": "1153637007",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Body height (observable entity)",
+      "units": "cm",
+      "variableName": "questionnaire.height",
+      "hasValue": true
+    },
+    {
+      "id": "weight",
+      "name": "weight",
+      "code": "27113001",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Body weight (observable entity)",
+      "units": "kg",
+      "variableName": "questionnaire.weight",
+      "hasValue": true
+    },
+    {
+      "id": "waist",
+      "name": "waist",
+      "code": "276361009",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Waist circumference (observable entity)",
+      "units": "cm",
+      "variableName": "questionnaire.waistMeasurement",
+      "hasValue": true
+    },
+    {
+      "id": "diabetesRiskScore",
+      "name": "diabetesRiskScore",
+      "code": "1025601000000108",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "Leicester Diabetes Risk Score (observable entity)",
+      "variableName": "questionnaireScores.leicesterRiskScore",
+      "hasValue": true
+    },
+    {
+      "id": "heartAge",
+      "name": "heartAge",
+      "code": "1325531000000102",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "QRISK3 Healthy Heart Age (observable entity)",
+      "variableName": "riskScores.heartAge",
+      "hasValue": true,
+      "resultDateSource": "RISC_SCORE_CALCULATION_DATE"
+    },
+    {
+      "id": "qRiskScore",
+      "name": "qRiskScore",
+      "code": "1085871000000105",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "QRISK3 cardiovascular disease 10 year risk calculator score (observable entity)",
+      "variableName": "riskScores.qRiskScore",
+      "hasValue": true,
+      "resultDateSource": "RISC_SCORE_CALCULATION_DATE"
+    },
+    {
+      "id": "familyHistory",
+      "name": "familyHistory",
+      "code": "266895004",
+      "headerTerm": "Family History",
+      "fullSpecifiedName": "Family history: Ischemic heart disease at less than 60 years (situation)",
+      "variableName": "questionnaire.hasFamilyHeartAttackHistory",
+      "hasValue": false
+    },
+    {
+      "id": "bmi",
+      "name": "bmi",
+      "code": "60621009",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Body mass index (observable entity)",
+      "variableName": "questionnaireScores.bmiScore",
+      "units": "kg/m2",
+      "hasValue": true
+    },
+    {
+      "id": "familyHistoryOfDiabetes",
+      "name": "familyHistoryOfDiabetes",
+      "code": "160303001",
+      "headerTerm": "Family History",
+      "fullSpecifiedName": "Family history of diabetes mellitus (situation)",
+      "variableName": "questionnaire.hasFamilyDiabetesHistory",
+      "hasValue": false
+    },
+    {
+      "id": "smokingStatusExSmoker",
+      "name": "smokingStatusExSmoker",
+      "code": "8517006",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Ex-smoker (finding)",
+      "variableName": "questionnaire.smoking",
+      "hasValue": false
+    },
+    {
+      "id": "smokingStatusHeavySmoker",
+      "name": "smokingStatusHeavySmoker",
+      "code": "56771006",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Heavy smoker (over 20 per day) (finding)",
+      "variableName": "questionnaire.smoking",
+      "hasValue": false
+    },
+    {
+      "id": "smokingStatusLightSmoker",
+      "name": "smokingStatusLightSmoker",
+      "code": "160603005",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Light cigarette smoker (1-9 cigs/day) (finding)",
+      "variableName": "questionnaire.smoking",
+      "hasValue": false
+    },
+    {
+      "id": "smokingStatusModerateSmoker",
+      "name": "smokingStatusModerateSmoker",
+      "code": "160604004",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Moderate cigarette smoker (10-19 cigs/day) (finding)",
+      "variableName": "questionnaire.smoking",
+      "hasValue": false
+    },
+    {
+      "id": "smokingStatusNonSmoker",
+      "name": "smokingStatusNonSmoker",
+      "code": "266919005",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Never smoked tobacco (finding)",
+      "variableName": "questionnaire.smoking",
+      "hasValue": false
+    },
+    {
+      "id": "systolicBP1",
+      "name": "systolicBP1",
+      "code": "271649006",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Systolic blood pressure (observable entity)",
+      "variableName": "questionnaire.bloodPressureSystolic",
+      "units": "mmHg",
+      "hasValue": true
+    },
+    {
+      "id": "diastolicBP1",
+      "name": "diastolicBP1",
+      "code": "271650006",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Diastolic blood pressure (observable entity)",
+      "variableName": "questionnaire.bloodPressureDiastolic",
+      "units": "mmHg",
+      "hasValue": true
+    },
+    {
+      "id": "systolicBP1Home",
+      "name": "systolicBP1Home",
+      "code": "1162737008",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Self reported systolic blood pressure (observable entity)",
+      "variableName": "questionnaire.bloodPressureSystolic",
+      "units": "mmHg",
+      "hasValue": true
+    },
+    {
+      "id": "diastolicBP1Home",
+      "name": "diastolicBP1Home",
+      "code": "1162735000",
+      "headerTerm": "Examination",
+      "fullSpecifiedName": "Self reported diastolic blood pressure (observable entity)",
+      "variableName": "questionnaire.bloodPressureDiastolic",
+      "units": "mmHg",
+      "hasValue": true
+    },
+    {
+      "id": "alcoholAudit",
+      "name": "alcoholAudit",
+      "code": "763256006",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "Alcohol Use Disorders Identification Test - Consumption score (observable entity)",
+      "variableName": "questionnaireScores.auditScore",
+      "hasValue": true
+    },
+    {
+      "id": "gppaqScoreActive",
+      "name": "gppaqScoreActive",
+      "code": "366241000000106",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "General practice physical activity questionnaire physical activity index: active (finding)",
+      "variableName": "questionnaireScores.activityCategory",
+      "hasValue": false
+    },
+    {
+      "id": "gppaqScoreInactive",
+      "name": "gppaqScoreInactive",
+      "code": "366121000000108",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "General practice physical activity questionnaire physical activity index: inactive (finding)",
+      "variableName": "questionnaireScores.activityCategory",
+      "hasValue": false
+    },
+    {
+      "id": "gppaqScoreModeratelyActive",
+      "name": "gppaqScoreModeratelyActive",
+      "code": "366211000000105",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "General practice physical activity questionnaire physical activity index: moderately active (finding)",
+      "variableName": "questionnaireScores.activityCategory",
+      "hasValue": false
+    },
+    {
+      "id": "gppaqScoreModeratelyInactive",
+      "name": "gppaqScoreModeratelyInactive",
+      "code": "366171000000107",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "General practice physical activity questionnaire physical activity index: moderately inactive (finding)",
+      "variableName": "questionnaireScores.activityCategory",
+      "hasValue": false
+    },
+    {
+      "id": "completedHealthCheck",
+      "name": "completedHealthCheck",
+      "code": "2242631000000104",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Digital National Health Service Health Check completed (situation)",
+      "hasValue": false,
+      "resultDateSource": "RISC_SCORE_CALCULATION_DATE"
+    },
+    {
+      "id": "incompleteHealthCheck",
+      "name": "incompleteHealthCheck",
+      "code": "2242641000000108",
+      "headerTerm": "Assessment",
+      "fullSpecifiedName": "Digital National Health Service Health Check stopped (situation)",
+      "hasValue": false
+    },
+    {
+      "id": "followUpRequired",
+      "name": "followUpRequired",
+      "code": "2242651000000106",
+      "headerTerm": "Follow Up",
+      "fullSpecifiedName": "Digital National Health Service Health Check requires follow-up (finding)",
+      "hasValue": false,
+      "resultDateSource": "CURRENT_DATE"
+    },
+    {
+      "id": "urgentFollowUpRequired",
+      "name": "urgentFollowUpRequired",
+      "code": "2242661000000109",
+      "headerTerm": "Follow Up",
+      "fullSpecifiedName": "Digital National Health Service Health Check requires urgent follow-up (finding)",
+      "hasValue": false,
+      "resultDateSource": "CURRENT_DATE"
+    },
+    {
+      "id": "cholesterol",
+      "name": "cholesterol",
+      "code": "1005671000000105",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "Serum cholesterol level (observable entity)",
+      "units": "mmol/L",
+      "hasValue": false,
+      "resultDateSource": "BIOMETRIC_TEST_DATE"
+    },
+    {
+      "id": "hdlCholesterol",
+      "name": "hdlCholesterol",
+      "code": "1005681000000107",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "Serum high density lipoprotein cholesterol level (observable entity)",
+      "units": "mmol/L",
+      "hasValue": false,
+      "resultDateSource": "BIOMETRIC_TEST_DATE"
+    },
+    {
+      "id": "totalCholesterolRatio",
+      "name": "totalCholesterolRatio",
+      "code": "1029071000000109",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "High density/low density lipoprotein ratio (observable entity)",
+      "units": "mmol/L",
+      "hasValue": false,
+      "resultDateSource": "BIOMETRIC_TEST_DATE"
+    },
+    {
+      "id": "hba1cDiabetes",
+      "name": "hba1cDiabetes",
+      "code": "1003671000000109",
+      "headerTerm": "Result",
+      "fullSpecifiedName": "Haemoglobin A1c level (observable entity)",
+      "units": "mmol/L",
+      "hasValue": false,
+      "resultDateSource": "BIOMETRIC_TEST_DATE"
+    }
+  ]
+}

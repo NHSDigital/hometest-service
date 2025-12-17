@@ -1,0 +1,13 @@
+node_modules/
+/test-results/
+/testResults/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+loginpg.ts
+.DS_Store
+LoginAuth*
+WorkerUser*
+credentials.ts
+/certs/mtls/
+env/local.json

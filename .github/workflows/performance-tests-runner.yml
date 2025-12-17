@@ -1,0 +1,80 @@
+name: Performance tests runner
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment name'
+        required: true
+        type: string
+      test_type:
+        description: 'Test type'
+        required: true
+        type: string
+      results_artifact_name:
+          description: 'Results artifact name'
+          required: true
+          type: string
+
+jobs:
+  run-perf-tests:
+    environment: 'poc'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set AWS Region
+      run: |
+        export AWS_REGION=eu-west-2
+        export AWS_DEFAULT_REGION=eu-west-2
+        echo "Region set to: $AWS_REGION"
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        audience: sts.amazonaws.com
+        aws-region: eu-west-2
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+        role-session-name: GithubActionsSession
+
+    - name: Cache JMeter
+      id: cache-jmeter
+      uses: actions/cache@v4
+      with:
+        path: /opt/jmeter
+        key: jmeter-${{ runner.os }}-5.6.3
+        restore-keys: |
+          jmeter-${{ runner.os }}-
+
+    - name: Install JMeter
+      if: steps.cache-jmeter.outputs.cache-hit != 'true'
+      run: |
+        JMETER_VERSION="5.6.3"
+        wget -q https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-$JMETER_VERSION.tgz
+        tar -xzf apache-jmeter-$JMETER_VERSION.tgz
+        sudo mv apache-jmeter-$JMETER_VERSION /opt/jmeter
+
+    - name: Set up environment and Jmeter properties
+      working-directory: perf-tests
+      run: |
+        ./gen-test-setup.sh ${{ inputs.environment }} ${{ inputs.test_type }}
+        echo "/opt/jmeter/bin" >> $GITHUB_PATH
+        echo "HEAP=-Xms2G -Xmx3G" >> $GITHUB_ENV  
+  
+    - name: Run JMeter tests
+      working-directory: perf-tests
+      run: jmeter -n -t tests.jmx -l ${{ inputs.results_artifact_name }}.jtl -q test.properties -e -o ${{ inputs.results_artifact_name }}
+
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.results_artifact_name }}
+        path: |
+          perf-tests/${{ inputs.results_artifact_name }}
+          perf-tests/${{ inputs.results_artifact_name }}.jtl

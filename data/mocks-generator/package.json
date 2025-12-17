@@ -1,0 +1,18 @@
+{
+  "name": "mock-patients-generator",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=cjs",
+    "start": "node dist/index.js",
+    "generate-mock-data": "npm run build && npm run start",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "typescript": "^5.0.0",
+    "esbuild": "^0.25.0",
+    "@dnhc-health-checks/shared": "file:../../shared/"
+  }
+}

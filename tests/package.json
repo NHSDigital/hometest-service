@@ -1,0 +1,43 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test:dev": "AWS_ACCOUNT_NAME=poc ENV=develop npx playwright test --project=chromium",
+    "test:dev:api": "AWS_ACCOUNT_NAME=poc ENV=develop npx playwright test --grep @api --project=chromium",
+    "test:dev:all": "AWS_ACCOUNT_NAME=poc ENV=develop npx playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@dnhc-health-checks/shared": "file:../shared/",
+    "@aws-sdk/client-cloudformation": "^3.744.0",
+    "@aws-sdk/client-dynamodb": "^3.410.0",
+    "@aws-sdk/client-eventbridge": "^3.703.0",
+    "@aws-sdk/client-lambda": "^3.600.0",
+    "@aws-sdk/client-s3": "^3.654.0",
+    "@aws-sdk/client-secrets-manager": "^3.577.0",
+    "@aws-sdk/client-sqs": "^3.623.0",
+    "@aws-sdk/util-dynamodb": "^3.410.0",
+    "@axe-core/playwright": "^4.9.0",
+    "@estruyf/github-actions-reporter": "1.10.0",
+    "@playwright/test": "^1.49.1",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/lodash": "^4.17.16",
+    "@types/node": "^20.17.48",
+    "@types/uuid": "^9.0.8",
+    "axe-html-reporter": "^2.2.3",
+    "eslint-plugin-playwright": "^2.2.0",
+    "eslint-plugin-testing-library": "^7.5.3",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.844.0",
+    "@aws-sdk/client-ssm": "^3.826.0",
+    "lodash": "^4.17.21"
+  }
+}

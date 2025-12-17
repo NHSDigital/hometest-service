@@ -1,0 +1,176 @@
+name: Run Automated Regression Tests
+run-name: Regression tests - ${{ inputs.environment}} - ${{ inputs.testsToCover}}
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        type: string
+        default: 'develop'
+      account:
+        description: 'The AWS account to use'
+        required: true
+        type: choice
+        options:
+          - poc
+          - int
+          - test
+      os:
+        description: 'Operating system'
+        required: true
+        type: choice
+        options:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+      browser:
+        description: 'Browser'
+        required: true
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - edge
+          - safari
+          - mobileSafari
+          - mobileChromium
+      testsToCover:
+        description: 'Tests to cover'
+        required: true
+        type: choice
+        options:
+          - All
+          - UI
+          - Accessibility
+          - API
+          - E2E
+          - Integration
+      reportJobResultToSlack:
+        description: 'Post notification on Slack (required for shared envs)'
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        type: string
+        default: 'develop'
+      account:
+        description: 'The AWS account to use, one of: poc, test'
+        required: true
+        type: string
+        default: 'poc'
+      os:
+        description: 'Operating system'
+        required: true
+        type: string
+      browser:
+        description: 'Browser'
+        required: true
+        type: string
+      testsToCover:
+        description: 'Tests to cover'
+        required: true
+        type: string
+      reportJobResultToSlack:
+        required: false
+        type: boolean
+        default: true
+      installPlaywrightBrowsers:
+        required: false
+        type: boolean
+        default: false
+
+env:
+  SLACK_CHANNEL_NAME: '#hc-env-notifications-${{ inputs.account }}'
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+
+jobs:
+  run-regression-tests:
+    name: Run Automated Regression Tests
+    runs-on: ${{ inputs.os }}
+    environment: ${{ inputs.account }}
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      - name: Get current week (playwright cache duration)
+        id: date
+        run: echo "week=$(date +'%V-%Y')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Dependencies
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: |
+            tests/node_modules
+            ~/.cache/ms-playwright
+          key: ${{ steps.date.outputs.week }}-playwright-${{ hashFiles('**/package-lock.json') }}
+      - name: Install NPM Depndencies
+        working-directory: tests
+        run: |
+          npm install
+      - name: Install Playwright Dependencies
+        if: steps.cache-playwright.outputs.cache-hit != 'true' || inputs.installPlaywrightBrowsers
+        working-directory: tests
+        run: |
+          npx playwright install --with-deps
+      - name: Run All Playwright Tests
+        working-directory: tests
+        env:
+          ENV: ${{ inputs.environment }}
+          AWS_ACCOUNT_NAME: ${{ inputs.account }}
+        if: ${{ inputs.testsToCover == 'All' }}
+        run: |
+          echo "export const userPasswordGeneric = '';" > credentials.ts
+          npx playwright test --grep-invert @manual --project=${{ inputs.browser }}
+
+      - name: Run ${{inputs.testsToCover}} Playwright Tests
+        working-directory: tests
+        env:
+          ENV: ${{ inputs.environment }}
+        if: ${{ inputs.testsToCover != 'All' }}
+        run: |
+          echo "export const userPasswordGeneric = '';" > credentials.ts
+          npx playwright test ./tests/${{ inputs.testsToCover }}  --project=${{ inputs.browser }}
+
+      - name: Publish Playwright Test Report
+        uses: actions/upload-artifact@v4.3.0
+        if: ${{ always() }}
+        with:
+          name: 'Playwright-test-report-${{ inputs.os }}-${{ inputs.browser }}'
+          path: tests/testResults
+
+      - name: Report result to Slack
+        if: ${{ always() && inputs.reportJobResultToSlack }}
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: ${{ github.job }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ inputs.environment }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}

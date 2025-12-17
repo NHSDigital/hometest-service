@@ -1,0 +1,5 @@
+# perf tests
+results*.jtl
+results*/
+jmeter.log
+*.properties

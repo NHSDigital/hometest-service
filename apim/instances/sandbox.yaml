@@ -1,0 +1,13 @@
+x-nhsd-apim:
+  target:
+    type: hosted
+    healthcheck: /_status
+    containers:
+      - name: home-testing
+        image:
+          name: home-testing
+          tag: latest
+        environment:
+          LOG_LEVEL: info
+          NODE_ENV: development
+  monitoring: true

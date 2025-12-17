@@ -1,130 +1,430 @@
-# Repository Template
+# NHS Home Testing Service
 
-[![CI/CD Pull Request](https://github.com/nhs-england-tools/repository-template/actions/workflows/cicd-1-pull-request.yaml/badge.svg)](https://github.com/nhs-england-tools/repository-template/actions/workflows/cicd-1-pull-request.yaml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=repository-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=repository-template)
+[![CI/CD Pull Request](https://github.com/NHSDigital/nhs-home-testing-service/actions/workflows/deploy-main.yml/badge.svg)](https://github.com/NHSDigital/nhs-home-testing-service/actions/workflows/deploy-main.yml)
 
-Start with an overview or a brief description of what the project is about and what it does. For example -
-
-Welcome to our repository template designed to streamline your project setup! This robust template provides a reliable starting point for your new projects, covering an essential tech stack and encouraging best practices in documenting.
-
-This repository template aims to foster a user-friendly development environment by ensuring that every included file is concise and adequately self-documented. By adhering to this standard, we can promote increased clarity and maintainability throughout your project's lifecycle. Bundled within this template are resources that pave the way for seamless repository creation. Currently supported technologies are:
-
-- Terraform
-- Docker
-
-Make use of this repository template to expedite your project setup and enhance your productivity right from the get-go. Enjoy the advantage of having a well-structured, self-documented project that reduces overhead and increases focus on what truly matters - coding!
+This repository contains code for the NHS Home Testing Service project.
 
 ## Table of Contents
 
-- [Repository Template](#repository-template)
+- [NHS Home Testing Service](#nhs-home-testing-service)
   - [Table of Contents](#table-of-contents)
-  - [Setup](#setup)
+  - [Project structure](#project-structure)
+    - [CDK Apps](#cdk-apps)
+      - [Db CDK App](#db-cdk-app)
+      - [Main CDK App](#main-cdk-app)
+      - [Dev CDK App](#dev-cdk-app)
+      - [Shared CDK App](#shared-cdk-app)
+    - [Directory structure](#directory-structure)
+  - [Initial Project Setup](#initial-project-setup)
+    - [Install required tools](#install-required-tools)
+    - [Commit signing](#commit-signing)
+    - [Branch naming](#branch-naming)
+  - [Build](#build)
+  - [Deploy](#deploy)
     - [Prerequisites](#prerequisites)
-    - [Configuration](#configuration)
-  - [Usage](#usage)
-    - [Testing](#testing)
-  - [Design](#design)
-    - [Diagrams](#diagrams)
-    - [Modularity](#modularity)
-  - [Contributing](#contributing)
-  - [Contacts](#contacts)
-  - [Licence](#licence)
+      - [Configure access to AWS](#configure-access-to-aws)
+      - [Verify AWS access](#verify-aws-access)
+    - [Pre-deployment configuration (one time)](#pre-deployment-configuration-one-time)
+    - [Deploy commands](#deploy-commands)
+      - [Whole solution deployment (all stacks)](#whole-solution-deployment-all-stacks)
+      - [Single CDK app deployment](#single-cdk-app-deployment)
+      - [Single CDK stack deployment](#single-cdk-stack-deployment)
+    - [KMS policy update](#kms-policy-update)
+    - [Post deployment commands](#post-deployment-commands)
+      - [Post deployment environment checks](#post-deployment-environment-checks)
+    - [Running the app locally](#running-the-app-locally)
+    - [Unit Tests](#unit-tests)
+    - [Postman env generation](#postman-env-generation)
+    - [CloudWatch saved queries generation](#cloudwatch-saved-queries-generation)
+    - [Data load to DynamoDb tables](#data-load-to-dynamodb-tables)
+    - [Environment removal](#environment-removal)
+    - [WAF Deployment](#waf-deployment)
+    - [Add IP Address for Allow-List](#add-ip-address-for-allow-list)
+    - [Shared stacks deployment](#shared-stacks-deployment)
 
-## Setup
+## Project structure
 
-By including preferably a one-liner or if necessary a set of clear CLI instructions we improve user experience. This should be a frictionless installation process that works on various operating systems (macOS, Linux, Windows WSL) and handles all the dependencies.
+### CDK Apps
 
-Clone the repository
+The project contains 2 CDK apps: one that contains DB-related resources (db app) and another one that contains the remaining resources (main app). This separation was done in preparation for blue/green deployment so that multiple versions of the solution can target the same DB instance:
 
-```shell
-git clone https://github.com/nhs-england-tools/repository-template.git
-cd nhs-england-tools/repository-template
+```mermaid
+graph TD
+    subgraph Home Testing Solution
+      C(Db App)
+      A(Main App v1.0)-->C;
+      B(Main App v1.1)-->C;
+      class C cssClass
+    end
 ```
+
+#### Db CDK App
+
+- `nht-db-stack` - stack that contains the data storage (DynamoDb tables)
+- `nht-data-load-stack` - stack that allows to load static data to DynamoDb reference tables (e.g. supported gp ods codes)
+
+#### Main CDK App
+
+- `nht-db-import-stack` - stack that imports DynamoDb tables from the DB app
+- `nht-backend-stack` - stack that contains backend lambdas for the frontend application
+- `nht-ui-stack` - stack that covers the cloudfront distribution and the S3 site deployment bucket as well as job to copy the site content to the bucket
+- `nht-order-stack` - stack that covers the API gateway as well as lambdas / SQS queues for order placement
+- `nht-result-stack` - stack that contains the resources covering the test results processing flow (Lambdas, Queues, Api Gateway)
+- `nht-event-stack` - stack that contain the resources related to logging of events
+
+#### Dev CDK App
+
+- `nht-mocks-stack` - stack with an API gateway with mocked endpoints for third party APIs
+
+#### Shared CDK App
+
+These are components, resources and configurations that are shared across all environments within a singular AWS account, these are resources that are cheaper and easier to manage by having one shared instance per AWS Account instead of one instance per environment.
+
+These are either deployed via dedicated scripts in the "shared" folder, or as part of deploy.yml to ensure that these resources exist on the account.
+
+Note that changes to resources here will impact all enviornments within the AWS Account
+
+- `global-waf-stack` - Stack that deploys a US-EAST-1 (global) WAF for CloudFront Distributions
+- `regional-waf-stack` - Stack that deploys an EU-WEST-2 WAF for API Gateways, additionally exports the global-waf-stack ARN to the EU-WEST-2 CloudFormation region to allow assocations between the UI stack and the CloudFront WAF
+
+### Directory structure
+
+- `lambdas` - this directory contains node.js code for all lambdas. The names of the subfolders should correspond to lambda resource names and each lambda should implement a `main` handler function in the `index.js` file
+- `infra` - this directory contains infrastructure as code part written in CDK
+- `data` - this directory contains data to be loaded to DynamoDb reference tables (e.g. supported gp ods codes)
+- `scripts` - the directory that contains scripts some of which are coming from the NHS repository template to support required checks. For more info go [here](./scripts/README.md)
+- `integration-utils` - directory with additional tools e.g. Postman collections and env files
+- `ui` - directory with the questionnaire frontend application
+
+## Initial Project Setup
+
+### Install required tools
+
+- Node.js
+
+  - Install NVM to manage Node versions: <https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating>
+  - Then use it to install node version 24
+
+  ```shell
+  $ nvm install 24
+  $ nvm use 24
+  ```
+
+- CDK
+
+  ```bash
+  $ npm install -g aws-cdk
+  ```
+
+- Gitleaks
+
+  ```bash
+  $ brew install gitleaks
+  ```
+
+- VS Code IDE
+
+  <https://code.visualstudio.com/>
+
+  You will find the recommended extensions configured in the vscode extensions file
+  `.vscode/extensions.json`. They should appear in the recommended list of extensions in the extensions tab as well.
+
+- Postman
+
+  <https://www.postman.com/downloads/>
+
+- AWS CLI
+
+- JQ command
+
+  <https://jqlang.github.io/jq/download/>
+
+### Commit signing
+
+NHS Digital recommend that we setup commit signing with GPG keys. GitHub has a good guide here:
+
+<https://docs.github.com/en/authentication/managing-commit-signature-verification>
+
+The gpg command line utility can be installed using command: `brew install gnupg`
+
+### Branch naming
+
+When working on the project, please refer to using valid branch naming schemes:
+
+Examples of valid branch names:
+
+- bug/nhts-111/refresh-issue-fix
+- feature/nhts/222-event-validation
+- epic/nhts-333/content-changes
+
+Branch types:
+
+- feature - used for any feature branches related to Jira tickets of type Story
+- bug - used for any feature branches related to Jira tickets of type Bug
+- epic - used for epic-level branches
+
+More information provided here:
+
+<https://nhsd-confluence.digital.nhs.uk/display/NHT/Git+Practices>
+
+## Build
+
+To build the solution you need to run the `npm run install-all` command in the root folder
+
+## Deploy
 
 ### Prerequisites
 
-The following software packages, or their equivalents, are expected to be installed and configured:
+#### Configure access to AWS
 
-- [Docker](https://www.docker.com/) container runtime or a compatible tool, e.g. [Podman](https://podman.io/),
-- [asdf](https://asdf-vm.com/) version manager,
-- [GNU make](https://www.gnu.org/software/make/) 3.82 or later,
+Option 1 - create/edit a profile in ~/.aws/config
 
-> [!NOTE]<br>
-> The version of GNU make available by default on macOS is earlier than 3.82. You will need to upgrade it or certain `make` tasks will fail. On macOS, you will need [Homebrew](https://brew.sh/) installed, then to install `make`, like so:
->
-> ```shell
-> brew install make
-> ```
->
-> You will then see instructions to fix your [`$PATH`](https://github.com/nhs-england-tools/dotfiles/blob/main/dot_path.tmpl) variable to make the newly installed version available. If you are using [dotfiles](https://github.com/nhs-england-tools/dotfiles), this is all done for you.
-
-- [GNU sed](https://www.gnu.org/software/sed/) and [GNU grep](https://www.gnu.org/software/grep/) are required for the scripted command-line output processing,
-- [GNU coreutils](https://www.gnu.org/software/coreutils/) and [GNU binutils](https://www.gnu.org/software/binutils/) may be required to build dependencies like Python, which may need to be compiled during installation,
-
-> [!NOTE]<br>
-> For macOS users, installation of the GNU toolchain has been scripted and automated as part of the `dotfiles` project. Please see this [script](https://github.com/nhs-england-tools/dotfiles/blob/main/assets/20-install-base-packages.macos.sh) for details.
-
-- [Python](https://www.python.org/) required to run Git hooks,
-- [`jq`](https://jqlang.github.io/jq/) a lightweight and flexible command-line JSON processor.
-
-### Configuration
-
-Installation and configuration of the toolchain dependencies
-
-```shell
-make config
+```bash
+[default]
+sso_start_url=https://d-9c67018f89.awsapps.com/start#
+sso_region=eu-west-2
+sso_account_id=880521146064
+sso_role_name=NonProd-Admins
+region=eu-west-2
+output=json
 ```
 
-## Usage
+Option 2 - configure using the AWS CLI
 
-After a successful installation, provide an informative example of how this project can be used. Additional code snippets, screenshots and demos work well in this space. You may also link to the other documentation resources, e.g. the [User Guide](./docs/user-guide.md) to demonstrate more use cases and to show more features.
+Run AWS CLI command `aws configure sso`.
 
-### Testing
+#### Verify AWS access
 
-There are `make` tasks for you to configure to run your tests.  Run `make test` to see how they work.  You should be able to use the same entry points for local development as in your CI pipeline.
+Once that's done you will be able to login in the console using `aws sso login --profile <profileName>` (you can omit the profile parameter when using the default profile).
 
-## Design
+Ensure you have access to AWS by running a sample command (eg. `aws s3 ls` what should list the buckets in the account).
 
-### Diagrams
+### Pre-deployment configuration (one time)
 
-The [C4 model](https://c4model.com/) is a simple and intuitive way to create software architecture diagrams that are clear, consistent, scalable and most importantly collaborative. This should result in documenting all the system interfaces, external dependencies and integration points.
+1. **Run the pre-deployment script**
 
-![Repository Template](./docs/diagrams/Repository_Template_GitHub_Generic.png)
+   ```bash
+   $ npm run pre-deploy <envName>
+   ```
 
-The source for diagrams should be in Git for change control and review purposes. Recommendations are [draw.io](https://app.diagrams.net/) (example above in [docs](.docs/diagrams/) folder) and [Mermaids](https://github.com/mermaid-js/mermaid). Here is an example Mermaids sequence diagram:
+   The script does the following:
 
-```mermaid
-sequenceDiagram
-    User->>+Service: GET /users?params=...
-    Service->>Service: auth request
-    Service->>Database: get all users
-    Database-->>Service: list of users
-    Service->>Service: filter users
-    Service-->>-User: list[User]
+   - deploys the mock stack (the mock api URL needs to be injected to other stacks)
+   - deploys the monitoring stack (RUM app monitor needs to be injected to ui stack, and collectDlqMessages lambda also has to be injected to other stacks)
+   - generates environment files based on templates for the two CDK apps
+
+2. **Create the required AWS Secret Manager secrets (Optional)**
+   1. Endeavour Predict API key\
+      _This key is required if you plan to use the Endeavour Predict API endpoint instead of using mocks._
+   - Sign up to the Endeavour Predict API, url: <https://dev.endeavourpredict.org/>
+   - Subscribe to the API:
+     - Go to Catalog section and select Development category. You should see Endeavour Predict API (Dev), click 'VIEW API'
+     - Click 'SUBSCRIBE' button in the right top corner, select Development Plan and assign it to the Default Application, then continue and click 'VALIDATE THE REQUEST'
+   - Get the API key by going to Applications > Default Application > Subscriptions. Copy the key from API Keys section on the right
+   - Create secret in AWS Secret Manager
+     - Go to AWS Secret Manager -> Store a new secret -> Other type of secret -> Plaintext
+     - Replace template with subscription key retrieved from Endeavour Predict API page
+     - Click Next and specify the secret name = `nhc/<envName>/qcalc-api-key`
+     - Click Next again x2 (use the default, no need to specify rotation)
+     - Click Store to finish creating of the secret
+   - Update the `RISK_API_BASE_URL` variable in your env's config file with the Endeavour Predict API url: <https://api.endeavourpredict.org/dev/epredict>
+   - Add `RISK_API_KEY_SECRET_NAME` variable to your env's config file:
+     `RISK_API_KEY_SECRET_NAME="nhc/<envName>/qcalc-api-key"`
+
+### Deploy commands
+
+#### Whole solution deployment (all stacks)
+
+Run the full environment deployment script - this will build the UI and deploy CDK apps (Dev, Db, Main)
+
+```bash
+$ npm run deploy <envName>
 ```
 
-### Modularity
+For local deployment please use the below command instead. This will apply local overrides to environment variables before deployment.
 
-Most of the projects are built with customisability and extendability in mind. At a minimum, this can be achieved by implementing service level configuration options and settings. The intention of this section is to show how this can be used. If the system processes data, you could mention here for example how the input is prepared for testing - anonymised, synthetic or live data.
+```bash
+$ npm run deploy-local <envName>
+```
 
-## Contributing
+If you make a code change you might want to deploy just a single app or stack as it runs quicker
 
-Describe or link templates on how to raise an issue, feature request or make a contribution to the codebase. Reference the other documentation files, like
+#### Single CDK app deployment
 
-- Environment setup for contribution, i.e. `CONTRIBUTING.md`
-- Coding standards, branching, linting, practices for development and testing
-- Release process, versioning, changelog
-- Backlog, board, roadmap, ways of working
-- High-level requirements, guiding principles, decision records, etc.
+Deployment of a CDK app with all stacks to configured AWS Account with the following command replacing the environment context value with your environment name
 
-## Contacts
+```bash
+$ cdk deploy --all --context environment=demo --context awsAccount=poc #use default profile
+$ cdk deploy --all --context environment=demo --context awsAccount=poc --profile dev #use named profile
+```
 
-Provide a way to contact the owners of this project. It can be a team, an individual or information on the means of getting in touch via active communication channels, e.g. opening a GitHub discussion, raising an issue, etc.
+After the deployment you will see the API's URL, which represents the url you can then use.
 
-## Licence
+#### Single CDK stack deployment
 
-> The [LICENCE.md](./LICENCE.md) file will need to be updated with the correct year and owner
+Usually there is no need to deploy all the stacks but just the ones that change. To list all the available stacks use:
 
-Unless stated otherwise, the codebase is released under the MIT License. This covers both the codebase and any sample code in the documentation.
+```bash
+$ cdk ls
+```
 
-Any HTML or Markdown documentation is [© Crown Copyright](https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/) and available under the terms of the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+To deploy a single stack use:
+
+```bash
+$ cdk deploy <stack name> --context environment=demo
+$ cdk deploy demo-nht-db-stack --context environment=demo
+```
+
+### KMS policy update
+
+Contact the platform team to add your environment's IAM roles to the list of allowed resources for KMS Key decryption. You only need to provide them your environment's name.
+
+### Post deployment commands
+
+Once the deployment has completed successfully run the following command:
+
+```bash
+$ npm run post-deploy <envName> <accountName> # accountName is optional, it defaults to poc
+```
+
+This will create a postman environment file for your stage, apply database migrations (some initial data) and deploy saved queries to CloudWatch
+
+#### Post deployment environment checks
+
+- Open AWS console and check if all resources are created, the DB tables are created and populated with test data in particular
+- At this point you should be able to navigate to _https://\<envName\>.nhttest.org/_ and see the login page for the app
+- Import postman collection and the environment file generated for your env. You can find them in `integration-utils/postman/NHS Home Testing` folder
+
+### Running the app locally
+
+When running the frontend app locally, it will still use the AWS lambdas from API Gateway in AWS. To allow the auth cookie to be written locally after login, you must add a third party cookie exception:
+
+> Open Chrome > Settings > Privacy and security > Third-party cookies > Sites allowed to use third-party cookies > Enter "localhost:3000"
+
+> Open Firefox > Settings> Privacy & Security > Enhanced Tracking Protection > Managed Exceptions > add localhost:3000
+
+In order to run the questionnaire app locally make sure to deploy the solution with the _deploy-local_ option.
+
+```bash
+$ npm run deploy-local <envName>
+```
+
+This will ensure the NHS Login redirect url is pointing at localhost instead of your cloud environment as well as allow the backend calls (CORS limitations).
+
+Then run the web app locally with the following npm command:
+
+```bash
+$ npm run run-local <envName>
+```
+
+You can access the app locally using the url: <https://localhost:3000/>.
+
+The frontend application still targets your backend api lambdas as well as Dynamodb tables.
+
+### Unit Tests
+
+Jest is setup in the lambdas and ui subprojects. You can run the tests with the following command:
+
+```bash
+$ npm run test
+```
+
+### Postman env generation
+
+When there is a significant change in the solution that require the postman env file to be regenerated (e.g. a new config, change of config due to stack re-creation) you can run the following command:
+
+```bash
+$ npm run generate-postman <envName>
+```
+
+### CloudWatch saved queries generation
+
+To deploy saved queries run the following command:
+
+```bash
+$ npm run generate-queries <envName>
+```
+
+For more info go [here](./scripts/README.md#saved-insights-queries)
+
+### Data load to DynamoDb tables
+
+The data load functionality allows to load predefined data to reference tables. The data for this action is stored in `data/db` folder. This folder is supposed to contain subfolders matching the table names (without the env name bit which is resolved at lambda runtime). The files in those folders are used as input to DynamoDB batch write items operation. This operation has a limit of 25 put or delete operations / 16MB so a single file should contain up to 25 inserts or deletes. If there are more require please use separate files to configure them.
+
+```json
+{
+  "inserts": [
+    {
+      "gpOdsCode": "test1",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "test2",
+      "enabled": false
+    }
+  ]
+}
+```
+
+The data load requires two steps:
+
+1. First the data load stack needs to be deployed to AWS. This will ensure the data load lambda and S3 bucket is in place as well as the bucket contains the data from `data/db` folder in this solution.
+
+2. Secondly the lambda needs to be invoked. This can be done via AWS console in the browser or using the following command where `envName` needs to be substituted by the name of the env e.g. demo
+
+```bash
+$ npm run load-data <envName>
+```
+
+This will trigger the lambda and the data will be uploaded to DynamoDB tables.
+
+### Environment removal
+
+To remove an environment, use the destroy-env.sh script, by running the following npm command and passing the environment name and aws account name as a param:
+
+```bash
+$  npm run destroy-env <envName> <awsAccount>
+```
+
+The script uses `cdk destroy` command to remove the CloudFormation stacks and then removes leftover CloudWatch log groups and schedules deletion (after 7 days) of `nht/ENV_NAME/test-api-key` secrets in Secrets Manager.
+
+### WAF Deployment
+
+To create, or update the deployed WAF ACLs, run the following command
+
+```bash
+$ npm run deploy-security
+```
+
+This will update the shared security stacks that:
+
+- Create three WAF Web ACLs:
+  - Global WAF deployed in us-east-1 to protect CloudFront distributions.
+  - Regional WAF deployed in eu-west-2 to protect API Gateways.
+  - Integrator WAF deployed in eu-west-2 to protect Results API Gateway.
+
+### Add IP Address for Allow-List
+
+If an IP address is required to be added, add the IP address to infra/security/ip-allow-list.ts and run the above WAF deployment script to update the deployed ACLs
+
+### Shared stacks deployment
+
+Shared stacks contain resources that meant to created only once per environment.
+
+Currently, there's two stacks, shared-nhc-monitoring-notifications-stack and shared-nhc-monitoring-notifications-ddos-alerts-stack. These create a Topic and a Slack Channel configuration in eu-west-2 region and Topic and an email endpoint for Security Engineers. To deploy them, use the following commands:
+
+```bash
+$ cdk deploy --context environment=<env> shared-nhc-monitoring-notifications-stack --require-approval never --region eu-west-2
+```
+
+```bash
+cdk deploy --context environment=<env> shared-nhc-monitoring-notifications-ddos-alerts-stack --require-approval never
+```
+
+### APIM deployment
+
+```bash
+npm run deploy-apim <apim env> <apim instance name> <prod>
+```
+
+Adding prod will deploy docs to prod portal, otherwise deploy docs to uat

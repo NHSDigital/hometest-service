@@ -1,0 +1,16 @@
+CREATE OR REPLACE VIEW "{{flattenedBiometricScoreViewName}}" AS
+SELECT
+id healthCheckId,
+scores.date date,
+scores.scores.diabetes.overallCategory diabetes_overallCategory,
+scores.scores.diabetes.category diabetes_diabetesCategory,
+scores.scores.diabetes.failureReason diabetes_diabetesFailureReason,
+scores.scores.cholesterol.overallCategory cholesterol_overallCategory,
+scores.scores.cholesterol.hdlCholesterolCategory cholesterol_hdlCholesterolCategory,
+scores.scores.cholesterol.hdlCholesterolFailureReason cholesterol_hdlCholesterolFailureReason,
+scores.scores.cholesterol.totalCholesterolCategory cholesterol_totalCholesterolCategory,
+scores.scores.cholesterol.totalCholesterolFailureReason cholesterol_totalCholesterolFailureReason,
+scores.scores.cholesterol.totalCholesterolHdlRatioCategory cholesterol_totalCholesterolHdlRatioCategory,
+scores.scores.cholesterol.totalCholesterolHdlRatioFailureReason cholesterol_totalCholesterolHdlRatioFailureReason
+FROM "{{biometricScoreTableName}}"
+CROSS JOIN UNNEST(biometricScores) as t(scores);

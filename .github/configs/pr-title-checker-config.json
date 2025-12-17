@@ -1,0 +1,15 @@
+{
+  "LABEL": {
+    "name": "Title must match format \"[DNHC-XXXX] ...\"",
+    "color": "EEEEEE"
+  },
+  "CHECKS": {
+    "regexp": "^\\[[Dd][Nn][Hh][Cc]-\\d{4}\\]\\s",
+    "ignoreLabels": ["dependencies"]
+  },
+  "MESSAGES": {
+    "success": "All OK",
+    "failure": "Invalid pull request title",
+    "notice": ""
+  }
+}

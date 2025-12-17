@@ -1,0 +1,97 @@
+{
+  "$schema": "../../scripts/validate-env/config-registry-schema.json",
+  "app": "db",
+  "description": "CDK app with database-related infra and resources",
+  "variables": {
+    "NHC_VERSION": {
+      "description": "NHS Health Check service version",
+      "type": "string",
+      "example": "2.0.0"
+    },
+    "APP_ID": {
+      "description": "Application ID",
+      "type": "string",
+      "example": "dhc"
+    },
+    "ENV_TYPE": {
+      "description": "Environment type (prod or nonpord)",
+      "type": "string",
+      "example": "nonprod"
+    },
+    "LOG_RETENTION_IN_DAYS": {
+      "description": "CloudWatch logs retention period in days",
+      "type": "number",
+      "example": "90"
+    },
+    "ADDRESS_TEXT_INPUT_MAX_LENGTH": {
+      "description": "Maximum length for address text input fields",
+      "type": "number",
+      "example": "35"
+    },
+    "KMS_KEY_ID": {
+      "description": "KMS key ID",
+      "type": "string",
+      "example": "af008d36-cc4a-4ed1-9841-0203a6029ae5"
+    },
+    "MANAGEMENT_ACCOUNT_ID": {
+      "description": "AWS management account ID",
+      "type": "string",
+      "example": "637423623484"
+    },
+    "TABLE_DELETION_PROTECTION_ENABLED": {
+      "description": "Enable deletion protection for DynamoDB tables",
+      "type": "boolean",
+      "example": "false"
+    },
+    "AWS_RESOURCES_REMOVAL_POLICY": {
+      "description": "AWS resources removal policy",
+      "type": "string",
+      "example": "RETAIN"
+    },
+    "VPC_NAME": {
+      "description": "VPC name",
+      "type": "string",
+      "example": "poc-nonprod-ipam-vpc-digitalHealthchecksPoc"
+    },
+    "VPC_ID": {
+      "description": "VPC ID",
+      "type": "string",
+      "example": "vpc-0d0248a0afed0152e"
+    },
+    "VPC_SUBNET_IDS": {
+      "description": "VPC subnet IDs",
+      "type": "json",
+      "example": "[\"subnet-0820572a40cfc7a46\", \"subnet-0f9ddbb1e9fc76fb6\", \"subnet-0c7e4341aee1d40bf\"]"
+    },
+    "VPC_SECURITY_GROUPS": {
+      "description": "VPC security groups",
+      "type": "json",
+      "example": "[\"sg-0a1b2c3d4e5f6g7h8\"]"
+    },
+    "ACCESS_LOGGING_BUCKET_NAME": {
+      "description": "S3 bucket name for access logging",
+      "type": "string",
+      "example": "my-access-logging-bucket"
+    },
+    "POINT_IN_TIME_RECOVERY_ENABLED": {
+      "description": "Enable point-in-time recovery for DynamoDB tables",
+      "type": "boolean",
+      "example": "true"
+    },
+    "ALARMS_ENABLED": {
+      "description": "Enable CloudWatch alarms",
+      "type": "boolean",
+      "example": "true"
+    },
+    "TRACING_ENABLED": {
+      "description": "Enable X-Ray tracing",
+      "type": "boolean",
+      "example": "true"
+    },
+    "AMAZON_INSPECTOR_ENABLED": {
+      "description": "Enable Amazon Inspector",
+      "type": "boolean",
+      "example": "true"
+    }
+  }
+}

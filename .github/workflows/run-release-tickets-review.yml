@@ -1,0 +1,71 @@
+name: Review Release Tickets
+run-name: review tickets for ${{ inputs.version }}
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Target release version'
+        required: true
+        type: string
+      tag:
+        description: 'Last release tag'
+        required: true
+        type: string
+      branch:
+        description: 'Branch with changes'
+        required: true
+        type: string
+
+env:
+  OPENSSL_ENCRYPTION_KEY: ${{ secrets.OPENSSL_ENCRYPTION_KEY }}
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  SLACK_CHANNEL_NAME: '#hc-releases-comms'
+  JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+jobs:
+  run-release-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Print inputs provided
+        run: |
+          echo "Target version: ${{ inputs.version }}"
+          echo "Last tag: ${{ inputs.tag }}"
+          echo "Branch: ${{ inputs.branch }}"
+
+      - name: Review Release Tickets
+        id: review_script
+        run: bash ./scripts/release-process/review-release.sh ${{ inputs.version}} ${{inputs.tag}} ${{inputs.branch}}
+
+      - name: Format Slack message
+        id: format_message
+        env:
+          RELEASE_TICKETS: ${{ steps.review_script.outputs.release_tickets }}
+          OTHER_TICKETS: ${{ steps.review_script.outputs.other_tickets }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          npx tsx ./scripts/release-process/format-release-tickets.ts
+          blocks_base64=$(cat release-tickets-blocks.json | base64 -w 0)
+          echo "blocks_base64=$blocks_base64" >> $GITHUB_OUTPUT
+
+      - name: Report Result to Slack
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: review ${{ inputs.version}} - between ${{inputs.tag}} ${{inputs.branch}}
+          job-url: ${{ env.JOB_URL }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          include_main_block: false
+          blocks_base64: ${{ steps.format_message.outputs.blocks_base64 }}

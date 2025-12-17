@@ -1,0 +1,20 @@
+name: Deploy to Prod (Prod)
+run-name: Deploy - prod - ${{ inputs.ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        default: ''
+
+jobs:
+  deploy-prod-job:
+    name: Deploy Prod Environment
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      env: prod
+      account: prod
+    secrets: inherit

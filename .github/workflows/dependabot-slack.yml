@@ -1,0 +1,37 @@
+name: Dependabot Alerts
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  dependabot-alert:
+    if: startsWith(github.head_ref, 'dependabot/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Send Slack Notification
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: 'Dependabot Alert'
+          job-url: ${{ github.event.pull_request.html_url }}
+          environment: 'dependabot'
+          slack-channel: '#hc-env-notifications-security'
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: 'dependabot'
+          include_main_block: false
+          blocks: |
+            [
+              {
+                "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":dependabot: *Dependabot PR:* ${{ github.event.pull_request.title }} : <${{ github.event.pull_request.html_url }}|View Pull Request>"
+                  }
+                }
+              ]

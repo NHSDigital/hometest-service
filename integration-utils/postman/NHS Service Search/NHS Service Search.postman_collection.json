@@ -1,0 +1,171 @@
+{
+  "info": {
+    "_postman_id": "5b1d866a-9ec0-4f55-9148-15d3374c23e2",
+    "name": "NHS Service Search",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29568657"
+  },
+  "item": [
+    {
+      "name": "[Pharmacies w/ blood pressure check service by postcode] POST /search-postcode-or-place",
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "user-agent": true
+        }
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache",
+            "type": "default"
+          },
+          {
+            "key": "subscription-key",
+            "value": "{{SubscriptionKey}}",
+            "type": "default"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"filter\": \"OrganisationTypeId eq 'PHA' and OrganisationSubType eq 'Community' and Services / any (x: x/ServiceName eq 'NHS blood pressure check service')\",\n\t\"top\": 10,\n\t\"count\": true,\n\t\"select\": \"*\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.nhs.uk/service-search/search-postcode-or-place?search=rg17au&api-version=2",
+          "protocol": "https",
+          "host": ["api", "nhs", "uk"],
+          "path": ["service-search", "search-postcode-or-place"],
+          "query": [
+            {
+              "key": "search",
+              "value": "rg17au"
+            },
+            {
+              "key": "api-version",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "[Pharmacies w/ blood pressure check service by coordinate] POST /search",
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "user-agent": true
+        }
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache",
+            "type": "default"
+          },
+          {
+            "key": "subscription-key",
+            "value": "{{SubscriptionKey}}",
+            "type": "default"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"filter\": \"OrganisationTypeId eq 'PHA' and OrganisationSubType eq 'Community' and Services / any (x: x/ServiceName eq 'NHS blood pressure check service')\",\n\t\"top\": 10,\n\t\"count\": true,\n\t\"orderby\": \"geo.distance(Geocode, geography'POINT(-2.044241189956665 52.605876922607422)')\",\n\t\"select\": \"OrganisationName\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.nhs.uk/service-search/search?api-version=2",
+          "protocol": "https",
+          "host": ["api", "nhs", "uk"],
+          "path": ["service-search", "search"],
+          "query": [
+            {
+              "key": "api-version",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "[Pharmacy by ODS code] POST /search",
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "user-agent": true
+        }
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache",
+            "type": "default"
+          },
+          {
+            "key": "subscription-key",
+            "value": "{{SubscriptionKey}}",
+            "type": "default"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"search\":\"*\",\n    \"filter\":\"OrganisationTypeId eq 'PHA' and ODSCode eq 'FTD98'\",\n\t\"top\": 1,\n\t\"count\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.nhs.uk/service-search/search?api-version=2",
+          "protocol": "https",
+          "host": ["api", "nhs", "uk"],
+          "path": ["service-search", "search"],
+          "query": [
+            {
+              "key": "api-version",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "SubscriptionKey",
+      "value": ""
+    }
+  ]
+}

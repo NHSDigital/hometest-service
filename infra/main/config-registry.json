@@ -1,0 +1,703 @@
+{
+  "$schema": "../../scripts/validate-env/config-registry-schema.json",
+  "app": "main",
+  "description": "CDK app containing backend logic and services",
+  "variables": {
+    "NHC_VERSION": {
+      "description": "NHS Health Check service version",
+      "type": "string",
+      "example": "2.0.0"
+    },
+    "CURRENT_TERMS_VERSION": {
+      "description": "Current version of terms and conditions",
+      "type": "string",
+      "example": "1.0"
+    },
+    "HEALTH_CHECK_DATA_MODEL_VERSION": {
+      "description": "Version of the health check data model",
+      "type": "string",
+      "example": "3.0.0"
+    },
+    "APP_ID": {
+      "description": "Application ID",
+      "type": "string",
+      "example": "dhc"
+    },
+    "HEALTH_CHECK_MINIMUM_AGE": {
+      "description": "Minimum age for health check eligibility",
+      "type": "number",
+      "example": "40"
+    },
+    "HEALTH_CHECK_MAXIMUM_AGE": {
+      "description": "Maximum age for health check eligibility",
+      "type": "number",
+      "example": "74"
+    },
+    "ADDRESS_TEXT_INPUT_MAX_LENGTH": {
+      "description": "Maximum length for address text input fields",
+      "type": "number",
+      "example": "35"
+    },
+    "ENV_TYPE": {
+      "description": "Environment type (nonprod or prod)",
+      "type": "string",
+      "example": "nonprod"
+    },
+    "EMIS_MACHINE_NAME": {
+      "description": "EMIS machine name",
+      "type": "string",
+      "example": "Digital NHS Health Check"
+    },
+    "EMIS_PRIVATE_KEY_SECRET_NAME": {
+      "description": "The secret name that stores the EMIS private key",
+      "type": "string",
+      "example": "nhc/dev/emis-private-key"
+    },
+    "EMIS_PUBLIC_CERT_SECRET_NAME": {
+      "description": "The secret name that stores the EMIS public certificate",
+      "type": "string",
+      "example": "nhc/dev/emis-public-cert"
+    },
+    "EMIS_PAYLOAD_FROM": {
+      "description": "From address for EMIS",
+      "type": "string",
+      "example": "http://127.0.0.1:4848/syncsoap/"
+    },
+    "EMIS_PAYLOAD_REPLY_TO": {
+      "description": "Reply-to address for EMIS",
+      "type": "string",
+      "example": "http://www.w3.org/2005/08/addressing/anonymous"
+    },
+    "EMIS_PAYLOAD_ITK_NS": {
+      "description": "ITK namespace for EMIS",
+      "type": "string",
+      "example": "urn:nhs-itk:ns:201005"
+    },
+    "EMIS_PAYLOAD_SENDER_ADDRESS": {
+      "description": "Sender address for EMIS",
+      "type": "string",
+      "example": "urn:nhs-uk:addressing:ods:R8N8C"
+    },
+    "EMIS_PAYLOAD_ITK_GUID": {
+      "description": "ITK GUID for EMIS",
+      "type": "string",
+      "example": "uuid_E808A967-49B2-498B-AD75-1D7A0F1262D9"
+    },
+    "EMIS_PAYLOAD_AUDIT_IDENTITY_ID": {
+      "description": "Audit identity ID for EMIS",
+      "type": "string",
+      "example": "DHSCTest"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_METHOD": {
+      "description": "File record payload method for EMIS",
+      "type": "string",
+      "example": "emis:transactionim:records:req_FileRecord_V1_0"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_METHOD_API": {
+      "description": "File record payload method API for EMIS",
+      "type": "string",
+      "example": "Emis.Interop.PatientAPI.FileRecord"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_METHOD_API_VERSION": {
+      "description": "File record payload method API version for EMIS",
+      "type": "string",
+      "example": "1.0.0.0"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_REF_ID": {
+      "description": "File record payload location reference ID for EMIS",
+      "type": "string",
+      "example": "4884"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_GUID": {
+      "description": "File record payload location GUID for EMIS",
+      "type": "string",
+      "example": "37088C97-82FC-4B3E-BDBC-28F2C03B6CB8"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_NAME": {
+      "description": "File record payload location name for EMIS",
+      "type": "string",
+      "example": "Main Practice"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_TYPE_ID": {
+      "description": "File record payload location type ID for EMIS",
+      "type": "string",
+      "example": "1572871000006117"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_TYPE": {
+      "description": "File record payload location type for EMIS",
+      "type": "string",
+      "example": "1672871000006114"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_TYPE_GUID": {
+      "description": "File record payload location type GUID for EMIS",
+      "type": "string",
+      "example": "357EFD4F-7912-DE6E-13B8-D3FACED28522"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_LOCATION_TYPE_DESCRIPTION": {
+      "description": "File record payload location type description for EMIS",
+      "type": "string",
+      "example": "NHS Health Check online"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_EVENT_TYPE": {
+      "description": "File record payload event type for EMIS",
+      "type": "number",
+      "example": "5"
+    },
+    "EMIS_FILE_RECORD_PAYLOAD_IS_ABNORMAL": {
+      "description": "Is abnormal flag for EMIS file record payload",
+      "type": "boolean",
+      "example": "false"
+    },
+    "EMIS_GET_USERS_PAYLOAD_METHOD": {
+      "description": "Get users payload method for MEIS",
+      "type": "string",
+      "example": "emis:transactionim:records:req_GetActiveUsers_V1_0"
+    },
+    "EMIS_GET_USERS_PAYLOAD_METHOD_API": {
+      "description": "Get users payload method API for EMIS",
+      "type": "string",
+      "example": "Emis.Interop.PatientAPI.GetActiveUsers"
+    },
+    "EMIS_GET_USERS_PAYLOAD_METHOD_API_VERSION": {
+      "description": "Get users payload method API version for EMIS",
+      "type": "string",
+      "example": "1.0.0.0"
+    },
+    "EMIS_HSCN_DNS": {
+      "description": "HSCN DNS servers for EMIS",
+      "type": "string",
+      "example": "[\"155.231.231.2\", \"155.231.231.1\"]"
+    },
+    "EMIS_PAYLOAD_ODS_OVERRIDE": {
+      "description": "ODS override for EMIS (optional, set per environment if needed)",
+      "type": "string",
+      "example": ""
+    },
+    "EXECUTE_API_ENDPOINT_ENABLED": {
+      "description": "Enable execute-api endpoint for API Gateway",
+      "type": "boolean",
+      "example": "false"
+    },
+    "NHS_API_PLATFORM_BASE_URL": {
+      "description": "Base URL for NHS API Platform",
+      "type": "string",
+      "example": "https://int.api.service.nhs.uk"
+    },
+    "NHS_API_PLATFORM_API_KEY_SECRET_NAME": {
+      "description": "The secret name that stores NHS API Platform API key",
+      "type": "string",
+      "example": "nhc/dev/nhs-api-platform-api-key"
+    },
+    "NHS_API_PLATFORM_KEY_ID": {
+      "description": "The key ID of the private key for NHS API Platform",
+      "type": "string",
+      "example": "dev-1"
+    },
+    "NHS_API_PLATFORM_PRIVATE_KEY_SECRET_NAME": {
+      "description": "The secret name that stores NHS API Platform private key",
+      "type": "string",
+      "example": "nhc/dev/nhs-api-platform-private-key"
+    },
+    "NHS_API_PLATFORM_APPLICATION_ID_SECRET_NAME": {
+      "description": "The secret name that stores NHS API Platform application ID",
+      "type": "string",
+      "example": "nhc/dev/nhs-api-platform-application-id"
+    },
+    "NOTIFY_ROUTING_PLAN_ID_MAP": {
+      "description": "Map of routing plan IDs for Notify",
+      "type": "json",
+      "example": "{\"SOME_RESULTS\": \"dcc06b2d-032b-4f13-ad9e-dd4c534f4b5f\"}"
+    },
+    "NOTIFY_JWT_EXPIRATION_TIME_SECONDS": {
+      "description": "JWT expiration time in seconds for Notify",
+      "type": "number",
+      "example": "180"
+    },
+    "NOTIFY_DB_COMMUNICATION_LOGS_TTL_DAYS": {
+      "description": "TTL (in days) for Notify db logs",
+      "type": "number",
+      "example": "90"
+    },
+    "NOTIFY_CALLBACK_API_KEY_ID": {
+      "description": "API key ID for Notify callback API",
+      "type": "string",
+      "example": "prod-1"
+    },
+    "NOTIFY_CALLBACK_API_KEY_SECRET_NAME": {
+      "description": "The secret name that stores Notify callback API key",
+      "type": "string",
+      "example": "nhc/prod/notify-callback-api-key"
+    },
+    "NUDGE_INITIAL_AFTER_START_SCHEDULE": {
+      "description": "Cron schedule for initial nudge after start",
+      "type": "string",
+      "example": "cron(0 18 ? * MON *)"
+    },
+    "NUDGE_INITIAL_AFTER_START_TEMPLATE": {
+      "description": "Template name for initial nudge after start",
+      "type": "string",
+      "example": "NUDGE_INITIAL_AFTER_START"
+    },
+    "NUDGE_INITIAL_AFTER_START_CRITERIA_NUMBER_OF_DAYS": {
+      "description": "Number of days criteria for initial nudge after start",
+      "type": "number",
+      "example": "5"
+    },
+    "NHS_LOGIN_CLIENT_ID": {
+      "description": "Client ID for NHS Login",
+      "type": "string",
+      "example": "NHSDHC"
+    },
+    "NHS_LOGIN_REDIRECT_URL": {
+      "description": "Redirect URL for NHS Login",
+      "type": "string",
+      "example": "https://int.nhs-health-check-online.service.nhs.uk/login-callback"
+    },
+    "NHS_LOGIN_BASE_ENDPOINT_URL": {
+      "description": "Base endpoint URL for NHS Login",
+      "type": "string",
+      "example": "https://int.login.nhs.uk"
+    },
+    "NHS_LOGIN_PRIVATE_KEY_SECRET_NAME": {
+      "description": "The secret name that stores NHS Login private key",
+      "type": "string",
+      "example": "nhc/dev/nhs-login-private-key"
+    },
+    "AUTH_COOKIE_SAME_SITE": {
+      "description": "SameSite attribute for auth cookies",
+      "type": "string",
+      "example": "Strict"
+    },
+    "AWS_NOTIFY_CALLBACK_API_DOMAIN_NAME": {
+      "description": "Domain name for Notify callback API",
+      "type": "string",
+      "example": "notify-callback.int.nhs-health-check-online.service.nhs.uk"
+    },
+    "KMS_KEY_ID": {
+      "description": "KMS key ID",
+      "type": "string",
+      "example": "af008d36-cc4a-4ed1-9841-0203a6029ae5"
+    },
+    "SNS_KMS_KEY_ALIAS_NAME": {
+      "description": "KMS key alias name for SNS encryption",
+      "type": "string",
+      "example": "alias/sns_key"
+    },
+    "MANAGEMENT_ACCOUNT_ROUTE53_ROLE_NAME": {
+      "description": "Managemenet account Route53 role name",
+      "type": "string",
+      "example": "nonprod-tgw-cross-account-update-rt-role"
+    },
+    "MANAGEMENT_ACCOUNT_ID": {
+      "description": "AWS management account ID",
+      "type": "string",
+      "example": "637423623484"
+    },
+    "ENABLE_AUTO_EXPIRY": {
+      "description": "Enable automatic health check expiry",
+      "type": "boolean",
+      "example": "false"
+    },
+    "ENABLE_NHS_NUMBER_CHECK": {
+      "description": "Enable NHS number checks",
+      "type": "boolean",
+      "example": "false"
+    },
+    "ENABLE_REPORTING_DATA_COPY": {
+      "description": "Enable copying data to reporting database",
+      "type": "boolean",
+      "example": "false"
+    },
+    "ENABLE_REPORTING_EXTERNAL_INTEGRATIONS": {
+      "description": "Enable external integrations for reporting (requires ENABLE_REPORTING_DATA_COPY=true)",
+      "type": "boolean",
+      "example": "false"
+    },
+    "ENABLE_EVALUATOR_EXPORT": {
+      "description": "Enable evaluator export",
+      "type": "boolean",
+      "example": "false"
+    },
+    "ALARMS_ENABLED": {
+      "description": "Enable CloudWatch alarms",
+      "type": "boolean",
+      "example": "false"
+    },
+    "IMD_SCORES_ENABLED": {
+      "description": "Enable IMD scores",
+      "type": "boolean",
+      "example": "true"
+    },
+    "ENABLE_GP_ONBOARDING_NOTIFICATIONS": {
+      "description": "Enable GP onboarding notifications",
+      "type": "boolean",
+      "example": "false"
+    },
+    "AUTO_EXPIRE_AFTER_DAYS": {
+      "description": "Number of days to auto-expire health checks",
+      "type": "number",
+      "example": "28"
+    },
+    "NO_LAB_RESULT_AUTO_WRITEBACK_AFTER_DAYS": {
+      "description": "Number of days to auto-writeback for health checks without lab results",
+      "type": "number",
+      "example": "28"
+    },
+    "NO_LAB_RESULT_AUTO_EXPIRE_AFTER_DAYS": {
+      "description": "Number of days to auto-expire health checks without lab results",
+      "type": "number",
+      "example": "90"
+    },
+    "NO_LAB_RESULT_FINAL_AUTO_EXPIRE_AFTER_DAYS": {
+      "description": "Number of days for final expiry of health checks without lab results",
+      "type": "number",
+      "example": "365"
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level (INFO, DEBUG, WARN, ERROR)",
+      "type": "string",
+      "example": "INFO"
+    },
+    "LOG_RETENTION_IN_DAYS": {
+      "description": "CloudWatch logs retention period in days",
+      "type": "number",
+      "example": "14"
+    },
+    "CSOC_LOG_FORWARDING_ENABLED": {
+      "description": "Enable log forwarding to CSOC (Cyber Security Operations Centre)",
+      "type": "boolean",
+      "example": "false"
+    },
+    "CSOC_EVENT_BUS_ARN": {
+      "description": "EventBridge event bus ARN for CSOC log forwarding",
+      "type": "string",
+      "example": "arn:aws:events:eu-west-2:693466633220:event-bus/shield-eventbus"
+    },
+    "AWS_XRAY_CONTEXT_MISSING": {
+      "description": "X-Ray context missing behavior for tracing",
+      "type": "string",
+      "example": "LOG_ERROR"
+    },
+    "GP_UPDATE_SCHEDULE_INTERVAL_IN_HOURS": {
+      "description": "Interval in hours for GP update schedule",
+      "type": "number",
+      "example": "6"
+    },
+    "SQS_MAX_RECEIVE_COUNT": {
+      "description": "Maximum receive count for SQS",
+      "type": "number",
+      "example": "5"
+    },
+    "DLQ_REDRIVE_MAX_RETRIES_DEFAULT": {
+      "description": "Maximum retries for DQL redrive",
+      "type": "number",
+      "example": "3"
+    },
+    "REPORTING_EC2_AMI_ID": {
+      "description": "Reporting EC2 AMI ID",
+      "type": "string",
+      "example": "ami-0abcdef1234567890"
+    },
+    "EVALUATOR_EXPORT_FILE_RETENTION_DAYS": {
+      "description": "Number of days to retain evaluator export",
+      "type": "number",
+      "example": "30"
+    },
+    "EVALUATOR_EXPORT_ROW_LIMIT": {
+      "description": "Maximum number of rows per evaluator export",
+      "type": "number",
+      "example": "10000"
+    },
+    "EVALUATOR_EXPORT_DELETE_SERVER_AFTER_DAYS": {
+      "description": "Number of days to delete evaluator export server",
+      "type": "number",
+      "example": "7"
+    },
+    "LAMBDA_MEMORY_SIZE": {
+      "description": "Default memory size in MB for Lambda functions",
+      "type": "number",
+      "example": "512"
+    },
+    "GP_NOTIFICATION_SMTP_HOST": {
+      "description": "SMTP host for GP notifications (NHSMail)",
+      "type": "string",
+      "example": "smtp.example.com"
+    },
+    "GP_NOTIFICATION_SMTP_PORT": {
+      "description": "SMTP port for GP notifications (NHSMail)",
+      "type": "number",
+      "example": "587"
+    },
+    "GP_NOTIFICATION_SMTP_ENABLE_SEND_CUSTOM_HEADER": {
+      "description": "Enable sending custom headers for GP notifications",
+      "type": "boolean",
+      "example": "true"
+    },
+    "DB_ENVIRONMENT": {
+      "description": "The DB environment (env name usually)",
+      "type": "string",
+      "example": "develop"
+    },
+    "COOKIE_ACCESS_CONTROL_ALLOW_ORIGIN": {
+      "description": "Access-Control-Allow-Origin header for cookies",
+      "type": "string",
+      "example": "https://int.nhs-health-check-online.service.nhs.uk"
+    },
+    "AWS_RESOURCES_REMOVAL_POLICY": {
+      "description": "AWS resources removal policy",
+      "type": "string",
+      "example": "DESTROY"
+    },
+    "RISK_API_BASE_URL": {
+      "description": "Base URL for the QRisk API",
+      "type": "string",
+      "example": "https://api.endeavourpredict.org/epredict"
+    },
+    "RISK_API_KEY_SECRET_NAME": {
+      "description": "The secret name that stores the QRIsk API key",
+      "type": "string",
+      "example": "nhc/dev/risk-api-key"
+    },
+    "EMIS_API_URL": {
+      "description": "Base URL for the EMIS API",
+      "type": "string",
+      "example": "https://emis-api.example.com"
+    },
+    "OS_PLACES_API_URL": {
+      "description": "Base URL for the OS Places API",
+      "type": "string",
+      "example": "https://api.ordnancesurvey.co.uk/places/v1"
+    },
+    "OS_PLACES_API_KEY_NAME": {
+      "description": "The secret name that stores the OS Places API key",
+      "type": "string",
+      "example": "nhc/dev/os-places-api-key"
+    },
+    "VPC_NAME": {
+      "description": "VPC name",
+      "type": "string",
+      "example": "poc-nonprod-ipam-vpc-digitalHealthchecksPoc"
+    },
+    "VPC_ID": {
+      "description": "VPC ID",
+      "type": "string",
+      "example": "vpc-0d0248a0afed0152e"
+    },
+    "VPC_SUBNET_IDS": {
+      "description": "VPC subnet IDs",
+      "type": "json",
+      "example": "[\"subnet-0820572a40cfc7a46\", \"subnet-0f9ddbb1e9fc76fb6\", \"subnet-0c7e4341aee1d40bf\"]"
+    },
+    "VPC_SECURITY_GROUPS": {
+      "description": "VPC security groups",
+      "type": "json",
+      "example": "[\"sg-0a1b2c3d4e5f6g7h8\"]"
+    },
+    "THRIVA_AUTH_API_URL": {
+      "description": "Base URL for Thriva Auth API",
+      "type": "string",
+      "example": "https://auth.thriva.io"
+    },
+    "THRIVA_API_URL": {
+      "description": "Base URL for Thriva API",
+      "type": "string",
+      "example": "https://api.thriva.io"
+    },
+    "THRIVA_AUDIENCE_URL": {
+      "description": "Audience URL for Thriva",
+      "type": "string",
+      "example": "https://api.euw2.thriva.io"
+    },
+    "THRIVA_SECRET_KEY_SECRET_NAME": {
+      "description": "The secret name that stores the Thriva secret key",
+      "type": "string",
+      "example": "nhc/prod/thriva-secret"
+    },
+    "THRIVA_CLIENT_ID_SECRET_NAME": {
+      "description": "The secret name that stores the Thriva client ID",
+      "type": "string",
+      "example": "nhc/prod/thriva-client-id"
+    },
+    "AUTH_COOKIE_SIGNING_PRIVATE_KEYS_SECRET_NAME": {
+      "description": "The secret name that stores the auth cookie signing private keys",
+      "type": "string",
+      "example": "nhc/prod/auth-cookie-signing-private-keys"
+    },
+    "AUTH_COOKIE_SIGNING_PUBLIC_KEYS_SECRET_NAME": {
+      "description": "The secret name that stores the auth cookie signing public keys",
+      "type": "string",
+      "example": "nhc/prod/auth-cookie-signing-public-keys"
+    },
+    "AUTH_COOKIE_SIGNING_KID": {
+      "description": "The key ID for signing auth cookies",
+      "type": "string",
+      "example": "key1"
+    },
+    "AUTH_SESSION_MAX_DURATION_MINUTES": {
+      "description": "Maximum duration in minutes for sessions",
+      "type": "number",
+      "example": "60"
+    },
+    "AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES": {
+      "description": "Expiry duration in minutes for access tokens",
+      "type": "number",
+      "example": "15"
+    },
+    "AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES": {
+      "description": "Expiry duration in minutes for refresh tokens",
+      "type": "number",
+      "example": "1440"
+    },
+    "AWS_HOSTED_ZONE_ID": {
+      "description": "AWS Hosted Zone ID",
+      "type": "string",
+      "example": "Z0123456789ABCDEFGH"
+    },
+    "AWS_CLOUDFRONT_HOSTED_ZONE_ID": {
+      "description": "AWS CloudFront Hosted Zone ID",
+      "scope": "non-poc",
+      "type": "string",
+      "example": "Z2FDTNDATAQYW2"
+    },
+    "AWS_CLOUDFRONT_DOMAIN_NAME": {
+      "description": "AWS CloudFront domain name",
+      "type": "string",
+      "example": "dnhs-health-check-online.service.nhs.uk"
+    },
+    "AWS_BACKEND_API_DOMAIN_NAME": {
+      "description": "Backend API domain name",
+      "type": "string",
+      "example": "api.nhs-health-check-online.service.nhs.uk"
+    },
+    "AWS_CALLBACK_API_DOMAIN_NAME": {
+      "description": "Callback API domain name",
+      "type": "string",
+      "example": "callback-api.nhs-health-check-online.service.nhs.uk"
+    },
+    "AWS_RESULTS_API_DOMAIN_NAME": {
+      "description": "Results API domain name",
+      "type": "string",
+      "example": "results-api.nhs-health-check-online.service.nhs.uk"
+    },
+    "AWS_MTLS_RESULTS_API_DOMAIN_NAME": {
+      "description": "mTLS Results API domain name",
+      "type": "string",
+      "example": "mtls-results-api.nhs-health-check-online.service.nhs.uk"
+    },
+    "AWS_CLOUDFRONT_CERTIFICATE_ARN": {
+      "description": "ARN of the CloudFront certificate",
+      "type": "string",
+      "example": "arn:aws:acm:us-east-1:992382726377:certificate/70e32ae0-6be5-46fd-a9e8-eefb560c91ec"
+    },
+    "AWS_BACKEND_API_GATEWAY_CERTIFICATE_ARN": {
+      "description": "ARN of the API certificate for backend API",
+      "type": "string",
+      "example": "arn:aws:acm:eu-west-2:992382726377:certificate/289597d6-2bee-4696-81eb-ff0bb0585291"
+    },
+    "AWS_CALLBACK_API_CERTIFICATE_ARN": {
+      "description": "ARN of the API certificate for callback API",
+      "type": "string",
+      "example": "arn:aws:acm:eu-west-2:992382726377:certificate/876863d3-5aa0-4dee-be7b-34b690b35631"
+    },
+    "AWS_RESULTS_API_GATEWAY_CERTIFICATE_ARN": {
+      "description": "ARN of the API certificate for results API",
+      "type": "string",
+      "example": "arn:aws:acm:eu-west-2:992382726377:certificate/9f24193d-dc72-4264-8766-890f60090a98"
+    },
+    "AWS_AUTH_DOMAIN_CERTIFICATE_ARN": {
+      "description": "ARN of the certificate for auth domain",
+      "type": "string",
+      "example": "arn:aws:acm:eu-west-2:992382726377:certificate/12345678-90ab-cdef-1234-567890abcdef"
+    },
+    "AWS_CREATE_ROUTE53_RECORDS_IN_MANAGEMENT_ACCOUNT": {
+      "description": "Create Route53 records in management account",
+      "type": "boolean",
+      "example": "true"
+    },
+    "ACCESS_LOGGING_BUCKET_NAME": {
+      "description": "S3 bucket name for access logging",
+      "type": "string",
+      "example": "my-access-logging-bucket"
+    },
+    "RUM_CLOUDWATCH_LOGS_ENABLED": {
+      "description": "Enable RUM CloudWatch Logs",
+      "type": "boolean",
+      "example": "false"
+    },
+    "DLQ_REDRIVE_AUTO_REDRIVE_ENABLED": {
+      "description": "Enable automatic redrive for DLQ",
+      "type": "boolean",
+      "example": "true"
+    },
+    "DLQ_REDRIVE_MAX_RETRIES_LAB_ORDER_QUEUE": {
+      "scope": "non-poc",
+      "description": "Maximum retries for DLQ redrive for lab order queue",
+      "type": "number",
+      "example": "3"
+    },
+    "REPORTING_INSTANCE_START_SCHEDULE": {
+      "description": "Cron schedule for starting reporting instance",
+      "scope": "prod",
+      "type": "string",
+      "example": "cron(0 6 ? * MON-FRI *)"
+    },
+    "REPORTING_INSTANCE_STOP_SCHEDULE": {
+      "description": "Cron schedule for stopping reporting instance",
+      "scope": "prod",
+      "type": "string",
+      "example": "cron(0 18 ? * MON-FRI *)"
+    },
+    "REPORTING_INSTANCE_KEY_PAIR_NAME": {
+      "description": "Key pair name for reporting instance",
+      "scope": "non-poc",
+      "type": "string",
+      "example": "prod-bi-reporting-key"
+    },
+    "NHC_JWKS_SECRET_NAME": {
+      "description": "The secret name that stores the JWKS",
+      "type": "string",
+      "example": "nhc/prod/nhc-jwks"
+    },
+    "GP_NOTIFICATION_SMTP_USERNAME_SECRET_NAME": {
+      "description": "The secret name that stores the SMTP username for GP notifications",
+      "type": "string",
+      "example": "nhc/prod/gp-notification-smtp-username"
+    },
+    "GP_NOTIFICATION_SMTP_PASSWORD_SECRET_NAME": {
+      "description": "The secret name that stores the SMTP password for GP notifications",
+      "type": "string",
+      "example": "nhc/prod/gp-notification-smtp-password"
+    },
+    "MTLS_RESULTS_API_ENABLED": {
+      "description": "Enable mTLS for Results API",
+      "type": "boolean",
+      "example": "true"
+    },
+    "AWS_MTLS_RESULTS_API_GATEWAY_CERTIFICATE_ARN": {
+      "description": "ARN of the mTLS API certificate for results API",
+      "type": "string",
+      "example": "arn:aws:acm:eu-west-2:992382726377:certificate/41481060-b47d-4f54-b42c-2b3add49a842"
+    },
+    "TRACING_ENABLED": {
+      "description": "Enable X-Ray tracing",
+      "type": "boolean",
+      "example": "true"
+    },
+    "AMAZON_INSPECTOR_ENABLED": {
+      "description": "Enable Amazon Inspector",
+      "type": "boolean",
+      "example": "true"
+    },
+    "ENABLE_NUDGES": {
+      "description": "Enable nudges for incomplete health checks",
+      "type": "boolean",
+      "example": "true"
+    },
+    "TOWNSEND_TABLE_NAME": {
+      "description": "The townsend table name",
+      "scope": "non-poc",
+      "type": "string",
+      "example": "prod-nhc-townsend-db"
+    }
+  }
+}

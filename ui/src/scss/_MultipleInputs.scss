@@ -1,0 +1,17 @@
+// Copied from https://github.com/nhsuk/nhsuk-frontend/blob/0e681890d2b553663565b441d5f0bd513e3d64eb/packages/components/date-input/_date-input.scss#L15
+
+/**
+ * 1. font-size: 0 removes whitespace caused by inline-block
+ */
+
+.app-multiple-inputs__item {
+  display: inline-block;
+  margin-bottom: 0;
+  margin-right: nhsuk-spacing(4);
+}
+
+.app-multiple-inputs__group {
+  @include clearfix;
+
+  font-size: 0;
+}

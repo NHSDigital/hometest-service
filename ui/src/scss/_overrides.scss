@@ -1,0 +1,28 @@
+/*
+  Override the default styles for the BackLink component to ensure proper positioning
+  when placed outside of the main container. This is necessary because the current
+  implementation applies classes to the anchor element rather than its container,
+  which prevents the use of modifiers for layout purposes.
+
+  Note: This override is temporary and should be removed once the fix is merged
+  in the NHSUK Frontend repository. Refer to the following pull requests for the fix:
+  https://github.com/nhsuk/nhsuk-frontend/pull/964
+  https://github.com/nhsuk/nhsuk-service-manual-community-backlog/issues/526
+*/
+.nhsuk-back-link {
+  @extend .nhsuk-u-padding-top-4; // Using padding and not margin to prevent margins collapsing out of body
+  // when the header is removed in the native NHS App, causing a grey bar at top of the page
+  @extend .nhsuk-u-margin-bottom-0;
+  @extend .nhsuk-u-margin-top-0;
+}
+
+/*
+  Override the default styles for the Button component to ensure the ::before pseudo-element
+  does not contain any content. This is necessary to prevent screen readers, such as VoiceOver,
+  from misinterpreting the button as a "group" while preserving any applied styles for the pseudo-element.
+
+  Note: This override is temporary and can be removed once original nhsuk-button is VoiceOver compatible.
+*/
+.nhsuk-button::before {
+  content: normal;
+}

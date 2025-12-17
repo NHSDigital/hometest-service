@@ -1,0 +1,33 @@
+name: Run Daily Deploy and Automated Regression Tests on Int
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  deploy-int-job:
+    name: Deploy Int Environment
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: main
+      env: int
+      account: int
+    secrets: inherit
+  run-regression-tests-ubuntu-chromium:
+    name: Run Automated Regression Tests on Ubuntu and Chromium
+    needs: deploy-int-job
+    if: ${{ always() }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: 'int'
+      account: int
+      os: 'ubuntu-latest'
+      browser: 'chromium'
+      testsToCover: 'All'
+      reportJobResultToSlack: true
+    secrets: inherit

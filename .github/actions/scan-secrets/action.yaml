@@ -1,9 +1,9 @@
-name: "Scan secrets"
-description: "Scan secrets"
+name: 'Scan secrets'
+description: 'Scan secrets'
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
-    - name: "Scan secrets"
+    - name: 'Scan secrets'
       shell: bash
       run: |
         # Please do not change this `check=whole-history` setting, as new patterns may be added or history may be rewritten.

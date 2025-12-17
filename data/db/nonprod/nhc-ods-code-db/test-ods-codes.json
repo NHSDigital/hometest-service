@@ -1,0 +1,16 @@
+{
+  "inserts": [
+    {
+      "gpOdsCode": "test1",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "test2",
+      "enabled": false
+    },
+    {
+      "gpOdsCode": "A12344",
+      "enabled": true
+    }
+  ]
+}

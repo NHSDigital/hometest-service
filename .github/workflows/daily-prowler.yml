@@ -1,0 +1,141 @@
+name: Daily Prowler Scan on environments
+
+on:
+  schedule:
+    - cron: '0 7 * * *' # Runs daily at 7 AM UTC
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  SLACK_CHANNEL_NAME_PREFIX: '#hc-env-notifications-'
+
+jobs:
+  prowler_scan:
+    name: Prowler Scan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - environment: int
+            account_id: ${{ vars.AWS_ACCOUNT_ID_INT }}
+          - environment: test
+            account_id: ${{ vars.AWS_ACCOUNT_ID_TEST }}
+          - environment: prod
+            account_id: ${{ vars.AWS_ACCOUNT_ID_PROD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ matrix.account_id }}:role/github-actions-security-audit
+
+      - name: Install Prowler
+        run: |
+          pip install prowler
+          prowler -v
+
+      - name: Run Prowler and send findings to Security Hub
+        run: |
+          prowler aws --config-file .github/configs/prowler_config.yaml --mutelist-file .github/configs/prowler_mutelist.yaml --excluded-checks-file .github/configs/prowler_excluded_checks.json --security-hub --send-sh-only-fails --region us-east-1 eu-west-2
+        continue-on-error: true
+      # Above https://docs.prowler.com/projects/prowler-open-source/en/latest/tutorials/aws/securityhub/#send-only-failed-findings-to-security-hub
+      # Addresses DNHC-1735 - Configure Prowler to only send failed findings to AWS Security Hub
+
+      - name: List Files
+        run: |
+          ls -l ${{ github.workspace }}/output
+
+      - name: Parse Prowler Output
+        run: |
+          jq -s '[.[][] | select(.status_code == "FAIL" and .status != "Suppressed")] | group_by(.severity) | map({severity: .[0].severity, count: length})' ${{ github.workspace }}/output/*.ocsf.json > summary.json
+
+      - name: Display Summary
+        run: |
+          cat summary.json
+
+      - name: Retrieve Findings Counts
+        id: counts
+        run: |
+          TOTAL=$(jq 'reduce .[] as $item (0; . + $item.count)' summary.json)
+          CRITICAL=$(jq '(.[] | select(.severity == "Critical") | .count) // 0'  summary.json)
+          HIGH=$(jq '(.[] | select(.severity == "High") | .count) // 0' summary.json)
+          MEDIUM=$(jq '(.[] | select(.severity == "Medium") | .count) // 0' summary.json)
+          LOW=$(jq '(.[] | select(.severity == "Low") | .count) // 0' summary.json)
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+          echo "low=$LOW" >> $GITHUB_OUTPUT
+
+      - name: Report result to Slack
+        if: always()
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: ${{ github.job }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ matrix.environment }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME_PREFIX }}${{ matrix.environment }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          include_main_block: false
+          blocks: |
+            [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Prowler scan completed for ${{ matrix.environment }} - <${{ env.JOB_URL }}|view details>"
+                }
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "table",
+                "rows": [
+                  [
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"Total Findings","style":{"bold":true}}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"Critical","style":{"bold":true}}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"High","style":{"bold":true}}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"Medium","style":{"bold":true}}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"Low","style":{"bold":true}}]}]}
+                  ],
+                  [
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"${{ steps.counts.outputs.total }}"}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"${{ steps.counts.outputs.critical }}"}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"${{ steps.counts.outputs.high }}"}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"${{ steps.counts.outputs.medium }}"}]}]},
+                    {"type":"rich_text","elements":[{"type":"rich_text_section","elements":[{"type":"text","text":"${{ steps.counts.outputs.low }}"}]}]}
+                  ]
+                ]
+              }
+            ]
+      - name: Upload artifacts
+        if: success() || failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: Prowler-${{ matrix.environment }}-${{ github.run_id }}-Results
+          path: "${{ github.workspace }}/output/*"
+          retention-days: 7
+          overwrite: true
+
+      - name: Completion Message
+        run: |
+          echo "Prowler scan completed"

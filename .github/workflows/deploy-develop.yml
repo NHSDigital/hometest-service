@@ -1,0 +1,32 @@
+name: Deploy to Develop (POC)
+run-name: Deploy - develop - main
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  deploy-develop-job:
+    name: Deploy Develop Environment
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: main
+      env: develop
+      account: poc
+    secrets: inherit
+
+  run-regression-tests:
+    name: Run Automated Regression Tests on Ubuntu and Mobile Chromium
+    needs: deploy-develop-job
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: develop
+      account: poc
+      os: 'ubuntu-latest'
+      browser: 'mobileChromium'
+      testsToCover: 'All'
+    secrets: inherit

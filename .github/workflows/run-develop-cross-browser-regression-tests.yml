@@ -1,0 +1,169 @@
+name: Run Cross-Browser Automated Regression Tests
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        type: string
+        default: 'develop'
+  schedule:
+    - cron: '0 19 * * 5'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  SLACK_CHANNEL_NAME: '#hc-env-notifications-poc'
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+
+jobs:
+  run-regression-tests-windows-edge:
+    name: Run Automated Regression Tests on Windows and Edge
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: ${{ inputs.environment || 'develop' }}
+      account: poc
+      os: 'windows-latest'
+      browser: 'edge'
+      testsToCover: 'UI'
+      reportJobResultToSlack: false
+      installPlaywrightBrowsers: true
+    secrets: inherit
+  run-regression-tests-macos-chromium:
+    name: Run Automated Regression Tests on MacOS and Chromium
+    needs: run-regression-tests-windows-edge
+    if: ${{ success() || failure() }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: ${{ inputs.environment || 'develop' }}
+      account: poc
+      os: 'macos-latest'
+      browser: 'chromium'
+      testsToCover: 'UI'
+      reportJobResultToSlack: false
+      installPlaywrightBrowsers: true
+    secrets: inherit
+  run-regression-tests-macos-firefox:
+    name: Run Automated Regression Tests on MacOS and Firefox
+    needs: run-regression-tests-macos-chromium
+    if: ${{ success() || failure() }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: ${{ inputs.environment || 'develop' }}
+      account: poc
+      os: 'macos-latest'
+      browser: 'firefox'
+      testsToCover: 'UI'
+      reportJobResultToSlack: false
+      installPlaywrightBrowsers: true
+    secrets: inherit
+  run-regression-tests-macos-safari:
+    name: Run Automated Regression Tests on MacOS and Safari
+    needs: run-regression-tests-macos-firefox
+    if: ${{ success() || failure() }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: ${{ inputs.environment || 'develop' }}
+      account: poc
+      os: 'macos-latest'
+      browser: 'safari'
+      testsToCover: 'UI'
+      reportJobResultToSlack: false
+      installPlaywrightBrowsers: true
+    secrets: inherit
+  run-regression-tests-macos-mobileSafari:
+    name: Run Automated Regression Tests on MacOS and Mobile Safari
+    needs: run-regression-tests-macos-safari
+    if: ${{ success() || failure() }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: ${{ inputs.environment || 'develop' }}
+      account: poc
+      os: 'macos-latest'
+      browser: 'mobileSafari'
+      testsToCover: 'UI'
+      reportJobResultToSlack: false
+      installPlaywrightBrowsers: true
+    secrets: inherit
+  run-regression-tests-macos-mobileChromium:
+    name: Run Automated Regression Tests on MacOS and Mobile Chromium
+    needs:
+      - run-regression-tests-macos-mobileSafari
+    if: ${{ success() || failure() }}
+    uses: ./.github/workflows/run-regression-tests.yml
+    with:
+      environment: ${{ inputs.environment || 'develop' }}
+      account: poc
+      os: 'macos-latest'
+      browser: 'mobileChromium'
+      testsToCover: 'UI'
+      reportJobResultToSlack: false
+      installPlaywrightBrowsers: true
+    secrets: inherit
+  report-to-slack:
+    name: Report all results to slack
+    needs:
+      - run-regression-tests-macos-mobileChromium
+      - run-regression-tests-macos-mobileSafari
+      - run-regression-tests-macos-safari
+      - run-regression-tests-macos-firefox
+      - run-regression-tests-macos-chromium
+      - run-regression-tests-windows-edge
+    runs-on: ubuntu-latest
+    if: ${{ always() && inputs.environment == 'develop' }}
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Determine Overall Status
+        run: |
+          macos_mobileChromium="${{ needs.run-regression-tests-macos-mobileChromium.result }}"
+          macos_mobileSafari="${{ needs.run-regression-tests-macos-mobileSafari.result }}"
+          macos_safari="${{ needs.run-regression-tests-macos-safari.result }}"
+          macos_firefox="${{ needs.run-regression-tests-macos-firefox.result }}"
+          macos_chromium="${{ needs.run-regression-tests-macos-chromium.result }}"
+          windows_edge="${{ needs.run-regression-tests-windows-edge.result }}"
+
+          if [[ "$macos_mobileChromium" == "failure" || 
+              "$macos_mobileSafari" == "failure" || 
+              "$macos_safari" == "failure" || 
+              "$macos_firefox" == "failure" || 
+              "$macos_chromium" == "failure" || 
+              "$windows_edge" == "failure" ]]; then
+          echo "OVERALL_STATUS=failure" >> $GITHUB_ENV
+          else
+          echo "OVERALL_STATUS=success" >> $GITHUB_ENV
+          fi
+      - name: Slack Message Layout
+        run: |
+          MOBILE_CHROMIUM_STATUS="${{ needs.run-regression-tests-macos-mobileChromium.result }}"
+          MOBILE_SAFARI_STATUS=${{ needs.run-regression-tests-macos-mobileSafari.result }}
+           SAFARI_STATUS=${{ needs.run-regression-tests-macos-safari.result }}
+           FIREFOX_STATUS=${{ needs.run-regression-tests-macos-firefox.result }}
+           CHROMIUM_STATUS=${{ needs.run-regression-tests-macos-chromium.result }}
+           EDGE_STATUS=${{ needs.run-regression-tests-windows-edge.result }}
+           JOB_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+           MESSAGE="*Regression Test Report:*\n\
+           • *MacOS Mobile Chromium:* ${MOBILE_CHROMIUM_STATUS}\n\
+           • *MacOS Mobile Safari:* ${MOBILE_SAFARI_STATUS}\n\
+           • *MacOS Safari:* ${SAFARI_STATUS}\n\
+           • *MacOS Firefox:* ${FIREFOX_STATUS}\n\
+           • *MacOS Chromium:* ${CHROMIUM_STATUS}\n\
+           • *Windows Edge:* ${EDGE_STATUS}\n\"
+           echo "SLACK_MESSAGE=$MESSAGE" >> $GITHUB_ENV
+      - name: Report result to Slack
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{env.OVERALL_STATUS}}
+          job-name: ${{ env.SLACK_MESSAGE }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ inputs.environment }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}

@@ -1,0 +1,73 @@
+.app-card--green {
+  border-left-color: $color_nhsuk-green;
+  border-left-width: 5px;
+}
+
+.app-card--yellow {
+  border-left-color: $color_nhsuk-warm-yellow;
+  border-left-width: 5px;
+}
+
+.app-card--red {
+  border-left-color: $color_nhsuk-red;
+  border-left-width: 5px;
+}
+
+.app-card--purple {
+  border-left-color: $color_nhsuk-purple;
+  border-left-width: 5px;
+}
+
+.app-card--blue {
+  border-left-color: $color_nhsuk-blue;
+  border-left-width: 5px;
+}
+
+.app-card__hero {
+  background-color: $color_nhsuk-white;
+}
+
+.app-card__heading-big-number {
+  display: block; // display on own line
+  @include nhsuk-font(64, true);
+}
+
+.app-card__heading-inset {
+  display: block; // display on own line
+  @extend .nhsuk-inset-text; // styling but not semantics of inset
+  @include nhsuk-responsive-margin(3, 'top');
+  @include nhsuk-responsive-margin(4, 'bottom');
+  @include nhsuk-font(24, bold);
+}
+
+.app-card__heading-inset--green {
+  border-left-color: $color_nhsuk-green;
+}
+
+.app-card__heading-inset--yellow {
+  border-left-color: $color_nhsuk-warm-yellow;
+}
+
+.app-card__heading-inset--red {
+  border-left-color: $color_nhsuk-red;
+}
+
+.app-card__heading-inset--grey {
+  border-left-color: $color_nhsuk-grey-3;
+}
+
+.nhsuk-card__description > :last-child {
+  margin-bottom: 0 !important;
+}
+
+.nhsuk-card-group {
+  margin-bottom: 25px;
+}
+
+.result-care-card.nhsuk-card--care {
+  margin-top: 0 !important;
+}
+
+#missing-results > .nhsuk-card:not(:last-child) {
+  @extend .nhsuk-u-margin-bottom-4;
+}

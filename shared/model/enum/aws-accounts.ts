@@ -1,0 +1,6 @@
+export enum AWSAccountNumbers {
+  POC = '880521146064',
+  INT = '899411341184',
+  TEST = '637423296417',
+  PROD = '992382726377'
+}

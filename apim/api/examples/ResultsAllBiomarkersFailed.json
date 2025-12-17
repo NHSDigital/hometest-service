@@ -1,0 +1,32 @@
+{
+  "orderId": "order_identifier",
+  "orderExternalReference": "reference_passed_during_ordering",
+  "pendingReorder": true,
+  "resultData": [
+    {
+      "biomarkerCode": "GBHI",
+      "successful": false,
+      "failureReasonCode": "not_calculated",
+      "failureReasonDescription": "The result was not calculated due to ..."
+    },
+    {
+      "biomarkerCode": "CHO",
+      "successful": false,
+      "failureReasonCode": "not_calculated",
+      "failureReasonDescription": "The result was not calculated due to ..."
+    },
+    {
+      "biomarkerCode": "CHDD",
+      "successful": false,
+      "failureReasonCode": "not_calculated",
+      "failureReasonDescription": "The result was not calculated due to ..."
+    },
+    {
+      "biomarkerCode": "HDL",
+      "successful": false,
+      "failureReasonCode": "not_calculated",
+      "failureReasonDescription": "The result was not calculated due to ..."
+    }
+  ],
+  "resultDate": "2020-07-23T08:30:00.000Z"
+}

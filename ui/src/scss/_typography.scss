@@ -1,0 +1,15 @@
+
+// Per https://service-manual.nhs.uk/design-system/styles/typography#headings
+// Default size for h1 for transactional services should be l not xl
+
+h1 {
+   @extend %nhsuk-heading-l;
+}
+
+h2 {
+   @extend %nhsuk-heading-m;
+}
+
+h3 {
+   @extend %nhsuk-heading-s;
+}

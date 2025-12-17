@@ -1,0 +1,176 @@
+name: Release Workflow
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      env:
+        description: 'Environment name'
+        required: true
+        type: string
+      tag:
+        description: 'Release tag'
+        required: true
+        type: string
+      jobType:
+        description: "Job type ('pre-release' or 'post-release')"
+        required: true
+        type: string
+      dryRun:
+        description: 'Dry run (true/false)'
+        required: true
+        type: boolean
+      backupHealthCheckTable:
+        description: 'Backup Health Check table before migration'
+        required: true
+        type: boolean
+      account:
+        required: true
+        type: string
+
+env:
+  OPENSSL_ENCRYPTION_KEY: ${{ secrets.OPENSSL_ENCRYPTION_KEY }}
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  IS_RUN_FROM_PIPELINE: true
+  SLACK_CHANNEL_NAME: '#hc-env-notifications-${{ inputs.account }}'
+
+jobs:
+  run-action:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.account }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Report start of job to Slack
+        if: ${{ !inputs.dryRun && contains('prod,test,develop,int', inputs.env) }}
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: 'success'
+          job-name: start ${{ github.job }} - ${{ inputs.jobType }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ inputs.env }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          branch-tag: ${{ inputs.tag }}
+
+      - name: Print input parameters
+        run: |
+          echo "Environment: ${{ inputs.env }}"
+          echo "Tag: ${{ inputs.tag }}"
+          echo "Job Type: ${{ inputs.jobType }}"
+          echo "Dry Run: ${{ inputs.dryRun }}"
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Set AWS Region
+        run: |
+          export AWS_REGION=eu-west-2
+          export AWS_DEFAULT_REGION=eu-west-2
+          echo "Region set to: $AWS_REGION"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      - name: Get all toggles from SSM and build toggles JSON
+        id: build_toggles_json
+        run: |
+          PARAMS=$(aws ssm get-parameters-by-path --path "/${{ inputs.env }}/dhc/" --recursive --region eu-west-2 --query "Parameters[*].[Name,Value]" --output text)
+          TOGGLES_JSON="{"
+          FIRST=1
+          while IFS=$'\t' read -r NAME VALUE; do
+            VAR_NAME=$(basename "$NAME")
+            echo "$VAR_NAME=$VALUE" >> $GITHUB_ENV
+            if [ $FIRST -eq 0 ]; then
+              TOGGLES_JSON="$TOGGLES_JSON,"
+            fi
+            TOGGLES_JSON="$TOGGLES_JSON\"$VAR_NAME\":\"$VALUE\""
+            FIRST=0
+          done <<< "$PARAMS"
+          TOGGLES_JSON="$TOGGLES_JSON}"
+          echo "toggles_json=$TOGGLES_JSON" >> $GITHUB_OUTPUT
+
+      - name: Build feature toggles Slack blocks
+        id: build_feature_toggle_blocks
+        run: |
+          BLOCKS="["
+          FIRST=1
+          for VAR in $(env | grep -E '^[a-zA-Z0-9_]+Enabled=' | cut -d= -f1); do
+            VALUE="${!VAR}"
+            if [ $FIRST -eq 0 ]; then
+              BLOCKS="$BLOCKS,"
+            fi
+            BLOCKS="$BLOCKS{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*$VAR*: $VALUE\"}}"
+            FIRST=0
+          done
+          BLOCKS="$BLOCKS]"
+          echo "blocks=$BLOCKS" >> $GITHUB_OUTPUT
+
+      - name: Backup Health Check table
+        if: ${{ inputs.backupHealthCheckTable }}
+        run: |
+          echo "Creating backup called ${{ inputs.env }}-nhc-health-check-db-backup"
+          output=$(aws dynamodb create-backup --table-name ${{ inputs.env }}-nhc-health-check-db --backup-name ${{ inputs.env }}-nhc-health-check-db-backup)
+          echo "$output"
+          backup_arn=$(echo "$output" | jq -r '.BackupDetails.BackupArn')
+          echo "Waiting for backup to become AVAILABLE for backup with ARN: $backup_arn"
+          status="CREATING"
+          while [ "$status" != "AVAILABLE" ]; do
+            sleep 5
+            describe_output=$(aws dynamodb describe-backup --backup-arn "$backup_arn")
+            status=$(echo "$describe_output" | jq -r '.BackupDescription.BackupDetails.BackupStatus')
+            echo "Current status: $status"
+            if [ "$status" = "DELETED" ] || [ "$status" = "FAILED" ]; then
+              echo "Backup failed or was deleted. Exiting with error."
+              exit 1
+            fi
+          done
+          echo "Backup is now AVAILABLE."
+
+      - name: Install Dependencies
+        working-directory: scripts/release-process/release-actions-runner
+        run: npm install
+
+      - name: Run Action
+        working-directory: scripts/release-process/release-actions-runner
+        run: npm run clean && npm run build && npm start -- --env=${{ inputs.env }} --jobType=${{ inputs.jobType }} --tag=${{ inputs.tag }} --dryRun=${{ inputs.dryRun }}
+
+      - name: Publish Migration Output
+        uses: actions/upload-artifact@v4.3.0
+        if: ${{ always() }}
+        with:
+          name: 'migration-output'
+          path: scripts/release-process/release-actions-runner/output/*
+
+      - name: Archive npm failure logs
+        uses: actions/upload-artifact@v4.3.0
+        if: failure()
+        with:
+          retention-days: 1
+          name: npm-logs
+          path: /home/runner/.npm/_logs
+
+      - name: Report Result to Slack
+        if: ${{ !inputs.dryRun && contains('prod,test,develop,int', inputs.env) }}
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: finish ${{ github.job }} - ${{ inputs.jobType }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ inputs.env }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          branch-tag: ${{ inputs.tag }}
+          blocks: ${{ inputs.jobType == 'post-release' && steps.build_feature_toggle_blocks.outputs.blocks || '' }}

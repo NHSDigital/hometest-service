@@ -1,0 +1,65 @@
+// Spinner animation
+
+#spinner {
+  animation-name: spin;
+  animation-duration: 0.75s;
+  animation-iteration-count: infinite;
+  transform-origin: 50% 50%;
+  display: inline-block;
+  &.done {
+    animation-name: spinback;
+    animation-duration: 1.25s;
+  }
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinback {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+// Container
+
+.bar_container {
+  margin-top: 0 !important;
+}
+
+.progress-spinner {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: white;
+  position: relative;
+  margin: 0px auto 0;
+}
+
+.ppc-percents,
+.ppc-loading {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  left: calc(50% - 173.91304px / 2);
+  top: calc(50% - 173.91304px / 2);
+  width: 173.91304px;
+  height: 173.91304px;
+  background: #fff;
+  color: #000000;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4em;
+  font-weight: normal;
+  margin: 0;
+}

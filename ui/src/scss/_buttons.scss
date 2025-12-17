@@ -1,0 +1,136 @@
+$app-button-login-color: $color_nhsuk-blue;
+$app-button-login-hover-color: shade($app-button-login-color, 20%);
+$app-button-login-active-color: shade($app-button-login-color, 50%);
+$app-button-login-shadow-color: shade($app-button-login-color, 50%);
+
+.app-button--full-width {
+  @include mq($until: tablet) {
+    width: 100%;
+  }
+}
+
+// Button group
+// Code from GOV.UK Frontend by way of https://github.com/nhsuk/nhsuk-frontend/blob/main/packages/nhsuk-frontend/src/nhsuk/core/objects/_button-group.scss#L13
+
+@mixin nhsuk-media-query(
+  $from: false,
+  $until: false,
+  $and: false,
+  $media-type: $mq-media-type
+) {
+  @include mq($from, $until, $and, $media-type) {
+    @content;
+  }
+}
+
+.app-button-group {
+  $horizontal-gap: nhsuk-spacing(4);
+  $vertical-gap: nhsuk-spacing(3);
+
+  // These need to be kept in sync with the button component's styles
+  $button-border-radius: $nhsuk-border-width-form-element * 2;
+  $button-shadow-size: $button-border-radius;
+  $button-padding-top-bottom-mobile: 8px;
+  $button-padding-top-bottom-desktop: 12px;
+
+  $link-spacing: nhsuk-spacing(2);
+
+  // Flexbox is used to center-align links on mobile, align everything along
+  // the baseline on tablet and above, and to removes extra whitespace that
+  // we'd get between the buttons and links because they're inline-blocks.
+  //
+  // Ideally we'd use `gap` with flexbox rather than having to do it all with
+  // margins, but unfortunately the support isn't there (yet) and @supports
+  // doesn't play nicely with it
+  // (https://github.com/w3c/csswg-drafts/issues/3559)
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  @include nhsuk-responsive-margin(
+    6,
+    'bottom',
+    $adjustment: $vertical-gap * -1
+  );
+
+  // Give paragraphs and links within the button group the same font-size and
+  // line-height as buttons.
+  //
+  // Because we want the focus state to be tight around the link text, we use
+  // margins where the buttons would use padding.
+  .nhsuk-body,
+  .nhsuk-body-m,
+  p,
+  > .nhsuk-link,
+  > a:not(.nhsuk-button) {
+    display: inline-block;
+    // Prevent links overflowing their container in IE10/11 because of bug
+    // with align-items: center
+    max-width: 100%;
+    margin-top: $link-spacing;
+    margin-bottom: $link-spacing + $vertical-gap;
+    text-align: center;
+    @include nhsuk-font($size: 19);
+  }
+
+  // Reduce the bottom margin to the size of the vertical gap (accommodating
+  // the button shadow) – the 'lost' margin is moved to the button-group.
+  > .nhsuk-button {
+    margin-bottom: $vertical-gap + $button-shadow-size;
+  }
+
+  // On tablet and above, we also introduce a 'column gap' between the
+  // buttons and links in each row and left align links
+  @include nhsuk-media-query($from: tablet) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    // Cancel out the column gap for the last item in each row
+    margin-right: ($horizontal-gap * -1);
+
+    .nhsuk-body,
+    .nhsuk-body-m,
+    p,
+    > .nhsuk-link,
+    > a:not(.nhsuk-button) {
+      margin-top: $button-padding-top-bottom-desktop +
+        $nhsuk-border-width-form-element;
+      margin-right: $horizontal-gap;
+      margin-bottom: $button-padding-top-bottom-desktop +
+        $nhsuk-border-width-form-element;
+      text-align: left;
+    }
+
+    > .nhsuk-button {
+      margin-right: $horizontal-gap;
+    }
+  }
+}
+// https://github.com/nhsuk/nhsuk-service-manual-community-backlog/issues/374
+.app-button--login {
+  background-color: $app-button-login-color;
+  box-shadow: 0 $button-shadow-size 0 $app-button-login-shadow-color;
+
+  &:hover {
+    background-color: darken($app-button-login-color, 10%);
+  }
+
+  &:focus {
+    background: $nhsuk-focus-color;
+    box-shadow: 0 $button-shadow-size 0 $nhsuk-focus-text-color;
+    color: $nhsuk-focus-text-color;
+    outline: $nhsuk-focus-width solid transparent;
+  }
+
+  &:active {
+    background: $app-button-login-active-color;
+    box-shadow: none;
+    color: $nhsuk-button-text-color;
+    top: $button-shadow-size;
+  }
+
+  &.nhsuk-button--disabled {
+    background-color: $app-button-login-color;
+  }
+}
