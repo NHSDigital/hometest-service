@@ -1,0 +1,20 @@
+name: Deploy APIM proxy for Demo (internal-dev APIM env)
+run-name: Deploy APIM proxy for Demo / internal-dev - ${{ inputs.ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or tag to deploy"
+        required: true
+        default: ""
+
+jobs:
+  deploy-apim-job:
+    name: Deploy APIM for Demo Environment (Internal Dev)
+    uses: ./.github/workflows/apim-deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      apim-env: internal-dev
+      account: poc
+    secrets: inherit

@@ -1,0 +1,11 @@
+aws:
+  log_group_retention_days: 7
+  secrets_ignore_patterns:
+    - ".*ARN"
+    - ".*SECRET_ARN"
+    - ".*SECRET_NAME"
+    - ".*KEY_NAME"
+    - "*.DURATION_MINUTES"
+    - "arn:aws:secretsmanager"
+    - "secretsmanager"
+    - "arn:aws:ssm"

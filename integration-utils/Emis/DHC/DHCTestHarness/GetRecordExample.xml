@@ -1,0 +1,56 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Header>
+    <MessageID xmlns="http://www.w3.org/2005/08/addressing">53B98379-99CD-4E48-89C6-C02CD96ECC86</MessageID>
+    <Action xmlns="http://www.w3.org/2005/08/addressing">emis:transactionim:records:req_GetRecord_V1_0</Action>
+    <To xmlns="http://www.w3.org/2005/08/addressing">http://3.11.93.54/ITK</To>
+    <From xmlns="http://www.w3.org/2005/08/addressing">http://127.0.0.1:4848/syncsoap/</From>
+    <ReplyTo xmlns="http://www.w3.org/2005/08/addressing">
+      <Address>http://www.w3.org/2005/08/addressing/anonymous</Address>
+    </ReplyTo>
+  </soap:Header>
+  <soap:Body>
+    <itk:DistributionEnvelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:itk="urn:nhs-itk:ns:201005">
+      <itk:header trackingid="4092F938-3B0D-4A4B-BA02-DC3C65DCE968" service="emis:transactionim:records:req_GetRecord_V1_0">
+        <itk:addresslist>
+          <itk:address uri="urn:nhs-uk:addressing:ods:A28579" />
+        </itk:addresslist>
+        <itk:auditIdentity>
+          <itk:id uri="emisweb" />
+        </itk:auditIdentity>
+        <itk:manifest count="1">
+          <itk:manifestitem id="uuid_E808A967-49B2-498B-AD75-1D7A0F1262D7" mimetype="application/xml" />
+        </itk:manifest>
+        <itk:senderAddress uri="urn:nhs-uk:addressing:ods:A28579" />
+        <itk:handlingSpecification>
+          <itk:spec key="emis:BinarySecurityToken" value="" />
+          <itk:spec key="emis:MessageDigest" value="" />
+          <itk:spec key="emis:Signature" value="" />
+        </itk:handlingSpecification>
+      </itk:header>
+      <itk:payloads count="1">
+        <itk:payload id="uuid_E808A967-49B2-498B-AD75-1D7A0F1262D7">
+          <EWDS xmlns="urn:nhs-itk:ns:201005"><RequestHeader>
+              <ExternalUserName>placeholder:ExternalUserName</ExternalUserName>
+              <MachineName>placeholder:MachineName</MachineName>
+            </RequestHeader>
+            <RequestBody>
+              <RequestMethod>
+                <MethodDefinition>
+                  <Name>Emis.Interop.PatientAPI.GetMedicalRecord</Name>
+                  <Version>1.0.0.0</Version>
+                </MethodDefinition>
+                <Content>
+                  <PatientAPI>
+                    <SmartCardTokenId></SmartCardTokenId>
+                    <MacAddress>18-03-73-BB-6B-02</MacAddress>
+                    <NhsNumber>9993855774</NhsNumber>
+                  </PatientAPI>
+                </Content>
+              </RequestMethod>
+            </RequestBody>
+          </EWDS>
+        </itk:payload>
+      </itk:payloads>
+    </itk:DistributionEnvelope>
+  </soap:Body>
+</soap:Envelope>

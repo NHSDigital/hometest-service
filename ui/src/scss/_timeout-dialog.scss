@@ -1,0 +1,77 @@
+// Timeout dialog adapted from HMRC’s pattern
+// https://design.tax.service.gov.uk/hmrc-design-patterns/service-timeout/
+
+// Prevent scrolling of the background whilst modal is open. This doesn't work
+// fully on mobile, but makes a best effort
+body {
+  &.app-no-scroll {
+    height: 100vh;
+    overflow-y: hidden;
+    width: 100%;
+    padding-right: 15px; /* Avoid width reflow */
+    position: fixed; /* Fix for Safari on iOS */
+  }
+}
+
+// Mostly hide the background page content
+.app-timeout-overlay {
+  position: fixed;
+  z-index: 1001;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+  background-color: $color_nhsuk-black;
+  filter: alpha(opacity=90);
+  -moz-opacity: 0.9;
+}
+
+.app-timeout-dialog {
+  position: fixed;
+  z-index: 1002;
+  top: 50%;
+  left: 50%;
+  width: calc(100vw - (2 * nhsuk-spacing(7)));
+  max-width: 435px;
+
+  @include nhsuk-responsive-padding(5);
+  overflow-x: hidden;
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+  border: $nhsuk-focus-width solid $color_nhsuk-black;
+  background-color: $color_nhsuk-white;
+
+  &:focus {
+    outline: $nhsuk-focus-width solid $nhsuk-focus-color;
+  }
+}
+
+.app-timeout-dialog__button-group {
+  @extend .app-button-group;
+
+  // Extra margin needed because of drop-shadow on button
+  @include mq($from: tablet) {
+    .app-timeout-dialog__keep-signin-button {
+      margin-bottom: $button-shadow-size;
+    }
+  }
+}
+
+// Reduce default margin between button and link
+.app-timeout-dialog__keep-signin-button {
+  margin-bottom: nhsuk-spacing(2) + $button-shadow-size
+}
+
+// Selectively remove bottom margins so the border of the modal is even
+.app-timeout-dialog__button-group,
+.app-timeout-dialog__link-wrapper .nhsuk-body,
+.app-timeout-dialog__link-wrapper .nhsuk-link {
+  margin-bottom: 0;
+}
+
+.app-timeout-dialog__countdown {
+  display: inline-block;
+  font-weight: 700;
+  white-space: nowrap;
+}

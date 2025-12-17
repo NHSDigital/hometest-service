@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Task list matches snapshot with link 1`] = `
+<div>
+  <ul
+    class="app-task-list"
+  >
+    <li
+      class="app-task-list__item app-task-list__item--with-link"
+    >
+      <div
+        class="app-task-list__name-and-hint"
+      >
+        <a
+          aria-describedby="Testing-status"
+          class="app-link app-task-list__link"
+          href="/"
+        >
+          Testing
+        </a>
+      </div>
+      <div
+        class="app-task-list__status"
+        id="Testing-status"
+      >
+        <strong
+          class="nhsuk-tag nhsuk-tag--green"
+        >
+          Completed
+        </strong>
+      </div>
+    </li>
+  </ul>
+</div>
+`;
+
+exports[`Task list matches snapshot without link 1`] = `
+<div>
+  <ul
+    class="app-task-list"
+  >
+    <li
+      class="app-task-list__item "
+    >
+      <div
+        class="app-task-list__name-and-hint"
+      >
+        Testing
+      </div>
+      <div
+        class="app-task-list__status"
+        id="Testing-status"
+      >
+        <strong
+          class="nhsuk-tag nhsuk-tag--grey"
+        >
+          Cannot start yet
+        </strong>
+      </div>
+    </li>
+  </ul>
+</div>
+`;

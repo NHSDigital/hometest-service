@@ -1,0 +1,10 @@
+export enum AutoExpiryStatus {
+  GP_PARTIAL_UPDATE_SCHEDULED = 'GP_PARTIAL_UPDATE_SCHEDULED',
+  GP_PARTIAL_UPDATE_SUCCESS = 'GP_PARTIAL_UPDATE_SUCCESS',
+  COMPLETE = 'COMPLETE'
+}
+
+export enum BloodTestExpiryWritebackStatus {
+  Scheduled = 'SCHEDULED',
+  NA = 'NOT_APPLICABLE'
+}

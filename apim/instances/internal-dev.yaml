@@ -1,0 +1,15 @@
+x-nhsd-apim:
+  target:
+    type: external
+    healthcheck: /_status
+    url: https://mtls-demo-results-api.dhctest.org
+    security:
+      type: mtls
+      secret: home-testing-mtls
+  monitoring: true
+  access:
+    - title: Application-restricted with private Key JWT
+      description: Digital Health Check API for posting lab results
+      grants:
+        app-level3: []
+      visible: true

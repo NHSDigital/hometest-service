@@ -1,0 +1,216 @@
+{
+	"info": {
+		"_postman_id": "d2a9a097-7fe0-4a92-ac76-c8dffc54c802",
+		"name": "Digital Health Checks Results Int",
+		"description": "Home Testing Int Onboarding postman collection connected to int environment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23223363"
+	},
+	"item": [
+		{
+			"name": "/results - send results",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{authorization_header_value}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"orderId\": \"lab-order-id\",\n    \"orderExternalReference\": \"{orderId}\",\n    \"pendingReorder\": true,\n    \"resultData\": [\n        {\n            \"biomarkerCode\": \"GHBI\",\n            \"units\": \"mmol/L\",\n            \"value\": null,\n            \"successful\": false,\n            \"failureReasonCode\": \"not_calculated\",\n            \"failureReasonDescription\": \"The result was not calculated\"\n        },\n        {\n            \"biomarkerCode\": \"CHO\",\n            \"units\": \"mmol/L\",\n            \"value\": 6.3,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"HDL\",\n            \"units\": \"mmol/L\",\n            \"value\": 1.5,\n            \"successful\": true\n        },\n        {\n            \"biomarkerCode\": \"CHDD\",\n            \"units\": \"mmol/L\",\n            \"value\": 5,\n            \"successful\": true\n        }\n    ],\n    \"resultDate\": \"2023-12-11T15:44:37.685Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://int.api.service.nhs.uk/home-testing/results",
+					"protocol": "https",
+					"host": [
+						"int",
+						"api",
+						"service",
+						"nhs",
+						"uk"
+					],
+					"path": [
+						"home-testing",
+						"results"
+					]
+				},
+				"description": "### **Collection: NHS API Int Onboarding**\n\n---"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"var uuid = require('uuid');",
+					"",
+					"var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+					"var envName = pm.environment.get('apim_env_name') || '';",
+					"var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+					"",
+					"if (!privateKey) {",
+					"    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+					"}",
+					"",
+					"if (!apiKeyValue) {",
+					"    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+					"}",
+					"",
+					"var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+					"",
+					"console.log(auth_url);",
+					"",
+					"var navigator = {};",
+					"var window = {};",
+					"const interval = setTimeout(() => {}, 2147483647);",
+					"",
+					"return new Promise((resolve, reject) => {        ",
+					"    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+					"        return resolve();",
+					"    }",
+					"",
+					"    pm.sendRequest(",
+					"        {",
+					"            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+					"            method: 'GET'",
+					"        }, function (err, res) {",
+					"            if (err) {",
+					"                return reject(err);",
+					"            }",
+					"",
+					"            pm.globals.set('jsrsasign-js', res.text());            ",
+					"            return resolve();",
+					"        }",
+					"    );",
+					"}).then(() => {             ",
+					"    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+					"",
+					"    // Set headers for JWT",
+					"    var header = {",
+					"        'typ': 'JWT',",
+					"        'alg': 'RS512',",
+					"        'kid': 'dev-1'",
+					"    };",
+					"",
+					"    // Prepare timestamp in seconds",
+					"    var currentTimestamp = Math.floor(Date.now() / 1000)",
+					"    var uuid = require('uuid');",
+					"    var jti_value = uuid.v4();",
+					"    var data = {",
+					"        'sub': apiKeyValue,",
+					"        'iss': apiKeyValue,",
+					"        'jti': jti_value,",
+					"        'aud': auth_url,",
+					"        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+					"    }    ",
+					"",
+					"    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+					"    return new Promise((resolve, reject) => {                              ",
+					"        pm.sendRequest({",
+					"            url: auth_url,",
+					"            method: \"POST\",",
+					"            header: {",
+					"                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+					"            },",
+					"            body: {",
+					"                mode: \"urlencoded\",",
+					"                urlencoded: [",
+					"                    {",
+					"                        key: \"grant_type\",",
+					"                        value: \"client_credentials\"",
+					"                    },",
+					"                    {",
+					"                        key: \"client_assertion_type\",",
+					"                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+					"                    },",
+					"                    {",
+					"                        key: \"client_assertion\",",
+					"                        value: sJWT",
+					"                    }",
+					"                ]",
+					"            }",
+					"        }, function (err, res) {                                            ",
+					"            if (err) {",
+					"                return reject(err);",
+					"            }",
+					"",
+					"            //assign the authorization header value",
+					"            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+					"",
+					"            //assign the message batch reference",
+					"            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+					"",
+					"            //assign the message reference",
+					"            pm.environment.set(\"message_reference\", uuid.v4());",
+					"",
+					"            //generate a correlation identifier",
+					"            pm.environment.set(\"correlation_id\", uuid.v4());",
+					"",
+					"            return resolve();",
+					"        });        ",
+					"    });",
+					"}).then(() => {    ",
+					"    clearTimeout(interval);",
+					"}).catch((err) => {     ",
+					"    console.error(err); ",
+					"    clearTimeout(interval);    ",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "apim_env_name",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

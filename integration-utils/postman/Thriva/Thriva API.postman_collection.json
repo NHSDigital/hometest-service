@@ -1,0 +1,187 @@
+{
+  "info": {
+    "_postman_id": "f6592689-0f0b-4e71-8f8b-003d511280c1",
+    "name": "Thriva API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+    "_exporter_id": "3570035"
+  },
+  "item": [
+    {
+      "name": "Create OAuth Token",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "COPY VALUE OF thriva/sandbox/auth-request secret from Test environment Secret Manager\nThe token returned in the response to this request needs to be copied over to the auth config of the Thriva API collection in order for the rest of the requests to work",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://auth.sandbox.thriva.io/oauth/token"
+      },
+      "response": []
+    },
+    {
+      "name": "Create an Order DHC",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/vnd.api+json"
+          },
+          {
+            "key": "content-type",
+            "value": "application/vnd.api+json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n            \"data\": {\n                \"type\": \"order\",\n                \"attributes\": {\n                    \"order_external_reference\": \"30747667-568f-4bc8-b5e6-38af4bd691df\",\n                    \"test\": {\n                        \"test_profiles\": [\n                            \"TCHDL\",\n                            \"GHB\"\n                        ]\n                    },\n                    \"delivery_address\": {\n                        \"name\": \"Justin DALTON\",\n                        \"line1\": \"Flat 225\",\n                        \"line2\": \"85 Royal Mint Street\",\n                        \"line3\": \"\",\n                        \"city\": \"London\",\n                        \"postcode\": \"E1 8RD\",\n                        \"country\": \"GB\"\n                    },\n                    \"user\": {\n                        \"contact\": {\n                            \"first_name\": \"Justin\",\n                            \"last_name\": \"DALTON\",\n                            \"email\": \"nhsapp.aos+dhc.p9user13@gmail.com\"\n                        },\n                        \"date_of_birth\": \"1976-04-12\",\n                        \"sex\": \"male\",\n                        \"user_external_reference\": \"9bdc7bf9-f4d9-40d8-9e46-1e76317f75d2\"\n                    }\n                }\n            }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://api.euw2.sandbox.thriva.io/dhc/orders",
+        "description": "Generated from cURL: curl --request POST \\\n     --url https://api.thriva.io/v1/orders \\\n     --header 'accept: application/vnd.api+json' \\\n     --header 'content-type: application/vnd.api+json' \\\n     --data '\n{\n  \"data\": {\n    \"type\": \"order\",\n    \"attributes\": {\n      \"delivery_address\": {\n        \"name\": \"Mr Joe Blogs\",\n        \"company_name\": \"Thriva Ltd\",\n        \"line1\": \"3rd Floor\",\n        \"line2\": \"White Collar Factory\",\n        \"line3\": \"1 Old Street Yard\",\n        \"city\": \"London\",\n        \"state\": \"Greater London\",\n        \"postcode\": \"EC1Y 8AF\",\n        \"country\": \"GB\"\n      },\n      \"tests\": [\n        {\n          \"test_profiles\": [\n            \"LFT\",\n            \"LIPP\"\n          ],\n          \"subject\": {\n            \"contact\": {\n              \"first_name\": \"Frasier\",\n              \"last_name\": \"Crane\",\n              \"email\": \"frasier.crane@example.com\",\n              \"mobile_phone_number\": \"+447123456789\"\n            },\n            \"date_of_birth\": \"1953-03-07\",\n            \"sex\": \"female\"\n          },\n          \"user_id\": \"U-8719EAF0-6B39-46B5-86DA-AF11155F3B65\",\n          \"product_code\": \"P-12345\",\n          \"sample\": {\n            \"type\": \"blood\",\n            \"collection_method\": \"finger_prick\"\n          },\n          \"analysis\": {\n            \"required\": true,\n            \"lab\": \"PUR1\"\n          }\n        }\n      ]\n    }\n  }\n}\n'"
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch an Order",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/vnd.api+json"
+          }
+        ],
+        "url": "https://api.euw2.sandbox.thriva.io/v1/orders/O-7C38E5D4-CADD-4718-BE18-E22DF6C92BB0",
+        "description": "Generated from cURL: curl --request GET \\\n     --url https://api.thriva.io/v1/orders/order_id \\\n     --header 'accept: application/vnd.api+json'"
+      },
+      "response": []
+    },
+    {
+      "name": "Create a User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/vnd.api+json"
+          },
+          {
+            "key": "content-type",
+            "value": "application/vnd.api+json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\n{\n  \"data\": {\n    \"attributes\": {\n      \"contact\": {\n        \"first_name\": \"Frasier\",\n        \"last_name\": \"Crane\",\n        \"email\": \"frasier1.crane@example.com\",\n        \"mobile_phone_number\": \"+447123456789\"\n      },\n      \"sex\": \"female\",\n      \"date_of_birth\": \"1953-03-07\",\n      \"external_reference\": \"28651739-737a-4fb3-9c44-4b5557b2b751\"\n    },\n    \"type\": \"user\"\n  }\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://api.euw2.sandbox.thriva.io/v1/users",
+        "description": "Generated from cURL: curl --request POST \\\n     --url https://api.thriva.io/v1/users \\\n     --header 'accept: application/vnd.api+json' \\\n     --header 'content-type: application/vnd.api+json' \\\n     --data '\n{\n  \"data\": {\n    \"attributes\": {\n      \"contact\": {\n        \"first_name\": \"Frasier\",\n        \"last_name\": \"Crane\",\n        \"email\": \"frasier.crane@example.com\",\n        \"mobile_phone_number\": \"+447123456789\"\n      },\n      \"sex\": \"female\",\n      \"date_of_birth\": \"1953-03-07\",\n      \"external_reference\": \"28651739-737a-4fb3-9c44-4b5557b2b75f\"\n    },\n    \"type\": \"user\"\n  }\n}\n'"
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch a User",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/vnd.api+json"
+          },
+          {
+            "key": "content-type",
+            "value": "application/vnd.api+json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\n{\n  \"data\": {\n    \"attributes\": {\n      \"contact\": {\n        \"first_name\": \"Frasier\",\n        \"last_name\": \"Crane\",\n        \"email\": \"frasier1.crane@example.com\",\n        \"mobile_phone_number\": \"+447123456789\"\n      },\n      \"sex\": \"female\",\n      \"date_of_birth\": \"1953-03-07\",\n      \"external_reference\": \"28651739-737a-4fb3-9c44-4b5557b2b751\"\n    },\n    \"type\": \"user\"\n  }\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://api.euw2.sandbox.thriva.io/v1/users/U-1243A673-FD15-4A52-91B9-FDE2E8F4093F",
+        "description": "Generated from cURL: curl --request POST \\\n     --url https://api.thriva.io/v1/users \\\n     --header 'accept: application/vnd.api+json' \\\n     --header 'content-type: application/vnd.api+json' \\\n     --data '\n{\n  \"data\": {\n    \"attributes\": {\n      \"contact\": {\n        \"first_name\": \"Frasier\",\n        \"last_name\": \"Crane\",\n        \"email\": \"frasier.crane@example.com\",\n        \"mobile_phone_number\": \"+447123456789\"\n      },\n      \"sex\": \"female\",\n      \"date_of_birth\": \"1953-03-07\",\n      \"external_reference\": \"28651739-737a-4fb3-9c44-4b5557b2b75f\"\n    },\n    \"type\": \"user\"\n  }\n}\n'"
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/vnd.api+json"
+          },
+          {
+            "key": "content-type",
+            "value": "application/vnd.api+json"
+          }
+        ],
+        "url": "https://api.euw2.sandbox.thriva.io/v1/users",
+        "description": "Generated from cURL: curl --request POST \\\n     --url https://api.thriva.io/v1/users \\\n     --header 'accept: application/vnd.api+json' \\\n     --header 'content-type: application/vnd.api+json' \\\n     --data '\n{\n  \"data\": {\n    \"attributes\": {\n      \"contact\": {\n        \"first_name\": \"Frasier\",\n        \"last_name\": \"Crane\",\n        \"email\": \"frasier.crane@example.com\",\n        \"mobile_phone_number\": \"+447123456789\"\n      },\n      \"sex\": \"female\",\n      \"date_of_birth\": \"1953-03-07\",\n      \"external_reference\": \"28651739-737a-4fb3-9c44-4b5557b2b75f\"\n    },\n    \"type\": \"user\"\n  }\n}\n'"
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": {
+      "token": "COPY TOKEN FROM CREATE TOKEN RESPONSE"
+    }
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ]
+}

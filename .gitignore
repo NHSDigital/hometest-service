@@ -11,3 +11,72 @@
 !project.code-workspace
 
 # Please, add your custom content below!
+
+## dhc gitignore
+
+# Logs
+logs
+*.log
+npm-debug.log*
+.pnpm-debug.log*
+
+# CDK generated files
+cdk.out/
+infra/main/cdk.context.json
+infra/dev/cdk.context.json
+infra/db/cdk.context.json
+infra/shared/cdk.context.json
+
+# Dependency directories
+node_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+digital-health-checks.wiki/
+# Optional npm cache directory
+.npm
+
+digital-health-checks.wiki
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+**/.DS_Store
+
+# js files
+i**/*.js
+**/*.d.ts
+
+!styles.d.ts
+
+# nhs uk file copied from node modules
+ui/public/nhsuk.min.js
+
+# gov uk files copied from node modules
+ui/public/assets/images/govuk-images
+ui/public/assets/fonts
+ui/public/assets/manifest.json
+ui/public/govuk-frontend.min.css
+
+# jest environment variables setup file
+lambdas/jest.setup.js
+
+.VSCodeCounter
+
+integration-utils/postman/NHC\ Health\ Checks/environments
+.idea
+
+# generated mock data
+data/mocks/generated-scenarios/
+data/db/nonprod/nhc-health-check-db/generated-mock-health-checks.json
+data/db/nonprod/nhc-patient-db/generated-mock-patients.json
+data/db/nonprod/nhc-order-db/generated-mock-lab-orders.json
+data/db/nonprod/nhc-lab-result-db/generated-mock-lab-results.json
+data/mocks-generator/dist/
+
+dist/

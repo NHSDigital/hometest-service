@@ -52,6 +52,9 @@ function get-cmd-to-run() {
     "staged-changes")
       cmd="protect --source $dir --verbose --staged"
       ;;
+    "current-codebase")
+      cmd="detect --source $dir --verbose --no-git"
+      ;;
   esac
   # Include base line file if it exists
   if [ -f "$dir/scripts/config/.gitleaks-baseline.json" ]; then

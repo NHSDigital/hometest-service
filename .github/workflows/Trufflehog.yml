@@ -1,0 +1,33 @@
+name: TruffleHog Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches:
+      - 'main'
+      - 'release/**'
+  workflow_dispatch:
+
+jobs:
+  trufflehog_scan:
+    name: TruffleHog Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: echo Branch In Use
+        run: echo "Comapring changes from ${{ github.ref }} being merged to ${{ github.event.pull_request.base.ref }}"
+
+      - name: Secret Scanning
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --debug --exclude-paths=.github/workflows/Exclusions/TrufflehogExclusions.txt
+
+      - name: Scan Results Status
+        if: steps.trufflehog.outcome == 'failure'
+        run: exit 1

@@ -1,0 +1,232 @@
+name: 'Checkov CDK scan'
+description: 'Shared Checkov workflow for CDK stacks'
+
+inputs:
+  aws_account_id:
+    description: 'AWS account to assume into'
+    required: true
+  env_name:
+    description: 'Environment name (poc/int)'
+    required: true
+  soft_fail:
+    description: 'Whether Checkov should soft-fail the job'
+    required: true
+    default: 'true'
+  enable_slack:
+    description: 'Whether to send Slack summary'
+    required: true
+    default: 'false'
+  fhir_ssh_private_key:
+    description: 'Private key for lambda deps (FHIR translator)'
+    required: true
+  slack_token:
+    description: 'Slack bot token (only needed when enable_slack=true)'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        audience: sts.amazonaws.com
+        aws-region: eu-west-2
+        role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/github-actions-security-audit
+
+    - name: Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    - name: Install AWS CDK
+      shell: bash
+      run: |
+        npm install -g aws-cdk
+        cdk --version
+
+    - name: Install repo dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Install UI dependencies
+      shell: bash
+      run: npm ci
+      working-directory: ui
+
+    - name: Set up SSH key (for lambda deps)
+      uses: ./.github/actions/add-ssh-keys
+      with:
+        private-key: ${{ inputs.fhir_ssh_private_key }}
+
+    - name: Install lambda dependencies
+      shell: bash
+      run: |
+        export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa'
+        npm ci
+      working-directory: lambdas
+
+    - name: Prepare mock assets for synth
+      shell: bash
+      run: |
+        mkdir -p data/mocks
+        [ -f data/mocks/.placeholder ] || echo '{}' > data/mocks/.placeholder
+
+    - name: Synth templates for Checkov
+      shell: bash
+      env:
+        IS_RUN_FROM_PIPELINE: true
+      run: npm run checkov ${{ inputs.env_name }} ${{ inputs.env_name }}
+
+    - name: Run Checkov
+      id: checkov
+      uses: bridgecrewio/checkov-action@v12
+      with:
+        directory: ./checkov-temp
+        quiet: true
+        output_format: cli,sarif
+        output_file_path: console,results.sarif
+        soft_fail: ${{ inputs.soft_fail }}
+
+    - name: Parse Checkov Output
+      if: ${{ inputs.enable_slack == 'true' }}
+      shell: bash
+      run: |
+        jq '[.runs[].results[] | select(.level == "error" or .level == "warning")]
+            | group_by(.level)
+            | map({severity: .[0].level, count: length})' results.sarif > summary.json
+
+    - name: Display Summary
+      if: ${{ inputs.enable_slack == 'true' }}
+      shell: bash
+      run: |
+        echo "Checkov summary (errors/warnings):"
+        cat summary.json || echo "No summary.json generated"
+
+    - name: Retrieve Findings Counts
+      if: ${{ always() && inputs.enable_slack == 'true' }}
+      id: counts
+      shell: bash
+      run: |
+        if [ ! -f summary.json ]; then
+          echo "summary.json not found, defaulting counts to 0."
+          echo "total=0"   >> $GITHUB_OUTPUT
+          echo "error=0"   >> $GITHUB_OUTPUT
+          echo "warning=0" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        TOTAL=$(jq 'reduce .[] as $item (0; . + $item.count)' summary.json 2>/dev/null); [ -z "$TOTAL" ] && TOTAL=0
+        ERROR=$(jq '(.[] | select(.severity == "error")   | .count) // 0' summary.json 2>/dev/null); [ -z "$ERROR" ] && ERROR=0
+        WARNING=$(jq '(.[] | select(.severity == "warning") | .count) // 0' summary.json 2>/dev/null); [ -z "$WARNING" ] && WARNING=0
+
+        echo "total=$TOTAL"   >> $GITHUB_OUTPUT
+        echo "error=$ERROR"   >> $GITHUB_OUTPUT
+        echo "warning=$WARNING" >> $GITHUB_OUTPUT
+
+    - name: Report result to Slack
+      if: ${{ always() && inputs.enable_slack == 'true' }}
+      uses: ./.github/actions/report-to-slack
+      with:
+        job-status: ${{ job.status }}
+        job-name: ${{ github.job }}
+        job-url: ${{ env.JOB_URL }}
+        environment: ${{ inputs.env_name }}
+        slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+        slack-token: ${{ inputs.slack_token }}
+        triggeredBy: ${{ github.actor }}
+        include_main_block: false
+        blocks: |
+          [
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "CDK Checkov scan completed - <${{ env.JOB_URL }}|view details>"
+              }
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "table",
+              "rows": [
+                [
+                  {
+                    "type":"rich_text",
+                    "elements":[
+                      {
+                        "type":"rich_text_section",
+                        "elements":[
+                          {
+                            "type":"text",
+                            "text":"Failed Checks",
+                            "style":{"bold":true}
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type":"rich_text",
+                    "elements":[
+                      {
+                        "type":"rich_text_section",
+                        "elements":[
+                          {
+                            "type":"text",
+                            "text":"Warning/Skipped Checks",
+                            "style":{"bold":true}
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                [
+                  {
+                    "type":"rich_text",
+                    "elements":[
+                      {
+                        "type":"rich_text_section",
+                        "elements":[
+                          {
+                            "type":"text",
+                            "text":"${{ steps.counts.outputs.error || '0' }}"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type":"rich_text",
+                    "elements":[
+                      {
+                        "type":"rich_text_section",
+                        "elements":[
+                          {
+                            "type":"text",
+                            "text":"${{ steps.counts.outputs.warning || '0' }}"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+
+    - name: Upload Checkov SARIF artifact
+      if: always() && hashFiles('results.sarif') != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: checkov-results-${{ inputs.env_name }}
+        path: results.sarif
+        retention-days: 7

@@ -1,0 +1,22 @@
+{
+  "inserts": [
+    {
+      "gpOdsCode": "mock_enabled_code",
+      "gpEmail": "email_verification+mock_enabled_code@mockdhctest.org",
+      "gpName": "Mock mock_enabled_code General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "mock_emis_err_500_code",
+      "gpEmail": "email_verification+mock_emis_err_500_code@mockdhctest.org",
+      "gpName": "Mock mock_emis_err_500_code General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "mock_emis_err_200_code",
+      "gpEmail": "email_verification+mock_emis_err_200_code@mockdhctest.org",
+      "gpName": "Mock mock_emis_err_200_code General Practice",
+      "enabled": true
+    }
+  ]
+}

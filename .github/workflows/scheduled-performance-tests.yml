@@ -1,0 +1,76 @@
+name: Scheduled Performance Tests
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  schedule:
+    - cron: "0 19 * * 2" #Job runs every Tuesday at 19:00
+
+jobs:
+  deploy-perf-main:
+    name: Deploy latest main to perf
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: main
+      env: perf
+      account: poc
+    secrets: inherit
+
+  run-single-user-test:
+    name: Run Single User Performance Test
+    needs: deploy-perf-main
+    uses: ./.github/workflows/performance-tests.yml
+    with:
+      environment: perf
+      test_type: single-user
+    secrets: inherit
+
+  run-load-test:
+    name: Run Load Performance Test
+    needs: run-single-user-test
+    uses: ./.github/workflows/performance-tests.yml
+    with:
+      environment: perf
+      test_type: load-test
+    secrets: inherit
+
+  upload-report-to-s3:
+    name: Upload Load Test Report to S3
+    needs: run-load-test
+    runs-on: ubuntu-latest
+    environment: poc
+    steps:
+      - name: Set AWS Region
+        run: |
+          export AWS_REGION=eu-west-2
+          export AWS_DEFAULT_REGION=eu-west-2
+          echo "Region set to: $AWS_REGION"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      - name: Download results artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: results-load-test-${{ github.run_id }}
+          path: perf-tests/results
+
+      - name: Set date variable
+        id: set_date
+        run: echo "DATE=$(date +'%d.%m.%Y')" >> $GITHUB_ENV
+
+      - name: Upload report to S3
+        env:
+          AWS_REGION: eu-west-2
+          BUCKET_NAME: 880521146064-perf-results-bucket
+          DATE: ${{ env.DATE }}
+        run: |
+          aws s3 cp perf-tests/results/results-load-test-${{ github.run_id }}.jtl s3://$BUCKET_NAME/perf/${DATE}/results-${DATE}.jtl || echo "results-load-test-${{ github.run_id }}.jtl not found"
+          aws s3 cp --recursive perf-tests/results/results-load-test-${{ github.run_id }} s3://$BUCKET_NAME/perf/${DATE}/html-report/

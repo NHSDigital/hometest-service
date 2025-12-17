@@ -1,0 +1,46 @@
+name: Checkov PR Scan
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/*'
+    types: [opened, synchronize, reopened]
+
+env:
+  IS_RUN_FROM_PIPELINE: true
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+
+jobs:
+  run-checkov:
+    name: Checkov Scan (PR)
+    # Only run for PRs from this repo (so secrets are available)
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run shared Checkov action (POC)
+        uses: ./.github/actions/checkov-cdk
+        with:
+          aws_account_id: '880521146064'
+          env_name: poc
+          soft_fail: 'true'
+          enable_slack: 'false'
+          fhir_ssh_private_key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+          slack_token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+        env:
+          JOB_URL: ${{ env.JOB_URL }}
+          SLACK_CHANNEL_NAME: '#hc-env-notifications-security'

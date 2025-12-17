@@ -1,0 +1,67 @@
+name: Publish APIM to proxygen and specification catalogue
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        type: string
+      account:
+        description: 'AWS account to use'
+        required: true
+        type: string
+      apim-env:
+        description: 'APIM environment to deploy to'
+        required: true
+        type: string
+
+jobs:
+  release_and_publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.account }}
+    steps:
+      - name: Print deployment details
+        run: |
+          echo "git ref: ${{ inputs.ref }}"
+          echo "APIM env name: ${{ inputs.apim-env }}"
+          echo "AWS account name: ${{ inputs.account }}"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Prepare python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          pipx install proxygen-cli
+
+      - name: Setup proxygen-cli
+        env:
+          PROXYGEN_PRIVATE_KEY: ${{ secrets.PROXYGEN_PRIVATE_KEY }}
+          PROXYGEN_KID: ${{ secrets.PROXYGEN_KID }}
+          PROXYGEN_CLIENT_ID: ${{ secrets.PROXYGEN_CLIENT_ID }}
+        run: |
+          # Setup proxygen auth and settings
+          mkdir -p ${HOME}/.proxygen
+          echo "$PROXYGEN_PRIVATE_KEY" > ${HOME}/.proxygen/key
+          envsubst < ./apim/proxygen-credentials-template.yaml > ${HOME}/.proxygen/credentials.yaml
+          envsubst < ./apim/proxygen-settings.yaml > ${HOME}/.proxygen/settings.yaml
+          proxygen status
+
+      - name: Publish spec
+        run: npm run deploy-apim ${{ inputs.apim-env }} home-testing
+
+      - name: Retrieve spec
+        run: proxygen instance get ${{ inputs.apim-env }} home-testing

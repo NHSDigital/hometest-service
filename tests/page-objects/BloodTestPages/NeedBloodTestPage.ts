@@ -1,0 +1,28 @@
+import { type Locator, type Page } from '@playwright/test';
+import { JourneyStepNames, pageTitlesMap } from '../../route-paths';
+import { HTCPage } from '../HTCPage';
+
+export class NeedBloodTestPage extends HTCPage {
+  readonly pageHeader: Locator;
+  readonly backLink: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.pageHeader = page.locator(
+      'h1:has-text("Book a face-to-face appointment with your GP surgery")'
+    );
+    this.backLink = page.getByRole('link', { name: 'Back' });
+  }
+
+  async waitUntilLoaded(): Promise<void> {
+    await this.pageHeader.waitFor();
+  }
+
+  async clickBackLink(): Promise<void> {
+    await this.backLink.click();
+  }
+
+  getExpectedTitleHeading(): string {
+    return pageTitlesMap[JourneyStepNames.NeedBloodTestPage];
+  }
+}

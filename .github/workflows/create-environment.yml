@@ -1,0 +1,226 @@
+name: Deploy New Environment (POC)
+run-name: Deploy New Env - ${{ inputs.environment }} - ${{ inputs.branch }}
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name to deploy'
+        required: true
+        default: 'main'
+        type: string
+      environment:
+        description: 'Name of the new environment (lowercase only)'
+        required: true
+        type: string
+        default: ''
+
+env:
+  AWS_REGION: eu-west-2
+  OPENSSL_ENCRYPTION_KEY: ${{ secrets.OPENSSL_ENCRYPTION_KEY }}
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  IS_RUN_FROM_PIPELINE: true
+  SLACK_CHANNEL_NAME: '#hc-env-notifications-poc-custom'
+
+jobs:
+  validate-environment:
+    environment: poc
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.check-env.outputs.valid }}
+    steps:
+      - name: Setup conditional environment variables
+        run: |
+          echo "NONPROD_INTEGRATOR_WAF_SECRET=${{ secrets.NONPROD_INTEGRATOR_WAF_SECRET }}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install AWS CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
+      - name: Set AWS Region
+        run: |
+          export AWS_REGION=${{ env.AWS_REGION }}
+          export AWS_DEFAULT_REGION=${{ env.AWS_REGION }}
+          echo "Region set to: ${{ env.AWS_REGION }}"
+
+      - name: Set up SSH key
+        uses: ./.github/actions/add-ssh-keys
+        with:
+          private-key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      - name: Check Env is not a protected env name
+        run: bash ./scripts/pipeline-env-check.sh ${{ inputs.environment }}
+
+      - name: Check environment name doesnt exist already
+        id: check-env
+        run: |
+          ENV="${{ inputs.environment }}"
+          echo "Checking if environment '$ENV' already exists..."
+
+          STACKS=$(aws cloudformation list-stacks \
+          --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE \
+          --query "StackSummaries[].StackName" --output text)
+
+          for STACK in $STACKS; do
+            TAG_VALUE=$(aws cloudformation describe-stacks --stack-name "$STACK" \
+              --query "Stacks[0].Tags[?Key=='nhc_env'].Value" --output text)
+            if [ "$TAG_VALUE" = "$ENV" ]; then
+              echo "::error::Environment '$ENV' already exists as a tag value (nhc_env) on stack '$STACK'."
+              echo "valid=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+          done
+
+          echo "valid=true" >> $GITHUB_OUTPUT
+
+  deploy-new-env:
+    name: Deploy
+    needs: validate-environment
+    if: needs.validate-environment.outputs.valid == 'true'
+    runs-on: ubuntu-latest
+    environment: poc
+
+    steps:
+      - name: Setup conditional environment variables
+        run: |
+          echo "NONPROD_INTEGRATOR_WAF_SECRET=${{ secrets.NONPROD_INTEGRATOR_WAF_SECRET }}" >> $GITHUB_ENV
+      - name: Print deployment details
+        run: |
+          echo "git ref: ${{ inputs.branch }}"
+          echo "env name: ${{ inputs.environment }}"
+          echo "AWS account name: poc"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install AWS CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
+      - name: Set AWS Region
+        run: |
+          export AWS_REGION=${{ env.AWS_REGION }}
+          export AWS_DEFAULT_REGION=${{ env.AWS_REGION }}
+          echo "Region set to: ${{ env.AWS_REGION }}"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install ui dependencies
+        run: npm ci
+        working-directory: ui
+
+      - name: Install mock data generator dependencies
+        run: npm ci
+        working-directory: data/mocks-generator
+
+      - name: Set up SSH key
+        uses: ./.github/actions/add-ssh-keys
+        with:
+          private-key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+
+      - name: Install lambda dependencies
+        run: |
+          export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa'
+          npm ci
+        working-directory: lambdas
+
+      - name: Generate environment files
+        run: ./generateEnvFiles.sh poc ${{ inputs.environment }}
+        working-directory: ./scripts/dev-setup
+        shell: bash
+
+      - name: Setup manufacturer information
+        run: bash ./scripts/release-process/setup-manufacturer.sh poc/${{ inputs.environment }}.env ${{ inputs.branch }}
+
+      - name: Build ui
+        run: REACT_APP_AWS_ACCOUNT_NAME=poc REACT_APP_ENV=${{ inputs.environment }} npm run build
+        working-directory: ui
+        env:
+          CI: false
+
+      - name: Generate Mock Data
+        working-directory: data/mocks-generator
+        run: npm run generate-mock-data
+
+      - name: CDK Deploy Security Resources
+        working-directory: infra/security
+        run: bash ./scripts/deploy-security.sh ${{ inputs.environment }}
+
+      - name: CDK Deploy Shared Resources
+        working-directory: infra/shared
+        run: cdk deploy --context awsAccount=poc --context environment=${{ inputs.environment }} --all --require-approval never --region ${{ env.AWS_REGION }}
+
+      - name: CDK Deploy Dev app
+        working-directory: infra/dev
+        run: cdk deploy --context awsAccount=poc --context environment=${{ inputs.environment }} --all --require-approval never --region ${{ env.AWS_REGION }}
+
+      - name: CDK Deploy Db app
+        working-directory: infra/db
+        run: cdk deploy --context awsAccount=poc --context environment=${{ inputs.environment }} --all --require-approval never --region ${{ env.AWS_REGION }}
+
+      - name: CDK Deploy Main app
+        working-directory: infra/main
+        run: cdk deploy --context awsAccount=poc --context environment=${{ inputs.environment }} --all --require-approval never --region ${{ env.AWS_REGION }}
+
+      - name: Populate database
+        run: npm run load-data ${{ inputs.environment }}
+
+      - name: Archive npm failure logs
+        uses: actions/upload-artifact@v4.3.0
+        if: failure()
+        with:
+          retention-days: 1
+          name: npm-logs
+          path: /home/runner/.npm/_logs
+
+      - name: Report result to Slack
+        if: always()
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: ${{ github.job }}
+          job-url: ${{ env.JOB_URL }}
+          environment: ${{ inputs.environment }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          branch-tag: ${{ inputs.branch }}

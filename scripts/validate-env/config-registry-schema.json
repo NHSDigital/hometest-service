@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configuration Registry Schema",
+  "description": "Schema for documenting environment variables in CDK apps",
+  "type": "object",
+  "required": ["app", "description", "variables"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "app": {
+      "type": "string",
+      "description": "Name of the CDK app (main, db, dev, security, shared)",
+      "enum": ["main", "db", "dev", "security", "shared"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the CDK app's purpose"
+    },
+    "variables": {
+      "type": "object",
+      "description": "Map of environment variable names to their definitions",
+      "patternProperties": {
+        "^[A-Z][A-Z0-9_]*$": {
+          "type": "object",
+          "required": ["description", "type"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of the variable's purpose"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["string", "number", "boolean", "json"],
+              "description": "Expected data type of the variable value"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["poc", "non-poc", "non-prod", "prod"],
+              "description": "If present means not all environments require this variable"
+            },
+            "example": {
+              "oneOf": [
+                { "type": "string" },
+                { "type": "number" },
+                { "type": "boolean" }
+              ],
+              "description": "Example value for documentation purposes"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

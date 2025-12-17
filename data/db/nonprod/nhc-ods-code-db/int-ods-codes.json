@@ -1,0 +1,40 @@
+{
+  "inserts": [
+    {
+      "gpOdsCode": "C83615",
+      "gpEmail": "email_verification+C83615@dhctest.org",
+      "gpName": "Mock C83615 General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "A20047",
+      "gpEmail": "email_verification+A20047@mockdhctest.org",
+      "gpName": "Mock A20047 General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "A00002",
+      "gpEmail": "email_verification+A00002@mockdhctest.org",
+      "gpName": "Mock A00002 General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "Y00025",
+      "gpEmail": "email_verification+Y00025@mockdhctest.org",
+      "gpName": "Mock Y00025 General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "B85036",
+      "gpEmail": "email_verification+B85036@mockdhctest.org",
+      "gpName": "Mock B85036 General Practice",
+      "enabled": true
+    },
+    {
+      "gpOdsCode": "F00041",
+      "gpEmail": "email_verification+F00041@mockdhctest.org",
+      "gpName": "Mock F00041 General Practice",
+      "enabled": true
+    }
+  ]
+}

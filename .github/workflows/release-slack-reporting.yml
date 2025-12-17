@@ -1,0 +1,108 @@
+name: Release Slack Reporting
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to test with (e.g., v1.2.3)'
+        required: true
+        type: string
+
+env:
+  SLACK_TOKEN: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+  SLACK_CHANNEL_NAME: '#hc-releases-comms'
+  JOB_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+  send-release-info-to-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Get release info
+        id: get_release
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            tag="${{ inputs.tag }}"
+            release_json=$(gh release view "$tag" --json name,body)
+            echo "name=$(echo "$release_json" | jq -r '.name')" >> $GITHUB_OUTPUT
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "$release_json" | jq -r '.body' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "name=${{ github.event.release.name }}" >> $GITHUB_OUTPUT
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.release.body }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Get release body and format
+        id: format_release_body
+        run: |
+          release_body=$(cat << 'EOF'
+          ${{ steps.get_release.outputs.body }}
+          EOF
+          )
+
+          # Start with header and divider
+          blocks=$(jq -n \
+            '[
+                {
+                    type: "section",
+                    text: { type: "mrkdwn", text: "*🚀 Release ${{ steps.get_release.outputs.name }} published!*" }
+                },
+                { type: "divider" }
+            ]')
+
+          # Split release body into chunks of max 3000 characters (Slack limit)
+          max_length=3000
+          while [ -n "$release_body" ]; do
+            if [ ${#release_body} -le $max_length ]; then
+              chunk="$release_body"
+              release_body=""
+            else
+              # Find the last newline before max_length to avoid breaking mid-line
+              temp="${release_body:0:$max_length}"
+              # Find position of last newline in temp
+              last_newline="${temp%$'\n'*}"
+              last_newline_pos=${#last_newline}
+
+              if [ "$last_newline_pos" -lt "$max_length" ] && [ "$last_newline_pos" -gt 0 ]; then
+                chunk="${release_body:0:$last_newline_pos}"
+                release_body="${release_body:$((last_newline_pos + 1))}"
+              else
+                # No newline found, just break at max_length
+                chunk="${release_body:0:$max_length}"
+                release_body="${release_body:$max_length}"
+              fi
+            fi
+
+            blocks=$(jq \
+              --arg chunk "$chunk" \
+              '. += [{ type: "section", text: { type: "mrkdwn", text: $chunk }}]' \
+              <<<"$blocks")
+          done
+
+          echo "blocks<<EOF" >> $GITHUB_OUTPUT
+          echo "$blocks" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Report result to Slack
+        if: always()
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-name: ${{ github.job }}
+          job-url: ${{ env.JOB_URL }}
+          slack-channel: ${{ env.SLACK_CHANNEL_NAME }}
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.actor }}
+          include_main_block: false
+          blocks: ${{ steps.format_release_body.outputs.blocks }}

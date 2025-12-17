@@ -1,0 +1,68 @@
+@import '../../node_modules/nhsuk-frontend/packages/nhsuk';
+@import 'overrides';
+@import 'HeaderContainerOverride';
+@import 'InsetText';
+@import 'Card';
+@import 'ChevronRightIcon';
+@import 'MultipleInputs';
+@import 'task-list';
+@import 'buttons';
+@import 'timeout-dialog';
+@import 'typography';
+@import 'utility';
+@import '../../node_modules/nhsuk-tools-chart-components-react/dist/esm/bundle.css';
+@import 'spinner';
+@import 'SoftwareManufacturingInformation';
+@import 'NotificationBanner';
+
+.new-line {
+  white-space: pre-line;
+}
+
+.header-service-name {
+  white-space: nowrap;
+
+  @include mq($until: tablet) {
+    padding-left: nhsuk-spacing(2);
+  }
+}
+
+.logout-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .nhsuk-header__transactional .nhsuk-header__container {
+    display: grid !important;
+    grid-template-areas:
+      'logo logout'
+      'service service';
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nhsuk-header__logo {
+    grid-area: logo;
+    width: auto !important;
+  }
+
+  .nhsuk-header__transactional-service-name {
+    grid-area: service;
+    text-align: left;
+    margin: 0 !important;
+  }
+
+  .nhsuk-header__content.logout-container {
+    grid-area: logout;
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+
+  .header-service-name {
+    padding-left: nhsuk-spacing(0);
+  }
+}

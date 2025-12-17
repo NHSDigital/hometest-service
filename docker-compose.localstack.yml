@@ -1,0 +1,58 @@
+version: '3.8'
+
+# LocalStack environment for NHS Home Testing Service
+# Provides full AWS emulation including Lambda, API Gateway, SQS, S3, etc.
+# Usage: docker-compose -f docker-compose.localstack.yml up -d
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: nht-localstack
+    ports:
+      - "4566:4566"              # LocalStack Gateway
+      - "4510-4559:4510-4559"    # External services port range
+    environment:
+      # Core settings
+      - DEBUG=1
+      - LOCALSTACK_HOST=localhost
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+      # AWS region
+      - AWS_DEFAULT_REGION=eu-west-2
+      - DEFAULT_REGION=eu-west-2
+
+      # Services to enable
+      - SERVICES=dynamodb,lambda,apigateway,sqs,s3,secretsmanager,cloudwatch,logs,events,iam,sts,ssm
+
+      # Lambda settings
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_DOCKER_NETWORK=nht-localstack-network
+      - LAMBDA_REMOVE_CONTAINERS=true
+
+      # Persistence (data survives container restarts)
+      - PERSISTENCE=1
+      - DATA_DIR=/var/lib/localstack/data
+
+      # Edge port configuration
+      - EDGE_PORT=4566
+
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/localstack/init:/etc/localstack/init/ready.d
+    networks:
+      - nht-localstack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  nht-localstack-network:
+    name: nht-localstack-network
+    driver: bridge
+
+volumes:
+  localstack-data:
+    driver: local

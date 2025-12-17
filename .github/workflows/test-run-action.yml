@@ -1,0 +1,42 @@
+name: Run action on Test
+run-name: Run action on Test - test - ${{ inputs.tag}} - ${{inputs.jobType}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag'
+        required: true
+        type: string
+        default: ''
+      jobType:
+        description: 'Type of release job (pre-release or post-release)'
+        required: true
+        type: choice
+        options:
+          - pre-release
+          - post-release
+        default: 'pre-release'
+      dryRun:
+        description: 'Run in dry-run mode (true or false)'
+        required: true
+        type: boolean
+        default: true
+      backupHealthCheckTable:
+        description: 'Backup Health Check table before migration'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  run-action:
+    name: Test Environment Release Migration
+    uses: ./.github/workflows/run-action.yml
+    with:
+      env: test
+      tag: ${{ inputs.tag }}
+      jobType: ${{ inputs.jobType }}
+      dryRun: ${{ inputs.dryRun }}
+      account: test
+      backupHealthCheckTable: ${{ inputs.backupHealthCheckTable }}
+    secrets: inherit

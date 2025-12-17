@@ -1,0 +1,25 @@
+name: Deploy to POC (POC)
+run-name: Deploy - ${{ inputs.environment}} - ${{ inputs.ref}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        type: string
+        default: ''
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        default: ''
+
+jobs:
+  deploy-poc-job:
+    name: Deploy POC Environment
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      env: ${{ inputs.environment}}
+      account: poc
+    secrets: inherit

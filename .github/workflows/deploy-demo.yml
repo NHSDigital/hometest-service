@@ -1,0 +1,20 @@
+name: Deploy to Demo (POC)
+run-name: Deploy - demo - ${{ inputs.ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        default: 'main'
+
+jobs:
+  deploy-demo-job:
+    name: Deploy Demo Environment
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      env: demo
+      account: poc
+    secrets: inherit

@@ -1,0 +1,110 @@
+name: 'SonarCloud Quality Gate'
+
+inputs:
+  project-base-dir:
+    description: 'Base directory for the project to scan'
+    required: true
+  sonar-token:
+    description: 'SonarCloud authentication token'
+    required: true
+  github-token:
+    description: 'GitHub token for PR decoration'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v6
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      with:
+        projectBaseDir: ${{ inputs.project-base-dir }}
+        args: >
+          -Dsonar.pullrequest.key=${{ github.event.number }}
+          -Dsonar.pullrequest.branch=${{ github.head_ref }}
+          -Dsonar.pullrequest.base=${{ github.base_ref }}
+
+    - name: Get SonarCloud analysis results
+      id: sonar-results
+      shell: bash
+      run: |
+        # extract project key from sonar-project.properties
+        PROJECT_KEY=$(grep "^sonar.projectKey=" ${{ inputs.project-base-dir }}/sonar-project.properties | cut -d'=' -f2)
+        PR_KEY="${{ github.event.number }}"
+
+        echo "🔍 Debug: PROJECT_KEY=${PROJECT_KEY}, PR_KEY=${PR_KEY}"
+
+        # poll for analysis completion
+        echo "Waiting for SonarCloud analysis to complete..."
+        max_attempts=5
+        attempt=0
+
+        while [ $attempt -lt $max_attempts ]; do
+          # check if analysis is complete by querying the project status
+          analysis_status=$(curl -s -u ${{ inputs.sonar-token }}: \
+            "https://sonarcloud.io/api/ce/activity?component=${PROJECT_KEY}&pullRequest=${PR_KEY}&ps=1" \
+            | jq -r '.tasks[0].status // "PENDING"')
+          
+          if [ "$analysis_status" = "SUCCESS" ]; then
+            echo "✅ Analysis completed"
+            break
+          elif [ "$analysis_status" = "FAILED" ]; then
+            echo "❌ Analysis failed: $analysis_status"
+            exit 1
+          else
+            echo "⏳ Analysis in progress (attempt $((attempt + 1))/$max_attempts)..."
+            sleep 10
+            attempt=$((attempt + 1))
+          fi
+        done
+
+        if [ $attempt -eq $max_attempts ]; then
+          echo "⚠️ Analysis did not complete within expected time, proceeding with current results"
+        fi
+
+        # get all PR-specific issues
+        # assuming no larger than 500 issues
+        ALL_ISSUES_RESPONSE=$(curl -s -u ${{ inputs.sonar-token }}: \
+          "https://sonarcloud.io/api/issues/search?componentKeys=${PROJECT_KEY}&pullRequest=${PR_KEY}&resolved=false&ps=500")
+
+        # parse and count issues by severity
+        BLOCKER_ISSUES=$(echo "$ALL_ISSUES_RESPONSE" | jq '[.issues[] | select(.impacts[]?.severity == "BLOCKER")] | length')
+        HIGH_ISSUES=$(echo "$ALL_ISSUES_RESPONSE" | jq '[.issues[] | select(.impacts[]?.severity == "HIGH")] | length')
+        MEDIUM_ISSUES=$(echo "$ALL_ISSUES_RESPONSE" | jq '[.issues[] | select(.impacts[]?.severity == "MEDIUM")] | length')
+
+        # total issues for reference
+        TOTAL_ISSUES=$(echo "$ALL_ISSUES_RESPONSE" | jq '.total')
+
+        # debug output:
+        echo "Total Issues: ${TOTAL_ISSUES}"
+        echo "Blocker Issues: ${BLOCKER_ISSUES}"
+        echo "High Issues: ${HIGH_ISSUES}"
+        echo "Medium Issues: ${MEDIUM_ISSUES}"
+
+        # Get PR-specific security hotspots
+        SECURITY_HOTSPOTS=$(curl -s -u ${{ inputs.sonar-token }}: \
+          "https://sonarcloud.io/api/hotspots/search?projectKey=${PROJECT_KEY}&pullRequest=${PR_KEY}&statuses=TO_REVIEW" \
+          | jq '.paging.total')
+
+        echo "Security Hotspots: ${SECURITY_HOTSPOTS}"
+
+        COMBINED_TOTAL=$((BLOCKER_ISSUES + HIGH_ISSUES + MEDIUM_ISSUES + SECURITY_HOTSPOTS))
+        echo "combined_total=${COMBINED_TOTAL}" >> $GITHUB_OUTPUT
+
+    - name: Evaluate
+      shell: bash
+      run: |
+        FAIL_BUILD=false
+
+        if [ "${{ steps.sonar-results.outputs.combined_total }}" -gt 0 ]; then
+          echo "❌ ${{ steps.sonar-results.outputs.combined_total }} total issues found (max: 0)"
+          FAIL_BUILD=true
+        fi
+
+        if [ "$FAIL_BUILD" = true ]; then
+          exit 1
+        else
+          echo "✅ All quality gates passed"
+        fi

@@ -1,0 +1,41 @@
+name: Daily Checkov Scan on int
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Runs daily at 6 AM UTC
+  workflow_dispatch: # Manual trigger
+
+env:
+  IS_RUN_FROM_PIPELINE: true
+  JOB_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  SLACK_CHANNEL_NAME: '#hc-env-notifications-security'
+
+jobs:
+  run-checkov:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run shared Checkov action (INT, hard-fail, Slack enabled)
+        uses: ./.github/actions/checkov-cdk
+        with:
+          aws_account_id: '899411341184'
+          env_name: int
+          soft_fail: 'false'
+          enable_slack: 'true'
+          fhir_ssh_private_key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+          slack_token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+        env:
+          JOB_URL: ${{ env.JOB_URL }}
+          SLACK_CHANNEL_NAME: ${{ env.SLACK_CHANNEL_NAME }}

@@ -1,0 +1,32 @@
+{
+  "orderId": "order_identifier",
+  "orderExternalReference": "reference_passed_during_ordering",
+  "pendingReorder": false,
+  "resultData": [
+    {
+      "biomarkerCode": "GBHI",
+      "units": "mmol/L",
+      "value": 6.3,
+      "successful": false
+    },
+    {
+      "biomarkerCode": "CHO",
+      "units": "mmol/L",
+      "value": 6.3,
+      "successful": true
+    },
+    {
+      "biomarkerCode": "CHDD",
+      "units": "mmol/L",
+      "value": 6.3,
+      "successful": true
+    },
+    {
+      "biomarkerCode": "HDL",
+      "units": "mmol/L",
+      "value": 6.3,
+      "successful": true
+    }
+  ],
+  "resultDate": "2020-07-23T08:30:00.000Z"
+}

@@ -1,0 +1,47 @@
+name: Run action on POC
+run-name: Run action on POC - ${{ inputs.env}} - ${{ inputs.tag}} - ${{inputs.jobType}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Environment'
+        required: true
+        type: string
+        default: ''
+      tag:
+        description: 'Release tag'
+        required: true
+        type: string
+        default: ''
+      jobType:
+        description: 'Type of release job (pre-release or post-release)'
+        required: true
+        type: choice
+        options:
+          - pre-release
+          - post-release
+        default: 'pre-release'
+      dryRun:
+        description: 'Run in dry-run mode (true or false)'
+        required: true
+        type: boolean
+        default: true
+      backupHealthCheckTable:
+        description: 'Backup Health Check table before migration'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  run-action:
+    name: POC Environment Release Migration
+    uses: ./.github/workflows/run-action.yml
+    with:
+      env: ${{ inputs.env }}
+      tag: ${{ inputs.tag }}
+      jobType: ${{ inputs.jobType }}
+      dryRun: ${{ inputs.dryRun }}
+      account: 'poc'
+      backupHealthCheckTable: ${{ inputs.backupHealthCheckTable }}
+    secrets: inherit

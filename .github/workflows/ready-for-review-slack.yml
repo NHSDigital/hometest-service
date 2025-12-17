@@ -1,0 +1,59 @@
+name: Notify slack when PR is ready for review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  pr-notification:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Extract ticket from PR title
+        id: extract_ticket
+        run: |
+          title="${{ github.event.pull_request.title }}"
+          ticket=""
+          if [[ "$title" =~ \[([^]]+)\] ]]; then
+            ticket="${BASH_REMATCH[1]}"
+          fi
+          echo "ticket=$ticket" >> "$GITHUB_OUTPUT"
+
+      - name: Ticket Link
+        id: ticket_link
+        run: |
+          if [ -z "${{ steps.extract_ticket.outputs.ticket }}" ]; then
+            echo "ticketLink=No ticket found in PR title." >> $GITHUB_OUTPUT
+          else
+           if [ "${{ steps.extract_ticket.outputs.ticket }}" == "dnhc-0000" ] || [ "${{ steps.extract_ticket.outputs.ticket }}" == "DNHC-0000" ]; then
+           echo "ticketLink=no associated ticket / minor technical change" >> $GITHUB_OUTPUT
+            else
+             echo "ticketLink=https://nhsd-jira.digital.nhs.uk/browse/${{ steps.extract_ticket.outputs.ticket }}" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send Slack Notification
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          job-name: 'Pull Request Ready for Review'
+          job-url: ${{ github.event.pull_request.html_url }}
+          slack-channel: '#hc-devs'
+          slack-token: ${{ secrets.SLACK_BUILD_NOTIFICATIONS_BOT_USER_OAUTH_TOKEN }}
+          triggeredBy: ${{ github.event.pull_request.user.login }}
+          include_main_block: false
+          blocks: |
+            [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ":eyeses: ${{ github.event.pull_request.title }} \nPR: ${{ github.event.pull_request.html_url }}\nTicket: ${{steps.ticket_link.outputs.ticketLink}}"
+                }
+              }
+            ]

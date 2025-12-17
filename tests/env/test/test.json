@@ -1,0 +1,18 @@
+{
+  "labResultsAPI": "https://results-api-test.nhs-health-check-online.service.nhs.uk",
+  "backendApiURL": "https://api-test.nhs-health-check-online.service.nhs.uk",
+  "questionnaireAppURL": "https://test.nhs-health-check-online.service.nhs.uk",
+  "notifyCallbackUrl": "https://callback-api-test.nhs-health-check-online.service.nhs.uk",
+  "cognitoApiURL": "https://auth-api-test.nhs-health-check-online.service.nhs.uk",
+  "mtlsResultsApiUrl": "https://mtls-results-api-test.nhs-health-check-online.service.nhs.uk",
+  "authType": "aos",
+  "osPlaceMock": false,
+  "emisMock": false,
+  "reportingEnabled": true,
+  "townsendTableName": "test-nhc-townsend-db",
+  "verifyEmails": true,
+  "gpEmailFlagDefaultValue": true,
+  "integratedEnvironment": true,
+  "apimEnvName": "int",
+  "mnsIntegrationEnabled": false
+}

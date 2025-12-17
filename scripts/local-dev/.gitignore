@@ -1,0 +1,9 @@
+# Ignore compiled JavaScript files
+*.js
+*.d.ts
+
+# Ignore node modules
+node_modules/
+
+# Ignore SSL certificates (should not be committed)
+certs/

@@ -1,0 +1,26 @@
+{
+  "engineResults": [
+    {
+      "engineName": "QRisk3",
+      "engineVersion": "QRISK3 algorithm v. 2018.0",
+      "results": [
+        {
+          "id": "http://endhealth.info/im#Qrisk3",
+          "score": 38.96,
+          "typicalScore": 14.65,
+          "predictionYears": 10
+        },
+        {
+          "id": "http://endhealth.info/im#Qrisk3HeartAge",
+          "score": 84,
+          "typicalScore": null,
+          "predictionYears": 10
+        }
+      ],
+      "calculationMeta": {
+        "engineResultStatus": "CALCULATED_USING_ESTIMATED_OR_CORRECTED_DATA",
+        "engineResultStatusReason": "VALID"
+      }
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+name: 'SonarQube scan on main'
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  run-lambda-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm dependencies
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            lambdas/node_modules
+          key: pr-check-npm-lambda-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Set up SSH key
+        uses: ./.github/actions/add-ssh-keys
+        with:
+          private-key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+
+      - name: Install lambdas dependencies
+        working-directory: ./lambdas
+        run: |
+          export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa'
+          npm ci
+
+      - name: Run Lambda Build and cleanup
+        working-directory: ./lambdas
+        run: |
+          npm run build
+          npm run clean
+
+      - name: Run Lambda Tests
+        id: lambdasTest
+        run: npm run test-lambdas
+
+      - name: SonarCloud Scan Lambda
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: lambdas/
+
+  run-ui-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm dependencies
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ui/node_modules
+          key: pr-check-npm-ui-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install ui dependencies
+        working-directory: ./ui
+        run: npm ci
+
+      - name: Run UI Tests
+        run: npm run test-ui
+
+      - name: SonarCloud Scan UI
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ui/

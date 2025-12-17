@@ -1,0 +1,22 @@
+{
+  "$schema": "../../scripts/validate-env/config-registry-schema.json",
+  "app": "security",
+  "description": "CDK app containing security-related infra and resources",
+  "variables": {
+    "KMS_KEY_ID": {
+      "description": "KMS key ID",
+      "type": "string",
+      "example": "af008d36-cc4a-4ed1-9841-0203a6029ae5"
+    },
+    "KMS_CLOUD_FRONT_REGION_KEY_ID": {
+      "description": "KMS CloudFront region key ID",
+      "type": "string",
+      "example": "744e009f-a035-4ec5-ac6f-e4ccf85ee34e"
+    },
+    "MANAGEMENT_ACCOUNT_ID": {
+      "description": "AWS management account ID",
+      "type": "string",
+      "example": "637423623484"
+    }
+  }
+}

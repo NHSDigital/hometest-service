@@ -1,0 +1,149 @@
+summary: Upload test results
+operationId: post-results
+description: |
+  ## Overview
+  Use this endpoint to send back the patient's blood test results following the patient ordering a home testing kit for the Digital NHS Health Checks
+
+  ## Sandbox test scenarios
+  You can test the following scenarios in our sandbox environment:
+
+  | Scenario                           | Request                                                 | Response                                     |
+  | ---------------------------------- | ------------------------------------------------------- | -------------------------------------------- |
+  | Results received                   | All required fields present                             | HTTP Status 200 with success message in response |
+  | Invalid order reference            | `orderId`=`400InvalidOrderExternalReference`            | HTTP Status 400 with problem description     |
+  | Unknown body parsing error         | `orderId`=`400UnknownBodyParsingError`                  | HTTP Status 400 with problem description     |
+  | Results invalid or missing         | `orderId`=`400InvalidResult` or missing required fields | HTTP Status 400 with problem description     |
+  | Results for health check exists    | `orderId`=`400ResultsAlreadySubmitted`                  | HTTP Status 400 with problem description     |
+  | Health check not expecting results | `orderId`=`400ResultsNotExpected`                       | HTTP Status 400 with problem description     |
+  | Results have missing biomarkers    | `orderId`=`400MissingBiomarkers`                        | HTTP Status 400 with problem description     |
+  | Request too large                  | `orderId`=`413RequestTooLarge`                          | HTTP Status 413 with problem description     |
+  | Server error                       | `orderId`=`500ServerError`                              | HTTP Status 500 with problem description     |
+
+  You can try out the sandbox by selecting the 'Try' button at the end of the schema.
+
+  Alternatively, you can try out the sandbox using our Postman collection:
+
+  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/39603482-d8dbe37d-f913-43f9-ba2c-969549673c07)
+
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/ResultsPostRequest.yaml'
+      examples:
+        cholesterol-only:
+          summary: Post results with cholesterol biomarkers only, no reorder
+          value:
+            $ref: '../examples/ResultsCholesterolOnly.json'
+        cholesterol-only-partial:
+          summary: Post partially failed results with cholesterol biomarkers only, no reorder
+          value:
+            $ref: '../examples/ResultsCholesterolOnlyPartial.json'
+        all-biomarkers:
+          summary: Post results with all biomarkers, no reorder
+          value:
+            $ref: '../examples/ResultsAllBiomarkersSuccess.json'
+        all-biomarkers-failed:
+          summary: Post failed results with all biomarkers, with pending reorder
+          value:
+            $ref: '../examples/ResultsAllBiomarkersFailed.json'
+
+responses:
+  201:
+    description: Result received successfully
+    headers:
+      X-Correlation-ID:
+        $ref: '../home-testing-results-spec.yaml#/components/headers/X-Correlation-Id'
+  400:
+    description: Invalid input<hr><strong>Please note that the response may have different formats as shown in the examples. Content may vary depending on the data provided.</strong>
+    headers:
+      X-Correlation-ID:
+        $ref: '../home-testing-results-spec.yaml#/components/headers/X-Correlation-Id'
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        examples:
+          Invalid payload:
+            value:
+              code: INVALID_INPUT
+              message: 'Invalid payload: The request body contains invalid or missing data.'
+          Invalid orderExternalReference:
+            value:
+              code: INVALID_INPUT
+              message: 'The orderExternalReference is invalid'
+          Results already submitted:
+            value:
+              code: INVALID_INPUT
+              message: 'Invalid payload: The lab results for the health check have already been submitted, and the processing has already been initiated'
+          Results not expected:
+            value:
+              code: INVALID_INPUT
+              message: 'Invalid payload: No lab results are expected for the health check'
+          Missing biomarkers:
+            value:
+              code: INVALID_INPUT
+              message: 'Invalid payload: Missing expected biomarkers: {biomarker code}'
+          Invalid correlation ID:
+            value:
+              code: INVALID_INPUT
+              message: 'X-Correlation-ID is not in the correct UUID format'
+          Parsing error:
+            value:
+              code: INVALID_INPUT
+              message: 'Unknown error parsing request body'
+  401:
+    description: Unauthorised user
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        example:
+          code: UNAUTHORIZED
+          message: Unauthorised
+  403:
+    description: Access denied
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        example:
+          code: ACCESS_DENIED
+          message: User is not authorised to access this resource with an explicit deny
+  413:
+    description: Request too large
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        example:
+          code: REQUEST_TOO_LARGE
+          message: Payload too large. Limit is 1 MB.
+  415:
+    description: Unsupported Media Type
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        example:
+          code: UNSUPPORTED_MEDIA_TYPE
+          message: Unsupported Media Type
+  429:
+    description: Too Many Requests
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        example:
+          code: TOO_MANY_REQUESTS
+          message: Too many requests
+  500:
+    description: 'Server error, something has gone wrong'
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/ErrorResponse.yaml'
+        example:
+          code: SERVER_ERROR
+          message: 'Server error.'

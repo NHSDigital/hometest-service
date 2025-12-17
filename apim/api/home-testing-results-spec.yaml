@@ -1,0 +1,102 @@
+openapi: '3.0.3'
+info:
+  version: '1.0.0'
+  title: 'Digital Health Check Lab Results API'
+  description:
+    $ref: './home-testing-results-api-documentation.md'
+tags:
+  - name: Lab Results Upload Service
+    description: Service for uploading blood test results for Digital Health Checks
+servers:
+  - url: 'https://sandbox.api.service.nhs.uk/home-testing'
+    description: 'Sandbox environment'
+  - url: 'https://internal-dev.api.service.nhs.uk/home-testing'
+    description: 'Internal Development environment'
+  - url: 'https://internal-qa.api.service.nhs.uk/home-testing'
+    description: 'Internal QA environment'
+paths:
+  /results:
+    parameters:
+      - $ref: '#/components/parameters/BearerAuthorization'
+      - $ref: '#/components/parameters/CorrelationId'
+    post:
+      $ref: 'paths/results-post.yaml'
+      tags:
+        - Results API
+components:
+  headers:
+    X-Correlation-Id:
+      description: The correlation ID of the original request
+      schema:
+        $ref: '#/components/parameters/CorrelationId/schema'
+  parameters:
+    CorrelationId:
+      in: header
+      name: X-Correlation-ID
+      required: false
+      description: used to track requests across systems
+      schema:
+        type: string
+        format: uuid
+    BearerAuthorization:
+      in: header
+      name: Authorization
+      description: |
+        An [OAuth 2.0 bearer token](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation#user-restricted-apis).
+
+        Required in all environments except sandbox.
+      required: false
+      schema:
+        type: string
+        format: 'Bearer {token}'
+        example: 'Bearer g1112R_ccQ1Ebbb4gtHBP1aaaNM'
+
+  schemas:
+    UndeliverableErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        undeliverableReason:
+          type: string
+
+  responses:
+    '400':
+      description: Invalid input<hr><strong>Please note that the response may have different formats as shown in the examples. Content may vary depending on the data provided.</strong>
+      content:
+        application/json:
+          schema:
+            $ref: './schemas/ErrorResponse.yaml'
+          examples:
+            Additional properties:
+              value:
+                code: INVALID_INPUT
+                message: '[object instance has properties which are not allowed by the schema: ["extraField"]]'
+            Duplicated results:
+              value:
+                code: INVALID_INPUT
+                message: '[array must not contain duplicate elements]'
+            Invalid correlation ID:
+              value:
+                code: INVALID_INPUT
+                message: 'X-Correlation-ID is not in the correct UUID format'
+            Invalid JSON body:
+              value:
+                code: INVALID_INPUT
+                message: '[Unknown error parsing request body]'
+            Missing required properties:
+              value:
+                code: INVALID_INPUT
+                message: '[object has missing required properties (["email","firstName","lastName"])]'
+            Not allowed value:
+              value:
+                code: INVALID_INPUT
+                message: '[instance value ("abc") not found in enum (possible values: ["email","mobile","none"])]'
+
+  securitySchemes:
+    app-level3:
+      $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
+security:
+  - app-level3: []

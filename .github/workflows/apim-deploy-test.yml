@@ -1,0 +1,20 @@
+name: Deploy APIM proxy for Test (int APIM env)
+run-name: Deploy APIM proxy for Test / int - ${{ inputs.ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or tag to deploy"
+        required: true
+        default: ""
+
+jobs:
+  deploy-apim-job:
+    name: Deploy APIM for Test Environment (Int APIM env)
+    uses: ./.github/workflows/apim-deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      apim-env: int
+      account: test
+    secrets: inherit

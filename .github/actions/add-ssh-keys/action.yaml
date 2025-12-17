@@ -1,0 +1,20 @@
+name: 'Add SSH Keys to Agent'
+description: 'Adding NHS PDM Fhir Translator SSH Keys to the agent'
+
+inputs:
+  private-key:
+    description: 'The private key to add to the agent'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Set up SSH key'
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.private-key }}" > ~/.ssh/id_rsa
+        chmod 400 ~/.ssh/id_rsa
+        eval $(ssh-agent -s)
+        ssh-add ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts

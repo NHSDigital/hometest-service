@@ -1,0 +1,186 @@
+name: 'PR to Main branch pipeline'
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'release/**'
+      - 'epic/**'
+
+jobs:
+  to-run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check for changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            uiFile:
+              - ui/**
+            lambdasFile:
+              - lambdas/**
+            testsFile:
+              - tests/**
+    outputs:
+      lambdas: ${{ steps.changes.outputs.lambdasFile }}
+      ui: ${{ steps.changes.outputs.uiFile }}
+      tests: ${{ steps.changes.outputs.testsFile }}
+
+  run-eslint-tests:
+    needs: to-run-tests
+    if: ${{ needs.to-run-tests.outputs.tests == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm dependencies
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ./node_modules
+          key: pr-check-npm-tests-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Set up SSH key
+        uses: ./.github/actions/add-ssh-keys
+        with:
+          private-key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+
+      - name: Install tests dependencies
+        working-directory: ./tests
+        run: |
+          export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa'
+          npm ci
+
+      - name: Run ESLint
+        working-directory: ./tests
+        run: npm run lint
+
+  run-lambda-tests:
+    needs: to-run-tests
+    if: ${{ needs.to-run-tests.outputs.lambdas == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm dependencies
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            lambdas/node_modules
+          key: pr-check-npm-lambda-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Set up SSH key
+        uses: ./.github/actions/add-ssh-keys
+        with:
+          private-key: ${{ secrets.FHIR_SSH_PRIVATE_KEY }}
+
+      - name: Install lambdas dependencies
+        working-directory: ./lambdas
+        run: |
+          export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa'
+          npm ci
+
+      - name: Run Lambda Build and cleanup
+        working-directory: ./lambdas
+        run: |
+          npm run build
+          npm run clean
+
+      - name: Run Lambda Tests
+        id: lambdasTest
+        run: npm run test-lambdas
+
+      - name: SonarCloud Quality Gate - Lambdas
+        uses: ./.github/actions/sonar-quality-gate
+        with:
+          project-base-dir: lambdas/
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  run-ui-tests:
+    needs: to-run-tests
+    if: ${{ needs.to-run-tests.outputs.ui == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm dependencies
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ui/node_modules
+          key: pr-check-npm-ui-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install ui dependencies
+        working-directory: ./ui
+        run: npm ci
+
+      - name: Run UI Tests
+        run: npm run test-ui
+
+      - name: SonarCloud Quality Gate - UI
+        uses: ./.github/actions/sonar-quality-gate
+        with:
+          project-base-dir: ui/
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ESLint UI
+        working-directory: ./ui
+        run: npm run lint
+
+  run-tests:
+    needs: [run-ui-tests, run-lambda-tests, run-eslint-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [[ "${{ needs.run-ui-tests.result }}" == "failure" || "${{ needs.run-lambda-tests.result }}" == "failure" || "${{ needs.run-eslint-tests.result }}" == "failure" ]]; then
+            echo "One or more test jobs failed."
+            exit 1
+          else
+            echo "All test jobs passed or were skipped."
+          fi

@@ -1,0 +1,748 @@
+{
+  "info": {
+    "_postman_id": "00e807d9-2413-4b87-b55c-de33cd79f424",
+    "name": "Patient Data Manager API",
+    "description": "# variables\n\nhave defined variable values for ease of use.\n\nfor the most part, will not require any changes to the request aside from these and the body.\n\n| **variables** | **usage** |\n| --- | --- |\n| apim_env | used to toggle between environments |\n| signed_jwt | used to get the below token |\n| apigee_auth_token | obtained from APIM's identity service |\n| resource_type | resource types available to DHC currently are: Observation or RiskAssessment |\n| resource_id | must be a uuid |\n\n# **how to use**\n\naside from `/ping` all requests to PDM require an access token.\n\n## obtain access token\n\nsign a JWT with private key and api key, and send using `/oauth2/token`\n\ncopy the value of `access_token` into `apigee_auth_token`\n\n## get /{resource}\n\n**CANNOT** be used without params.\n\nuseful for specific filtering options whereby the `resource_id` of a resource isn't known.\n\n`_tag=$PDM_SELF` is used to obtain resources owned by our service, keep this toggled on.\n\n## get /{resource}/{resource_id}\n\nreturns a resource under the specified type and id provided\n\n## put /{resource}/{resource_id}\n\nwill upsert a resource of type and id (create if doesn't exist, update if it does)\n\n**IMPORTANT**\n\nPUT requests will need to carry either an `If-Match` an `If-None-Match` header and all returned resources will carry an `ETag` response header\n\n- resource created or queried, returned with `ETag: 12345` header\n    \n    - to further update resource by ID the request `PUT /{resource}/{resource_id}`\n        \n        - must contain `If-Match: 12345`\n            \n- resource is upserted (does NOT exist already)\n    \n    - must contain `If-None-Match: \\\\*`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+    "_exporter_id": "3570035"
+  },
+  "item": [
+    {
+      "name": "APIM /{resource}/{resource_id}",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require('uuid');",
+              "",
+              "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+              "var envName = pm.environment.get('apim_env_name') || '';",
+              "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+              "",
+              "if (!privateKey) {",
+              "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+              "}",
+              "",
+              "if (!apiKeyValue) {",
+              "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+              "}",
+              "",
+              "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+              "",
+              "console.log(auth_url);",
+              "",
+              "var navigator = {};",
+              "var window = {};",
+              "const interval = setTimeout(() => {}, 2147483647);",
+              "",
+              "return new Promise((resolve, reject) => {        ",
+              "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+              "        return resolve();",
+              "    }",
+              "",
+              "    pm.sendRequest(",
+              "        {",
+              "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+              "            method: 'GET'",
+              "        }, function (err, res) {",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            pm.globals.set('jsrsasign-js', res.text());            ",
+              "            return resolve();",
+              "        }",
+              "    );",
+              "}).then(() => {             ",
+              "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+              "",
+              "    // Set headers for JWT",
+              "    var header = {",
+              "        'typ': 'JWT',",
+              "        'alg': 'RS512',",
+              "        'kid': 'dev-1'",
+              "    };",
+              "",
+              "    // Prepare timestamp in seconds",
+              "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+              "    var uuid = require('uuid');",
+              "    var jti_value = uuid.v4();",
+              "    var data = {",
+              "        'sub': apiKeyValue,",
+              "        'iss': apiKeyValue,",
+              "        'jti': jti_value,",
+              "        'aud': auth_url,",
+              "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+              "    }    ",
+              "",
+              "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+              "    return new Promise((resolve, reject) => {                              ",
+              "        pm.sendRequest({",
+              "            url: auth_url,",
+              "            method: \"POST\",",
+              "            header: {",
+              "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+              "            },",
+              "            body: {",
+              "                mode: \"urlencoded\",",
+              "                urlencoded: [",
+              "                    {",
+              "                        key: \"grant_type\",",
+              "                        value: \"client_credentials\"",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion_type\",",
+              "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion\",",
+              "                        value: sJWT",
+              "                    }",
+              "                ]",
+              "            }",
+              "        }, function (err, res) {                                            ",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            //assign the authorization header value",
+              "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+              "",
+              "            //assign the message batch reference",
+              "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+              "",
+              "            //assign the message reference",
+              "            pm.environment.set(\"message_reference\", uuid.v4());",
+              "",
+              "            //generate a correlation identifier",
+              "            pm.environment.set(\"correlation_id\", uuid.v4());",
+              "",
+              "            return resolve();",
+              "        });        ",
+              "    });",
+              "}).then(() => {    ",
+              "    clearTimeout(interval);",
+              "}).catch((err) => {     ",
+              "    console.error(err); ",
+              "    clearTimeout(interval);    ",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{authorization_header_value}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "{{$randomUUID}}",
+            "type": "text"
+          },
+          {
+            "key": "NHSE-Product-ID",
+            "value": "{{product_id}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://{{apim_env_name}}.api.service.nhs.uk/patient-data-manager/FHIR/R4/Observation/fc335b25-5618-4c12-bef0-df9e139478d8"
+      },
+      "response": []
+    },
+    {
+      "name": "APIM /{resource}/{resource_id}",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require('uuid');",
+              "",
+              "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+              "var envName = pm.environment.get('apim_env_name') || '';",
+              "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+              "",
+              "if (!privateKey) {",
+              "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+              "}",
+              "",
+              "if (!apiKeyValue) {",
+              "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+              "}",
+              "",
+              "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+              "",
+              "console.log(auth_url);",
+              "",
+              "var navigator = {};",
+              "var window = {};",
+              "const interval = setTimeout(() => {}, 2147483647);",
+              "",
+              "return new Promise((resolve, reject) => {        ",
+              "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+              "        return resolve();",
+              "    }",
+              "",
+              "    pm.sendRequest(",
+              "        {",
+              "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+              "            method: 'GET'",
+              "        }, function (err, res) {",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            pm.globals.set('jsrsasign-js', res.text());            ",
+              "            return resolve();",
+              "        }",
+              "    );",
+              "}).then(() => {             ",
+              "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+              "",
+              "    // Set headers for JWT",
+              "    var header = {",
+              "        'typ': 'JWT',",
+              "        'alg': 'RS512',",
+              "        'kid': 'dev-1'",
+              "    };",
+              "",
+              "    // Prepare timestamp in seconds",
+              "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+              "    var uuid = require('uuid');",
+              "    var jti_value = uuid.v4();",
+              "    var data = {",
+              "        'sub': apiKeyValue,",
+              "        'iss': apiKeyValue,",
+              "        'jti': jti_value,",
+              "        'aud': auth_url,",
+              "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+              "    }    ",
+              "",
+              "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+              "    return new Promise((resolve, reject) => {                              ",
+              "        pm.sendRequest({",
+              "            url: auth_url,",
+              "            method: \"POST\",",
+              "            header: {",
+              "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+              "            },",
+              "            body: {",
+              "                mode: \"urlencoded\",",
+              "                urlencoded: [",
+              "                    {",
+              "                        key: \"grant_type\",",
+              "                        value: \"client_credentials\"",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion_type\",",
+              "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion\",",
+              "                        value: sJWT",
+              "                    }",
+              "                ]",
+              "            }",
+              "        }, function (err, res) {                                            ",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            //assign the authorization header value",
+              "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+              "",
+              "            //assign the message batch reference",
+              "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+              "",
+              "            //assign the message reference",
+              "            pm.environment.set(\"message_reference\", uuid.v4());",
+              "",
+              "            //generate a correlation identifier",
+              "            pm.environment.set(\"correlation_id\", uuid.v4());",
+              "",
+              "            return resolve();",
+              "        });        ",
+              "    });",
+              "}).then(() => {    ",
+              "    clearTimeout(interval);",
+              "}).catch((err) => {     ",
+              "    console.error(err); ",
+              "    clearTimeout(interval);    ",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{authorization_header_value}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "{{$randomUUID}}",
+            "type": "text"
+          },
+          {
+            "key": "NHSE-Product-ID",
+            "value": "{{product_id}}",
+            "type": "text"
+          },
+          {
+            "key": "If-None-Match",
+            "value": "*",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": \"419185df-b84f-481a-b536-1fcc8860b87c\",\n    \"resourceType\": \"Observation\",\n    \"status\": \"final\",\n    \"effectiveDateTime\": \"2025-03-03T13:58:39.911Z\",\n    \"subject\": {\n        \"identifier\": {\n            \"system\": \"https://fhir.nhs.uk/Id/nhs-number\",\n            \"value\": \"0000000091\"\n        }\n    },\n    \"category\": [\n        {\n            \"coding\": [\n                {\n                    \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n                    \"code\": \"activity\",\n                    \"display\": \"Physical Activity\"\n                }\n            ],\n            \"text\": \"Physical activity details and GPPAQ score\"\n        }\n    ],\n    \"code\": {\n        \"coding\": [\n            {\n                \"system\": \"http://snomed.info/sct\",\n                \"code\": \"366241000000106\",\n                \"display\": \"General practice physical activity questionnaire physical activity index: active (finding)\"\n            }\n        ]\n    },\n    \"valueString\": \"Active\",\n    \"meta\": {\n        \"lastUpdated\": \"2025-03-03T13:58:40.106Z\"\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://{{apim_env_name}}.api.service.nhs.uk/patient-data-manager/FHIR/R4/Observation"
+      },
+      "response": []
+    },
+    {
+      "name": "APIM /{resource}",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require('uuid');",
+              "",
+              "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+              "var envName = pm.environment.get('apim_env_name') || '';",
+              "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+              "",
+              "if (!privateKey) {",
+              "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+              "}",
+              "",
+              "if (!apiKeyValue) {",
+              "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+              "}",
+              "",
+              "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+              "",
+              "console.log(auth_url);",
+              "",
+              "var navigator = {};",
+              "var window = {};",
+              "const interval = setTimeout(() => {}, 2147483647);",
+              "",
+              "return new Promise((resolve, reject) => {        ",
+              "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+              "        return resolve();",
+              "    }",
+              "",
+              "    pm.sendRequest(",
+              "        {",
+              "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+              "            method: 'GET'",
+              "        }, function (err, res) {",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            pm.globals.set('jsrsasign-js', res.text());            ",
+              "            return resolve();",
+              "        }",
+              "    );",
+              "}).then(() => {             ",
+              "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+              "",
+              "    // Set headers for JWT",
+              "    var header = {",
+              "        'typ': 'JWT',",
+              "        'alg': 'RS512',",
+              "        'kid': 'dev-1'",
+              "    };",
+              "",
+              "    // Prepare timestamp in seconds",
+              "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+              "    var uuid = require('uuid');",
+              "    var jti_value = uuid.v4();",
+              "    var data = {",
+              "        'sub': apiKeyValue,",
+              "        'iss': apiKeyValue,",
+              "        'jti': jti_value,",
+              "        'aud': auth_url,",
+              "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+              "    }    ",
+              "",
+              "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+              "    return new Promise((resolve, reject) => {                              ",
+              "        pm.sendRequest({",
+              "            url: auth_url,",
+              "            method: \"POST\",",
+              "            header: {",
+              "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+              "            },",
+              "            body: {",
+              "                mode: \"urlencoded\",",
+              "                urlencoded: [",
+              "                    {",
+              "                        key: \"grant_type\",",
+              "                        value: \"client_credentials\"",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion_type\",",
+              "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion\",",
+              "                        value: sJWT",
+              "                    }",
+              "                ]",
+              "            }",
+              "        }, function (err, res) {                                            ",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            //assign the authorization header value",
+              "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+              "",
+              "            //assign the message batch reference",
+              "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+              "",
+              "            //assign the message reference",
+              "            pm.environment.set(\"message_reference\", uuid.v4());",
+              "",
+              "            //generate a correlation identifier",
+              "            pm.environment.set(\"correlation_id\", uuid.v4());",
+              "",
+              "            return resolve();",
+              "        });        ",
+              "    });",
+              "}).then(() => {    ",
+              "    clearTimeout(interval);",
+              "}).catch((err) => {     ",
+              "    console.error(err); ",
+              "    clearTimeout(interval);    ",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{authorization_header_value}}",
+            "type": "text"
+          },
+          {
+            "key": "NHSE-Product-ID",
+            "value": "{{product_id}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://{{apim_env_name}}.api.service.nhs.uk/patient-data-manager/FHIR/R4/Observation?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|0000000091&_tag=$PDM_SELF",
+          "protocol": "https",
+          "host": ["{{apim_env_name}}", "api", "service", "nhs", "uk"],
+          "path": ["patient-data-manager", "FHIR", "R4", "Observation"],
+          "query": [
+            {
+              "key": "subject:identifier",
+              "value": "https://fhir.nhs.uk/Id/nhs-number|0000000091"
+            },
+            {
+              "key": "_tag",
+              "value": "$PDM_SELF"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "APIM /ping",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require('uuid');",
+              "",
+              "var privateKey = pm.environment.get('apim_consumer_private_key') || '';",
+              "var envName = pm.environment.get('apim_env_name') || '';",
+              "var apiKeyValue = pm.environment.get('apim_api_key') || '';",
+              "",
+              "if (!privateKey) {",
+              "    throw new Error(\"Variable private_key must be set with your private key for signed JWT authentication.\");",
+              "}",
+              "",
+              "if (!apiKeyValue) {",
+              "    throw new Error(\"Variable api_key must be set with your integration testing application API key.\");",
+              "}",
+              "",
+              "var auth_url = `https://${envName}.api.service.nhs.uk/oauth2/token`;",
+              "",
+              "console.log(auth_url);",
+              "",
+              "var navigator = {};",
+              "var window = {};",
+              "const interval = setTimeout(() => {}, 2147483647);",
+              "",
+              "return new Promise((resolve, reject) => {        ",
+              "    if (pm.globals.has('jsrsasign-js') && pm.globals.get('jsrsasign-js') !== \"\") {",
+              "        return resolve();",
+              "    }",
+              "",
+              "    pm.sendRequest(",
+              "        {",
+              "            url: 'https://kjur.github.io/jsrsasign/jsrsasign-all-min.js',",
+              "            method: 'GET'",
+              "        }, function (err, res) {",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            pm.globals.set('jsrsasign-js', res.text());            ",
+              "            return resolve();",
+              "        }",
+              "    );",
+              "}).then(() => {             ",
+              "    eval(pm.globals.get(\"jsrsasign-js\"));        ",
+              "",
+              "    // Set headers for JWT",
+              "    var header = {",
+              "        'typ': 'JWT',",
+              "        'alg': 'RS512',",
+              "        'kid': 'dev-1'",
+              "    };",
+              "",
+              "    // Prepare timestamp in seconds",
+              "    var currentTimestamp = Math.floor(Date.now() / 1000)",
+              "    var uuid = require('uuid');",
+              "    var jti_value = uuid.v4();",
+              "    var data = {",
+              "        'sub': apiKeyValue,",
+              "        'iss': apiKeyValue,",
+              "        'jti': jti_value,",
+              "        'aud': auth_url,",
+              "        'exp': currentTimestamp + 180, // expiry time is 180 seconds from time of creation",
+              "    }    ",
+              "",
+              "    var sJWT = KJUR.jws.JWS.sign(header.alg, JSON.stringify(header), JSON.stringify(data), privateKey);    ",
+              "    return new Promise((resolve, reject) => {                              ",
+              "        pm.sendRequest({",
+              "            url: auth_url,",
+              "            method: \"POST\",",
+              "            header: {",
+              "                \"Content-Type\": \"application/x-www-form-urlencoded\"",
+              "            },",
+              "            body: {",
+              "                mode: \"urlencoded\",",
+              "                urlencoded: [",
+              "                    {",
+              "                        key: \"grant_type\",",
+              "                        value: \"client_credentials\"",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion_type\",",
+              "                        value: \"urn:ietf:params:oauth:client-assertion-type:jwt-bearer\",",
+              "                    },",
+              "                    {",
+              "                        key: \"client_assertion\",",
+              "                        value: sJWT",
+              "                    }",
+              "                ]",
+              "            }",
+              "        }, function (err, res) {                                            ",
+              "            if (err) {",
+              "                return reject(err);",
+              "            }",
+              "",
+              "            //assign the authorization header value",
+              "            pm.environment.set('authorization_header_value', `Bearer ${res.json().access_token}`);",
+              "",
+              "            //assign the message batch reference",
+              "            pm.environment.set(\"message_batch_reference\", uuid.v4());",
+              "",
+              "            //assign the message reference",
+              "            pm.environment.set(\"message_reference\", uuid.v4());",
+              "",
+              "            //generate a correlation identifier",
+              "            pm.environment.set(\"correlation_id\", uuid.v4());",
+              "",
+              "            return resolve();",
+              "        });        ",
+              "    });",
+              "}).then(() => {    ",
+              "    clearTimeout(interval);",
+              "}).catch((err) => {     ",
+              "    console.error(err); ",
+              "    clearTimeout(interval);    ",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{authorization_header_value}}",
+            "type": "text"
+          },
+          {
+            "key": "NHSE-Product-ID",
+            "value": "{{product_id}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "https://{{apim_env_name}}.api.service.nhs.uk/patient-data-manager/FHIR/R4/_ping"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "apim_env",
+      "value": "int"
+    },
+    {
+      "key": "resource_type",
+      "value": "Observation",
+      "type": "default"
+    },
+    {
+      "key": "resource_id",
+      "value": "a4bebc3e-e960-4999-b1f7-d3e0f946ca30"
+    },
+    {
+      "key": "etag",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
