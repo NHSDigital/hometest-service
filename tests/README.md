@@ -5,6 +5,7 @@ This directory contains the Playwright test framework for the hometest-service p
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    cd test
    npm install
@@ -12,6 +13,8 @@ This directory contains the Playwright test framework for the hometest-service p
    ```
 
 2. Install browser binaries (if needed):
+
+
    ```bash
    npx playwright install chromium firefox webkit
    ```
@@ -19,31 +22,37 @@ This directory contains the Playwright test framework for the hometest-service p
 ## Running Tests
 
 - Run all tests:
+
   ```bash
   npm test
   ```
 
 - Run tests in headed mode (with browser UI):
+
   ```bash
   npm run test:headed
   ```
 
 - Run tests in debug mode:
+
   ```bash
   npm run test:debug
   ```
 
 - Run tests with UI mode:
+
   ```bash
   npm run test:ui
   ```
 
 - Show test report:
+
   ```bash
   npm run test:report
   ```
 
 - Generate test code:
+
   ```bash
   npm run test:codegen
   ```
