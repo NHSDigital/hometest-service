@@ -14,7 +14,6 @@ This directory contains the Playwright test framework for the hometest-service p
 
 2. Install browser binaries (if needed):
 
-
    ```bash
    npx playwright install chromium firefox webkit
    ```
@@ -59,7 +58,7 @@ This directory contains the Playwright test framework for the hometest-service p
 
 ## Project Structure
 
-```
+```tree
 test/
 ├── package.json           # Node.js dependencies and scripts
 ├── playwright.config.ts   # Playwright configuration
@@ -98,6 +97,7 @@ The Playwright configuration is in [playwright.config.ts](playwright.config.ts).
 ## CI/CD Integration
 
 The configuration automatically adjusts for CI environments:
+
 - Retries: 2 retries on CI, 0 locally
 - Workers: 1 worker on CI, unlimited locally
 - ForbidOnly: Fails build if `test.only` is found in CI
