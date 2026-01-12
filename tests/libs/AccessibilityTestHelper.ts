@@ -20,7 +20,7 @@ export async function runAccessibilityTest(
   const scanResult: AxeResults = await new AxeBuilder({ page })
     .withTags(tagList)
     .analyze();
-    
+
   return await createHtmlAccessibilityReport(scanResult, pageName, prefix);
 }
 
@@ -30,7 +30,7 @@ export async function createHtmlAccessibilityReport(
   prefix: string = '',
 ): Promise<Result[]> {
   const accessErrors: Result[] = [];
-  
+
 
   const accessibilityReportPath = 'tests/testResults/accessibility';
   const accessibilityReportHtml =

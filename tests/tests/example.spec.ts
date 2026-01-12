@@ -6,7 +6,7 @@ test('has title WP', async ({ page }) => {
     await page.goto('https://www.wp.pl');
     const violations = await runAccessibilityTest(page, 'wp.pl-homepage');
     expect(violations).toHaveLength(0);
-    
+
     await expect(page).toHaveTitle("Wirtualna Polska - Wszystko co ważne, na Twojej stronie");
   });
 
