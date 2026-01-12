@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+SCRIPT_DIR=$(dirname "$0")
 
 ENDPOINT_URL="http://localhost:4566"
 ROLE_ARN="arn:aws:iam::000000000000:role/lambda-exec"
