@@ -4,6 +4,7 @@
   "description": "Playwright test framework for hometest-service",
   "main": "index.js",
   "scripts": {
+    "build": "tsc --noEmit",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
@@ -20,6 +21,11 @@
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.49.0",
-    "@types/node": "^22.19.3"
+    "@types/node": "^22.19.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "axe-html-reporter": "^2.2.11"
   }
 }

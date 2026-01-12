@@ -1,4 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { runAccessibilityTest } from '../libs/AccessibilityTestHelper';
+
+
+test('has title WP', async ({ page }) => {
+    await page.goto('https://www.wp.pl');
+    const violations = await runAccessibilityTest(page, 'wp.pl-homepage');
+    expect(violations).toHaveLength(0);
+    
+    await expect(page).toHaveTitle("Wirtualna Polska - Wszystko co ważne, na Twojej stronie");
+  });
+
+
 
 test.describe('Example Test Suite', () => {
   test('has title', async ({ page }) => {
@@ -10,12 +22,16 @@ test.describe('Example Test Suite', () => {
 
   test('get started link', async ({ page }) => {
     await page.goto('https://playwright.dev/');
-
+    // Run accessibility test
+    const violations = await runAccessibilityTest(page, 'get-started-page');
+    expect(violations).toHaveLength(0);
     // Click the get started link.
     await page.getByRole('link', { name: 'Get started' }).click();
 
     // Expects page to have a heading with the name of Installation.
     await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+    violations.push(...await runAccessibilityTest(page, 'installation-page'));
+    expect(violations).toHaveLength(0);
   });
 });
 
