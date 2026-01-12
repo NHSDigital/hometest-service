@@ -13,7 +13,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./localstack-data:/var/lib/localstack"
-      - "./scripts/localstack:/etc/scripts"
+      - "./scripts/localstack/:/etc/scripts/"
       - "./scripts/localstack/deploy-lambdas.sh:/etc/localstack/init/ready.d/deploy-lambdas.sh"
       - "../lambdas:/lambdas"
   frontend:
@@ -26,7 +26,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:4566
+      - REACT_APP_API_URL=http://localstack:4566
     depends_on:
       - localstack
   postgres-db:
