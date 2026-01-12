@@ -16,3 +16,5 @@ output.json
 
 # Please, add your custom content below!
 .idea
+node_modules
+cdk.out

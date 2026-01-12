@@ -1,14 +1,11 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "lib": ["ESNext"],
-    "baseUrl": ".",
-    "moduleResolution": "Bundler",
+    "module": "commonjs",
+    "lib": ["esnext"],
     "declaration": true,
     "strict": true,
-    "noImplicitAny": false,
-    "esModuleInterop": true,
+    "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
@@ -18,11 +15,12 @@
     "noFallthroughCasesInSwitch": false,
     "inlineSourceMap": true,
     "inlineSources": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "typeRoots": ["./node_modules/@types"],
-    "types": ["node", "jest"]
+    "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "**/*.test.ts"]
+  "exclude": ["node_modules", "cdk.out"],
+  "include": ["**/*.ts", "**/*.tsx", "tests/credentials.ts"]
 }

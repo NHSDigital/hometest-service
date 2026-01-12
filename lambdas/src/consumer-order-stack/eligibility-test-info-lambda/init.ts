@@ -7,7 +7,7 @@ import {FetchHttpClient} from "../../lib/http/http-client";
 export interface Environment {
   commons: Commons,
   supplierDb: SupplierService,
-  laLookupService: LaLookupService
+  /*laLookupService: LaLookupService*/
 }
 
 export function init(): Environment {
@@ -15,11 +15,11 @@ export function init(): Environment {
   const dbClient = new PostgresDbClient(process.env.DATABASE_URL!);
   const httpClient = new FetchHttpClient();
   const supplierDb = new SupplierService({dbClient}, commons);
-  const laLookupService = new LaLookupService({baseUrl: process.env.LA_LOOKUP_URL!, httpClient}, commons);
+  /*const laLookupService = new LaLookupService({baseUrl: process.env.LA_LOOKUP_URL!, httpClient}, commons);*/
 
   return {
     commons,
     supplierDb,
-    laLookupService
+    /*laLookupService*/
   }
 }

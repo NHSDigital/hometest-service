@@ -6,7 +6,21 @@ import {validatePostcodeFormat} from "./postcode-validator";
 
 const name = 'eligibility-test-info-lambda';
 
-const {supplierDb: supplierService, laLookupService, commons} = init()
+// export const handler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
+//   const postcode = event.queryStringParameters?.postcode;
+//   const testCode = event.queryStringParameters?.test_code || '31676001'; // HIV Default? why is this optional?
+//
+//   return {
+//     statusCode: 200,
+//     body: JSON.stringify({
+//       name,
+//       postcode,
+//       testCode
+//     })
+//   };
+// }
+
+const {supplierDb: supplierService, /*laLookupService,*/ commons} = init()
 
 export const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -27,7 +41,10 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
   const formattedPostcode = formatResult.cleaned
 
   try {
-    const la = await laLookupService.lookupByPostcode(formattedPostcode)
+    // const la = await laLookupService.lookupByPostcode(formattedPostcode)
+    const la = {
+      localAuthorityCode: 'E09000001',
+    }
 
     if (!la) {
       commons.logError(name, `No local authority found for ${formattedPostcode}`);

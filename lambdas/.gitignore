@@ -26,3 +26,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Built js files
+src/**/*.js
+src/**/*.js.map

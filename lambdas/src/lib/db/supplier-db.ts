@@ -39,10 +39,9 @@ export class SupplierService extends Service{
       SELECT s.supplier_id,
              s.name,
              s.service_url,
-             s.website_url,
-             p.region
-      FROM supplier s
-             JOIN la_supplier_offering o ON s.supplier_id = o.supplier_id
+             s.website_url
+      FROM hometest.supplier s
+             JOIN hometest.la_supplier_offering o ON s.supplier_id = o.supplier_id
       WHERE o.la_code = $1
         AND ($2::VARCHAR IS NULL OR o.test_code = $2)
         AND o.effective_from <= CURRENT_TIMESTAMP;
