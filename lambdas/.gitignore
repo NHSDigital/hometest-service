@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Build outputs
+dist/
+build/
+*.zip
+
+# AWS Lambda
+.aws-sam/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

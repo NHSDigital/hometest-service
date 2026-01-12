@@ -1,0 +1,89 @@
+import {Organization, Location} from 'fhir/r4';
+import {DBClient} from "./db-client";
+import {Service} from "../service";
+import {Commons} from "../commons";
+
+export interface SupplierOffering {
+  organization: Organization;
+  location: Location;
+}
+export type Postcode = string
+export type TestCode = string
+
+interface SupplierRow {
+  supplier_id: string;
+  name: string;
+  service_url: string;
+  website_url: string;
+  region: string;
+}
+
+type GetSupplierParams = [Postcode, TestCode | null];
+
+export interface SupplierServiceProperties {
+  dbClient: DBClient;
+}
+
+export class SupplierService extends Service{
+  private readonly dbClient: DBClient
+  constructor({dbClient}: SupplierServiceProperties, commons: Commons) {
+    super('SupplierService', commons);
+    this.dbClient = dbClient;
+  }
+
+  async getSuppliersByPostcodeAndTest(
+    postcode: Postcode, // change to LA - how is this represented in the DB?
+    testCode?: TestCode
+  ): Promise<SupplierOffering[]> {
+    const query = `
+      SELECT s.supplier_id,
+             s.name,
+             s.service_url,
+             s.website_url,
+             p.region
+      FROM supplier s
+             JOIN la_supplier_offering o ON s.supplier_id = o.supplier_id
+             JOIN postcode p ON o.postcode = p.postcode
+      WHERE p.postcode = $1
+        AND ($2::VARCHAR IS NULL OR o.test_code = $2)
+        AND o.effective_from <= CURRENT_TIMESTAMP;
+    `;
+
+    try {
+      const result = await this.dbClient.query<SupplierRow, GetSupplierParams>(query, [postcode, testCode ?? null]);
+
+      if (result.rowCount === 0) {
+        return [];
+      }
+      // need to make sure that this is the correct response shape
+      return result.rows.map(supplier => ( {
+        organization: {
+          resourceType: 'Organization',
+          id: supplier.supplier_id,
+          name: supplier.name,
+          extension: [
+            {
+              url: 'http://hometest.nhs.uk/fhir/StructureDefinition/service-url',
+              valueUrl: supplier.service_url
+            }
+          ]
+        },
+        location: {
+          resourceType: 'Location',
+          id: `loc-${supplier.supplier_id}`,
+          name: `${supplier.region} Service Area`,
+          managingOrganization: {
+            reference: `Organization/${supplier.supplier_id}`
+          },
+          address: {
+            postalCode: postcode,
+            state: supplier.region
+          }
+        }
+      }));
+    } catch (error) {
+      this.logger.error('Failed to fetch suppliers from the database:', {error, postcode, testCode});
+      throw new Error('Failed to fetch suppliers from database');
+    }
+  }
+}
