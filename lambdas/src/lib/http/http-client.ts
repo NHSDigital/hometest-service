@@ -17,7 +17,7 @@ export class FetchHttpClient implements HttpClient {
       throw new Error(`HTTP GET request failed with status: ${response.status}`);
     }
 
-    return response.json() as Promise<T>;
+    return (await response.json()) as T;
   }
 
   async post<T>(url: string, body: any, headers?: Record<string, string>): Promise<T> {
@@ -35,6 +35,6 @@ export class FetchHttpClient implements HttpClient {
       throw new Error(`HTTP POST request failed with status: ${response.status}`);
     }
 
-    return response.json() as Promise<T>;
+    return (await response.json()) as T;
   }
 }

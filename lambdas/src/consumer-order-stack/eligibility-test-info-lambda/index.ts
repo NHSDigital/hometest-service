@@ -33,8 +33,8 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
       commons.logError(name, `No local authority found for ${formattedPostcode}`);
       return createFhirErrorResponse(404, 'not-found', `No local authority found for ${formattedPostcode}`);
     }
-    // pass la to the supplier service and somehow get the correct supplier(s?)?
-    const offerings = await supplierService.getSuppliersByPostcodeAndTest(formattedPostcode, testCode);
+
+    const offerings = await supplierService.getSuppliersByLocalAuthorityAndTest(la.localAuthorityCode, testCode);
 
     if (offerings.length === 0) {
       commons.logError(name, `No suppliers found for ${formattedPostcode}`);
