@@ -13,19 +13,20 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./localstack-data:/var/lib/localstack"
-      - "./scripts/localstack:/etc/scripts"
-      - "./scripts/deploy.sh:/etc/localstack/init/ready.d/deploy.sh"
+      - "./scripts/localstack/:/etc/scripts/"
+      - "./scripts/localstack/deploy-lambdas.sh:/etc/localstack/init/ready.d/deploy-lambdas.sh"
   frontend:
     image: node:24
     container_name: frontend
     working_dir: /app
     volumes:
       - ../frontend:/app
-    command: sh -c "npm install && npm start"
+      - frontend_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev"
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:4566
+      - REACT_APP_API_URL=http://localstack:4566
     depends_on:
       - localstack
   postgres-db:
@@ -45,3 +46,6 @@ services:
     ports:
       - "8000:8000"
     command: "-jar DynamoDBLocal.jar -inMemory -sharedDb"
+
+volumes:
+  frontend_node_modules:
