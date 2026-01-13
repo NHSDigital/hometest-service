@@ -14,7 +14,15 @@ db-data
 localstack-data
 output.json
 
-# Please, add your custom content below!
+# Jetbrains
 .idea
+
+# Node
 node_modules
+
+# CDK Stuff
 cdk.out
+cdk.context.json
+
+# MacOS
+.DS_Store
