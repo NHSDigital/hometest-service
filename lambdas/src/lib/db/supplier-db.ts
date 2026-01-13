@@ -37,11 +37,11 @@ export class SupplierService extends Service{
   ): Promise<SupplierOffering[]> {
     const query = `
       SELECT s.supplier_id,
-             s.name,
-             s.service_url,
-             s.website_url
+            s.name,
+            s.service_url,
+            s.website_url
       FROM hometest.supplier s
-             JOIN hometest.la_supplier_offering o ON s.supplier_id = o.supplier_id
+            JOIN hometest.la_supplier_offering o ON s.supplier_id = o.supplier_id
       WHERE o.la_code = $1
         AND ($2::VARCHAR IS NULL OR o.test_code = $2)
         AND o.effective_from <= CURRENT_TIMESTAMP;
