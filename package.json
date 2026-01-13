@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "name": "nhs-home-test-service",
+  "description": "NHS Home Test Service",
+  "private": true,
+  "scripts": {
+    "start": "npm run local:up && npm run cdk:local:bootstrap && npm run cdk:local:deploy",
+    "stop": "npm run cdk:local:destroy && npm run local:down",
+    "local:up": "docker compose -f local-environment/docker-compose.yml up -d",
+    "local:down": "docker compose -f local-environment/docker-compose.yml down",
+    "local:restart": "npm run local:down && npm run local:up",
+    "cdk:local": "cdklocal --app \"npx ts-node --prefer-ts-exts infra/main/index.ts\"",
+    "cdk:local:bootstrap": "npm run cdk:local -- bootstrap",
+    "cdk:local:deploy": "npm run cdk:local -- deploy",
+    "cdk:local:destroy": "npm run cdk:local -- destroy"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.159",
+    "@types/node": "^25.0.6",
+    "aws-cdk": "^2.1100.3",
+    "aws-cdk-local": "^3.0.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.234.1",
+    "constructs": "^10.4.4",
+    "source-map-support": "^0.5.21"
+  }
+}
