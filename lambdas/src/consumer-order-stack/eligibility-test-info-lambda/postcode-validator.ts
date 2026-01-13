@@ -1,5 +1,3 @@
-import * as test from "node:test";
-
 export type ValidationResult = {
   valid: false
 } | {
