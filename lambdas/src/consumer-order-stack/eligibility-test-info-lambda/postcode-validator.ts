@@ -23,10 +23,10 @@ Valid patterns are (where A signifies a letter and 9 a digit):
 
 There are more rules than this, specific letters can only go in specific spots, however that is probably overkill for our purposes.
 The following regex should validate the format specified by the patterns above, but not that the postcode exists.
- The inner code is simple, just a digit followed by 2 letters.
- The outer code is more complex; it can have 1-2 letters, 1 digit, and an optional digit or letter.
- The outer code and inner code are joined with a space.
- To simplify, all letters must be uppercase.
+The inner code is simple, just a digit followed by 2 letters.
+The outer code is more complex; it can have 1-2 letters, 1 digit, and an optional digit or letter.
+The outer code and inner code are joined with a space.
+To simplify, all letters must be uppercase.
 */
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/
 
