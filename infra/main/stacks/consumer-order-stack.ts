@@ -4,7 +4,7 @@ import {BaseStack} from '../../common/base-stack'; // Adjust path as needed
 import {HomeTestLambdaFactory} from '../../common/home-test-lambda-factory';
 
 export class HomeTestServiceStack extends BaseStack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string) {
     super(scope, id, 'local', '0.0.1');
 
     // 1. Initialize the Factory (assuming it needs context from the stack)
