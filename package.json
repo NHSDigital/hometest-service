@@ -4,6 +4,11 @@
   "description": "NHS Home Test Service",
   "private": true,
   "scripts": {
+    "start": "npm run local:up && npm run cdk:local:bootstrap && npm run cdk:local:deploy",
+    "stop": "npm run cdk:local:destroy && npm run local:down",
+    "local:up": "docker compose -f local-environment/docker-compose.yml up -d",
+    "local:down": "docker compose -f local-environment/docker-compose.yml down",
+    "local:restart": "npm run local:down && npm run local:up",
     "cdk:local": "cdklocal --app \"npx ts-node --prefer-ts-exts infra/main/index.ts\"",
     "cdk:local:bootstrap": "npm run cdk:local -- bootstrap",
     "cdk:local:deploy": "npm run cdk:local -- deploy",
