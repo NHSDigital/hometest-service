@@ -6,20 +6,6 @@ import {validatePostcodeFormat} from "./postcode-validator";
 
 const name = 'eligibility-test-info-lambda';
 
-// export const handler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
-//   const postcode = event.queryStringParameters?.postcode;
-//   const testCode = event.queryStringParameters?.test_code || '31676001'; // HIV Default? why is this optional?
-//
-//   return {
-//     statusCode: 200,
-//     body: JSON.stringify({
-//       name,
-//       postcode,
-//       testCode
-//     })
-//   };
-// }
-
 const {supplierDb: supplierService, /*laLookupService,*/ commons} = init()
 
 export const handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {

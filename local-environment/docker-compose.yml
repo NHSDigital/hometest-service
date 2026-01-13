@@ -15,7 +15,6 @@ services:
       - "./localstack-data:/var/lib/localstack"
       - "./scripts/localstack:/etc/scripts"
       - "./scripts/deploy.sh:/etc/localstack/init/ready.d/deploy.sh"
-      - "../lambdas:/lambdas"
   frontend:
     image: node:24
     container_name: frontend
