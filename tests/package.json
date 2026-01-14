@@ -10,7 +10,8 @@
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
-    "test:codegen": "playwright codegen"
+    "test:codegen": "playwright codegen",
+    "test:env": "node -r dotenv/config -e 'console.log(process.env)' dotenv_config_path=../.env"
   },
   "keywords": [
     "playwright",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.19.3",
+    "dotenv": "^17.2.3",
     "typescript": "^5.9.3"
   },
   "dependencies": {
