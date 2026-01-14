@@ -10,4 +10,23 @@
 *.code-workspace
 !project.code-workspace
 
-# Please, add your custom content below!
+db-data
+localstack-data
+postgres-db
+output.json
+
+node_modules
+
+dist
+
+.idea
+
+# Node
+node_modules
+
+# CDK Stuff
+cdk.out
+cdk.context.json
+
+# MacOS
+.DS_Store
