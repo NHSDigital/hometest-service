@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.965.0",
-    "osdatahub": "^0.2.2",
     "pg": "^8.16.3"
   },
   "devDependencies": {
