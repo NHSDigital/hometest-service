@@ -14,7 +14,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./localstack-data:/var/lib/localstack"
       - "./scripts/localstack/:/etc/scripts/"
-      - "./scripts/localstack/deploy-lambdas.sh:/etc/localstack/init/ready.d/deploy-lambdas.sh"
+      - "./scripts/localstack/deploy.sh:/etc/localstack/init/ready.d/deploy.sh"
   frontend:
     image: node:24
     container_name: frontend
