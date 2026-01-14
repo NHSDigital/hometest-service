@@ -16,6 +16,7 @@ Syft
 Terraform
 toolchain
 Trufflehog
+Vercel
 config
 dev
 env
