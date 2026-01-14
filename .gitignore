@@ -11,3 +11,9 @@
 !project.code-workspace
 
 # Please, add your custom content below!
+.idea/
+
+# Environment variables
+.env
+.env.local
+.env.*.local

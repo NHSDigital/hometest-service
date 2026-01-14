@@ -16,3 +16,7 @@ Syft
 Terraform
 toolchain
 Trufflehog
+config
+dev
+env
+poc
