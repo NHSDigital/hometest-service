@@ -1,0 +1,31 @@
+{
+  "name": "hometest-service-tests",
+  "version": "1.0.0",
+  "description": "Playwright test framework for hometest-service",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:codegen": "playwright codegen"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "e2e"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.19.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "axe-html-reporter": "^2.2.11"
+  }
+}
