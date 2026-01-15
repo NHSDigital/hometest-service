@@ -19,3 +19,10 @@ indent_size = 4
 
 [{Makefile,*.mk,go.mod,go.sum,*.go,.gitmodules}]
 indent_style = tab
+
+[postman/**]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = false
+insert_final_newline = unset
+
