@@ -40,12 +40,6 @@ services:
       - "5432:5432"
     volumes:
       - ./db-data:/var/lib/postgresql
-  dynamo-db:
-    image: amazon/dynamodb-local
-    container_name: dynamo-db
-    ports:
-      - "8000:8000"
-    command: "-jar DynamoDBLocal.jar -inMemory -sharedDb"
 
 volumes:
   frontend_node_modules:
