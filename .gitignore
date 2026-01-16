@@ -34,3 +34,8 @@ cdk.context.json
 
 # MacOS
 .DS_Store
+
+# Keys
+*.pem
+private_key.pem
+public_key.pem
