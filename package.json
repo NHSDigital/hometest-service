@@ -24,6 +24,8 @@
   "dependencies": {
     "aws-cdk-lib": "^2.234.1",
     "constructs": "^10.4.4",
-    "source-map-support": "^0.5.21"
+    "jsonwebtoken": "^9.0.3",
+    "source-map-support": "^0.5.21",
+    "uuid": "^13.0.0"
   }
 }
