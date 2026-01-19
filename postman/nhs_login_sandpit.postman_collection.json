@@ -1,0 +1,120 @@
+{
+  "info": {
+    "_postman_id": "573c5e75-fc4e-41f6-a2b1-ad1dcfa32fc6",
+    "name": "NHS Login Auth (Sandpit)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19518888"
+  },
+  "item": [
+    {
+      "name": "Retrieve Token",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "authorization_code",
+              "type": "text",
+              "uuid": "8cf211f9-c763-4347-9519-e99526bceb50"
+            },
+            {
+              "key": "code",
+              "value": "<code_from_auth_url>",
+              "type": "text",
+              "uuid": "b1c3fec5-5048-4d22-a596-855a6c461276"
+            },
+            {
+              "key": "redirect_uri",
+              "value": "http://localhost:3000/callback",
+              "type": "text",
+              "uuid": "914e1e89-1468-4c6a-bccd-54ea2606fcdd"
+            },
+            {
+              "key": "client_id",
+              "value": "hometest",
+              "type": "text",
+              "uuid": "c0ef1385-5ca8-4ad8-835e-02e61431ed20"
+            },
+            {
+              "key": "client_assertion_type",
+              "value": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+              "type": "text",
+              "uuid": "4ef057e7-2ecf-4db0-a104-c3d9e552df17"
+            },
+            {
+              "key": "client_assertion",
+              "value": "<signed_jwt>",
+              "type": "text",
+              "uuid": "dda29c34-4447-47fa-bea1-1db0a99f2272"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://auth.sandpit.signin.nhs.uk/token",
+          "protocol": "https",
+          "host": [
+            "auth",
+            "sandpit",
+            "signin",
+            "nhs",
+            "uk"
+          ],
+          "path": [
+            "token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Info",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "<access_token_from_retrieve_token>",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://auth.sandpit.signin.nhs.uk/userinfo",
+          "protocol": "https",
+          "host": [
+            "auth",
+            "sandpit",
+            "signin",
+            "nhs",
+            "uk"
+          ],
+          "path": [
+            "userinfo"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
