@@ -1,15 +1,12 @@
 # HomeTest Service
 
-[![CI/CD Pull Request](https://github.com/nhs-england-tools/repository-template/actions/workflows/cicd-1-pull-request.yaml/badge.svg)](https://github.com/nhs-england-tools/repository-template/actions/workflows/cicd-1-pull-request.yaml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=repository-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=repository-template)
-
 The HomeTest Service is a service that provides a central hub for ordering home tests for NHS patients.
 
 This repository contains the full stack, including the frontend, backend lambdas, and infrastructure-as-code.
 
 ## Table of Contents
 
-- [Repository Template](#repository-template)
+- [HomeTest Service](#hometest-service)
   - [Table of Contents](#table-of-contents)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
@@ -17,10 +14,7 @@ This repository contains the full stack, including the frontend, backend lambdas
   - [Usage](#usage)
     - [Testing](#testing)
   - [Design](#design)
-    - [Diagrams](#diagrams)
-    - [Modularity](#modularity)
   - [Contributing](#contributing)
-  - [Contacts](#contacts)
   - [Licence](#licence)
 
 ## Setup
@@ -105,23 +99,13 @@ The service follows a serverless-first architecture on AWS:
 - **Frontend**: Next.js (React)
 - **Backend**: AWS Lambda (Node.js/TypeScript)
 - **Database**: PostgreSQL (managed via Docker locally)
-- **Infrastructure**: AWS CDK
+- **Infrastructure**: AWS CDK and Terraform
 
 System diagrams and design documents can be found in the [`/docs`](./docs) and [`/architecture`](./architecture) folders.
 
 ## Contributing
 
-Describe or link templates on how to raise an issue, feature request or make a contribution to the codebase. Reference the other documentation files, like
-
-- Environment setup for contribution, i.e. `CONTRIBUTING.md`
-- Coding standards, branching, linting, practices for development and testing
-- Release process, versioning, changelog
-- Backlog, board, roadmap, ways of working
-- High-level requirements, guiding principles, decision records, etc.
-
-## Contacts
-
-Provide a way to contact the owners of this project. It can be a team, an individual or information on the means of getting in touch via active communication channels, e.g. opening a GitHub discussion, raising an issue, etc.
+View the [contributing guidelines](./CONTRIBUTING.md).
 
 ## Licence
 
