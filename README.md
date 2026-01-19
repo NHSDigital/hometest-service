@@ -9,15 +9,15 @@ infrastructure-as-code.
 ## Table of Contents
 
 - [HomeTest Service](#hometest-service)
-    - [Table of Contents](#table-of-contents)
-    - [Setup](#setup)
-        - [Prerequisites](#prerequisites)
-        - [Configuration](#configuration)
-    - [Usage](#usage)
-        - [Testing](#testing)
-    - [Design](#design)
-    - [Contributing](#contributing)
-    - [Licence](#licence)
+  - [Table of Contents](#table-of-contents)
+  - [Setup](#setup)
+    - [Prerequisites](#prerequisites)
+    - [Configuration](#configuration)
+  - [Usage](#usage)
+  - [Testing](#testing)
+  - [Design](#design)
+  - [Contributing](#contributing)
+  - [Licence](#licence)
 
 ## Setup
 
@@ -36,10 +36,10 @@ The following software packages, or their equivalents, are expected to be instal
   e.g. [Podman](https://podman.io/),
 - [Node v24](https://nodejs.org/en) LTS,
 - A tool version manager:
-    - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [
-      `.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
-    - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
-      `.tool-versions`](./.tool-versions))
+  - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [
+    `.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
+  - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
+    `.tool-versions`](./.tool-versions))
 
 #### Version Manager configuration
 
