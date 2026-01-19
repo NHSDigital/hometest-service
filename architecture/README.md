@@ -4,7 +4,7 @@ This directory contains the technical design and interface specifications. For h
 context, clinical safety documentation, and project roadmaps, please refer to
 our [Confluence Space](https://nhsd-confluence.digital.nhs.uk/spaces/HOM/pages/1135298574/Architecture).
 
-> ![NOTE]
+> [!NOTE]
 > These are subject to change and are not final. The source of truth for the latest design is the
 > Confluence Space linked above.
 
