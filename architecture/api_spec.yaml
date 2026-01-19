@@ -319,7 +319,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [ServiceRequest]
+          enum: [ ServiceRequest ]
           example: "ServiceRequest"
         id:
           type: string
@@ -328,12 +328,12 @@ components:
         status:
           type: string
           description: Status of the service request
-          enum: [draft, active, on-hold, revoked, completed, entered-in-error, unknown]
+          enum: [ draft, active, on-hold, revoked, completed, entered-in-error, unknown ]
           example: "active"
         intent:
           type: string
           description: Intent of the service request
-          enum: [proposal, plan, directive, order, original-order, reflex-order, filler-order, instance-order, option]
+          enum: [ proposal, plan, directive, order, original-order, reflex-order, filler-order, instance-order, option ]
           example: "order"
         code:
           type: object
@@ -422,7 +422,7 @@ components:
               valueString: "HOME_DELIVERY"
             - url: "https://fhir.hometest.nhs.uk/StructureDefinition/delivery-address"
               valueAddress:
-                line: ["456 Oak Lane"]
+                line: [ "456 Oak Lane" ]
                 city: "Manchester"
                 postalCode: "M1 1AA"
             - url: "https://fhir.hometest.nhs.uk/StructureDefinition/collection-point"
@@ -443,7 +443,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Observation]
+          enum: [ Observation ]
           example: "Observation"
         id:
           type: string
@@ -461,7 +461,7 @@ components:
         status:
           type: string
           description: Status of the observation result
-          enum: [registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown]
+          enum: [ registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown ]
           example: "final"
         code:
           type: object
@@ -603,7 +603,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Bundle]
+          enum: [ Bundle ]
           example: "Bundle"
         id:
           type: string
@@ -612,7 +612,7 @@ components:
         type:
           type: string
           description: Bundle type
-          enum: [searchset, collection]
+          enum: [ searchset, collection ]
           example: "searchset"
         total:
           type: integer
@@ -633,7 +633,7 @@ components:
                 properties:
                   mode:
                     type: string
-                    enum: [match, include, outcome]
+                    enum: [ match, include, outcome ]
                     example: "match"
 
     FHIROrganization:
@@ -645,7 +645,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Organization]
+          enum: [ Organization ]
           example: "Organization"
         id:
           type: string
@@ -699,14 +699,14 @@ components:
             properties:
               system:
                 type: string
-                enum: [phone, fax, email, pager, url, sms, other]
+                enum: [ phone, fax, email, pager, url, sms, other ]
                 example: "phone"
               value:
                 type: string
                 example: "+442071234567"
               use:
                 type: string
-                enum: [home, work, temp, old, mobile]
+                enum: [ home, work, temp, old, mobile ]
                 example: "work"
         address:
           type: array
@@ -716,13 +716,13 @@ components:
             properties:
               use:
                 type: string
-                enum: [home, work, temp, old, billing]
+                enum: [ home, work, temp, old, billing ]
                 example: "work"
               line:
                 type: array
                 items:
                   type: string
-                example: ["123 Lab Street"]
+                example: [ "123 Lab Street" ]
               city:
                 type: string
                 example: "London"
@@ -796,7 +796,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Location]
+          enum: [ Location ]
           example: "Location"
         id:
           type: string
@@ -817,7 +817,7 @@ components:
         status:
           type: string
           description: Status of the location
-          enum: [active, suspended, inactive]
+          enum: [ active, suspended, inactive ]
           example: "active"
         name:
           type: string
@@ -849,7 +849,7 @@ components:
             properties:
               system:
                 type: string
-                enum: [phone, fax, email, pager, url, sms, other]
+                enum: [ phone, fax, email, pager, url, sms, other ]
                 example: "phone"
               value:
                 type: string
@@ -860,13 +860,13 @@ components:
           properties:
             use:
               type: string
-              enum: [home, work, temp, old, billing]
+              enum: [ home, work, temp, old, billing ]
               example: "work"
             line:
               type: array
               items:
                 type: string
-              example: ["456 Collection Street"]
+              example: [ "456 Collection Street" ]
             city:
               type: string
               example: "London"
@@ -905,7 +905,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Task]
+          enum: [ Task ]
           example: "Task"
         id:
           type: string
@@ -935,7 +935,7 @@ components:
         status:
           type: string
           description: Current status of the task
-          enum: [draft, requested, received, accepted, rejected, ready, cancelled, in-progress, on-hold, failed, completed, entered-in-error]
+          enum: [ draft, requested, received, accepted, rejected, ready, cancelled, in-progress, on-hold, failed, completed, entered-in-error ]
           example: "in-progress"
         statusReason:
           type: object
@@ -947,12 +947,12 @@ components:
         intent:
           type: string
           description: Intent of the task
-          enum: [unknown, proposal, plan, order, original-order, reflex-order, filler-order, instance-order, option]
+          enum: [ unknown, proposal, plan, order, original-order, reflex-order, filler-order, instance-order, option ]
           example: "order"
         priority:
           type: string
           description: Priority of the task
-          enum: [routine, urgent, asap, stat]
+          enum: [ routine, urgent, asap, stat ]
           example: "routine"
         code:
           type: object
@@ -1020,7 +1020,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [OperationOutcome]
+          enum: [ OperationOutcome ]
           example: "OperationOutcome"
         id:
           type: string
@@ -1039,12 +1039,12 @@ components:
               severity:
                 type: string
                 description: Severity of the issue
-                enum: [fatal, error, warning, information]
+                enum: [ fatal, error, warning, information ]
                 example: "error"
               code:
                 type: string
                 description: Error or warning code
-                enum: [invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing, not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule, conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational]
+                enum: [ invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing, not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule, conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational ]
                 example: "business-rule"
               details:
                 type: object
@@ -1157,5 +1157,5 @@ components:
             admin: Administrative access
 
 security:
-  - BearerAuth: []
-  - NHS_Login: []
+  - BearerAuth: [ ]
+  - NHS_Login: [ ]

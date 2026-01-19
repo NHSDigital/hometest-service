@@ -348,7 +348,7 @@ paths:
           description: Filter by result status
           schema:
             type: string
-            enum: [registered, preliminary, final, amended, corrected]
+            enum: [ registered, preliminary, final, amended, corrected ]
             example: "final"
       responses:
         '200':
@@ -393,7 +393,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [ServiceRequest]
+          enum: [ ServiceRequest ]
           example: "ServiceRequest"
         id:
           type: string
@@ -402,12 +402,12 @@ components:
         status:
           type: string
           description: Status of the service request
-          enum: [draft, active, on-hold, revoked, completed, entered-in-error, unknown]
+          enum: [ draft, active, on-hold, revoked, completed, entered-in-error, unknown ]
           example: "active"
         intent:
           type: string
           description: Intent of the service request
-          enum: [proposal, plan, directive, order, original-order, reflex-order, filler-order, instance-order, option]
+          enum: [ proposal, plan, directive, order, original-order, reflex-order, filler-order, instance-order, option ]
           example: "order"
         code:
           type: object
@@ -483,7 +483,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Observation]
+          enum: [ Observation ]
           example: "Observation"
         id:
           type: string
@@ -501,7 +501,7 @@ components:
         status:
           type: string
           description: Status of the observation result
-          enum: [registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown]
+          enum: [ registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown ]
           example: "final"
         code:
           type: object
@@ -615,7 +615,7 @@ components:
           example: "Blood"
         collection_method:
           type: string
-          enum: [HOME_COLLECTION, COLLECTION_POINT, POSTAL]
+          enum: [ HOME_COLLECTION, COLLECTION_POINT, POSTAL ]
           example: "POSTAL"
 
     CoverageArea:
@@ -632,8 +632,8 @@ components:
           type: array
           items:
             type: string
-            enum: [HOME_DELIVERY, COLLECTION_POINT, POSTAL_RETURN]
-          example: ["HOME_DELIVERY", "POSTAL_RETURN"]
+            enum: [ HOME_DELIVERY, COLLECTION_POINT, POSTAL_RETURN ]
+          example: [ "HOME_DELIVERY", "POSTAL_RETURN" ]
         collection_points:
           type: array
           items:
@@ -700,7 +700,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [CapabilityStatement]
+          enum: [ CapabilityStatement ]
           example: "CapabilityStatement"
         id:
           type: string
@@ -709,12 +709,12 @@ components:
         status:
           type: string
           description: Status of this capability statement
-          enum: [draft, active, retired, unknown]
+          enum: [ draft, active, retired, unknown ]
           example: "active"
         kind:
           type: string
           description: Kind of statement
-          enum: [instance, capability, requirements]
+          enum: [ instance, capability, requirements ]
           example: "instance"
         fhirVersion:
           type: string
@@ -725,7 +725,7 @@ components:
           description: Formats supported
           items:
             type: string
-          example: ["application/fhir+json", "application/fhir+xml"]
+          example: [ "application/fhir+json", "application/fhir+xml" ]
         software:
           type: object
           description: Software that is covered by this capability statement
@@ -758,7 +758,7 @@ components:
             properties:
               mode:
                 type: string
-                enum: [client, server]
+                enum: [ client, server ]
                 example: "server"
               resource:
                 type: array
@@ -775,7 +775,7 @@ components:
                         properties:
                           code:
                             type: string
-                            enum: [read, vread, update, patch, delete, history-instance, history-type, create, search-type]
+                            enum: [ read, vread, update, patch, delete, history-instance, history-type, create, search-type ]
                             example: "create"
 
     FHIROperationOutcome:
@@ -787,7 +787,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [OperationOutcome]
+          enum: [ OperationOutcome ]
           example: "OperationOutcome"
         id:
           type: string
@@ -806,12 +806,12 @@ components:
               severity:
                 type: string
                 description: Severity of the issue
-                enum: [fatal, error, warning, information]
+                enum: [ fatal, error, warning, information ]
                 example: "error"
               code:
                 type: string
                 description: Error or warning code
-                enum: [invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing, not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule, conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational]
+                enum: [ invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing, not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule, conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational ]
                 example: "invalid"
               details:
                 type: object
@@ -843,13 +843,13 @@ components:
                 description: Xpath or JSONPath of element with error
                 items:
                   type: string
-                example: ["postcode"]
+                example: [ "postcode" ]
               expression:
                 type: array
                 description: FHIRPath of element with error
                 items:
                   type: string
-                example: ["postcode"]
+                example: [ "postcode" ]
 
     FHIRBundle:
       type: object
@@ -860,7 +860,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Bundle]
+          enum: [ Bundle ]
           example: "Bundle"
         id:
           type: string
@@ -869,7 +869,7 @@ components:
         type:
           type: string
           description: Bundle type
-          enum: [document, message, transaction, transaction-response, batch, batch-response, history, searchset, collection]
+          enum: [ document, message, transaction, transaction-response, batch, batch-response, history, searchset, collection ]
           example: "searchset"
         total:
           type: integer
@@ -891,7 +891,7 @@ components:
                 properties:
                   mode:
                     type: string
-                    enum: [match, include, outcome]
+                    enum: [ match, include, outcome ]
                     example: "match"
 
     FHIRPlanDefinition:
@@ -903,7 +903,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [PlanDefinition]
+          enum: [ PlanDefinition ]
           example: "PlanDefinition"
         id:
           type: string
@@ -912,7 +912,7 @@ components:
         status:
           type: string
           description: Status of this plan definition
-          enum: [draft, active, retired, unknown]
+          enum: [ draft, active, retired, unknown ]
           example: "active"
         title:
           type: string
@@ -974,7 +974,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Coverage]
+          enum: [ Coverage ]
           example: "Coverage"
         id:
           type: string
@@ -983,7 +983,7 @@ components:
         status:
           type: string
           description: Status of the coverage
-          enum: [active, cancelled, draft, entered-in-error]
+          enum: [ active, cancelled, draft, entered-in-error ]
           example: "active"
         type:
           type: object
@@ -1029,7 +1029,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Location]
+          enum: [ Location ]
           example: "Location"
         id:
           type: string
@@ -1038,7 +1038,7 @@ components:
         status:
           type: string
           description: Status of the location
-          enum: [active, suspended, inactive]
+          enum: [ active, suspended, inactive ]
           example: "active"
         name:
           type: string
@@ -1050,7 +1050,7 @@ components:
           properties:
             use:
               type: string
-              enum: [home, work, temp, old, billing]
+              enum: [ home, work, temp, old, billing ]
               example: "work"
             city:
               type: string
@@ -1072,7 +1072,7 @@ components:
       properties:
         resourceType:
           type: string
-          enum: [Task]
+          enum: [ Task ]
           example: "Task"
         id:
           type: string
@@ -1102,12 +1102,12 @@ components:
         status:
           type: string
           description: Current status of the task
-          enum: [draft, requested, received, accepted, rejected, ready, cancelled, in-progress, on-hold, failed, completed, entered-in-error]
+          enum: [ draft, requested, received, accepted, rejected, ready, cancelled, in-progress, on-hold, failed, completed, entered-in-error ]
           example: "in-progress"
         intent:
           type: string
           description: Intent of the task
-          enum: [unknown, proposal, plan, order, original-order, reflex-order, filler-order, instance-order, option]
+          enum: [ unknown, proposal, plan, order, original-order, reflex-order, filler-order, instance-order, option ]
           example: "order"
         businessStatus:
           type: object
@@ -1194,5 +1194,5 @@ components:
       description: API key for supplier authentication
 
 security:
-  - SupplierAuth: []
-  - ApiKey: []
+  - SupplierAuth: [ ]
+  - ApiKey: [ ]
