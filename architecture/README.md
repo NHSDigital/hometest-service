@@ -18,9 +18,9 @@ standards for data exchange.
 #### Home Test API Specifications
 
 - **[`api_spec.yaml`](./api_spec.yaml)**: The primary API definition for the HomeTest Service. It covers:
-    - **Test Order Service**: Retrieving supplier info, checking eligibility (using NHS numbers and postcodes), and placing orders.
-    - **Result Service**: Submitting and viewing test results.
-    - **FHIR Resources**: Utilizes `ServiceRequest` for orders, `Observation` for results, and `Task` for status tracking.
+  - **Test Order Service**: Retrieving supplier info, checking eligibility (using NHS numbers and postcodes), and placing orders.
+  - **Result Service**: Submitting and viewing test results.
+  - **FHIR Resources**: Utilizes `ServiceRequest` for orders, `Observation` for results, and `Task` for status tracking.
 
 #### Supplier API Specifications
 
