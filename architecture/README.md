@@ -17,20 +17,17 @@ standards for data exchange.
 
 #### Home Test API Specifications
 
-**[`api_spec.yaml`](./api_spec.yaml)**
-The primary API definition for the HomeTest Service. It covers:
-
-- **Test Order Service**: Retrieving supplier info, checking eligibility (using NHS numbers and
-  postcodes), and placing orders.
-- **Result Service**: Submitting and viewing test results.
-- **FHIR Resources**: Utilizes `ServiceRequest` for orders, `Observation` for results, and `Task`
-  for status tracking.
+- **[`api_spec.yaml`](./api_spec.yaml)**: The primary API definition for the HomeTest Service. It covers:
+    - **Test Order Service**: Retrieving supplier info, checking eligibility (using NHS numbers and postcodes), and placing orders.
+    - **Result Service**: Submitting and viewing test results.
+    - **FHIR Resources**: Utilizes `ServiceRequest` for orders, `Observation` for results, and `Task` for status tracking.
 
 #### Supplier API Specifications
 
-**[`supplier_api_spec.yaml`](./supplier_api_spec.yaml)**
-Defines the expected interface for external test suppliers. This ensures a consistent integration
-pattern regardless of the specific vendor fulfillment logic.
+The schemas and specifications for external supplier integrations are hosted centrally in the [HomeTest Supplier Integration Framework](https://github.com/NHSDigital/hometest-supplier-integration-framework/).
+
+- **[Home Test Supplier API](https://github.com/NHSDigital/hometest-supplier-integration-framework/blob/main/schemas/home-test-supplier-api.yaml)**: Defines the interface for supplier-side operations.
+- **[Supplier API Spec](https://github.com/NHSDigital/hometest-supplier-integration-framework/blob/main/schemas/supplier_api_spec.yaml)**: The core specification for supplier integration requirements.
 
 ### Diagrams
 
