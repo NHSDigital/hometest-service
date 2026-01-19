@@ -8,6 +8,8 @@ our [Confluence Space](https://nhsd-confluence.digital.nhs.uk/spaces/HOM/pages/1
 > These are subject to change and are not final. The source of truth for the latest design is the
 > Confluence Space linked above.
 
+## Contents
+
 ### API Specifications
 
 The service uses [OpenAPI 3.0](https://www.openapis.org/) and [HL7 FHIR](https://www.hl7.org/fhir/)
