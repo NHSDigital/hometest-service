@@ -1,0 +1,18 @@
+{% extends 'layout-app.html' %}
+
+{% block beforeContent %}
+  {{ backLink({
+    text: "Back",
+    attributes: {
+      onclick: "history.back()"
+    }
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <h1 class="nhsuk-heading-l nhsuk-u-margin-bottom-4">HomeTest terms and conditions</h1>
+  <p>[text TBC]</p>
+
+
+{% endblock %}

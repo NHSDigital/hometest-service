@@ -1,0 +1,62 @@
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "2 addresses found" %}
+{% set formAction = "how-comfortable" %}
+
+{% block beforeContent %}
+  {{ backLink({
+    text: "Back",
+    attributes: {
+      onclick: "history.back()"
+    }
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <h1 class="nhsuk-heading-l nhsuk-u-margin-bottom-4">3 addresses found</h1>
+  <p>Postcode: <strong>AB1 1CB</strong>
+    <a href="find-delivery-address">Edit postcode</a>
+  </p>
+
+  {{ radios({
+    "idPrefix": "collection-point",
+    "name": "Select your delivery address",
+    "fieldset": {
+      "legend": {
+        "text": "Select your delivery address",
+        "classes": "nhsuk-fieldset__legend--s",
+        "isPageHeading": false
+      }
+    },
+
+    "items": [
+      {
+        "value": "Add1",
+        "text": "1 New Street, Highland, AB1 1CB",
+        checked: checked("collection-point", "Highland1")
+      },
+      {
+        "value": "Add2",
+        "text": "2 New Street, Highland, AB1 1CB",
+        checked: checked("collection-point", "Highland2")
+      },
+      {
+        "value": "Add3",
+        "text": "3 New Street, Highland, AB1 1CB",
+        checked: checked("collection-point", "Highland3")
+      }
+    ]
+  }) }}
+
+  <form action="{{formAction | safe }}" method="{{ formMethod or 'post' }}" novalidate>
+    {{ button({
+      text: "Continue"
+    }) }}
+  </form>
+
+  <p class="nhsuk-body">
+    <a href="enter-address-manually" class="nhsuk-link">Enter address manually</a>
+  </p>
+
+{% endblock %}

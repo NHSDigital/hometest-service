@@ -1,0 +1,28 @@
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Your order has been confirmed" %}
+
+{% block content %}
+
+  {{ panel({
+    titleText: "Order confirmed",
+    text: "Your reference number 12345"
+  }) }}
+
+  <h2 class="nhsuk-heading-m">What happens next:</h2>
+  <ul class="nhsuk-list nhsuk-list--bullet">
+    <li>[Supplier] will send you a text message confirming the order</li>
+    <li>the self-test kit will be sent to you within [n] working days</li>
+    <li>you will receive updates through the app to help you keep track of your order</li>
+    <li>you do not need to do anything else at this stage</li>
+  </ul>
+
+  <div class="nhsuk-grid-row nhsuk-u-margin-bottom-0 nhsuk-u-margin-top-5" style="background-color: #D2E1EF;">
+    <div class="nhsuk-grid-column-two-thirds">
+      <div class="nhsuk-u-margin-bottom-9 nhsuk-u-margin-top-9">
+        <p class="nhsuk-u-padding-bottom-4 nhsuk-u-padding-top-4">This is a new service. Help us improve it and <a href="">give your feedback</a>.</p>
+      </div>
+    </div>
+  </div>
+  
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'layouts/form.html' %}
+
+{% set pageHeading = "This is what you'll need to do to give a blood sample" %}
+{% set formAction = "./comfortable-answer" %}
+
+{% block beforeContent %}
+  {{ backLink({
+    text: "Back",
+    attributes: {
+      onclick: "history.back()"
+    }
+  }) }}
+{% endblock %}
+
+{% block formContent %}
+
+  {{ errorSummary({
+    titleText: "There is a problem",    
+    errorList: [
+      {
+        text: "Select yes if you're comfortable doing the test yourself",
+        href: "#example-error-1"
+      }
+    ]
+  }) }}
+
+  <h1 class="nhsuk-heading-l nhsuk-u-margin-bottom-4">{{pageHeading}}</h1>
+  <p></p>
+
+  {{ image({
+    src: "/images/self-sample-step4.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step4.png 600w, /images/self-sample-step4.png 1000w",
+    alt: "Person collecting blood sample by pricking finger, with blood droplet falling into collection tube.",
+    caption: ""
+  }) }}
+
+  <p class="nhsuk-body">
+    To give a sample of blood, you'll need to:
+  </p>
+
+  <ul class="nhsuk-list nhsuk-list--bullet">
+    <li>prick your finger</li>
+    <li>fill a tube with blood</li>
+  </ul>
+
+  <p>
+    <a href="step-by-step-guide">Blood sample step-by-step guide</a>
+  </p>
+
+
+    {{ radios({
+      idPrefix: "comfortable",
+      name: "comfortable",
+      errorMessage: {
+        text: "Select yes if you're comfortable doing the test yourself"
+      },
+      fieldset: {
+        legend: {
+          text: "Are you comfortable doing the HIV self-test?",
+          classes: "nhsuk-fieldset__legend--m"
+        }
+      },
+      items: [
+        {
+          value: "Yes",
+          text: "Yes I'm comfortable, send me the kit",
+          hint: {
+            text: "The test is supplied by [Supplier], a trusted partner of the NHS"
+          },  
+          checked: checked("comfortable", "Yes")
+        },
+        {
+          value: "No",
+          text: "No, I'd rather go to a sexual health clinic instead",
+          hint: {
+            text: "They will take a blood sample for you"
+          },  
+          checked: checked("comfortable", "No")
+        }
+      ]
+    }) }}
+
+{% endblock %}

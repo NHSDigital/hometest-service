@@ -1,0 +1,50 @@
+{% extends 'layouts/form.html' %}
+
+{% set pageHeading = "Contacting you" %}
+{% set formAction = "confirm-details" %}
+
+{% block formContent %}
+
+  {% set anotherNum %}
+  {{ input({
+    id: "newMobile",
+    name: "newMobile",
+    classes: "nhsuk-u-width-full",
+    label: {
+      text: "UK mobile phone number"
+    },
+    hint: {
+      text: "For example, 07771 900 900 or +44 7771 900 900"
+    }
+  }) }}
+  {% endset -%}
+
+  {{ radios({
+    idPrefix: "selectNum",
+    name: "selectNum",
+    fieldset: {
+      legend: {
+        text: "What's your mobile phone number?",
+        classes: "nhsuk-fieldset__legend--l",
+        isPageHeading: "true"
+      }
+    },
+    hint: {
+      text: "We'll send you updates to this mobile phone number."
+    },
+    items: [
+      {
+        value: "home",
+        "text": "07402 123 456"
+      },
+      {
+        value: "another",
+        text: "Use another mobile phone number",
+        conditional: {
+          html: anotherNum
+        }
+      }
+    ]
+  }) }}
+
+{% endblock %}

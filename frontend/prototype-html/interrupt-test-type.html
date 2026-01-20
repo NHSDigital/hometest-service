@@ -1,0 +1,88 @@
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "This is what your home test involves" %}
+
+{% block beforeContent %}
+  {{ backLink({
+    text: "Back",
+    attributes: {
+      onclick: "history.back()"
+    }
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  {{ nhsappCard({
+    classes: 'nhsapp-card--dark-blue',
+    href: '#',
+    title: 'Help change the NHS',
+    titleClasses: 'nhsuk-u-font-size-26',
+    descriptionHtml: '<p class="nhsuk-u-margin-top-2">Have your say on making the NHS fit for the future</p>',
+    img: {
+      src: '../../../assets/images/campaign-card-image.jpg'
+    }
+  }) }}
+
+  <div class="nhsapp-card--dark-blue">
+
+    <div class="nhsapp-card__container">
+
+      <div class="nhsapp-card__content">
+
+        <h1 class="nhsuk-heading-l nhsuk-u-margin-bottom-5">
+          <span class="nhsuk-caption-l nhsuk-u-margin-bottom-5">
+            <span class="nhsuk-u-visually-hidden"> - </span>
+          </span>
+          {{ pageHeading }}
+        </h1>
+
+        <p class="nhsuk-u-margin-bottom-5">{{ pageDescription }}</p>
+
+        <p class="nhsuk-card__description">We've added a <a href="/design-system/components/password-input">password input component</a>, <a href="/design-system/components/buttons#smaller-buttons">smaller buttons</a>, and <a href="/design-system/components/text-input#codes-and-sequences">codes and sequences guidance for text input</a>.</p>
+
+        <p class="nhsuk-u-margin-bottom-0">
+          <a class="nhsuk-link" href="#">Blood sample step by step guide</a>
+        </p>
+
+      </div>
+
+    </div>
+  </div>
+  <br>
+
+  {{ radios({
+    idPrefix: "example-hints",
+    name: "exampleHints",
+    fieldset: {
+      legend: {
+        text: "Are you happy to do the self-test kit for HIV yourself?",
+          size: "l",
+        isPageHeading: true
+      }
+    },
+    items: [
+      {
+        value: "mobile",
+        text: "Yes, I'll do the self-test HIV kit myself",
+        hint: {
+          text: ""
+        }
+      },
+      {
+        value: "landline",
+        text: "No, I don't want to do the self-test kit for HIV myself",
+        hint: {
+          text: "Instead of doing the self sample blood test at home, you can visit a sexual health clinic, or have an online sexual health consultation instead"
+        }
+      }
+    ]
+  }) }}
+
+  {{ button({
+    text: "Continue",
+    classes: "nhsuk-button--primary nhsapp-button",
+    href: "/acute-demo/ipdc/view-appointment/appointment"
+  }) }}
+
+{% endblock %}

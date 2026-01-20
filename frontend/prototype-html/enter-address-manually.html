@@ -1,0 +1,84 @@
+{% extends 'layouts/form.html' %}
+
+{% set pageHeading = "Enter your delivery address manually and we'll check if the kit's available" %}
+
+{% set formAction = "how-comfortable" %}
+
+{% block formContent %}
+
+   {% call fieldset({
+        legend: {
+          text: pageHeading,
+          classes: "nhsuk-fieldset__legend--l",
+          isPageHeading: true
+        },
+        describedBy: describedBy
+      }) %}
+
+  {{ input({
+    label: {
+      text: 'Address line 1',
+      classes: "nhsuk-label--s",
+      isPageHeading: false
+    },
+    id: "address-line-1",
+    name: "address-line-1",
+    value: "",
+    autocomplete: "address-line1"
+  }) }}
+
+  {{ input({
+    label: {
+      text: 'Address line 2 (optional)',
+      classes: "nhsuk-label--s",
+      isPageHeading: false
+    },
+    id: "address-line-2",
+    name: "address-line-2",
+    value: "",
+    autocomplete: "address-line2"
+  }) }}
+
+  {{ input({
+    label: {
+      text: 'Address line 3 (optional)',
+      classes: "nhsuk-label--s",
+      isPageHeading: false
+    },
+    id: "address-line-3",
+    name: "address-line-3",
+    value: "",
+    autocomplete: "address-line3"
+  }) }}
+
+    {{ input({
+    label: {
+      text: 'Town or city',
+      classes: "nhsuk-label--s",
+      isPageHeading: false
+    },
+    id: "address-town",
+    name: "address-town",
+    value: "",
+    autocomplete: "address-town"
+  }) }}
+
+  {{ input({
+    label: {
+      text: "Postcode",
+      classes: "nhsuk-label--s",
+      isPageHeading: false
+    },
+    hint: {
+      html: 'For example, LS1 1AB'
+    },
+    id: "postcode",
+    name: "postcode",
+    classes: "nhsuk-input--width-full",
+    inputmode: "text",
+    spellcheck: false
+  }) }}
+
+  {% endcall %}
+
+{% endblock %}

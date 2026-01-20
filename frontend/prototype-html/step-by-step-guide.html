@@ -1,0 +1,136 @@
+{% extends 'layout-app.html' %}
+{% from 'button/macro.njk' import button %}
+
+{% set pageHeading = "Blood sample step-by-step guide" %}
+
+{% block beforeContent %}
+  {{ backLink({
+    text: "Back",
+    attributes: {
+      onclick: "history.back()"
+    }
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <h1>{{pageHeading}}</h1>
+
+  {% call details({
+    summaryText: "What's in the kit"
+    }) %}
+    <p>The test kit normally includes:</p>
+    <ul class="nhsuk-list nhsuk-list--bullet">
+      <li>Instructions</li>
+      <li>Blood sample tube</li>
+      <li>Alcohol wipe</li>
+      <li>Lancets</li>
+      <li>Plaster</li>
+      <li>Transport bag</li>
+      <li>Security seal sticker</li>
+      <li>Box with pre-paid return postage</li>
+    </ul>
+    {{ image({
+      src: "/images/self-sample-kit-contents.jpg",
+      sizes: "(max-width: 768px) 100vw, 66vw",
+      srcset: "/images/self-sample-kit-contents.jpg 600w, /images/self-sample-kit-contents.jpg 1000w",
+      alt: "Image showing the contents of the kit",
+      caption: "Kit contents."
+    }) }}
+  {% endcall %}
+
+    {% call details({
+    summaryText: "Tips before you start"
+    }) %}
+    <p>These tips can help you collect your blood sample:</p>
+    <ul class="nhsuk-list nhsuk-list--bullet">
+      <li>Drink a big glass of water at least 30 minutes before you do the test</li>
+      <li>Do the test after a shower or bath</li>
+      <li>Put your hand into a bowl of warm water a few minutes before doing the test </li>
+      <li>Swing your arms in a circular motion. Or clench your hands into a fist a few times</li>
+      <li>Read the instructions in full before starting</li>
+    </ul>
+  {% endcall %}
+
+  <h2 class="nhsuk-heading-m">Step 1: Get ready </h2>
+  {{ image({
+    src: "/images/self-sample-step1.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step1.jpg 600w, /images/self-sample-step1.jpg 1000w",
+    alt: "Blood sample tube",
+    caption: "Wash your hands using warm water and soap. Dry your hands. Set out everything from your test kit on a clean, flat surface. Take the lid off the blood sample tube. Stand the tube upright so it's ready."
+  }) }}
+
+  <h2 class="nhsuk-heading-m">Step 2: Prepare your finger</h2>
+  {{ image({
+    src: "/images/self-sample-step2.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step2.jpg 600w, /images/self-sample-step2.jpg 1000w",
+    alt: "Person wiping finger",
+    caption: "Choose a finger from the hand you don't write with (your ring finger or little finger is best). Open the alcohol wipe. Rub your chosen fingertip with the wipe. Wait for your finger to air dry."
+  }) }}
+
+  <h2 class="nhsuk-heading-m">Step 3: Prick your finger</h2>
+  {{ image({
+    src: "/images/self-sample-step3.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step3.jpg 600w, /images/self-sample-step3.jpg 1000w",
+    alt: "",
+    caption: "Remove the cap from the lancet. Push the lancet firmly onto the side of your fingertip. You'll hear a small click. Use a tissue to dab off the first drop of blood."
+  }) }}
+
+  <h2 class="nhsuk-heading-m">Step 4: Collect the blood</h2>
+
+  {{ image({
+    src: "/images/self-sample-step4.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step4.png 600w, /images/self-sample-step4.png 1000w",
+    alt: "Person pricking finger",
+    caption: "Keep your hand hanging down below waist level. Gently massage your finger starting from the bottom and moving toward the tip. Blood drops will fall into the sample tube."
+  }) }}
+
+  <h2 class="nhsuk-heading-m">Step 5: Fill the tube</h2>
+
+  {{ image({
+    src: "/images/self-sample-step5.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step5.jpg 600w, /images/self-sample-step5.jpg 1000w",
+    alt: "Person dripping blood into a sample tube",
+    caption: "Aim to fill the tube to the top line marked 600. If you can only get to 400, send it back anyway. There are more lancets in your kit if you need to prick another finger."
+  }) }}
+
+  <h2 class="nhsuk-heading-m">Step 6: Seal and mix the tube</h2>
+
+  {{ image({
+    src: "/images/self-sample-step6.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step6.jpg 600w, /images/self-sample-step6.jpg 1000w",
+    alt: "Blood sample tube filled with blood",
+    caption: "Hold a clean tissue or cotton pad against your fingertip. Place the plaster over the spot. Put the yellow lid back on the tube and push it firmly until it clicks. Turn the tube upside down and back up 5 times to mix the blood well."
+  }) }}
+
+  <h2 class="nhsuk-heading-m">Step 7: Pack and post</h2>
+
+  {{ image({
+    src: "/images/self-sample-step7.jpg",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/self-sample-step7.jpg 600w, /images/self-sample-step7.jpg 1000w",
+    alt: "Person turning tube upside down 5 times",
+    caption: "Place your blood sample tube into the protective packaging following the kit instructions. Write today's date and the time on the form. Put the form and the sealed bag into the pre-paid postage box. Seal it with the security sticker. Put your sample in a post box as soon as you can."
+  }) }}
+
+  <!-- <h2 class="nhsuk-heading-m">Video: how to do the lab test</h2>
+  {{ image({
+    src: "/images/video.png",
+    sizes: "(max-width: 768px) 100vw, 66vw",
+    srcset: "/images/video.png 600w, /images/video.png 1000w",
+    alt: "Person sealing sample in box",
+    caption: "[Caption goes here]"
+  }) }}
+
+  {% call details({summaryText: "Read video transcript"}) %}
+  <p>Pending transcript text...</p>
+
+  {% endcall %} -->
+  
+{% endblock %}
