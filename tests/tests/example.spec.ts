@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { runAccessibilityTest } from '../libs/AccessibilityTestHelper';
 
 
-test('has title WP', async ({ page }) => {
-    await page.goto('https://www.wp.pl');
+test('has title WP', async ({ page, wpHomePage }) => {
+    await wpHomePage.navigate();
     const violations = await runAccessibilityTest(page, 'wp.pl-homepage');
     expect(violations).toHaveLength(0);
 
@@ -13,23 +13,23 @@ test('has title WP', async ({ page }) => {
 
 
 test.describe('Example Test Suite', () => {
-  test('has title', async ({ page }) => {
-    await page.goto('https://playwright.dev/');
+  test('has title', async ({ page, playwrightDevPage }) => {
+    await playwrightDevPage.navigate();
 
     // Expect a title "to contain" a substring.
     await expect(page).toHaveTitle(/Playwright/);
   });
 
-  test('get started link', async ({ page }) => {
-    await page.goto('https://playwright.dev/');
+  test('get started link', async ({ page, playwrightDevPage }) => {
+    await playwrightDevPage.navigate();
     // Run accessibility test
     const violations = await runAccessibilityTest(page, 'get-started-page');
     expect(violations).toHaveLength(0);
     // Click the get started link.
-    await page.getByRole('link', { name: 'Get started' }).click();
+    await playwrightDevPage.clickGetStarted();
 
     // Expects page to have a heading with the name of Installation.
-    await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+    await expect(playwrightDevPage.installationHeading).toBeVisible();
     violations.push(...await runAccessibilityTest(page, 'installation-page'));
     expect(violations).toHaveLength(0);
   });

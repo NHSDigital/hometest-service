@@ -57,10 +57,21 @@ export async function createHtmlAccessibilityReport(
     accessErrors.push(element);
   });
 
-  if (accessErrors.length > 0)
+  if (accessErrors.length > 0) {
     console.log(
-      `${accessErrors.length} accessibility errors found on ${pageName}`
+      `\n❌ ${accessErrors.length} accessibility violation(s) found on ${pageName}:`
     );
+    accessErrors.forEach((violation, index) => {
+      console.log(`\n${index + 1}. ${violation.id}: ${violation.description}`);
+      console.log(`   Impact: ${violation.impact}`);
+      console.log(`   Help: ${violation.help}`);
+      console.log(`   Affected nodes: ${violation.nodes.length}`);
+      violation.nodes.forEach((node, nodeIndex) => {
+        console.log(`   ${nodeIndex + 1}) ${node.html}`);
+      });
+    });
+    console.log(`\n📄 Full report: ${accessibilityReportPath}/${accessibilityReportHtml}\n`);
+  }
 
   return accessErrors;
 }
