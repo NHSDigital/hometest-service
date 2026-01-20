@@ -32,8 +32,7 @@ cd hometest-service
 
 The following software packages, or their equivalents, are expected to be installed and configured:
 
-- [Docker](https://www.docker.com/) container runtime or a compatible tool,
-  e.g. [Podman](https://podman.io/),
+- [Docker](https://www.docker.com/)
 - [Node v24](https://nodejs.org/en) LTS,
 - A tool version manager:
   - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [
