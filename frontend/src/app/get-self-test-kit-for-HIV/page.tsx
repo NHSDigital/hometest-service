@@ -12,7 +12,7 @@ export default function GetSelfTestKitPage() {
 
       <p>You can use this service if you are aged 18 or over.</p>
       <p>
-        The kit is not yet available in all areas, so we'll need to check when
+        The kit is not yet available in all areas, so we&apos;ll need to check when
         you enter a postcode.
       </p>
 
@@ -65,7 +65,7 @@ export default function GetSelfTestKitPage() {
         <Link href="step-by-step-guide">Blood sample step-by-step guide</Link>
       </p>
       <p>
-        You'll need to prick your finger and fill a tube with blood. Then send
+        You&apos;ll need to prick your finger and fill a tube with blood. Then send
         it to the address in the pre-paid envelope.
       </p>
 
@@ -105,7 +105,7 @@ export default function GetSelfTestKitPage() {
         to get tested.
       </p>
       <p>
-        If you're concerned about other sexual health issues, you can{" "}
+        If you&apos;re concerned about other sexual health issues, you can{" "}
         <a href="https://www.nhs.uk/nhs-services/sexual-health-services/">
           find sexual health services near you
         </a>
