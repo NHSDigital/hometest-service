@@ -25,15 +25,15 @@ export class BaseApiClient {
     options: ApiRequestOptions = {}
   ): Promise<APIResponse> {
     const url = this.buildUrl(endpoint, options.params);
-    
+
     console.log(`[API GET] ${url}`);
-    
+
     const response = await this.request.get(url, {
       headers: this.buildHeaders(options.headers),
     });
 
     console.log(`[API Response] Status: ${response.status()}`);
-    
+
     return response;
   }
 
@@ -45,19 +45,19 @@ export class BaseApiClient {
     options: ApiRequestOptions = {}
   ): Promise<APIResponse> {
     const url = this.buildUrl(endpoint, options.params);
-    
+
     console.log(`[API POST] ${url}`);
     if (options.data) {
       console.log(`[API Request Body]`, JSON.stringify(options.data, null, 2));
     }
-    
+
     const response = await this.request.post(url, {
       headers: this.buildHeaders(options.headers),
       data: options.data,
     });
 
     console.log(`[API Response] Status: ${response.status()}`);
-    
+
     return response;
   }
 
@@ -66,13 +66,13 @@ export class BaseApiClient {
    */
   private buildUrl(endpoint: string, params?: Record<string, string | number | boolean>): string {
     const url = new URL(endpoint, this.baseURL);
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, String(value));
       });
     }
-    
+
     return url.toString();
   }
 
@@ -84,7 +84,7 @@ export class BaseApiClient {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
-    
+
     return {
       ...defaultHeaders,
       ...customHeaders,

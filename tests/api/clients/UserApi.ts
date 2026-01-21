@@ -30,9 +30,9 @@ export class UserApi extends BaseApiClient {
   async getUserById(id: number): Promise<User> {
     const endpoint = API_ENDPOINTS.users.getUser(id);
     const response = await this.get(endpoint);
-    
+
     this.validateStatus(response, 200);
-    
+
     return await this.parseJsonResponse<User>(response);
   }
 
@@ -42,9 +42,9 @@ export class UserApi extends BaseApiClient {
   async getAllUsers(): Promise<User[]> {
     const endpoint = API_ENDPOINTS.users.list;
     const response = await this.get(endpoint);
-    
+
     this.validateStatus(response, 200);
-    
+
     return await this.parseJsonResponse<User[]>(response);
   }
 
@@ -56,9 +56,9 @@ export class UserApi extends BaseApiClient {
     const response = await this.post(endpoint, {
       data: userData,
     });
-    
+
     this.validateStatus(response, 201);
-    
+
     return await this.parseJsonResponse<User>(response);
   }
 

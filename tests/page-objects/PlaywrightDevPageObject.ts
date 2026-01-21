@@ -3,7 +3,7 @@ import { Page, Locator } from '@playwright/test';
 export class PlaywrightDevPage {
   readonly page: Page;
   readonly url: string = 'https://playwright.dev/';
-  
+
   // Locators
   readonly getStartedLink: Locator;
   readonly installationHeading: Locator;

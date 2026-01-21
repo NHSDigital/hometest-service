@@ -23,16 +23,16 @@ test.describe('Accessibility Testing Examples @accessibility', () => {
         <head><title>Test Page with Accessibility Issues</title></head>
         <body>
           <h1>Accessibility Test Page</h1>
-          
+
           <!-- Missing alt text on image -->
           <img src="test.jpg" />
-          
+
           <!-- Missing label for input -->
           <input type="text" name="username" />
-          
+
           <!-- Button without accessible name -->
           <button></button>
-          
+
           <!-- Low contrast text -->
           <p style="color: #ccc; background: white;">This text has low contrast</p>
         </body>
@@ -49,7 +49,7 @@ test.describe('Accessibility Testing Examples @accessibility', () => {
   test('should check accessibility during user flow', async ({ page, accessibility, playwrightDevPage }) => {
     // Navigate to homepage
     await playwrightDevPage.navigate();
-    
+
     // Check accessibility on homepage
     const homePageViolations = await accessibility.runAccessibilityCheck(page, 'homepage');
     expect(homePageViolations).toBe(false);

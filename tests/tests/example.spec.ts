@@ -26,19 +26,19 @@ test.describe('Example Test Suite', () => {
     await Logger.wrapInLogs('Navigate and Click Get Started', async () => {
       await playwrightDevPage.navigate();
       Logger.log('Homepage loaded');
-      
+
       // Run accessibility test
       const hasViolations = await accessibility.runAccessibilityCheck(page, 'get-started-page');
       expect(hasViolations).toBe(false);
       Logger.log('Accessibility check passed');
-      
+
       // Click the get started link.
       await playwrightDevPage.clickGetStarted();
       Logger.log('Clicked Get Started link');
 
       // Expects page to have a heading with the name of Installation.
       await expect(playwrightDevPage.installationHeading).toBeVisible();
-      
+
       const installViolations = await accessibility.runAccessibilityCheck(page, 'installation-page');
       expect(installViolations).toBe(false);
       Logger.log('Installation page verified');

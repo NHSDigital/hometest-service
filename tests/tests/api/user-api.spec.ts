@@ -23,7 +23,7 @@ test.describe('User API Tests @api', () => {
     expect(user.id).toBe(userId);
     expect(user.name).toBeTruthy();
     expect(user.email).toContain('@');
-    
+
     console.log('Retrieved user:', JSON.stringify(user, null, 2));
   });
 

@@ -94,8 +94,7 @@ The framework uses environment-based configuration management. You **must** set 
 #### Available Environments
 
 - `dev` - Development environment
-- `staging` - Staging environment  
-
+- `staging` - Staging environment
 
 #### Required Environment Variable
 
@@ -125,6 +124,7 @@ Environment-specific configuration is stored in `configuration/.env.<environment
 - `.env.production` - Production configuration
 
 Each file contains:
+
 - `UI_BASE_URL` - Base URL for UI tests
 - `API_BASE_URL` - Base URL for API tests
 - `HEADLESS` - Run browser in headless mode (true/false)
@@ -143,7 +143,7 @@ test('example test', async ({ config }) => {
   const baseUrl = config.get(EnvironmentVariables.UI_BASE_URL);
   const headless = config.getBoolean(EnvironmentVariables.HEADLESS);
   const timeout = config.getNumber(EnvironmentVariables.TIMEOUT);
-  
+
   console.log(`Testing on: ${baseUrl}`);
   console.log(`Current environment: ${config.getEnvironment()}`);
 });

@@ -84,11 +84,11 @@ export class AccessibilityModule {
       console.log(`   Impact: ${violation.impact}`);
       console.log(`   Help: ${violation.help}`);
       console.log(`   Affected nodes: ${violation.nodes.length}`);
-      
+
       violation.nodes.slice(0, 3).forEach((node, nodeIndex) => {
         console.log(`   ${nodeIndex + 1}) ${node.html.substring(0, 100)}...`);
       });
-      
+
       if (violation.nodes.length > 3) {
         console.log(`   ... and ${violation.nodes.length - 3} more node(s)`);
       }
