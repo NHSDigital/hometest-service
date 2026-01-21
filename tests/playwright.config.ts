@@ -13,6 +13,10 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
  */
 export default defineConfig({
   testDir: './tests',
+  /* Global setup script */
+  globalSetup: './global-setup.ts',
+  /* Global teardown script */
+  globalTeardown: './global-teardown.ts',
   /* Run tests in files in parallel */
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
