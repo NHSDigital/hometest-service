@@ -8,13 +8,8 @@ export class Configuration {
   private readonly environment: Environment;
 
   private constructor() {
-    // Check if ENV is provided
-    const env = process.env.ENV;
-    if (!env) {
-      throw new Error(
-        `ENV environment variable is required. Available environments: ${availableEnvironments.join(', ')}`
-      );
-    }
+    // Check if ENV is provided, default to 'dev' for local development
+    const env = process.env.ENV || 'dev';
 
     // Validate environment
     if (!availableEnvironments.includes(env as Environment)) {
