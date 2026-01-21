@@ -17,3 +17,25 @@
 .env
 .env.local
 .env.*.local
+
+# Local stuff
+db-data
+localstack-data
+postgres-db
+output.json
+
+# Node
+node_modules
+dist
+
+# CDK Stuff
+cdk.out
+cdk.context.json
+
+# MacOS
+.DS_Store
+
+# Keys
+*.pem
+private_key.pem
+public_key.pem

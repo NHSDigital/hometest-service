@@ -1,0 +1,1161 @@
+openapi: 3.0.3
+info:
+  title: Home Test API
+  description: API for managing medical test orders and results
+  version: 1.0.0
+
+paths:
+  /test-order/info:
+    get:
+      summary: Get Test Information
+      description: Retrieve available suppliers for a given postcode and optional test type
+      tags:
+        - Test Order Service
+      parameters:
+        - name: postcode
+          in: query
+          required: true
+          description: NHS postcode for supplier lookup
+          schema:
+            type: string
+            pattern: '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$'
+            example: "SW1A 1AA"
+        - name: test_code
+          in: query
+          required: false
+          description: SNOMED code for specific test type
+          schema:
+            type: string
+            example: "31676001"
+      responses:
+        '200':
+          description: Successfully retrieved supplier information
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FHIRBundle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /test-order/order:
+    post:
+      summary: Create Test Order
+      description: Place a new medical test order
+      tags:
+        - Test Order Service
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema:
+              $ref: '#/components/schemas/FHIRServiceRequest'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_uid:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the created order
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  order_status:
+                    type: string
+                    description: Initial status of the order
+                    example: "PENDING"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-11-04T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /test-order/status:
+    put:
+      summary: Update Order Status
+      description: Update the status of an existing order using FHIR Task resource
+      tags:
+        - Test Order Service
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema:
+              $ref: '#/components/schemas/FHIRTask'
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FHIRTask'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /test-order/eligibility:
+    get:
+      summary: Check Order Eligibility
+      description: Check if an individual is eligible to place a test order before submitting (proxy to supplier eligibility checks)
+      tags:
+        - Test Order Service
+      parameters:
+        - name: postcode
+          in: query
+          required: true
+          description: NHS postcode for the individual
+          schema:
+            type: string
+            pattern: '^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$'
+            example: "SW1A 1AA"
+        - name: test_code
+          in: query
+          required: true
+          description: SNOMED code for the test being requested
+          schema:
+            type: string
+            example: "31676001"
+        - name: nhs_number
+          in: query
+          required: true
+          description: NHS number of the individual
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+            example: "9876543210"
+        - name: patient_name
+          in: query
+          required: false
+          description: Patient name for additional verification
+          schema:
+            type: string
+            example: "John Smith"
+        - name: patient_dob
+          in: query
+          required: false
+          description: Patient date of birth for eligibility checks
+          schema:
+            type: string
+            format: date
+            example: "1990-01-15"
+        - name: supplier_code
+          in: query
+          required: false
+          description: Specific supplier to check eligibility with (if not provided, checks all available suppliers)
+          schema:
+            type: string
+            example: "SUP001"
+      responses:
+        '200':
+          description: Eligibility check completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eligible_suppliers:
+                    type: array
+                    description: List of suppliers where the individual is eligible
+                    items:
+                      type: object
+                      properties:
+                        supplier_code:
+                          type: string
+                          example: "SUP001"
+                        supplier_name:
+                          type: string
+                          example: "MedTest Labs Ltd"
+                        eligible:
+                          type: boolean
+                          example: true
+                        quota_remaining:
+                          type: integer
+                          description: Number of tests remaining in individual quota
+                          example: 2
+                        estimated_delivery_date:
+                          type: string
+                          format: date
+                          description: Expected delivery date if order is placed
+                          example: "2025-11-27"
+                        available_collection_points:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              reference:
+                                type: string
+                                example: "CP001"
+                              name:
+                                type: string
+                                example: "London Bridge Collection Point"
+                  ineligible_suppliers:
+                    type: array
+                    description: List of suppliers where the individual is not eligible
+                    items:
+                      type: object
+                      properties:
+                        supplier_code:
+                          type: string
+                          example: "SUP002"
+                        supplier_name:
+                          type: string
+                          example: "Another Lab Ltd"
+                        eligible:
+                          type: boolean
+                          example: false
+                        reason:
+                          type: string
+                          example: "Individual quota already used"
+                        error_details:
+                          $ref: '#/components/schemas/FHIROperationOutcome'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: No suppliers available for the requested test and location
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No suppliers found for test code and postcode"
+                  error_code:
+                    type: string
+                    example: "NO_SUPPLIERS_AVAILABLE"
+
+  /result/result:
+    post:
+      summary: Post Test Results
+      description: Submit test results for a completed order
+      tags:
+        - Result Service
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema:
+              $ref: '#/components/schemas/FHIRObservation'
+      responses:
+        '201':
+          description: Results posted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_uid:
+                    type: string
+                    format: uuid
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  result_status:
+                    type: string
+                    example: "RECEIVED"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-04T15:45:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /result/view:
+    get:
+      summary: View Test Results
+      description: Retrieve test results for a specific order
+      tags:
+        - Result Service
+      parameters:
+        - name: order_uid
+          in: query
+          required: true
+          description: Unique identifier of the order
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: originator_code
+          in: query
+          required: true
+          description: Code identifying the requesting organization
+          schema:
+            type: string
+            example: "ORG001"
+      responses:
+        '200':
+          description: Results retrieved successfully
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/FHIRObservation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    FHIRServiceRequest:
+      type: object
+      description: FHIR ServiceRequest resource for test orders
+      required:
+        - resourceType
+        - status
+        - intent
+        - code
+        - subject
+        - requester
+      properties:
+        resourceType:
+          type: string
+          enum: [ ServiceRequest ]
+          example: "ServiceRequest"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        status:
+          type: string
+          description: Status of the service request
+          enum: [ draft, active, on-hold, revoked, completed, entered-in-error, unknown ]
+          example: "active"
+        intent:
+          type: string
+          description: Intent of the service request
+          enum: [ proposal, plan, directive, order, original-order, reflex-order, filler-order, instance-order, option ]
+          example: "order"
+        code:
+          type: object
+          description: What is being requested/ordered (SNOMED CT)
+          properties:
+            coding:
+              type: array
+              items:
+                type: object
+                properties:
+                  system:
+                    type: string
+                    example: "http://snomed.info/sct"
+                  code:
+                    type: string
+                    example: "31676001"
+                  display:
+                    type: string
+                    example: "HIV antibody test - self-sampling"
+        subject:
+          type: object
+          description: Individual or Entity the service is ordered for
+          properties:
+            reference:
+              type: string
+              example: "Patient/123e4567-e89b-12d3-a456-426614174000"
+            identifier:
+              type: object
+              properties:
+                system:
+                  type: string
+                  example: "https://fhir.nhs.uk/Id/nhs-number"
+                value:
+                  type: string
+                  example: "9876543210"
+        requester:
+          type: object
+          description: Individual making the request
+          properties:
+            reference:
+              type: string
+              example: "Organization/ORG001"
+            identifier:
+              type: object
+              properties:
+                system:
+                  type: string
+                  example: "https://fhir.nhs.uk/Id/ods-organization-code"
+                value:
+                  type: string
+                  example: "ORG001"
+        performer:
+          type: array
+          description: Requested performer (supplier)
+          items:
+            type: object
+            properties:
+              reference:
+                type: string
+                example: "Organization/SUP001"
+        reasonCode:
+          type: array
+          description: Reason for the service request
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+                example: "Routine screening"
+        extension:
+          type: array
+          description: Additional content defined by implementations
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              valueString:
+                type: string
+              valueCodeableConcept:
+                type: object
+              valueAddress:
+                type: object
+          example:
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/delivery-option"
+              valueString: "HOME_DELIVERY"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/delivery-address"
+              valueAddress:
+                line: [ "456 Oak Lane" ]
+                city: "Manchester"
+                postalCode: "M1 1AA"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/collection-point"
+              valueString: "CP001"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/patient-name"
+              valueString: "John Smith"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/patient-phone"
+              valueString: "+447700900123"
+
+    FHIRObservation:
+      type: object
+      description: FHIR Observation resource for test results
+      required:
+        - resourceType
+        - status
+        - code
+        - subject
+      properties:
+        resourceType:
+          type: string
+          enum: [ Observation ]
+          example: "Observation"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "obs-550e8400-e29b-41d4-a716-446655440000"
+        basedOn:
+          type: array
+          description: Reference to the ServiceRequest this observation fulfills
+          items:
+            type: object
+            properties:
+              reference:
+                type: string
+                example: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
+        status:
+          type: string
+          description: Status of the observation result
+          enum: [ registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown ]
+          example: "final"
+        code:
+          type: object
+          description: Type of observation (SNOMED CT or LOINC)
+          properties:
+            coding:
+              type: array
+              items:
+                type: object
+                properties:
+                  system:
+                    type: string
+                    example: "http://snomed.info/sct"
+                  code:
+                    type: string
+                    example: "31676001"
+                  display:
+                    type: string
+                    example: "HIV antibody test - self-sampling"
+        subject:
+          type: object
+          description: Who and/or what the observation is about
+          properties:
+            reference:
+              type: string
+              example: "Patient/123e4567-e89b-12d3-a456-426614174000"
+        effectiveDateTime:
+          type: string
+          format: date-time
+          description: Clinically relevant time/time-period for observation
+          example: "2025-11-04T15:45:00Z"
+        issued:
+          type: string
+          format: date-time
+          description: Date/Time this version was made available
+          example: "2025-11-04T16:00:00Z"
+        performer:
+          type: array
+          description: Who is responsible for the observation
+          items:
+            type: object
+            properties:
+              reference:
+                type: string
+                example: "Organization/SUP001"
+        valueQuantity:
+          type: object
+          description: Actual result value (for numeric results)
+          properties:
+            value:
+              type: number
+              example: 0.5
+            unit:
+              type: string
+              example: "index"
+            system:
+              type: string
+              example: "http://unitsofmeasure.org"
+            code:
+              type: string
+              example: "1"
+        valueCodeableConcept:
+          type: object
+          description: Actual result value (for coded results)
+          properties:
+            coding:
+              type: array
+              items:
+                type: object
+                properties:
+                  system:
+                    type: string
+                    example: "http://snomed.info/sct"
+                  code:
+                    type: string
+                    example: "260415000"
+                  display:
+                    type: string
+                    example: "Not detected"
+        valueString:
+          type: string
+          description: Actual result value (for text results)
+          example: "Normal range"
+        interpretation:
+          type: array
+          description: High, low, normal, etc.
+          items:
+            type: object
+            properties:
+              coding:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    system:
+                      type: string
+                      example: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation"
+                    code:
+                      type: string
+                      example: "N"
+                    display:
+                      type: string
+                      example: "Normal"
+        referenceRange:
+          type: array
+          description: Provides guide for interpretation
+          items:
+            type: object
+            properties:
+              low:
+                type: object
+                properties:
+                  value:
+                    type: number
+                    example: 3.5
+                  unit:
+                    type: string
+                    example: "mmol/L"
+              high:
+                type: object
+                properties:
+                  value:
+                    type: number
+                    example: 7.0
+                  unit:
+                    type: string
+                    example: "mmol/L"
+              text:
+                type: string
+                example: "Reference range for HIV antibody index"
+
+    FHIRBundle:
+      type: object
+      description: FHIR Bundle resource containing supplier and location information
+      required:
+        - resourceType
+        - type
+        - entry
+      properties:
+        resourceType:
+          type: string
+          enum: [ Bundle ]
+          example: "Bundle"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "supplier-bundle-550e8400"
+        type:
+          type: string
+          description: Bundle type
+          enum: [ searchset, collection ]
+          example: "searchset"
+        total:
+          type: integer
+          description: Total number of entries in the bundle
+          example: 3
+        entry:
+          type: array
+          description: Bundle entries containing Organization and Location resources
+          items:
+            type: object
+            properties:
+              resource:
+                oneOf:
+                  - $ref: '#/components/schemas/FHIROrganization'
+                  - $ref: '#/components/schemas/FHIRLocation'
+              search:
+                type: object
+                properties:
+                  mode:
+                    type: string
+                    enum: [ match, include, outcome ]
+                    example: "match"
+
+    FHIROrganization:
+      type: object
+      description: FHIR Organization resource for suppliers
+      required:
+        - resourceType
+        - name
+      properties:
+        resourceType:
+          type: string
+          enum: [ Organization ]
+          example: "Organization"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "SUP001"
+        identifier:
+          type: array
+          description: Identifies this organization across multiple systems
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                example: "https://fhir.hometest.nhs.uk/Id/supplier-code"
+              value:
+                type: string
+                example: "SUP001"
+        active:
+          type: boolean
+          description: Whether the organization's record is still in active use
+          example: true
+        type:
+          type: array
+          description: Kind of organization
+          items:
+            type: object
+            properties:
+              coding:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    system:
+                      type: string
+                      example: "http://terminology.hl7.org/CodeSystem/organization-type"
+                    code:
+                      type: string
+                      example: "prov"
+                    display:
+                      type: string
+                      example: "Healthcare Provider"
+        name:
+          type: string
+          description: Name used for the organization
+          example: "MedTest Labs Ltd"
+        telecom:
+          type: array
+          description: Contact details for the organization
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                enum: [ phone, fax, email, pager, url, sms, other ]
+                example: "phone"
+              value:
+                type: string
+                example: "+442071234567"
+              use:
+                type: string
+                enum: [ home, work, temp, old, mobile ]
+                example: "work"
+        address:
+          type: array
+          description: Address(es) for the organization
+          items:
+            type: object
+            properties:
+              use:
+                type: string
+                enum: [ home, work, temp, old, billing ]
+                example: "work"
+              line:
+                type: array
+                items:
+                  type: string
+                example: [ "123 Lab Street" ]
+              city:
+                type: string
+                example: "London"
+              postalCode:
+                type: string
+                example: "SW1A 1AA"
+              country:
+                type: string
+                example: "GB"
+        extension:
+          type: array
+          description: Additional capabilities and services offered by the organization
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                description: Extension URL defining the capability
+              valueCodeableConcept:
+                type: object
+                description: Test capability using SNOMED codes
+                properties:
+                  coding:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        system:
+                          type: string
+                          example: "http://snomed.info/sct"
+                        code:
+                          type: string
+                          example: "33747003"
+                        display:
+                          type: string
+                          example: "Blood test analysis"
+              valueString:
+                type: string
+                description: Additional capability information
+          example:
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/test-capability"
+              valueCodeableConcept:
+                coding:
+                  - system: "http://snomed.info/sct"
+                    code: "31676001"
+                    display: "HIV antibody test - self-sampling"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/test-capability"
+              valueCodeableConcept:
+                coding:
+                  - system: "http://snomed.info/sct"
+                    code: "165806002"
+                    display: "HIV screening test"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/test-capability"
+              valueCodeableConcept:
+                coding:
+                  - system: "http://snomed.info/sct"
+                    code: "398579006"
+                    display: "Human immunodeficiency virus antigen test"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/collection-method"
+              valueString: "POSTAL"
+            - url: "https://fhir.hometest.nhs.uk/StructureDefinition/turnaround-time"
+              valueString: "5-7 days"
+
+    FHIRLocation:
+      type: object
+      description: FHIR Location resource for collection points
+      required:
+        - resourceType
+        - name
+        - status
+      properties:
+        resourceType:
+          type: string
+          enum: [ Location ]
+          example: "Location"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "CP001"
+        identifier:
+          type: array
+          description: Unique code or number identifying the location
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                example: "https://fhir.hometest.nhs.uk/Id/collection-point"
+              value:
+                type: string
+                example: "CP001"
+        status:
+          type: string
+          description: Status of the location
+          enum: [ active, suspended, inactive ]
+          example: "active"
+        name:
+          type: string
+          description: Name of the location
+          example: "Central Collection Point"
+        type:
+          type: object
+          description: Type of function performed at the location
+          properties:
+            coding:
+              type: array
+              items:
+                type: object
+                properties:
+                  system:
+                    type: string
+                    example: "http://terminology.hl7.org/CodeSystem/v3-RoleCode"
+                  code:
+                    type: string
+                    example: "CSC"
+                  display:
+                    type: string
+                    example: "community service center"
+        telecom:
+          type: array
+          description: Contact details of the location
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                enum: [ phone, fax, email, pager, url, sms, other ]
+                example: "phone"
+              value:
+                type: string
+                example: "+442071234567"
+        address:
+          type: object
+          description: Physical location
+          properties:
+            use:
+              type: string
+              enum: [ home, work, temp, old, billing ]
+              example: "work"
+            line:
+              type: array
+              items:
+                type: string
+              example: [ "456 Collection Street" ]
+            city:
+              type: string
+              example: "London"
+            postalCode:
+              type: string
+              example: "SW1A 2BB"
+            country:
+              type: string
+              example: "GB"
+        position:
+          type: object
+          description: The absolute geographic location
+          properties:
+            longitude:
+              type: number
+              example: -0.1278
+            latitude:
+              type: number
+              example: 51.5074
+        managingOrganization:
+          type: object
+          description: Organization responsible for the location
+          properties:
+            reference:
+              type: string
+              example: "Organization/SUP001"
+
+    FHIRTask:
+      type: object
+      description: FHIR Task resource for tracking order status
+      required:
+        - resourceType
+        - status
+        - intent
+        - basedOn
+      properties:
+        resourceType:
+          type: string
+          enum: [ Task ]
+          example: "Task"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "task-550e8400-e29b-41d4-a716-446655440000"
+        identifier:
+          type: array
+          description: Task Instance Identifier
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                example: "https://fhir.hometest.nhs.uk/Id/order-uid"
+              value:
+                type: string
+                example: "550e8400-e29b-41d4-a716-446655440000"
+        basedOn:
+          type: array
+          description: Request fulfilled by this task
+          items:
+            type: object
+            properties:
+              reference:
+                type: string
+                example: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
+        status:
+          type: string
+          description: Current status of the task
+          enum: [ draft, requested, received, accepted, rejected, ready, cancelled, in-progress, on-hold, failed, completed, entered-in-error ]
+          example: "in-progress"
+        statusReason:
+          type: object
+          description: Reason for current status
+          properties:
+            text:
+              type: string
+              example: "Sample collected and being processed"
+        intent:
+          type: string
+          description: Intent of the task
+          enum: [ unknown, proposal, plan, order, original-order, reflex-order, filler-order, instance-order, option ]
+          example: "order"
+        priority:
+          type: string
+          description: Priority of the task
+          enum: [ routine, urgent, asap, stat ]
+          example: "routine"
+        code:
+          type: object
+          description: Task Type
+          properties:
+            coding:
+              type: array
+              items:
+                type: object
+                properties:
+                  system:
+                    type: string
+                    example: "http://hl7.org/fhir/CodeSystem/task-code"
+                  code:
+                    type: string
+                    example: "fulfill"
+                  display:
+                    type: string
+                    example: "Fulfill the focal request"
+        for:
+          type: object
+          description: Beneficiary of the Task
+          properties:
+            reference:
+              type: string
+              example: "Patient/123e4567-e89b-12d3-a456-426614174000"
+        authoredOn:
+          type: string
+          format: date-time
+          description: Task Creation Date
+          example: "2025-11-04T10:30:00Z"
+        lastModified:
+          type: string
+          format: date-time
+          description: Task Last Modified Date
+          example: "2025-11-04T10:35:00Z"
+        requester:
+          type: object
+          description: Who is asking for task to be done
+          properties:
+            reference:
+              type: string
+              example: "Organization/ORG001"
+        owner:
+          type: object
+          description: Responsible individual for the task
+          properties:
+            reference:
+              type: string
+              example: "Organization/SUP001"
+        businessStatus:
+          type: object
+          description: E.g. "Pending", "Processing", etc.
+          properties:
+            text:
+              type: string
+              example: "Sample dispatched to laboratory"
+
+    FHIROperationOutcome:
+      type: object
+      description: FHIR OperationOutcome resource for reporting errors and warnings
+      required:
+        - resourceType
+        - issue
+      properties:
+        resourceType:
+          type: string
+          enum: [ OperationOutcome ]
+          example: "OperationOutcome"
+        id:
+          type: string
+          description: Logical id of this artifact
+          example: "operation-outcome-001"
+        issue:
+          type: array
+          description: Issues with the request or response
+          minItems: 1
+          items:
+            type: object
+            required:
+              - severity
+              - code
+            properties:
+              severity:
+                type: string
+                description: Severity of the issue
+                enum: [ fatal, error, warning, information ]
+                example: "error"
+              code:
+                type: string
+                description: Error or warning code
+                enum: [ invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing, not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule, conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational ]
+                example: "business-rule"
+              details:
+                type: object
+                description: Additional details about the error
+                properties:
+                  coding:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        system:
+                          type: string
+                          example: "http://terminology.hl7.org/CodeSystem/operation-outcome"
+                        code:
+                          type: string
+                          example: "MSG_BUSINESS_RULE_VIOLATION"
+                        display:
+                          type: string
+                          example: "Business rule violation"
+                  text:
+                    type: string
+                    example: "Individual quota already used"
+              diagnostics:
+                type: string
+                description: Additional diagnostic information
+                example: "Patient has already used their allocated quota for this test type"
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid postcode format"
+              error_code:
+                type: string
+                example: "INVALID_POSTCODE"
+
+    Unauthorized:
+      description: Unauthorized - invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid authentication credentials"
+              error_code:
+                type: string
+                example: "UNAUTHORIZED"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Order not found"
+              error_code:
+                type: string
+                example: "ORDER_NOT_FOUND"
+
+    UnprocessableEntity:
+      description: Unprocessable entity - validation errors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Validation failed"
+              error_code:
+                type: string
+                example: "VALIDATION_ERROR"
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                      example: "date_of_birth"
+                    message:
+                      type: string
+                      example: "Date of birth is required"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    NHS_Login:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.nhs.uk/oauth2/authorize
+          tokenUrl: https://auth.nhs.uk/oauth2/token
+          scopes:
+            read: Read access to test information
+            write: Write access to create orders
+            admin: Administrative access
+
+security:
+  - BearerAuth: [ ]
+  - NHS_Login: [ ]
