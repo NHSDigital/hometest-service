@@ -34,7 +34,7 @@ describe("GetSelfTestKitPage", () => {
     render(<GetSelfTestKitPage />);
 
     const header = screen.getByRole("heading", {
-      name: /get a self-test kit for hiv/i,
+      name: "Get a self-test kit for HIV",
     });
     expect(header).toBeInTheDocument();
   });
