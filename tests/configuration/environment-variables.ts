@@ -1,6 +1,7 @@
 export enum EnvironmentVariables {
   ENV = 'ENV',
   UI_BASE_URL = 'UI_BASE_URL',
+  UI_ORDER_JOURNEY_URL = 'UI_ORDER_JOURNEY_URL',
   API_BASE_URL = 'API_BASE_URL',
   HEADLESS = 'HEADLESS',
   TIMEOUT = 'TIMEOUT',
