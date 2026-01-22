@@ -41,7 +41,7 @@ test.describe('HIV Test Page', () => {
     await findAddressPage.navigateAndVerifyPage();
   });
 
-  test('should display address results for a valid postcode', async ({ page }) => {
+  test('should display address results for a valid postcode', async () => {
     // Submit a valid postcode and verify address results
       await findAddressPage.validatePostcode('SW1A 1AA', 'Buckingham Palace');
 
