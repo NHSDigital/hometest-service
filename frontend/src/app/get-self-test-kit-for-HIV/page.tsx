@@ -1,10 +1,30 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
 import { PageLayout } from "@/components/PageLayout";
+import { useOrderContext } from "../OrderContext";
 
 export default function GetSelfTestKitPage() {
+  const router = useRouter();
+  const { updateOrderAnswers } = useOrderContext();
+
+  useEffect(() => {
+    // TODO: Replace with actual auth data from NHS Login redirect
+    // This mock data simulates what will come from the auth response
+    const authData = {
+      sub: "49f470a1-cc52-49b7-beba-0f9cec937c46",
+      nhsNumber: "9686368973",
+      birthdate: "1968-02-12",
+      identityProofingLevel: "P9",
+      phoneNumber: "+447887510886",
+    };
+
+    updateOrderAnswers({ user: authData });
+    console.log("[GetSelfTestKitPage] Auth data set:", authData);
+  }, [updateOrderAnswers]);
 
   return (
     <PageLayout>
@@ -83,7 +103,7 @@ export default function GetSelfTestKitPage() {
       </Details>
 
       {/* Start Button */}
-      <Button href="enter-delivery-address">
+      <Button onClick={() => router.push("/enter-delivery-address")}>
         Start now
       </Button>
 

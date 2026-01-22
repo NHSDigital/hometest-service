@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageLayout } from "@/components/PageLayout";
 import { Fieldset, TextInput, Button } from "nhsuk-react-components";
+import { useOrderContext } from "../OrderContext";
 import Link from "next/link";
+
+// TODO: update redirect logic if user has selected manual address entry (use router.push etc)
+// TODO: add unit tests for validation functions
+// TODO: add postcode lookup integration
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -44,10 +50,15 @@ const validateBuildingName = (buildingName: string): string | null => {
 };
 
 export default function EnterDeliveryAddressPage() {
+  const router = useRouter();
+  const { orderAnswers, updateOrderAnswers } = useOrderContext();
+
   const [postcode, setPostcode] = useState("");
   const [buildingName, setBuildingName] = useState("");
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
   const [buildingNameError, setBuildingNameError] = useState<string | null>(null);
+
+  console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
 
   const handlePostcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPostcode(e.target.value);
@@ -68,8 +79,13 @@ export default function EnterDeliveryAddressPage() {
 
     // Only proceed if no validation errors
     if (!postcodeValidationError && !buildingNameValidationError) {
-      // TODO: Submit form data to state and navigate to the next page
-      console.log("Form submitted:", { postcode, buildingName });
+      const updatedData = {
+        postcodeSearch: postcode.trim(),
+        buildingNumber: buildingName.trim() || undefined,
+      };
+      console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
+      updateOrderAnswers(updatedData);
+      // router.push("/select-delivery-address");
     }
   };
 
