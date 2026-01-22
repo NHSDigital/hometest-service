@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from '../../fixtures';
-import { WPHomePage } from '../../page-objects';
+import { WPHomePage, FindAddressPage } from '../../page-objects';
 import { Logger } from '../../utils';
 import { Page, BrowserContext } from '@playwright/test';
 
@@ -11,11 +11,12 @@ test.describe('HIV Test Page', () => {
   let context: BrowserContext;
   let page: Page;
   let wpHomePage: WPHomePage;
-
+  let findAddressPage: FindAddressPage;
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext();
     page = await context.newPage();
     wpHomePage = new WPHomePage(page);
+    findAddressPage = new FindAddressPage(wpHomePage);
   });
 
   test.afterAll(async () => {
@@ -36,12 +37,15 @@ test.describe('HIV Test Page', () => {
 
   test('click Start Now button to navigate to find delivery address page', async () => {
     await wpHomePage.clickStartNowButton();
+    // Verify navigation to Find Address page
+    await findAddressPage.navigateAndVerifyPage();
   });
 
+  test('should display address results for a valid postcode', async ({ page }) => {
+    // Submit a valid postcode and verify address results
+      await findAddressPage.validatePostcode('SW1A 1AA', 'Buckingham Palace');
 
-
-
-
+  });
 
 });
 ``
