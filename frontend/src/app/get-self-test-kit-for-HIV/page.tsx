@@ -16,7 +16,6 @@ export default function GetSelfTestKitPage() {
         you enter a postcode.
       </p>
 
-      {/* Urgent Card */}
       <Card cardType="urgent">
         <Card.Heading>Go to a sexual health clinic if:</Card.Heading>
         <Card.Content>
@@ -46,7 +45,6 @@ export default function GetSelfTestKitPage() {
         </Card.Content>
       </Card>
 
-      {/* Inset Text */}
       <div className="nhsuk-inset-text">
         <span className="nhsuk-u-visually-hidden">Information: </span>
         <p>
@@ -55,7 +53,6 @@ export default function GetSelfTestKitPage() {
         </p>
       </div>
 
-      {/* How It Works Section */}
       <h2>How it works</h2>
       <p>
         The kit will be delivered in plain packaging, to the address you choose.
@@ -69,7 +66,6 @@ export default function GetSelfTestKitPage() {
         it to the address in the pre-paid envelope.
       </p>
 
-      {/* Details/Disclosure */}
       <Details>
         <Details.Summary>
           Who my information is shared with
@@ -82,12 +78,10 @@ export default function GetSelfTestKitPage() {
         </Details.Text>
       </Details>
 
-      {/* Start Button */}
       <Button href="enter-delivery-address">
         Start now
       </Button>
 
-      {/* About Using This Service */}
       <h2>About using this service</h2>
       <p>
         By using this service, you agree to our{" "}
@@ -95,7 +89,6 @@ export default function GetSelfTestKitPage() {
         <Link href="privacy-policy">privacy policy</Link>.
       </p>
 
-      {/* Other Options Section */}
       <h2>Other options to home testing, and more support</h2>
       <p>
         Instead of doing the test at home, you can go to{" "}

@@ -15,7 +15,7 @@
 {% block formContent %}
 
   {{ errorSummary({
-    titleText: "There is a problem",    
+    titleText: "There is a problem",
     errorList: [
       {
         text: "Select yes if you're comfortable doing the test yourself",
@@ -67,7 +67,7 @@
           text: "Yes I'm comfortable, send me the kit",
           hint: {
             text: "The test is supplied by [Supplier], a trusted partner of the NHS"
-          },  
+          },
           checked: checked("comfortable", "Yes")
         },
         {
@@ -75,7 +75,7 @@
           text: "No, I'd rather go to a sexual health clinic instead",
           hint: {
             text: "They will take a blood sample for you"
-          },  
+          },
           checked: checked("comfortable", "No")
         }
       ]
