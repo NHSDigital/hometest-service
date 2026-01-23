@@ -2,10 +2,10 @@ import { Page, Locator } from '@playwright/test';
 import { config, Configuration, EnvironmentVariables } from '../configuration';
 import { BasePage } from './basePage';
 
-
 const passwordInput = "[name='password']";
 const continueBtn = "Continue";
 const StartNowBtn = "Start Now";
+
 export class WPHomePage extends BasePage {
 
   async navigate(): Promise<void> {

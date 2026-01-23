@@ -29,5 +29,10 @@ export class BasePage {
     }
     return expect(textValue.trim()).toBe(text)
   }
+
+   async closeBrowser(): Promise<void>{
+    await this.page.close()
+  }
+
 }
 

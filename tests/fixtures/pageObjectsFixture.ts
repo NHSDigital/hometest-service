@@ -1,11 +1,13 @@
 import { test as base } from '@playwright/test';
-import { WPHomePage, PlaywrightDevPage, LoginPage,BasePage } from '../page-objects';
+import { WPHomePage, PlaywrightDevPage, LoginPage, FindAddressPage } from '../page-objects';
+import { BasePage } from '../page-objects/basePage';
 
 type PageObjectFixtures = {
   wpHomePage: WPHomePage;
   playwrightDevPage: PlaywrightDevPage;
   loginPage: LoginPage;
   basePage: BasePage;
+  findAddressPage: FindAddressPage;
 };
 
 // Extend base test with page object fixtures
