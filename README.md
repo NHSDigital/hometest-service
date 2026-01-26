@@ -88,7 +88,10 @@ npm run stop
 
 ### Frontend
 
-The frontend is a Next.js application located in the `/frontend` directory.
+The frontend is a Next.js application located in the `/ui` directory.
+
+- When creating a new page, use the PageLayout component found in `/ui/src/components`.
+- To create a new route, create a directory with the name of your route in `/ui/src/app`, and add a `page.tsx` file within.
 
 ### Infrastructure
 
