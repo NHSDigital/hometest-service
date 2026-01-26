@@ -1,29 +1,18 @@
 import { test as base } from '@playwright/test';
-import { WPHomePage, PlaywrightDevPage, LoginPage,BasePage } from '../page-objects';
+import { HomeTestPage, PlaywrightDevPage } from '../page-objects';
 
-type PageObjectFixtures = {
-  wpHomePage: WPHomePage;
+export interface MyFixtures {
+  homeTestPage: HomeTestPage;
   playwrightDevPage: PlaywrightDevPage;
-  loginPage: LoginPage;
-  basePage: BasePage;
-};
+}
 
-// Extend base test with page object fixtures
-export const pageObjectFixture = base.extend<PageObjectFixtures>({
-  wpHomePage: async ({ page }, use) => {
-    const wpHomePage = new WPHomePage(page);
-    await use(wpHomePage);
+export const pageObjectFixture  = base.extend<MyFixtures>({
+  homeTestPage: async ({ page }, use) => {
+    await use(new HomeTestPage(page));
   },
-
   playwrightDevPage: async ({ page }, use) => {
-    const playwrightDevPage = new PlaywrightDevPage(page);
-    await use(playwrightDevPage);
+    await use(new PlaywrightDevPage(page));
   },
-
-  loginPage: async({ page}, use) => {
-    const loginPage = new LoginPage(page);
-        await use(loginPage);
-
-
-  }
 });
+
+

@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { config, Configuration, EnvironmentVariables } from '../configuration';
 import { BasePage } from './basePage';
 
@@ -6,7 +6,7 @@ import { BasePage } from './basePage';
 const passwordInput = "[name='password']";
 const continueBtn = "Continue";
 const StartNowBtn = "Start Now";
-export class WPHomePage extends BasePage {
+export class HomeTestPage extends BasePage {
 
   async navigate(): Promise<void> {
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
@@ -27,15 +27,17 @@ export class WPHomePage extends BasePage {
   }
 
   async enterPassword(): Promise<void> {
-    await this.waitAndFill(passwordInput, 'nhs-home-testing');
-    await this.waitAndClick(continueBtn);
+    await this.page.fill(passwordInput, 'nhs-home-testing');
+    await this.page.getByRole('button', { name: continueBtn }).click();
+
   }
 
-  async contentAssertions(selector: string, expectedText: string, nthIndex: number): Promise<void> {
-    await this.verifyElementText(selector, expectedText, nthIndex);
+  async contentAssertions(expectedText: string): Promise<void> {
+    const actualText = this.page.locator("h1");
+    await expect(actualText).toHaveText(expectedText)
   }
 
   async clickStartNowButton(): Promise<void> {
-    await this.waitAndClick(StartNowBtn);
+    await this.page.getByRole('button', { name: StartNowBtn }).click();
   }
 }
