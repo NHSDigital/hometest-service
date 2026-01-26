@@ -6,6 +6,7 @@ import { BasePage } from './basePage';
 const passwordInput = "[name='password']";
 const continueBtn = "Continue";
 const StartNowBtn = "Start Now";
+const header1 = "h1";
 export class HomeTestPage extends BasePage {
 
   async navigate(): Promise<void> {
@@ -21,20 +22,17 @@ export class HomeTestPage extends BasePage {
     return await this.page.title();
   }
 
-  async verifyPageLoaded(): Promise<boolean> {
+  async waitForPageLoaded() {
     await this.page.waitForLoadState('domcontentloaded');
-    return true;
   }
 
   async enterPassword(): Promise<void> {
     await this.page.fill(passwordInput, 'nhs-home-testing');
     await this.page.getByRole('button', { name: continueBtn }).click();
-
   }
 
-  async contentAssertions(expectedText: string): Promise<void> {
-    const actualText = this.page.locator("h1");
-    await expect(actualText).toHaveText(expectedText)
+  async getText(): Promise<string[]> {
+    return await this.page.locator(header1).allTextContents();
   }
 
   async clickStartNowButton(): Promise<void> {

@@ -10,5 +10,5 @@ export enum EnvironmentVariables {
   REPORTING_OUTPUT_DIRECTORY = 'REPORTING_OUTPUT_DIRECTORY',
 }
 
-export const availableEnvironments = ['dev', 'staging', 'production'] as const;
+export const availableEnvironments = ['local','dev'] as const;
 export type Environment = typeof availableEnvironments[number];

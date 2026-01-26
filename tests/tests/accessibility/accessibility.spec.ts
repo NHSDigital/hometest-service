@@ -18,14 +18,7 @@ test.describe('Accessibility Testing @accessibility', () => {
 
     // Wait for page to load
     await page.waitForLoadState('domcontentloaded');
-    await accessibility.runAccessibilityCheck(page,"Get a self-test kit for HIV - NHS App prototype");
-
-    // const accessibilityScanResults = await new AxeBuilder({ page })
-    //   .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    //   .analyze();
-    // expect(accessibilityScanResults.violations).toEqual([]);
-
-    page.close();
+    await accessibility.runAccessibilityCheck(page, "Get a self-test kit for HIV - NHS App prototype");
   });
 
 

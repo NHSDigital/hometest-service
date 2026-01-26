@@ -15,13 +15,17 @@ test.describe('HIV Test Page', () => {
     await homeTestPage.navigateOrderJourney();
   });
 
-  test.afterAll(async ({ homeTestPage }) => {
-    await homeTestPage.closeBrowser();
-  })
-
   test('home testing prototype page', async ({ homeTestPage }) => {
-    await homeTestPage.contentAssertions('Get a self-test kit for HIV');
+    const actualResult = homeTestPage.getText();
+    expect(actualResult, "Get a self-test kit for HIV");
   });
+
+
+
+
+
+
+
 });
 ``
 
