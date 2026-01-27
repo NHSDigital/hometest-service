@@ -12,7 +12,7 @@ test.describe('HIV Test Page', () => {
 
   test('home testing prototype page', async ({ homeTestPage }) => {
     const actualResult = await homeTestPage.getText();
-    expect(actualResult[0]).toBe("Get a self-test kit for HIV");
+    expect(actualResult).toBe("Get a self-test kit for HIV");
   });
 
 });

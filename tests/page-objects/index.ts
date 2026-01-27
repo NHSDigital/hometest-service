@@ -1,1 +1,1 @@
-export { HomeTestPage } from './HomeTestPageObject';
+export { HomeTestPage } from './HomeTestStartPage';
