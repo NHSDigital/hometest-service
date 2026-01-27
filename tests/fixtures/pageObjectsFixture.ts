@@ -1,18 +1,16 @@
 import { test as base } from '@playwright/test';
-import { HomeTestPage, PlaywrightDevPage } from '../page-objects';
+import { FindAddressPage, HomeTestPage } from '../page-objects';
 
 export interface MyFixtures {
   homeTestPage: HomeTestPage;
-  playwrightDevPage: PlaywrightDevPage;
+  findAddressPage: FindAddressPage;
 }
 
-export const pageObjectFixture  = base.extend<MyFixtures>({
+export const pageObjectFixture = base.extend<MyFixtures>({
   homeTestPage: async ({ page }, use) => {
     await use(new HomeTestPage(page));
   },
-  playwrightDevPage: async ({ page }, use) => {
-    await use(new PlaywrightDevPage(page));
-  },
+  findAddressPage: async ({ homeTestPage }, use) => {
+    await use(new FindAddressPage(homeTestPage));
+   }
 });
-
-
