@@ -9,7 +9,7 @@ export class Configuration {
 
   private constructor() {
     // Check if ENV is provided, default to 'dev' for local development
-    const env = process.env.ENV || 'dev';
+    const env = process.env.ENV || 'local';
 
     // Validate environment
     if (!availableEnvironments.includes(env as Environment)) {

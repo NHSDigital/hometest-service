@@ -1,14 +1,17 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { config, Configuration, EnvironmentVariables } from '../configuration';
-import { BasePage } from './basePage';
 
 
 const passwordInput = "[name='password']";
 const continueBtn = "Continue";
 const StartNowBtn = "Start Now";
 const header1 = "h1";
-export class HomeTestPage extends BasePage {
+export class HomeTestPage  {
+readonly page: Page;
 
+  constructor(page: Page) {
+    this.page = page
+  }
   async navigate(): Promise<void> {
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
   }

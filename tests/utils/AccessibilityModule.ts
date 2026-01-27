@@ -18,8 +18,9 @@ export class AccessibilityModule {
     const standardsConfig = config.get(EnvironmentVariables.ACCESSIBILITY_STANDARDS);
     this.standards = standardsConfig.split(',').map(s => s.trim());
 
-    // Set report directory to tests/testResults/accessibility
-    this.reportDirectory = 'tests/testResults/accessibility';
+    // Get report directory from configuration
+    const outputDir = config.get(EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY);
+    this.reportDirectory = `${outputDir}/accessibility`;
 
     // Ensure report directory exists
     this.ensureReportDirectoryExists();
