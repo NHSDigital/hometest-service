@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { PageLayout } from "@/components/PageLayout";
 import { Fieldset, TextInput, Button } from "nhsuk-react-components";
-import { useOrderContext } from "../OrderContext";
+import { useOrderContext, useNavigationContext } from "@/state";
 import Link from "next/link";
 
-// TODO: update redirect logic if user has selected manual address entry (use router.push etc)
-// TODO: add unit tests for validation functions
+// TODO: update redirect logic if user has selected manual address entry (use goToStep)
 // TODO: add postcode lookup integration
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
@@ -50,8 +48,8 @@ const validateBuildingName = (buildingName: string): string | null => {
 };
 
 export default function EnterDeliveryAddressPage() {
-  const router = useRouter();
   const { orderAnswers, updateOrderAnswers } = useOrderContext();
+  const { goToStep, goBack, stepHistory } = useNavigationContext();
 
   const [postcode, setPostcode] = useState("");
   const [buildingName, setBuildingName] = useState("");
@@ -85,12 +83,23 @@ export default function EnterDeliveryAddressPage() {
       };
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
-      // router.push("/select-delivery-address");
+      
+      // Navigate to next step using NavigationContext
+      goToStep("select-delivery-address");
     }
   };
 
   return (
-    <PageLayout>
+    <PageLayout 
+      showBackButton 
+      onBackButtonClick={() => {
+        if (stepHistory.length > 1) {
+          goBack();
+        } else {
+          goToStep("get-self-test-kit-for-HIV");
+        }
+      }}
+    >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
         Enter your delivery address and we&apos;ll check if the kit&apos;s
         available
@@ -131,7 +140,12 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <Link href="enter-address-manually">Enter address manually</Link>
+        <Link 
+          href="enter-address-manually"
+          onClick={() => goToStep("enter-address-manually")}
+        >
+          Enter address manually
+        </Link>
       </p>
     </PageLayout>
   );

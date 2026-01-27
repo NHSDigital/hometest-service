@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
 import { PageLayout } from "@/components/PageLayout";
-import { useOrderContext } from "../OrderContext";
+import { useOrderContext, useNavigationContext } from "@/state";
 
-// TODO: Replace [n] with actual number of working days from API etc
+// TODO: Replace [n] with actual number of working days once confirmed
 
 export default function GetSelfTestKitPage() {
-  const router = useRouter();
   const { updateOrderAnswers } = useOrderContext();
+  const { goToStep } = useNavigationContext();
 
   useEffect(() => {
     // TODO: Replace with actual auth data from NHS Login redirect
@@ -98,8 +97,7 @@ export default function GetSelfTestKitPage() {
         </Details.Text>
       </Details>
 
-      {/* Start Button */}
-      <Button onClick={() => router.push("/enter-delivery-address")}>
+      <Button onClick={() => goToStep("enter-delivery-address")}>
         Start now
       </Button>
 
