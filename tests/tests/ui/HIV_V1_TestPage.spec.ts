@@ -7,8 +7,6 @@ test.describe.configure({ mode: 'serial' });
 test.describe('HIV Test Page', () => {
   test.beforeEach(async ({ homeTestPage }) => {
     await homeTestPage.navigate();
-    // await homeTestPage.enterPassword();
-    // await homeTestPage.navigateOrderJourney();
   });
 
 

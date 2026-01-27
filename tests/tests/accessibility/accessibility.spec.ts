@@ -13,8 +13,6 @@ test.describe('Accessibility Testing @accessibility', () => {
   test('should pass accessibility check on Order Journey page', async ({ page, accessibility }) => {
     const wpHomePage = new HomeTestPage(page);
     await wpHomePage.navigate();
-    await wpHomePage.enterPassword();
-    await wpHomePage.navigateOrderJourney();
 
     // Wait for page to load
     await page.waitForLoadState('domcontentloaded');

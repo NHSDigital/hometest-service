@@ -16,22 +16,12 @@ readonly page: Page;
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
   }
 
-  async navigateOrderJourney(): Promise<void> {
-    await this.page.goto(config.get(EnvironmentVariables.UI_ORDER_JOURNEY_URL));
-  }
-
-
   async getTitle(): Promise<string> {
     return await this.page.title();
   }
 
   async waitForPageLoaded() {
     await this.page.waitForLoadState('domcontentloaded');
-  }
-
-  async enterPassword(): Promise<void> {
-    await this.page.fill(passwordInput, 'nhs-home-testing');
-    await this.page.getByRole('button', { name: continueBtn }).click();
   }
 
   async getText(): Promise<string[]> {
