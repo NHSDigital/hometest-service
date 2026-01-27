@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
 import { PageLayout } from "@/components/PageLayout";
 
+// TODO: Replace [n] with actual number of working days from API etc
+
 export default function GetSelfTestKitPage() {
 
   return (
@@ -19,12 +21,10 @@ export default function GetSelfTestKitPage() {
       <Card cardType="urgent">
         <Card.Heading>Go to a sexual health clinic if:</Card.Heading>
         <Card.Content>
-          <ul>
-            <li>
-              you think you&apos;ve been exposed to the HIV virus in the last 72
-              hours
-            </li>
-          </ul>
+          <p style={{ listStyle: 'disc', marginLeft: '1.2em', display: 'list-item' }}>
+            you think you&apos;ve been exposed to the HIV virus in the last 72
+            hours
+          </p>
 
           <p>
             Clinic staff can offer you emergency HIV medicine, which may stop
@@ -55,7 +55,7 @@ export default function GetSelfTestKitPage() {
 
       <h2>How it works</h2>
       <p>
-        The kit will be delivered in plain packaging, to the address you choose.
+        The kit will be delivered in plain packaging, to the address you choose, within [n] working days.
         This does not have to be your usual address.
       </p>
       <p>
