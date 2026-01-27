@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import 'nhsuk-frontend/dist/nhsuk.css';
-import { OrderProvider } from "./OrderContext";
+import { OrderProvider, NavigationProvider } from "@/state";
 
 export const metadata: Metadata = {
   title: "NHS HIV Home Test Service"
@@ -15,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <OrderProvider>{children}</OrderProvider>
+        <NavigationProvider>
+          <OrderProvider>{children}</OrderProvider>
+        </NavigationProvider>
       </body>
     </html>
   );
