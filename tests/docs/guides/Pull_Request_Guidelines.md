@@ -21,10 +21,10 @@ This guide outlines the best practices for creating and reviewing pull requests 
   ```
   Commit 1: "Add login page object"
   ✅ Reviewer: "Reviewed - looks good"
-  
+
   Commit 2: "Add login tests"
   ✅ Reviewer: "Done - all tests passing"
-  
+
   Commit 3: "Fix lint issues"
   ✅ Reviewer: "Approved"
   ```
@@ -118,7 +118,7 @@ $ npm run build
 
 #### IDE Integration
 
-**Use your IDE's TypeScript integration** to catch errors before committing:
+**Use your IDEs TypeScript integration** to catch errors before committing:
 
 - VS Code: Shows red squiggly lines under errors
 - Check the "Problems" panel (View → Problems)
@@ -145,7 +145,7 @@ The following checks run automatically on every PR:
 2. **Check Markdown Format** - Validates markdown files follow style guidelines
 3. **Check English Usage** - Checks for inclusive language and style
 4. **Scan Secrets** - Detects accidentally committed secrets or credentials
-5. **Check Terraform Format** - Validates terraform code formatting (if applicable)
+5. **Check Terraform Format** - Validates Terraform code formatting (if applicable)
 6. **Unit Tests** - Runs all unit tests
 7. **Lint Checks** - Validates code quality and style
 
@@ -335,7 +335,7 @@ const UNUSED_CONSTANT = 'test'; // Never used
 export class MyPage {
   readonly page: Page;
   private unusedLocator: Locator; // Declared but never used
-  
+
   // ...
 }
 ```
@@ -347,7 +347,7 @@ import { config } from '../configuration';
 
 export class MyPage {
   readonly page: Page;
-  
+
   // ...
 }
 ```
@@ -356,7 +356,7 @@ export class MyPage {
 
 ### Locator Declaration
 
-Always declare locators as readonly properties and initialize them in the constructor.
+Always declare locators as `readonly` properties and initialize them in the constructor.
 
 ✅ **Correct Pattern**:
 ```typescript
@@ -365,7 +365,7 @@ import { config, EnvironmentVariables } from '../configuration';
 
 export class LoginPage {
   readonly page: Page;
-  
+
   // Locators
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
@@ -444,7 +444,7 @@ export class DashboardPage {
   async getWelcomeMessage(): Promise<string> {
     return await this.welcomeMessage.textContent() || '';
   }
-  
+
   // Or simply expose the locator for the test to assert
   // Tests can do: await expect(dashboardPage.welcomeMessage).toHaveText('Welcome');
 }
@@ -497,7 +497,7 @@ import { test, expect } from '../fixtures';
 test('homepage accessibility', async ({ page, homePage, accessibility }) => {
   // homePage, accessibility are provided by fixtures
   await homePage.navigate();
-  
+
   const hasViolations = await accessibility.runAccessibilityCheck(page, 'homepage');
   expect(hasViolations).toBe(false);
 });
