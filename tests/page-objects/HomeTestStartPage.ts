@@ -3,12 +3,11 @@ import { config, EnvironmentVariables } from '../configuration';
 
 export class HomeTestPage {
   readonly page: Page;
-  readonly getHeaderText: Locator;
-  private readonly header1 = 'h1';
+  readonly headerText: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.getHeaderText = page.locator(this.header1);
+    this.headerText = page.locator('h1');
   }
   async navigate(): Promise<void> {
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
@@ -27,8 +26,8 @@ export class HomeTestPage {
     }
   }
 
-  async getText(): Promise<string> {
-    return await this.getHeaderText.textContent() ?? "";
+  async getHeaderText(): Promise<string> {
+    return await this.headerText.textContent() ?? "";
   }
 
 }
