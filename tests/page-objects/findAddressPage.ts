@@ -30,11 +30,14 @@ export class FindAddressPage {
   }
 
   async validatePostcode(postcode: string, firstLineAddress: string): Promise<void> {
-    await this.postcodeInput.fill('');
-    await this.numNameInput.fill('');
+    await this.postcodeInput.clear();
+    await this.numNameInput.clear();
     await this.postcodeInput.fill(postcode);
     await this.numNameInput.fill(firstLineAddress);
+    const iUrl = this.homeTestPage.page.url();
     await this.continueButton.click();
+    await this.homeTestPage.page.waitForLoadState('networkidle');
+    await this.homeTestPage.page.goto(iUrl); // To handle page reload issue
   }
 
   async verifyErrorPostcodeBuildingNumber(postcode: string, firstLineAddress: string, expectedPostcodeErrorMessage: string, expectedBuildingErrorMessage: string): Promise<void> {
