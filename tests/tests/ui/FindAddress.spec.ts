@@ -4,7 +4,7 @@ import data from '../../test-data/address.json';
 
 test.describe.configure({ mode: 'serial' });
 
-test.describe('HIV Test Page', () => {
+test.describe('Find Address by Postcode', () => {
   test.beforeEach(async ({ homeTestPage }) => {
     await homeTestPage.navigate();
   });
