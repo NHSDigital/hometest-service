@@ -18,7 +18,8 @@ This guide outlines the best practices for creating and reviewing pull requests 
 - **Use the Same PR Process**: Both developers and QA/testers should follow the same pull request workflow
 - **Commit-Level Reviews**: Reviewers should respond to each commit individually to mark when it is reviewed and done
 - **Example Review Flow**:
-  ```
+
+  ```text
   Commit 1: "Add login page object"
   ✅ Reviewer: "Reviewed - looks good"
 
@@ -34,6 +35,7 @@ This guide outlines the best practices for creating and reviewing pull requests 
 Before submitting a PR, ensure:
 
 - [ ] **Code compiles without errors** - Never commit code that doesn't compile
+- [ ] **Run branch checks** - `check=branch` for all three checks (see [Check All Branch Changes](#6-check-all-branch-changes-before-opening-pr))
 - [ ] All GitHub Actions checks pass (see [GitHub Actions Checks](#github-actions-checks))
 - [ ] All code is used (no unused imports, variables, or functions)
 - [ ] All tests pass locally
@@ -161,9 +163,8 @@ Ensures all files follow EditorConfig rules (indentation, line endings, etc.):
 ./scripts/githooks/check-file-format.sh
 ```
 
-
-
 **Common issues:**
+
 - Mixed line endings (CRLF vs LF)
 - Incorrect indentation (tabs vs spaces)
 - Missing final newline
@@ -177,6 +178,7 @@ Validates markdown files against linting rules:
 ```
 
 **Common issues:**
+
 - Missing blank lines around headings
 - Inconsistent list indentation
 - Incorrect heading hierarchy
@@ -193,6 +195,7 @@ Uses Vale to check for inclusive language and writing style:
 ```
 
 **Common issues:**
+
 - Non-inclusive terms (e.g., "whitelist/blacklist" → "allowlist/blocklist")
 - Gendered pronouns without context
 - Ableist language
@@ -208,6 +211,7 @@ Detects accidentally committed secrets or API keys:
 ```
 
 **If secrets are detected:**
+
 1. **Never** commit real secrets - remove them immediately
 2. Use environment variables or secret management
 3. Add false positives to `.gitleaksignore` if needed
@@ -226,6 +230,39 @@ Or configure automatic checks on commit:
 ```bash
 make githooks-config
 ```
+
+#### 6. Check All Branch Changes Before Opening PR
+
+Before opening a pull request, verify all changes in your branch against the base branch:
+
+```bash
+# Check English usage for all changes in your branch
+check=branch ./scripts/githooks/check-english-usage.sh
+
+# Check markdown format for all changes in your branch
+check=branch ./scripts/githooks/check-markdown-format.sh
+
+# Check file format for all changes in your branch
+check=branch ./scripts/githooks/check-file-format.sh
+```
+
+**What this does:**
+
+- `check=branch` - Compares your current branch against `origin/main` (or the base branch)
+- Checks **only the files you've modified** in your branch
+- Catches issues before CI/CD runs
+- Saves time by running locally first
+
+**Quick command to run all three:**
+
+```bash
+check=branch ./scripts/githooks/check-english-usage.sh && \
+check=branch ./scripts/githooks/check-markdown-format.sh && \
+check=branch ./scripts/githooks/check-file-format.sh && \
+echo "✅ All branch checks passed!"
+```
+
+This will stop at the first failing check, allowing you to fix issues one at a time.
 
 ### Fixing Failed CI Checks
 
@@ -298,6 +335,7 @@ make githooks-config
 ```
 
 This will:
+
 - Run checks automatically when you commit
 - Prevent commits with issues
 - Save time by catching problems early
@@ -305,16 +343,19 @@ This will:
 ### Troubleshooting
 
 **Check still failing after local fix?**
+
 - Ensure you committed and pushed all changes
 - Check you're on the latest commit: `git pull --rebase`
 - Look at the full CI logs for additional context
 
 **Can't reproduce issue locally?**
+
 - Try using Docker: `FORCE_USE_DOCKER=true ./scripts/githooks/check-file-format.sh`
 - Check you're using the same Node.js version as CI
 - Verify you have the latest scripts: `git pull`
 
 **Need to bypass a check temporarily?**
+
 - Don't bypass checks in PRs - fix the issues instead
 - For legitimate exceptions, discuss with the team first
 
@@ -325,6 +366,7 @@ This will:
 Always remove unused code before submitting a PR:
 
 ❌ **Bad** - Unused imports and variables:
+
 ```typescript
 import { Page, Locator, BrowserContext, expect } from '@playwright/test'; // BrowserContext unused
 import { config } from '../configuration';
@@ -341,6 +383,7 @@ export class MyPage {
 ```
 
 ✅ **Good** - Only what's needed:
+
 ```typescript
 import { Page, Locator } from '@playwright/test';
 import { config } from '../configuration';
@@ -359,6 +402,7 @@ export class MyPage {
 Always declare locators as `readonly` properties and initialize them in the constructor.
 
 ✅ **Correct Pattern**:
+
 ```typescript
 import { Page, Locator } from '@playwright/test';
 import { config, EnvironmentVariables } from '../configuration';
@@ -397,6 +441,7 @@ export class LoginPage {
 ```
 
 ❌ **Incorrect** - Don't use inline locators:
+
 ```typescript
 export class LoginPage {
   async login(username: string, password: string): Promise<void> {
@@ -413,6 +458,7 @@ export class LoginPage {
 Page objects should only contain interactions and data retrieval. Assertions belong in test specifications.
 
 ❌ **Bad** - Assertions in page object:
+
 ```typescript
 export class DashboardPage {
   readonly page: Page;
@@ -431,6 +477,7 @@ export class DashboardPage {
 ```
 
 ✅ **Good** - Return data for test to assert:
+
 ```typescript
 export class DashboardPage {
   readonly page: Page;
@@ -457,6 +504,7 @@ export class DashboardPage {
 All assertions should be in the test specification files, not in page objects.
 
 ✅ **Good Pattern**:
+
 ```typescript
 import { test, expect } from '../fixtures';
 
@@ -491,6 +539,7 @@ test.describe('Login Flow', () => {
 Always import page objects, accessibility module, and configuration through fixtures.
 
 ✅ **Correct** - Using fixtures:
+
 ```typescript
 import { test, expect } from '../fixtures';
 
@@ -504,6 +553,7 @@ test('homepage accessibility', async ({ page, homePage, accessibility }) => {
 ```
 
 ❌ **Incorrect** - Direct imports:
+
 ```typescript
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../page-objects/HomePage'; // Don't do this
@@ -555,6 +605,7 @@ export { expect } from '@playwright/test';
 When creating a PR, verify:
 
 - [ ] **Code compiles without any errors** (`npm run build` succeeds)
+- [ ] **Run branch checks** before opening PR (English usage, markdown format, file format)
 - [ ] Using the same PR process as all team members
 - [ ] Ready to respond to each commit during review
 - [ ] **All GitHub Actions checks pass** (file format, markdown, English usage, secrets, tests)
