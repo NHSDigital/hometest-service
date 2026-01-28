@@ -34,7 +34,7 @@ export class AccessibilityModule {
    */
   async runAccessibilityCheck(pageOrPageObject: Page | { page: Page }, pageName: string): Promise<boolean> {
     const page = 'page' in pageOrPageObject ? pageOrPageObject.page : pageOrPageObject;
-    
+
     console.log(`🔍 Running accessibility check on: ${pageName}`);
     console.log(`📋 Testing against standards: ${this.standards.join(', ')}`);
 
