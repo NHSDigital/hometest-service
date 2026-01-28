@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { config, EnvironmentVariables } from '../configuration';
 
-export class HomeTestPage {
+export class HomeTestStartPage {
   readonly page: Page;
   readonly headerText: Locator;
 
