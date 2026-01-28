@@ -8,7 +8,7 @@ test.describe('Accessibility Testing @accessibility', () => {
 
     // Wait for page to load
     expect(await homeTestStartPage.verifyPageLoaded()).toBe(true);
-    await accessibility.runAccessibilityCheck(homeTestStartPage.page, "Get a self-test kit for HIV");
+    await accessibility.runAccessibilityCheck(homeTestStartPage, "Get a self-test kit for HIV");
   });
 
 });

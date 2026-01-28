@@ -28,11 +28,13 @@ export class AccessibilityModule {
 
   /**
    * Run accessibility check on a page
-   * @param page - Playwright Page object
+   * @param pageOrPageObject - Playwright Page object or PageObject with page property
    * @param pageName - Name identifier for the page (used in report naming)
    * @returns true if violations found, false if no violations
    */
-  async runAccessibilityCheck(page: Page, pageName: string): Promise<boolean> {
+  async runAccessibilityCheck(pageOrPageObject: Page | { page: Page }, pageName: string): Promise<boolean> {
+    const page = 'page' in pageOrPageObject ? pageOrPageObject.page : pageOrPageObject;
+    
     console.log(`🔍 Running accessibility check on: ${pageName}`);
     console.log(`📋 Testing against standards: ${this.standards.join(', ')}`);
 
