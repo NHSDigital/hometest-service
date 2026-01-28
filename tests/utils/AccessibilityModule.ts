@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { createHtmlReport } from 'axe-html-reporter';
 import { AxeResults, Result } from 'axe-core';
 import { existsSync, mkdirSync } from 'fs';
+import * as path from 'path';
 import { config } from '../configuration';
 import { EnvironmentVariables } from '../configuration';
 
@@ -20,7 +21,10 @@ export class AccessibilityModule {
 
     // Get report directory from configuration
     const outputDir = config.get(EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY);
-    this.reportDirectory = `${outputDir}/accessibility`;
+    
+    // Ensure reports are always written to tests directory regardless of execution context
+    const baseDir = path.basename(process.cwd()) === 'tests' ? '.' : './tests';
+    this.reportDirectory = path.join(baseDir, outputDir, 'accessibility');
 
     // Ensure report directory exists
     this.ensureReportDirectoryExists();
