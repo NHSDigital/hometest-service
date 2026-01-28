@@ -1,6 +1,7 @@
 export enum EnvironmentVariables {
   ENV = 'ENV',
   UI_BASE_URL = 'UI_BASE_URL',
+  UI_ORDER_JOURNEY_URL = 'UI_ORDER_JOURNEY_URL',
   API_BASE_URL = 'API_BASE_URL',
   HEADLESS = 'HEADLESS',
   TIMEOUT = 'TIMEOUT',
@@ -9,5 +10,5 @@ export enum EnvironmentVariables {
   REPORTING_OUTPUT_DIRECTORY = 'REPORTING_OUTPUT_DIRECTORY',
 }
 
-export const availableEnvironments = ['dev', 'staging', 'production'] as const;
+export const availableEnvironments = ['local','dev'] as const;
 export type Environment = typeof availableEnvironments[number];

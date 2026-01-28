@@ -8,6 +8,6 @@ export const test = mergeTests(
   pageObjectFixture,
   configurationFixture,
   apiFixture,
-  accessibilityFixture
-);
+  accessibilityFixture);
 export { expect } from '@playwright/test';
+
