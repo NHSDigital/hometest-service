@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "@/components/PageLayout";
 import { Fieldset, TextInput, Button } from "nhsuk-react-components";
-import { useOrderContext } from "@/state";
+import { useOrderContext, useNavigationContext } from "@/state";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -98,6 +98,7 @@ const validatePostcode = (postcode: string): string | null => {
 export default function EnterAddressManuallyPage() {
   const router = useRouter();
   const { orderAnswers, updateOrderAnswers } = useOrderContext();
+  const { goToStep, goBack, stepHistory } = useNavigationContext();
 
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
@@ -166,12 +167,23 @@ export default function EnterAddressManuallyPage() {
       };
       console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
-      // router.push("/how-comfortable");
+      
+      // Navigate to next step using NavigationContext
+      // goToStep("how-comfortable");
     }
   };
 
   return (
-    <PageLayout>
+    <PageLayout 
+      showBackButton 
+      onBackButtonClick={() => {
+        if (stepHistory.length > 1) {
+          goBack();
+        } else {
+          router.replace("/enter-delivery-address");
+        }
+      }}
+    >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
         Enter your delivery address manually and we&apos;ll check if the
         kit&apos;s available
