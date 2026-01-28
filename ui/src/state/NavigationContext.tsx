@@ -30,9 +30,8 @@ const NavigationContext = createContext<NavigationContextType | undefined>(
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  
   const currentStep = pathname.split("/").filter(Boolean).join("/") || "get-self-test-kit-for-HIV";
-  
+
   const [navigation, setNavigation] = useState<{
     stepHistory: string[];
     lastStep: string;
@@ -40,26 +39,25 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     stepHistory: [currentStep],
     lastStep: currentStep,
   }));
-  
+
   let stepHistory = navigation.stepHistory;
   if (navigation.lastStep !== currentStep) {
-    const newHistory = navigation.stepHistory[navigation.stepHistory.length - 1] === currentStep 
-      ? navigation.stepHistory 
+    const newHistory = navigation.stepHistory[navigation.stepHistory.length - 1] === currentStep
+      ? navigation.stepHistory
       : [...navigation.stepHistory, currentStep];
-    
+
     stepHistory = newHistory;
     setNavigation({
       stepHistory: newHistory,
       lastStep: currentStep,
     });
-    
+
     console.log("[NavigationProvider] Step changed to:", currentStep, "History:", newHistory);
   }
 
   const goToStep = useCallback(
     (step: string) => {
       console.log("[NavigationProvider] Going to step:", step);
-      
       const path = step === "get-self-test-kit-for-HIV" ? "/get-self-test-kit-for-HIV" : `/${step}`;
       router.push(path);
     },
@@ -69,18 +67,18 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const goBack = useCallback(() => {
     console.log("[NavigationProvider] Going back from:", currentStep);
     console.log("[NavigationProvider] Current history:", stepHistory);
-    
+
     if (stepHistory.length > 1) {
       const newHistory = stepHistory.slice(0, -1);
       const previousStep = newHistory[newHistory.length - 1];
-      
+
       console.log("[NavigationProvider] Going back to:", previousStep);
-      
+
       setNavigation({
         stepHistory: newHistory,
         lastStep: previousStep,
       });
-      
+
       router.back();
     }
   }, [stepHistory, currentStep, router]);

@@ -2,12 +2,16 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import GetSelfTestKitPage from "@/app/get-self-test-kit-for-HIV/page";
 import { PageLayout } from "@/components/PageLayout";
+import { OrderProvider } from "@/state/OrderContext";
+import { NavigationProvider } from "@/state/NavigationContext";
 
 // Mock Next.js router and Link
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
+    back: jest.fn(),
   }),
+  usePathname: () => "/get-self-test-kit-for-HIV",
 }));
 
 jest.mock("next/link", () => {
@@ -17,6 +21,12 @@ jest.mock("next/link", () => {
   MockLink.displayName = "MockLink";
   return MockLink;
 });
+
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <NavigationProvider>
+    <OrderProvider>{children}</OrderProvider>
+  </NavigationProvider>
+);
 
 describe('PageLayout', () => {
   it('renders without crashing', () => {
@@ -31,7 +41,7 @@ describe('PageLayout', () => {
 
 describe("GetSelfTestKitPage", () => {
   it("renders the main header", () => {
-    render(<GetSelfTestKitPage />);
+    render(<GetSelfTestKitPage />, { wrapper: TestWrapper });
 
     const header = screen.getByRole("heading", {
       name: "Get a self-test kit for HIV",

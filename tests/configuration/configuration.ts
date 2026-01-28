@@ -9,7 +9,7 @@ export class Configuration {
 
   private constructor() {
     // Check if ENV is provided, default to 'dev' for local development
-    const env = process.env.ENV || 'dev';
+    const env = process.env.ENV || 'local';
 
     // Validate environment
     if (!availableEnvironments.includes(env as Environment)) {
@@ -38,7 +38,7 @@ export class Configuration {
       [EnvironmentVariables.TIMEOUT, '30000'],
       [EnvironmentVariables.SLOW_MO, '0'],
       [EnvironmentVariables.ACCESSIBILITY_STANDARDS, 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa'],
-      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'testResults'],
+      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'tests/testResults'],
     ]);
   }
 

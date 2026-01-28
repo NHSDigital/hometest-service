@@ -39,11 +39,6 @@ const validateBuildingName = (buildingName: string): string | null => {
     return "Building number or name must be 100 characters or less";
   }
 
-  const validCharactersRegex = /^[a-zA-Z0-9\s\-,./&#'"()]+$/;
-  if (!validCharactersRegex.test(buildingName)) {
-    return "Enter the building number or name";
-  }
-
   return null;
 };
 
@@ -83,15 +78,15 @@ export default function EnterDeliveryAddressPage() {
       };
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
-      
+
       // Navigate to next step using NavigationContext
       goToStep("select-delivery-address");
     }
   };
 
   return (
-    <PageLayout 
-      showBackButton 
+    <PageLayout
+      showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();
@@ -140,7 +135,7 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <Link 
+        <Link
           href="enter-address-manually"
           onClick={() => goToStep("enter-address-manually")}
         >

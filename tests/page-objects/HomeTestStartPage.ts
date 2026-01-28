@@ -6,10 +6,12 @@ export class HomeTestPage {
   readonly headerText: Locator;
   readonly startNowBtn: Locator;
 
+
   constructor(page: Page) {
     this.page = page;
     this.headerText = page.locator('h1');
     this.startNowBtn = page.getByRole('button', { name: 'Start now' });
+
   }
   async navigate(): Promise<void> {
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
@@ -19,13 +21,8 @@ export class HomeTestPage {
     return await this.page.title();
   }
 
-  async verifyPageLoaded(): Promise<boolean> {
-    try {
-      await this.page.waitForLoadState('domcontentloaded');
-      return true;
-    } catch {
-      return false;
-    }
+  async verifyPageLoaded(): Promise<void> {
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async getHeaderText(): Promise<string> {
