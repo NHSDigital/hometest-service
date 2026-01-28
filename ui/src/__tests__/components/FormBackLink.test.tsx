@@ -63,7 +63,7 @@ describe("FormBackLink", () => {
     it("renders when cannot go back but has custom onClick", () => {
       mockNavigationContext.canGoBack.mockReturnValue(false);
       const mockOnClick = jest.fn();
-      
+
       render(<FormBackLink onClick={mockOnClick} />);
 
       expect(screen.getByText("Back")).toBeInTheDocument();
