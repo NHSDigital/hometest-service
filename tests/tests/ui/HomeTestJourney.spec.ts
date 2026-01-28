@@ -19,7 +19,7 @@ test.describe('HIV Test Page', () => {
     // Submit a valid postcode and verify address results
     await homeTestPage.clickStartNowButton();
     const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await findAddressPage.validatePostcode(randomEntry.postcode, randomEntry.address);
+    await findAddressPage.fillPostCodeAndAddress(randomEntry.postcode, randomEntry.address);
   });
 
 });
