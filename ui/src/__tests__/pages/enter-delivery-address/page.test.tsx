@@ -1,18 +1,23 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import EnterDeliveryAddressPage from "@/app/enter-delivery-address/page";
-import { OrderProvider } from "@/app/OrderContext";
+import { OrderProvider } from "@/state/OrderContext";
+import { NavigationProvider } from "@/state/NavigationContext";
 
 // Mock Next.js router
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
+    back: jest.fn(),
   }),
+  usePathname: () => "/enter-delivery-address",
 }));
 
-// Test wrapper with OrderProvider
+// Test wrapper with both providers
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <OrderProvider>{children}</OrderProvider>
+  <NavigationProvider>
+    <OrderProvider>{children}</OrderProvider>
+  </NavigationProvider>
 );
 
 describe("EnterDeliveryAddressPage", () => {
@@ -115,18 +120,6 @@ describe("EnterDeliveryAddressPage", () => {
       expect(screen.getByText("Building number or name must be 100 characters or less")).toBeInTheDocument();
     });
 
-    it("should return error for invalid characters in building name", () => {
-      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
-
-      const buildingInput = screen.getByLabelText(/building number or name/i);
-      fireEvent.change(buildingInput, { target: { value: "Building@123!" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(screen.getByText("Enter the building number or name")).toBeInTheDocument();
-    });
-
     it("should accept valid building names and numbers", () => {
       render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
 
@@ -143,7 +136,6 @@ describe("EnterDeliveryAddressPage", () => {
         fireEvent.click(submitButton);
 
         expect(screen.queryByText("Building number or name must be 100 characters or less")).not.toBeInTheDocument();
-        expect(screen.queryByText("Enter the building number or name")).not.toBeInTheDocument();
       });
     });
   });
@@ -171,7 +163,6 @@ describe("EnterDeliveryAddressPage", () => {
       fireEvent.click(submitButton);
 
       expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
-      expect(screen.queryByText("Enter the building number or name")).not.toBeInTheDocument();
     });
   });
 });

@@ -39,11 +39,6 @@ const validateBuildingName = (buildingName: string): string | null => {
     return "Building number or name must be 100 characters or less";
   }
 
-  const validCharactersRegex = /^[a-zA-Z0-9\s\-,./&#'"()]+$/;
-  if (!validCharactersRegex.test(buildingName)) {
-    return "Enter the building number or name";
-  }
-
   return null;
 };
 

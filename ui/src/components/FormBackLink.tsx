@@ -1,6 +1,9 @@
 import { BackLink } from "nhsuk-react-components";
 import { useNavigationContext } from "../state";
 
+// Custom onClick can be used for confirm-details page (eg. pass goToStep with referenced step)
+// Custom Continue button will need to be implemented to allow user to navigate back to confirm-details page
+
 interface FormBackLinkProps {
   text?: string;
   onClick?: () => void;
