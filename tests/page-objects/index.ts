@@ -1,2 +1,1 @@
-export { WPHomePage } from './WPHomePageObject';
-export { PlaywrightDevPage } from './PlaywrightDevPageObject';
+export { HomeTestPage } from './HomeTestStartPage';
