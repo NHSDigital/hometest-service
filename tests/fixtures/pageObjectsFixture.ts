@@ -1,9 +1,8 @@
 import { test as base } from '@playwright/test';
-import { FindAddressPage, HomeTestPage } from '../page-objects';
+import { HomeTestPage } from '../page-objects';
 
 export interface MyFixtures {
   homeTestPage: HomeTestPage;
-  findAddressPage: FindAddressPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({

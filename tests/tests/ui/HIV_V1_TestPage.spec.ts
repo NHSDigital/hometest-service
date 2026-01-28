@@ -1,6 +1,5 @@
 import { test } from '../../fixtures';
 import { expect } from '@playwright/test';
-import data from '../../test-data/address.json';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -11,7 +10,7 @@ test.describe('HIV Test Page', () => {
 
 
   test('home testing prototype page', async ({ homeTestPage }) => {
-    const actualResult = await homeTestPage.getHeaderText();
+    const actualResult = await homeTestPage.getText();
     expect(actualResult).toBe("Get a self-test kit for HIV");
   });
 
