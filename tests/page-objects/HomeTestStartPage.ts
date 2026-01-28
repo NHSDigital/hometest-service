@@ -8,6 +8,8 @@ export class HomeTestStartPage {
   readonly nearestAELink: Locator;
   readonly nearestSexualHealthClinicLink: Locator;
   readonly learnMoreHIVAidsLink: Locator;
+  readonly startNowBtn: Locator;
+
 
   constructor(page: Page) {
     this.page = page;
@@ -16,6 +18,8 @@ export class HomeTestStartPage {
     this.nearestAELink = page.getByRole('link', { name: 'your nearest A&E' });
     this.nearestSexualHealthClinicLink = page.getByRole('link', { name: /your nearest sexual health/ });
     this.learnMoreHIVAidsLink = page.getByRole('link', { name: 'Learn more about HIV and AIDS' });
+    this.startNowBtn = page.getByRole('button', { name: 'Start now' });
+
   }
   async navigate(): Promise<void> {
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
@@ -54,4 +58,7 @@ export class HomeTestStartPage {
     await this.page.waitForURL(expectedUrl);
   }
 
+  async clickStartNowButton(): Promise<void> {
+    await this.startNowBtn.click();
+  }
 }

@@ -42,6 +42,7 @@ export class Configuration {
       [EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC, 'https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/'],
       [EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE, 'https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/'],
       [EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO, 'https://www.nhs.uk/conditions/hiv-and-aids/'],
+      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'tests/testResults'],
     ]);
   }
 
