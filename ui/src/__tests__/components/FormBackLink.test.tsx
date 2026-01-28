@@ -82,7 +82,7 @@ describe("FormBackLink", () => {
 
     it("calls custom onClick when provided", () => {
       const mockOnClick = jest.fn();
-      
+
       render(<FormBackLink onClick={mockOnClick} />);
 
       const backLink = screen.getByText("Back");
@@ -95,7 +95,7 @@ describe("FormBackLink", () => {
     it("calls custom onClick even when cannot go back", () => {
       mockNavigationContext.canGoBack.mockReturnValue(false);
       const mockOnClick = jest.fn();
-      
+
       render(<FormBackLink onClick={mockOnClick} />);
 
       const backLink = screen.getByText("Back");
@@ -131,26 +131,26 @@ describe("FormBackLink", () => {
   describe("Conditional Rendering Logic", () => {
     it("shows when canGoBack returns true", () => {
       mockNavigationContext.canGoBack.mockReturnValue(true);
-      
+
       render(<FormBackLink />);
-      
+
       expect(screen.getByText("Back")).toBeInTheDocument();
     });
 
     it("hides when canGoBack returns false and no onClick", () => {
       mockNavigationContext.canGoBack.mockReturnValue(false);
-      
+
       render(<FormBackLink />);
-      
+
       expect(screen.queryByText("Back")).not.toBeInTheDocument();
     });
 
     it("shows when canGoBack returns false but onClick is provided", () => {
       mockNavigationContext.canGoBack.mockReturnValue(false);
       const mockOnClick = jest.fn();
-      
+
       render(<FormBackLink onClick={mockOnClick} />);
-      
+
       expect(screen.getByText("Back")).toBeInTheDocument();
     });
   });

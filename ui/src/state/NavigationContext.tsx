@@ -39,10 +39,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     stepHistory: [currentStep],
     lastStep: currentStep,
   }));
-  
+
   let stepHistory = navigation.stepHistory;
   if (navigation.lastStep !== currentStep) {
-    const newHistory = navigation.stepHistory[navigation.stepHistory.length - 1] === currentStep 
+    const newHistory = navigation.stepHistory[navigation.stepHistory.length - 1] === currentStep
       ? navigation.stepHistory
       : [...navigation.stepHistory, currentStep];
 
@@ -58,7 +58,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const goToStep = useCallback(
     (step: string) => {
       console.log("[NavigationProvider] Going to step:", step);
-  
+
       const path = step === "get-self-test-kit-for-HIV" ? "/get-self-test-kit-for-HIV" : `/${step}`;
       router.push(path);
     },

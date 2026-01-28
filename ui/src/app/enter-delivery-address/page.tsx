@@ -78,15 +78,15 @@ export default function EnterDeliveryAddressPage() {
       };
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
-      
+
       // Navigate to next step using NavigationContext
       goToStep("select-delivery-address");
     }
   };
 
   return (
-    <PageLayout 
-      showBackButton 
+    <PageLayout
+      showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();
@@ -135,7 +135,7 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <Link 
+        <Link
           href="enter-address-manually"
           onClick={() => goToStep("enter-address-manually")}
         >
