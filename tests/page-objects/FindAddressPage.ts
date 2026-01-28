@@ -20,7 +20,7 @@ export class FindAddressPage {
     this.enterAddressManuallyLink = page.locator("a[href='enter-address-manually']");
   }
 
-  async validatePostcode(postcode: string, firstLineAddress: string): Promise<void> {
+  async fillPostCodeAndAddress(postcode: string, firstLineAddress: string): Promise<void> {
     await this.postcodeInput.fill(postcode);
     await this.numNameInput.fill(firstLineAddress);
     await this.continueButton.click();
