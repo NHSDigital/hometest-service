@@ -80,7 +80,12 @@ export default function EnterDeliveryAddressPage() {
       updateOrderAnswers(updatedData);
 
       // Navigate to next step using NavigationContext
-      goToStep("select-delivery-address");
+      // for now use hard coded value to simulate no address found
+      if (updatedData.postcodeSearch == "BT655EU") {
+        goToStep("no-address-found");
+      } else { 
+        goToStep("select-delivery-address"); 
+      }
     }
   };
 
