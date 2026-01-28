@@ -7,8 +7,9 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.navigate();
 
     // Wait for page to load
-    expect(await homeTestStartPage.waitForPageLoaded()).toBe(true);
-    await accessibility.runAccessibilityCheck(homeTestStartPage, "Get a self-test kit for HIV");
+    await homeTestStartPage.waitForPageLoaded();
+    const hasViolations = await accessibility.runAccessibilityCheck(homeTestStartPage, "Home Test Start Page");
+    expect(hasViolations).toBe(false);
   });
 
 });
