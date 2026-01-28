@@ -17,13 +17,9 @@ export class HomeTestStartPage {
     return await this.page.title();
   }
 
-  async verifyPageLoaded(): Promise<boolean> {
-    try {
-      await this.page.waitForLoadState('domcontentloaded');
-      return true;
-    } catch {
-      return false;
-    }
+  async waitForPageLoaded(): Promise<void> {
+    await this.page.waitForLoadState('domcontentloaded');
+ 
   }
 
   async getHeaderText(): Promise<string> {
