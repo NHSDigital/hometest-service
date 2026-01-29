@@ -4,7 +4,7 @@ import data from '../../test-data/address.json';
 
 test.describe.configure({ mode: 'serial' });
 
-test.describe('HIV Test Page', () => {
+test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
   });
@@ -18,8 +18,8 @@ test.describe('HIV Test Page', () => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomEntry.postcode, randomEntry.addressline1);
   });
 
-  test('Order test journey by providing address manually', async ({ homeTestPage, findAddressPage, enterAddressManuallyPage }) => {
-    await homeTestPage.clickStartNowButton();
+  test('Order test journey by providing address manually', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage }) => {
+    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.clickEnterAddressManuallyLink();
     const randomEntry = data[Math.floor(Math.random() * data.length)];
     await enterAddressManuallyPage.fillAddressAndContinue(randomEntry.addressline1, randomEntry.addressline2, randomEntry.addressline3, randomEntry.towncity, randomEntry.postcode)

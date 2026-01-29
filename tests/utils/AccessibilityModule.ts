@@ -21,7 +21,7 @@ export class AccessibilityModule {
 
     // Get report directory from configuration
     const outputDir = config.get(EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY);
-    
+
     // Ensure reports are always written to tests directory regardless of execution context
     const baseDir = path.basename(process.cwd()) === 'tests' ? '.' : './tests';
     this.reportDirectory = path.join(baseDir, outputDir, 'accessibility');

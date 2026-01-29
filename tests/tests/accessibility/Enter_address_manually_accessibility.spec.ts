@@ -3,9 +3,9 @@ import { test } from '../../fixtures';
 
 test.describe('Accessibility Testing @accessibility', () => {
 
-  test('Enter Address Manually Page', async ({ homeTestPage, findAddressPage, accessibility }) => {
-    await homeTestPage.navigate();
-    await homeTestPage.clickStartNowButton();
+  test('Enter Address Manually Page', async ({ homeTestStartPage, findAddressPage, accessibility }) => {
+    await homeTestStartPage.navigate();
+    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.clickEnterAddressManuallyLink();
     // Wait for page to load
     await findAddressPage.waitUntilPageLoad();
