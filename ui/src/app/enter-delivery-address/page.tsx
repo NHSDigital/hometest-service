@@ -108,7 +108,7 @@ export default function EnterDeliveryAddressPage() {
           <ErrorSummary.Body>
             <ErrorSummary.List>
               {postcodeError && (
-                <ErrorSummary.Item 
+                <ErrorSummary.Item
                   href="#postcode"
                   onClick={(e) => {
                     e.preventDefault();
@@ -119,7 +119,7 @@ export default function EnterDeliveryAddressPage() {
                 </ErrorSummary.Item>
               )}
               {buildingNameError && (
-                <ErrorSummary.Item 
+                <ErrorSummary.Item
                   href="#building-number-or-name"
                   onClick={(e) => {
                     e.preventDefault();
