@@ -41,6 +41,49 @@ describe("EnterDeliveryAddressPage", () => {
     });
   });
 
+  describe("ErrorSummary", () => {
+    it("should show error summary when there are validation errors", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+    });
+
+    it("should not show error summary when there are no errors", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
+    });
+
+    it("should link to postcode field in error summary", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      const errorLink = screen.getByRole("link", { name: "Enter a full UK postcode" });
+      expect(errorLink).toHaveAttribute("href", "#postcode");
+    });
+
+    it("should link to building name field in error summary when building name is too long", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const buildingInput = screen.getByLabelText(/building number or name/i);
+      const longName = "A".repeat(101);
+      fireEvent.change(buildingInput, { target: { value: longName } });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      const errorLink = screen.getByRole("link", { name: "Building number or name must be 100 characters or less" });
+      expect(errorLink).toHaveAttribute("href", "#building-number-or-name");
+    });
+  });
+
   describe("Postcode Validation", () => {
     it("should return error for empty postcode", () => {
       render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
@@ -48,7 +91,10 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText("Enter a full UK postcode")).toBeInTheDocument();
+      const postcodeInput = screen.getByLabelText(/postcode/i);
+      expect(postcodeInput).toHaveAttribute("aria-describedby", expect.stringContaining("error-message"));
+
+      expect(screen.getAllByText("Enter a full UK postcode")).toHaveLength(2);
     });
 
     it("should return error for postcode too long", () => {
@@ -60,7 +106,7 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText("Postcode must be 8 characters or less")).toBeInTheDocument();
+      expect(screen.getAllByText("Postcode must be 8 characters or less")).toHaveLength(2);
     });
 
     it("should return error for invalid postcode format", () => {
@@ -72,7 +118,7 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText("Enter a postcode using letters and numbers")).toBeInTheDocument();
+      expect(screen.getAllByText("Enter a postcode using letters and numbers")).toHaveLength(2);
     });
 
     it("should accept valid UK postcodes", () => {
@@ -117,7 +163,7 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText("Building number or name must be 100 characters or less")).toBeInTheDocument();
+      expect(screen.getAllByText("Building number or name must be 100 characters or less")).toHaveLength(2);
     });
 
     it("should accept valid building names and numbers", () => {
@@ -147,7 +193,10 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText("Enter a full UK postcode")).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+
+      expect(screen.getAllByText("Enter a full UK postcode")).toHaveLength(2);
     });
 
     it("should update form state when valid data is entered", () => {
