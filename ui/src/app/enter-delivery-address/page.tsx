@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
-import { TextInput, Button } from "nhsuk-react-components";
+import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
 import { useOrderContext, useNavigationContext } from "@/state";
 import Link from "next/link";
 
@@ -22,7 +22,7 @@ const validatePostcode = (postcode: string): { valid: true; value: string } | { 
   if (postcode.length > MAX_POSTCODE_LENGTH) {
     return { valid: false, message: "Postcode must be 8 characters or less" };
   }
-  
+
   const normalizedPostcode = postcode.trim().toUpperCase();
 
   if (!POSTCODE_REGEX.test(normalizedPostcode)) {
@@ -99,6 +99,28 @@ export default function EnterDeliveryAddressPage() {
         Enter your delivery address and we&apos;ll check if the kit&apos;s
         available
       </h1>
+
+      {(postcodeError || buildingNameError) && (
+        <ErrorSummary aria-labelledby="error-summary-title" role="alert">
+          <ErrorSummary.Title id="error-summary-title">
+            There is a problem
+          </ErrorSummary.Title>
+          <ErrorSummary.Body>
+            <ErrorSummary.List>
+              {postcodeError && (
+                <ErrorSummary.Item href="#postcode">
+                  {postcodeError}
+                </ErrorSummary.Item>
+              )}
+              {buildingNameError && (
+                <ErrorSummary.Item href="#building-number-or-name">
+                  {buildingNameError}
+                </ErrorSummary.Item>
+              )}
+            </ErrorSummary.List>
+          </ErrorSummary.Body>
+        </ErrorSummary>
+      )}
 
       <form onSubmit={handleSubmit}>
         <TextInput
