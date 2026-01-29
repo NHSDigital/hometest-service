@@ -1,0 +1,124 @@
+{
+  "commonContent": {
+    "navigation": {
+      "back": "Back",
+      "continue": "Continue"
+    },
+    "validation": {
+      "postcode": {
+        "required": "Enter a full UK postcode",
+        "maxLength": "Postcode must be 8 characters or less",
+        "invalid": "Enter a postcode using letters and numbers"
+      },
+      "buildingName": {
+        "maxLength": "Building number or name must be 100 characters or less"
+      },
+      "addressLine1": {
+        "required": "Enter address line 1, typically the building and street",
+        "maxLength": "Address line 1 must be 100 characters or less",
+        "invalid": "Enter address line 1, typically the building and street"
+      },
+      "addressLine2": {
+        "maxLength": "Address line 2 must be 100 characters or less",
+        "invalid": "Enter address line 2, typically the building and street"
+      },
+      "addressLine3": {
+        "maxLength": "Address line 3 must be 100 characters or less",
+        "invalid": "Enter address line 3, typically the building and street"
+      },
+      "townOrCity": {
+        "required": "Enter a city or town",
+        "maxLength": "City or town must be 100 characters or less",
+        "invalid": "Enter a city or town"
+      }
+    },
+    "links": {
+      "sexualHealthClinic": {
+        "text": "Find a sexual health clinic",
+        "href": "https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/"
+      },
+      "nearestAE": {
+        "text": "your nearest A&E",
+        "href": "https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/"
+      }
+    },
+    "errorSummary": {
+      "title": "There is a problem"
+    }
+  },
+  "pages": {
+    "get-self-test-kit-for-HIV": {
+      "title": "Get a self-test kit for HIV",
+      "ageRequirement": "You can use this service if you are aged 18 or over.",
+      "availabilityNotice": "The kit is not yet available in all areas, so we'll need to check when you enter a postcode.",
+      "urgentCard": {
+        "heading": "Go to a sexual health clinic if:",
+        "exposureWarning": "you think you've been exposed to the HIV virus in the last 72 hours",
+        "clinicAdvice": "Clinic staff can offer you emergency HIV medicine, which may stop you getting infected.",
+        "aeAdvice": "You can also get emergency HIV medicine from"
+      },
+      "infoBox": {
+        "hiddenText": "Information: ",
+        "antibodyInfo": "HIV antibodies take time to develop. The test is accurate if you take it 45 days or more after potential exposure."
+      },
+      "howItWorks": {
+        "heading": "How it works",
+        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within [n] working days. This does not have to be your usual address.",
+        "stepByStepLink": "Blood sample step-by-step guide",
+        "sampleInstructions": "You'll need to prick your finger and fill a tube with blood. Then send it to the address in the pre-paid envelope."
+      },
+      "dataSharing": {
+        "summary": "Who my information is shared with",
+        "details": "Your contact details will only be shared with the kit supplier, who is a trusted NHS partner. Your contact details and test result will not be shared with anyone else, including your GP, unless you give consent."
+      },
+      "startButton": "Start now",
+      "aboutService": {
+        "heading": "About using this service",
+        "text": "By using this service, you agree to our",
+        "termsLink": "terms of use",
+        "privacyLink": "privacy policy"
+      },
+      "otherOptions": {
+        "heading": "Other options to home testing, and more support",
+        "clinicText": "Instead of doing the test at home, you can go to",
+        "clinicLinkText": "your nearest sexual health clinic",
+        "clinicTextEnd": "to get tested.",
+        "sexualHealthText": "If you're concerned about other sexual health issues, you can",
+        "sexualHealthLink": {
+          "text": "find sexual health services near you",
+          "href": "https://www.nhs.uk/nhs-services/sexual-health-services/"
+        },
+        "learnMoreLink": {
+          "text": "Learn more about HIV and AIDS",
+          "href": "https://www.nhs.uk/conditions/hiv-and-aids/"
+        }
+      }
+    },
+    "enter-delivery-address": {
+      "title": "Enter your delivery address and we'll check if the kit's available",
+      "form": {
+        "postcodeLabel": "Postcode",
+        "postcodeHint": "For example, LS1 3BE",
+        "buildingNameLabel": "Building number or name (optional)",
+        "buildingNameHint": "For example, 32 or Rose Cottage"
+      },
+      "manualEntryLink": "I can't find my address"
+    },
+    "enter-address-manually": {
+      "title": "Enter your address",
+      "form": {
+        "addressLine1Label": "Address line 1",
+        "addressLine2Label": "Address line 2 (optional)",
+        "addressLine3Label": "Address line 3 (optional)",
+        "townOrCityLabel": "Town or city",
+        "postcodeLabel": "Postcode"
+      }
+    },
+    "no-address-found": {
+      "title": "No address found",
+      "notFoundMessage": "We could not find an address that matches",
+      "tryNewSearchLink": "Try a new search",
+      "enterManuallyLink": "Enter address manually"
+    }
+  }
+}
