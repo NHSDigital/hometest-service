@@ -108,12 +108,24 @@ export default function EnterDeliveryAddressPage() {
           <ErrorSummary.Body>
             <ErrorSummary.List>
               {postcodeError && (
-                <ErrorSummary.Item href="#postcode">
+                <ErrorSummary.Item 
+                  href="#postcode"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('postcode')?.focus();
+                  }}
+                >
                   {postcodeError}
                 </ErrorSummary.Item>
               )}
               {buildingNameError && (
-                <ErrorSummary.Item href="#building-number-or-name">
+                <ErrorSummary.Item 
+                  href="#building-number-or-name"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('building-number-or-name')?.focus();
+                  }}
+                >
                   {buildingNameError}
                 </ErrorSummary.Item>
               )}
