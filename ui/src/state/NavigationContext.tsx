@@ -58,7 +58,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const goToStep = useCallback(
     (step: string) => {
       console.log("[NavigationProvider] Going to step:", step);
-      const path = step === "get-self-test-kit-for-HIV" ? "/get-self-test-kit-for-HIV" : `/${step}`;
+
+      const path = step.startsWith("/") ? step : `/${step}`;
       router.push(path);
     },
     [router]

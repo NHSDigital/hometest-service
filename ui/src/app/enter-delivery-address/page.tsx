@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
-import { Fieldset, TextInput, Button } from "nhsuk-react-components";
+import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
 import { useOrderContext, useNavigationContext } from "@/state";
 import Link from "next/link";
 
@@ -14,20 +14,22 @@ const MAX_POSTCODE_LENGTH = 8;
 const MAX_BUILDING_NAME_LENGTH = 100;
 
 // Validation functions
-const validatePostcode = (postcode: string): string | null => {
+const validatePostcode = (postcode: string): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
-    return "Enter a full UK postcode";
+    return { valid: false, message: "Enter a full UK postcode" };
   }
 
   if (postcode.length > MAX_POSTCODE_LENGTH) {
-    return "Postcode must be 8 characters or less";
+    return { valid: false, message: "Postcode must be 8 characters or less" };
   }
 
-  if (!POSTCODE_REGEX.test(postcode)) {
-    return "Enter a postcode using letters and numbers";
+  const normalizedPostcode = postcode.trim().toUpperCase();
+
+  if (!POSTCODE_REGEX.test(normalizedPostcode)) {
+    return { valid: false, message: "Enter a postcode using letters and numbers" };
   }
 
-  return null;
+  return { valid: true, value: normalizedPostcode };
 };
 
 const validateBuildingName = (buildingName: string): string | null => {
@@ -64,16 +66,15 @@ export default function EnterDeliveryAddressPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const postcodeValidationError = validatePostcode(postcode);
+    const postcodeValidation = validatePostcode(postcode);
     const buildingNameValidationError = validateBuildingName(buildingName);
 
-    setPostcodeError(postcodeValidationError);
+    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
     setBuildingNameError(buildingNameValidationError);
 
-    // Only proceed if no validation errors
-    if (!postcodeValidationError && !buildingNameValidationError) {
+    if (postcodeValidation.valid && !buildingNameValidationError) {
       const updatedData = {
-        postcodeSearch: postcode.trim(),
+        postcodeSearch: postcodeValidation.value,
         buildingNumber: buildingName.trim() || undefined,
       };
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
@@ -105,36 +106,68 @@ export default function EnterDeliveryAddressPage() {
         available
       </h1>
 
-      <form onSubmit={handleSubmit}>
-        <Fieldset>
-          <TextInput
-            id="postcode"
-            name="postcode"
-            label="Postcode"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            hint="For example, LS1 1AB"
-            value={postcode}
-            onChange={handlePostcodeChange}
-            error={postcodeError || undefined}
-          ></TextInput>
+      {(postcodeError || buildingNameError) && (
+        <ErrorSummary aria-labelledby="error-summary-title" role="alert">
+          <ErrorSummary.Title id="error-summary-title">
+            There is a problem
+          </ErrorSummary.Title>
+          <ErrorSummary.Body>
+            <ErrorSummary.List>
+              {postcodeError && (
+                <ErrorSummary.Item
+                  href="#postcode"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('postcode')?.focus();
+                  }}
+                >
+                  {postcodeError}
+                </ErrorSummary.Item>
+              )}
+              {buildingNameError && (
+                <ErrorSummary.Item
+                  href="#building-number-or-name"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('building-number-or-name')?.focus();
+                  }}
+                >
+                  {buildingNameError}
+                </ErrorSummary.Item>
+              )}
+            </ErrorSummary.List>
+          </ErrorSummary.Body>
+        </ErrorSummary>
+      )}
 
-          <TextInput
-            id="building-number-or-name"
-            name="building-number-or-name"
-            label="Building number or name (optional)"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            hint="For example, 15 or Prospect Cottage"
-            value={buildingName}
-            onChange={handleBuildingNameChange}
-            error={buildingNameError || undefined}
-          ></TextInput>
-        </Fieldset>
+      <form onSubmit={handleSubmit}>
+        <TextInput
+          id="postcode"
+          name="postcode"
+          label="Postcode"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          hint="For example, LS1 1AB"
+          value={postcode}
+          onChange={handlePostcodeChange}
+          error={postcodeError || undefined}
+        ></TextInput>
+
+        <TextInput
+          id="building-number-or-name"
+          name="building-number-or-name"
+          label="Building number or name (optional)"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          hint="For example, 15 or Prospect Cottage"
+          value={buildingName}
+          onChange={handleBuildingNameChange}
+          error={buildingNameError || undefined}
+        ></TextInput>
 
         <Button type="submit">Continue</Button>
       </form>
