@@ -108,7 +108,7 @@ describe("EnterAddressManuallyPage", () => {
 
       const addressLine2Input = screen.getByLabelText(/address line 2/i);
       const postcodeInput = screen.getByLabelText(/postcode/i);
-      
+
       fireEvent.change(addressLine2Input, { target: { value: "A".repeat(101) } });
       fireEvent.change(postcodeInput, { target: { value: "INVALID" } });
 
