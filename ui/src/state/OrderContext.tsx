@@ -9,7 +9,7 @@ import {
 } from "react";
 
 // Data from NHS Login auth response
-export interface IAuthUser {
+export interface AuthUser {
   sub: string;
   nhsNumber: string;
   birthdate: string;
@@ -18,7 +18,7 @@ export interface IAuthUser {
 }
 
 // Address structure
-export interface IAddress {
+export interface Address {
   addressLine1?: string;
   addressLine2?: string;
   addressLine3?: string;
@@ -27,30 +27,30 @@ export interface IAddress {
 }
 
 // Order state
-export interface IOrderAnswers {
+export interface OrderAnswers {
   // From auth
-  user?: IAuthUser;
+  user?: AuthUser;
 
   // From enter-delivery-address
   postcodeSearch?: string;
   buildingNumber?: string;
 
   // Final delivery address
-  deliveryAddress?: IAddress;
+  deliveryAddress?: Address;
 }
 
 interface OrderContextType {
-  orderAnswers: IOrderAnswers;
-  updateOrderAnswers: (updates: Partial<IOrderAnswers>) => void;
+  orderAnswers: OrderAnswers;
+  updateOrderAnswers: (updates: Partial<OrderAnswers>) => void;
   reset: () => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export function OrderProvider({ children }: { children: ReactNode }) {
-  const [orderAnswers, setOrderAnswers] = useState<IOrderAnswers>({});
+  const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
-  const updateOrderAnswers = useCallback((updates: Partial<IOrderAnswers>) => {
+  const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
     console.log("[OrderProvider] Updating with:", updates);
     setOrderAnswers((prev) => {
       const newState = { ...prev, ...updates };
