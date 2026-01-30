@@ -39,22 +39,22 @@ export interface OrderAnswers {
   deliveryAddress?: Address;
 }
 
-interface OrderContextType {
+interface CreateOrderContextType {
   orderAnswers: OrderAnswers;
   updateOrderAnswers: (updates: Partial<OrderAnswers>) => void;
   reset: () => void;
 }
 
-const OrderContext = createContext<OrderContextType | undefined>(undefined);
+const CreateOrderContext = createContext<CreateOrderContextType | undefined>(undefined);
 
-export function OrderProvider({ children }: { children: ReactNode }) {
+export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
-    console.log("[OrderProvider] Updating with:", updates);
+    console.log("[CreateOrderProvider] Updating with:", updates);
     setOrderAnswers((prev) => {
       const newState = { ...prev, ...updates };
-      console.log("[OrderProvider] New state:", newState);
+      console.log("[CreateOrderProvider] New state:", newState);
       return newState;
     });
   }, []);
@@ -64,7 +64,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <OrderContext.Provider
+    <CreateOrderContext.Provider
       value={{
         orderAnswers,
         updateOrderAnswers,
@@ -72,14 +72,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </OrderContext.Provider>
+    </CreateOrderContext.Provider>
   );
 }
 
-export function useOrderContext() {
-  const context = useContext(OrderContext);
+export function useCreateOrderContext() {
+  const context = useContext(CreateOrderContext);
   if (!context) {
-    throw new Error("useOrderContext must be used within an OrderProvider");
+    throw new Error("useCreateOrderContext must be used within a CreateOrderProvider");
   }
   return context;
 }

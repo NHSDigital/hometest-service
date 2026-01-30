@@ -4,13 +4,13 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
 import { PageLayout } from "@/components/PageLayout";
-import { useOrderContext, useNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 // TODO: Replace [n] with actual number of working days once confirmed
 
 export default function GetSelfTestKitPage() {
-  const { updateOrderAnswers } = useOrderContext();
-  const { goToStep } = useNavigationContext();
+  const { updateOrderAnswers } = useCreateOrderContext();
+  const { goToStep } = useJourneyNavigationContext();
 
   useEffect(() => {
     // TODO: Replace with actual auth data from NHS Login redirect

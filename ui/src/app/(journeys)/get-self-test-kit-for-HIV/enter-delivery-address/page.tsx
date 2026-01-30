@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
 import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
-import { useOrderContext, useNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import Link from "next/link";
 
 // TODO: update redirect logic if user has selected manual address entry (use goToStep)
@@ -45,8 +45,8 @@ const validateBuildingName = (buildingName: string): string | null => {
 };
 
 export default function EnterDeliveryAddressPage() {
-  const { orderAnswers, updateOrderAnswers } = useOrderContext();
-  const { goToStep, goBack, stepHistory } = useNavigationContext();
+  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
 
   const [postcode, setPostcode] = useState("");
   const [buildingName, setBuildingName] = useState("");

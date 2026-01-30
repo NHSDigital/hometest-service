@@ -14,7 +14,7 @@ export interface NavigationState {
   stepHistory: string[];
 }
 
-interface NavigationContextType {
+interface JourneyNavigationContextType {
   currentStep: string;
   stepHistory: string[];
   goToStep: (step: string) => void;
@@ -23,14 +23,21 @@ interface NavigationContextType {
   clearHistory: () => void;
 }
 
-const NavigationContext = createContext<NavigationContextType | undefined>(
+const JourneyNavigationContext = createContext<JourneyNavigationContextType | undefined>(
   undefined
 );
 
-export function NavigationProvider({ children }: { children: ReactNode }) {
+export function JourneyNavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const currentStep = pathname.split("/").filter(Boolean).join("/") || "get-self-test-kit-for-HIV";
+  
+  // Extract current step from the HIV test journey path
+  const getStepFromPath = (path: string): string => {
+    if (path === '/get-self-test-kit-for-HIV') return 'get-self-test-kit-for-HIV';
+    return path.replace('/get-self-test-kit-for-HIV/', '') || 'get-self-test-kit-for-HIV';
+  };
+  
+  const currentStep = getStepFromPath(pathname);
 
   const [navigation, setNavigation] = useState<{
     stepHistory: string[];
@@ -52,28 +59,32 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       lastStep: currentStep,
     });
 
-    console.log("[NavigationProvider] Step changed to:", currentStep, "History:", newHistory);
+    console.log("[JourneyNavigationProvider] Step changed to:", currentStep, "History:", newHistory);
   }
 
   const goToStep = useCallback(
     (step: string) => {
-      console.log("[NavigationProvider] Going to step:", step);
+      console.log("[JourneyNavigationProvider] Going to step:", step);
 
-      const path = step.startsWith("/") ? step : `/${step}`;
-      router.push(path);
+      // Build journey-specific path
+      const targetPath = step === 'get-self-test-kit-for-HIV' 
+        ? '/get-self-test-kit-for-HIV'
+        : `/get-self-test-kit-for-HIV/${step}`;
+        
+      router.push(targetPath);
     },
     [router]
   );
 
   const goBack = useCallback(() => {
-    console.log("[NavigationProvider] Going back from:", currentStep);
-    console.log("[NavigationProvider] Current history:", stepHistory);
+    console.log("[JourneyNavigationProvider] Going back from:", currentStep);
+    console.log("[JourneyNavigationProvider] Current history:", stepHistory);
 
     if (stepHistory.length > 1) {
       const newHistory = stepHistory.slice(0, -1);
       const previousStep = newHistory[newHistory.length - 1];
 
-      console.log("[NavigationProvider] Going back to:", previousStep);
+      console.log("[JourneyNavigationProvider] Going back to:", previousStep);
 
       setNavigation({
         stepHistory: newHistory,
@@ -89,7 +100,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [stepHistory.length]);
 
   const clearHistory = useCallback(() => {
-    console.log("[NavigationProvider] Clearing history");
+    console.log("[JourneyNavigationProvider] Clearing history");
     setNavigation({
       stepHistory: [currentStep],
       lastStep: currentStep,
@@ -97,7 +108,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [currentStep]);
 
   return (
-    <NavigationContext.Provider
+    <JourneyNavigationContext.Provider
       value={{
         currentStep,
         stepHistory,
@@ -108,15 +119,15 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </NavigationContext.Provider>
+    </JourneyNavigationContext.Provider>
   );
 }
 
-export function useNavigationContext() {
-  const context = useContext(NavigationContext);
+export function useJourneyNavigationContext() {
+  const context = useContext(JourneyNavigationContext);
   if (!context) {
     throw new Error(
-      "useNavigationContext must be used within a NavigationProvider"
+      "useJourneyNavigationContext must be used within a JourneyNavigationProvider"
     );
   }
   return context;
