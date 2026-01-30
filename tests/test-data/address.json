@@ -1,0 +1,42 @@
+[
+  {
+    "postcode": "SW1A 1AA",
+    "address": "Buckingham Palace"
+  },
+  {
+    "postcode": "EC1A1BB",
+    "address": "London Post Office"
+  },
+  {
+    "postcode": "RG6 7DU",
+    "address": "Wokingham Road, Earley"
+  },
+  {
+    "postcode": "E66AN",
+    "address": "Primarily terraced housing"
+  },
+  {
+    "postcode": "PA3 2SW",
+    "address": "Renfrewshire, Scotland"
+  },
+  {
+    "postcode": "BT294AB",
+    "address": "Aldergrove, Antrim"
+  },
+  {
+    "postcode": "LL11 2DG",
+    "address": "Wrexham Industrial Estate"
+  },
+  {
+    "postcode": "ZE1 0AA",
+    "address": "Lerwick, Shetland Islands"
+  },
+  {
+    "postcode": "HS1 2BW",
+    "address": "Stornoway, Isle of Lewis"
+  },
+  {
+    "postcode": "CF62 3BD",
+    "address": "Cardiff Airport Vale of Glamorgan"
+  }
+]

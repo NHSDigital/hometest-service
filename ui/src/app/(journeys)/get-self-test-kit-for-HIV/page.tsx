@@ -1,12 +1,31 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
 import { PageLayout } from "@/components/PageLayout";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
-// TODO: Replace [n] with actual number of working days from API etc
+// TODO: Replace [n] with actual number of working days once confirmed
 
 export default function GetSelfTestKitPage() {
+  const { updateOrderAnswers } = useCreateOrderContext();
+  const { goToStep } = useJourneyNavigationContext();
+
+  useEffect(() => {
+    // TODO: Replace with actual auth data from NHS Login redirect
+    // This mock data simulates what will come from the auth response
+    const authData = {
+      sub: "49f470a1-cc52-49b7-beba-0f9cec937c46",
+      nhsNumber: "9686368973",
+      birthdate: "1968-02-12",
+      identityProofingLevel: "P9",
+      phoneNumber: "+447887510886",
+    };
+
+    updateOrderAnswers({ user: authData });
+    console.log("[GetSelfTestKitPage] Auth data set:", authData);
+  }, [updateOrderAnswers]);
 
   return (
     <PageLayout>
@@ -78,7 +97,7 @@ export default function GetSelfTestKitPage() {
         </Details.Text>
       </Details>
 
-      <Button href="enter-delivery-address">
+      <Button onClick={() => goToStep("enter-delivery-address")}>
         Start now
       </Button>
 
