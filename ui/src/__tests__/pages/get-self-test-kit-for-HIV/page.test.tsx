@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import GetSelfTestKitPage from "@/app/get-self-test-kit-for-HIV/page";
+import GetSelfTestKitPage from "@/app/(journeys)/get-self-test-kit-for-HIV/page";
 import { PageLayout } from "@/components/PageLayout";
-import { OrderProvider } from "@/state/OrderContext";
-import { NavigationProvider } from "@/state/NavigationContext";
+import { CreateOrderProvider } from "@/state/OrderContext";
+import { JourneyNavigationProvider } from "@/state/NavigationContext";
 
 // Mock Next.js router and Link
 jest.mock("next/navigation", () => ({
@@ -23,9 +23,9 @@ jest.mock("next/link", () => {
 });
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <NavigationProvider>
-    <OrderProvider>{children}</OrderProvider>
-  </NavigationProvider>
+  <JourneyNavigationProvider>
+    <CreateOrderProvider>{children}</CreateOrderProvider>
+  </JourneyNavigationProvider>
 );
 
 describe('PageLayout', () => {

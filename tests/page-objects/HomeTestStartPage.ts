@@ -29,9 +29,8 @@ export class HomeTestStartPage {
     return await this.page.title();
   }
 
-  async waitForPageLoaded(): Promise<void> {
+  async verifyPageLoaded(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
-
   }
 
   async getHeaderText(): Promise<string> {

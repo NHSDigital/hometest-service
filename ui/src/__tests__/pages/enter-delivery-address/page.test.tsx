@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import EnterDeliveryAddressPage from "@/app/enter-delivery-address/page";
-import { OrderProvider } from "@/state/OrderContext";
-import { NavigationProvider } from "@/state/NavigationContext";
+import EnterDeliveryAddressPage from "@/app/(journeys)/get-self-test-kit-for-HIV/enter-delivery-address/page";
+import { CreateOrderProvider } from "@/state/OrderContext";
+import { JourneyNavigationProvider } from "@/state/NavigationContext";
 
 // Mock Next.js router
 jest.mock("next/navigation", () => ({
@@ -10,14 +10,14 @@ jest.mock("next/navigation", () => ({
     push: jest.fn(),
     back: jest.fn(),
   }),
-  usePathname: () => "/enter-delivery-address",
+  usePathname: () => "/get-self-test-kit-for-HIV/enter-delivery-address",
 }));
 
 // Test wrapper with both providers
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <NavigationProvider>
-    <OrderProvider>{children}</OrderProvider>
-  </NavigationProvider>
+  <JourneyNavigationProvider>
+    <CreateOrderProvider>{children}</CreateOrderProvider>
+  </JourneyNavigationProvider>
 );
 
 describe("EnterDeliveryAddressPage", () => {
