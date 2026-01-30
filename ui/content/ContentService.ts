@@ -4,13 +4,15 @@
  * This service imports the JSON content directly, ensuring it's bundled with
  * the application at build time. No runtime fetching occurs.
  *
- * Usage:
- *   import { content } from '@/content/ContentService';
- *   const title = content.pages.start.title;
+ * The content is validated on import to ensure structural integrity.
  */
 
 import contentData from "./content.json";
 import type { ContentFile } from "./schema";
+import { assertValidContent } from "./ContentValidator";
+
+// Validate content structure on module load
+assertValidContent(contentData);
 
 /**
  * The typed content object, loaded at build time.

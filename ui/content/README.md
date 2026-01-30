@@ -260,89 +260,28 @@ assertValidContent(contentData);
 - Don't duplicate content—use `commonContent` for shared text
 - Don't forget to update the schema when adding fields
 
-## Testing
+## Validation
 
-Run content-related tests:
+Content is validated automatically when the application starts. The validator checks:
 
-```bash
-npm test -- --testPathPatterns="(ContentService|ContentValidator|useContent)" --no-coverage
-```
+- Required top-level keys (`commonContent`, `pages`)
+- Required page keys exist
+- Each page has a `title` field
+- Navigation has `back` and `continue` strings
 
-### When to Update Tests
+### Validation in Development
 
-| Change Type | Tests to Update |
-|-------------|-----------------|
-| Edit existing text | No test changes needed |
-| Add new field to existing page | No test changes needed (unless testing specific values) |
-| Add new page | All three test files (see below) |
-| Rename a page key | All three test files |
+If you make a structural change to `content.json` and the validation fails, you'll see an error when the app starts or when you import the content service.
 
-### Adding Tests for a New Page
+### Adding Custom Validation
 
-When you add a new page to the CMS, update these test files:
-
-**1. `content/__tests__/ContentService.test.ts`**
-
-Add the new page to the "should have all required pages" test:
+To add custom validation rules, update the `validateContent` function in `ContentValidator.ts`:
 
 ```ts
-it("should have all required pages", () => {
-  expect(content.pages["my-new-page"]).toBeDefined();  // ← Add this
-});
-```
-
-Add a test for `getPageContent`:
-
-```ts
-it("should return my-new-page content", () => {
-  const page = getPageContent("my-new-page");
-  expect(page.title).toBe("My New Page Title");
-});
-```
-
-**2. `content/__tests__/ContentValidator.test.ts`**
-
-Update all mock content objects to include the new page key:
-
-```ts
-const result = validateContent({
-  commonContent: { /* ... */ },
-  pages: {
-    "get-self-test-kit-for-HIV": { title: "Test" },
-    "enter-delivery-address": { title: "Test" },
-    "enter-address-manually": { title: "Test" },
-    "no-address-found": { title: "Test" },
-    "my-new-page": { title: "Test" },  // ← Add to ALL test cases
-  },
-});
-```
-
-**3. `hooks/__tests__/useContent.test.ts`**
-
-Add to the "should return all content sections" test:
-
-```ts
-it("should return all content sections", () => {
-  const { result } = renderHook(() => useContent());
-  expect(result.current["my-new-page"]).toBeDefined();  // ← Add this
-});
-```
-
-Add a `usePageContent` test:
-
-```ts
-it("should return my-new-page content", () => {
-  const { result } = renderHook(() => usePageContent("my-new-page"));
-  expect(result.current.title).toBe("My New Page Title");
-});
-```
-
-### Running All Tests
-
-Always run the full test suite after content structure changes:
-
-```bash
-npm test
+// Add to validatePagesContent function
+if (isObject(page.form) && !isNonEmptyString(page.form.submitButton)) {
+  errors.push(`pages.${key}.form.submitButton must be a non-empty string`);
+}
 ```
 
 ## Troubleshooting
