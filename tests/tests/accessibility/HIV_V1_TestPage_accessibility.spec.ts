@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
 
 test.describe('Accessibility Testing @accessibility', () => {
@@ -7,8 +7,8 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestPage.navigate();
 
     // Wait for page to load
-    expect(await homeTestPage.verifyPageLoaded()).toBe(true);
-    await accessibility.runAccessibilityCheck(homeTestPage.page, "Get a self-test kit for HIV - NHS App prototype");
+    await homeTestPage.verifyPageLoaded();
+    const hasViolations = await accessibility.runAccessibilityCheck(homeTestPage.page, "Get a self-test kit for HIV - NHS App prototype");
+    expect(hasViolations).toBe(false);
   });
-
 });

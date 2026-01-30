@@ -38,7 +38,7 @@ export class Configuration {
       [EnvironmentVariables.TIMEOUT, '30000'],
       [EnvironmentVariables.SLOW_MO, '0'],
       [EnvironmentVariables.ACCESSIBILITY_STANDARDS, 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa'],
-      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'testResults'],
+      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'tests/testResults'],
     ]);
   }
 
