@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
 import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
-import { useOrderContext, useNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -97,8 +97,8 @@ const validatePostcode = (postcode: string): { valid: true; value: string } | { 
 };
 
 export default function EnterAddressManuallyPage() {
-  const { orderAnswers, updateOrderAnswers } = useOrderContext();
-  const { goToStep, goBack, stepHistory } = useNavigationContext();
+  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
 
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");

@@ -1,21 +1,21 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import EnterAddressManuallyPage from "@/app/enter-address-manually/page";
-import { OrderProvider } from "@/state/OrderContext";
-import { NavigationProvider } from "@/state/NavigationContext";
+import EnterAddressManuallyPage from "@/app/(journeys)/get-self-test-kit-for-HIV/enter-address-manually/page";
+import { CreateOrderProvider } from "@/state/OrderContext";
+import { JourneyNavigationProvider } from "@/state/NavigationContext";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     back: jest.fn(),
   }),
-  usePathname: () => "/enter-address-manually",
+  usePathname: () => "/get-self-test-kit-for-HIV/enter-address-manually",
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <NavigationProvider>
-    <OrderProvider>{children}</OrderProvider>
-  </NavigationProvider>
+  <JourneyNavigationProvider>
+    <CreateOrderProvider>{children}</CreateOrderProvider>
+  </JourneyNavigationProvider>
 );
 
 describe("EnterAddressManuallyPage", () => {
