@@ -30,13 +30,13 @@ const JourneyNavigationContext = createContext<JourneyNavigationContextType | un
 export function JourneyNavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Extract current step from the HIV test journey path
   const getStepFromPath = (path: string): string => {
     if (path === '/get-self-test-kit-for-HIV') return 'get-self-test-kit-for-HIV';
     return path.replace('/get-self-test-kit-for-HIV/', '') || 'get-self-test-kit-for-HIV';
   };
-  
+
   const currentStep = getStepFromPath(pathname);
 
   const [navigation, setNavigation] = useState<{
@@ -67,10 +67,10 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
       console.log("[JourneyNavigationProvider] Going to step:", step);
 
       // Build journey-specific path
-      const targetPath = step === 'get-self-test-kit-for-HIV' 
+      const targetPath = step === 'get-self-test-kit-for-HIV'
         ? '/get-self-test-kit-for-HIV'
         : `/get-self-test-kit-for-HIV/${step}`;
-        
+
       router.push(targetPath);
     },
     [router]
