@@ -1,0 +1,23 @@
+{
+  "name": "@hometest-service/hello-lambda",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hello lambda",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npm run clean && node build.mjs",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@hometest-service/shared": "file:../shared",
+    "lodash": "^4.17.23"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.23",
+    "@types/node": "^25.1.0"
+  }
+}
