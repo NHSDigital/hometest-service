@@ -8,11 +8,6 @@ output "api_gateway_id" {
   value       = aws_api_gateway_rest_api.api.id
 }
 
-output "hello_endpoint" {
-  description = "Hello Lambda endpoint"
-  value       = module.hello_lambda.localstack_endpoint_url
-}
-
 output "eligibility_test_info_endpoint" {
   description = "Eligibility Test Info Lambda endpoint"
   value       = module.eligibility_test_info_lambda.localstack_endpoint_url
