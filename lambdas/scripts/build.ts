@@ -9,7 +9,7 @@ interface BuildOptions {
   specificLambda?: string;
 }
 
-const LAMBDAS_DIR = join(process.cwd(), 'lambdas');
+const LAMBDAS_DIR = process.cwd();
 const SRC_DIR = join(LAMBDAS_DIR, 'src');
 const DIST_DIR = join(LAMBDAS_DIR, 'dist');
 
@@ -110,7 +110,4 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-})
+await main()

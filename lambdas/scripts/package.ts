@@ -8,7 +8,7 @@ interface PackageOptions {
   specificLambda?: string;
 }
 
-const LAMBDAS_DIR = join(process.cwd(), 'lambdas');
+const LAMBDAS_DIR = process.cwd();
 const DIST_DIR = join(LAMBDAS_DIR, 'dist');
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -115,7 +115,4 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-})
+await main()

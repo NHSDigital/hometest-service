@@ -39,6 +39,8 @@ The following software packages, or their equivalents, are expected to be instal
     `.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
   - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
     `.tool-versions`](./.tool-versions))
+- [Terraform](https://developer.hashicorp.com/terraform). The version is specified in [.tool-versions].
+- Local development uses terraform to deploy to LocalStack.
 
 #### Version Manager configuration
 
@@ -77,7 +79,7 @@ This command:
 
 1. Starts the Docker containers defined in [
    `local-environment/docker-compose.yml`](./local-environment/docker-compose.yml).
-2. Bootstraps and deploys the CDK stacks to LocalStack.
+2. Bootstraps LocalStack [via Terraform](local-environment/infra), and deploys the lambdas to it from the `/lambdas` directory.
 3. Starts the frontend on [http://localhost:3000](http://localhost:3000).
 
 To stop the environment:
@@ -95,8 +97,7 @@ The frontend is a Next.js application located in the `/ui` directory.
 
 ### Infrastructure
 
-Infrastructure is managed via AWS CDK (v2) in the `/infra` directory. For local development, we use
-`cdklocal` which is installed as a dev dependency.
+Infrastructure is managed via terraform in the [`/local-environment/infra`](./local-environment/infra) directory.
 
 ## Testing
 
