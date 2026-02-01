@@ -77,8 +77,6 @@ async function createLambdaZip(lambda: string): Promise<void> {
       console.log(`Including sourcemap for debugging`);
     }
 
-    archive.file(packageJsonPath, {name: LAMBDA_PACKAGE_JSON});
-
     archive.finalize();
   });
 }

@@ -1,6 +1,6 @@
-import {HttpClient} from "../../lambdas/src/lib/http/http-client";
-import {Service} from "../../lambdas/src/lib/service";
-import {Commons} from "../../lambdas/src/lib/commons";
+import {HttpClient} from "../lib/http/http-client";
+import {Service} from "../lib/service";
+import {Commons} from "../lib/commons";
 
 export interface LaLookupResult {
   localAuthorityCode: string;

@@ -16,11 +16,29 @@ provider "aws" {
   skip_requesting_account_id  = true
 
   endpoints {
-    apigateway = "http://localhost:4566"
-    iam        = "http://localhost:4566"
-    lambda     = "http://localhost:4566"
-    s3         = "http://localhost:4566"
+    apigateway     = "http://localhost:4566"
+    iam            = "http://localhost:4566"
+    lambda         = "http://localhost:4566"
+    s3             = "http://localhost:4566"
+    secretsmanager = "http://localhost:4566"
   }
+}
+
+# Secrets from JSON files
+locals {
+  secrets_dir  = "${path.module}/resources/secrets"
+  secret_files = fileset(local.secrets_dir, "*.json")
+}
+
+resource "aws_secretsmanager_secret" "secrets" {
+  for_each = local.secret_files
+  name     = trimsuffix(each.key, ".json")
+}
+
+resource "aws_secretsmanager_secret_version" "secrets" {
+  for_each      = local.secret_files
+  secret_id     = aws_secretsmanager_secret.secrets[each.key].id
+  secret_string = file("${local.secrets_dir}/${each.key}")
 }
 
 # IAM role for Lambda execution
@@ -47,63 +65,46 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
 }
 
-# Hello Lambda function
-resource "aws_lambda_function" "hello_lambda" {
-  filename         = "${path.module}/../../lambdas/dist/hello-lambda.zip"
-  function_name    = "${var.project_name}-hello"
-  role            = aws_iam_role.lambda_role.arn
-  handler         = "index.handler"
-  runtime         = "nodejs24.x"
-  source_code_hash = filebase64sha256("${path.module}/../../lambdas/dist/hello-lambda.zip")
-
-  environment {
-    variables = {
-      NODE_OPTIONS = "--enable-source-maps"
-    }
-  }
-
-  depends_on = [aws_iam_role_policy_attachment.lambda_basic]
-}
-
-# API Gateway REST API
 resource "aws_api_gateway_rest_api" "api" {
   name        = "${var.project_name}-api"
   description = "API Gateway for ${var.project_name}"
 }
 
-# API Gateway resource for /hello
-resource "aws_api_gateway_resource" "hello" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-  path_part   = "hello"
+# Hello Lambda
+module "hello_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "hello"
+  zip_path                      = "${path.module}/../../lambdas/dist/hello-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "hello"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 }
 
-# API Gateway method GET /hello
-resource "aws_api_gateway_method" "hello_get" {
-  rest_api_id   = aws_api_gateway_rest_api.api.id
-  resource_id   = aws_api_gateway_resource.hello.id
-  http_method   = "GET"
-  authorization = "NONE"
-}
+# Eligibility Test Info Lambda
+module "eligibility_test_info_lambda" {
+  source = "./modules/lambda"
 
-# API Gateway integration with Lambda
-resource "aws_api_gateway_integration" "hello_integration" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.hello.id
-  http_method = aws_api_gateway_method.hello_get.http_method
+  project_name                  = var.project_name
+  function_name                 = "eligibility-test-info"
+  zip_path                      = "${path.module}/../../lambdas/dist/eligibility-test-info-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "eligibility-test-info"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
-  integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = aws_lambda_function.hello_lambda.invoke_arn
-}
-
-# Lambda permission for API Gateway
-resource "aws_lambda_permission" "api_gateway" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.hello_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+  environment_variables = {
+    NODE_OPTIONS = "--enable-source-maps"
+    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/mydb?currentSchema=hometest"
+  }
 }
 
 # API Gateway deployment
@@ -111,8 +112,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
   depends_on = [
-    aws_api_gateway_method.hello_get,
-    aws_api_gateway_integration.hello_integration,
+    module.hello_lambda,
+    module.eligibility_test_info_lambda,
   ]
 
   lifecycle {

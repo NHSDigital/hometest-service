@@ -59,7 +59,7 @@ async function buildLambda(lambdaName: string): Promise<void> {
     outfile: outFile,
     platform: 'node',
     target: 'node24',
-    format: 'esm',
+    format: 'cjs',
     external: ['aws-sdk', '@aws-sdk/*'],
     packages: 'bundle',
     minify: false,
