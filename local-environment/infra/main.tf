@@ -49,12 +49,12 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 
 # Hello Lambda function
 resource "aws_lambda_function" "hello_lambda" {
-  filename         = "${path.module}/../../lambdas/out/hello-lambda.zip"
+  filename         = "${path.module}/../../lambdas/dist/hello-lambda.zip"
   function_name    = "${var.project_name}-hello"
   role            = aws_iam_role.lambda_role.arn
-  handler         = "dist/index.handler"
+  handler         = "index.handler"
   runtime         = "nodejs24.x"
-  source_code_hash = filebase64sha256("${path.module}/../../lambdas/out/hello-lambda.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../lambdas/dist/hello-lambda.zip")
 
   environment {
     variables = {

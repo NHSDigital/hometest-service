@@ -9,16 +9,22 @@
     "local:up": "docker compose -f local-environment/docker-compose.yml up -d",
     "local:down": "docker compose -f local-environment/docker-compose.yml down",
     "local:restart": "npm run local:down && npm run local:up",
+    "build:lambdas": "npx tsx scripts/lambdas/build.ts",
+    "package:lambdas": "npx tsx scripts/lambdas/package.ts",
     "cdk:local": "cdklocal --app \"npx ts-node --prefer-ts-exts infra/main/index.ts\"",
     "cdk:local:bootstrap": "npm run cdk:local -- bootstrap",
     "cdk:local:deploy": "npm run cdk:local -- deploy",
     "cdk:local:destroy": "npm run cdk:local -- destroy"
   },
   "devDependencies": {
+    "@types/archiver": "7.0.0",
     "@types/aws-lambda": "^8.10.160",
     "@types/node": "^25.0.9",
+    "archiver": "7.0.1",
     "aws-cdk": "^2.1101.0",
     "aws-cdk-local": "^3.0.1",
+    "esbuild": "0.27.2",
+    "tsx": "4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {

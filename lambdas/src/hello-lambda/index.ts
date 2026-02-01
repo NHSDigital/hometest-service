@@ -1,6 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {capitalize} from 'lodash';
-import {thing, other_thing} from '@hometest-service/shared'
+import {thing} from "../lib/thing";
+import {other_thing} from "../lib/otherthing";
 
 export const handler = async (
   event: APIGatewayProxyEvent

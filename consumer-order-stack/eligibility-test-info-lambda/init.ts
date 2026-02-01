@@ -1,8 +1,8 @@
-import {Commons, ConsoleCommons} from "../../lambdas/shared/src/commons";
-import {SupplierService} from "../../lambdas/shared/src/db/supplier-db";
+import {Commons, ConsoleCommons} from "../../lambdas/src/lib/commons";
+import {SupplierService} from "../../lambdas/src/lib/db/supplier-db";
 import {LaLookupService} from "./la-lookup";
-import {PostgresDbClient} from "../../lambdas/shared/src/db/db-client";
-import {FetchHttpClient} from "../../lambdas/shared/src/http/http-client";
+import {PostgresDbClient} from "../../lambdas/src/lib/db/db-client";
+import {FetchHttpClient} from "../../lambdas/src/lib/http/http-client";
 
 export interface Environment {
   commons: Commons,
