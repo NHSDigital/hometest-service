@@ -1,18 +1,17 @@
 # Lambda Functions
 
 This directory contains all AWS Lambda functions for the project.
-Each Lambda is organised as an independent TypeScript module with its own dependencies and build
-configuration.
+Each Lambda is organised as a subdirectory within the shared `src/` folder.
 
 ## Structure
 
 ```text
 lambdas/
  ├── src/
- │   ├── some-lambda/ # some Lambda
+ │   ├── some-lambda/
  │   │   ├── index.ts
  │   │   └── [other files]
- │   ├── another-lambda/ # another Lambda
+ │   ├── another-lambda/
  │   │   ├── index.ts
  │   │   └── [other files]
  │   └── lib # shared code
