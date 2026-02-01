@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npm run local:up && npm run local:terraform:init && npm run local:deploy",
     "stop": "npm run local:terraform:destroy && npm run local:down",
+    "test": "npm --prefix ui run test && npm --prefix lambdas run test",
     "local:up": "docker compose -f local-environment/docker-compose.yml up -d",
     "local:down": "docker compose -f local-environment/docker-compose.yml down",
     "local:restart": "npm run local:down && npm run local:up",

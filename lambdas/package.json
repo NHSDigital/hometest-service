@@ -5,11 +5,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "echo \"Error: no test specified\"",
     "build": "npx tsx scripts/build.ts",
     "package": "npx tsx scripts/package.ts",
     "local:deploy": "npm --prefix ../ run local:deploy",
     "local:terrform:apply": "npm --prefix ../ run local:terraform:apply",
-    "test": "jest",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -20,7 +20,6 @@
     "@types/archiver": "7.0.0",
     "@types/aws-lambda": "^8.10.159",
     "@types/fhir": "^0.0.41",
-    "@types/jest": "^30.0.0",
     "@types/pg": "^8.16.0",
     "archiver": "7.0.1",
     "esbuild": "0.27.2",

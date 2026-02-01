@@ -5,7 +5,6 @@ import {readdirSync, statSync, mkdirSync, existsSync, rmSync, writeFileSync} fro
 import {join} from 'path';
 
 interface BuildOptions {
-  buildAll: boolean;
   specificLambda?: string;
 }
 
@@ -15,25 +14,21 @@ const DIST_DIR = join(LAMBDAS_DIR, 'dist');
 
 function parseArgs(): BuildOptions {
   const args = process.argv.slice(2);
-  let buildAll = true;
   let specificLambda: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--all':
-        break;
       case '--lambda':
-        buildAll = false;
         specificLambda = args[++i];
         break;
       default:
         console.error(`Unknown option: ${args[i]}`);
-        console.error('Usage: build.ts [--all] [--lambda <lambda-name>]');
+        console.error('Usage: build.ts [--lambda <lambda-name>]');
         process.exit(1);
     }
   }
 
-  return {buildAll, specificLambda};
+  return {specificLambda};
 }
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -71,7 +66,7 @@ async function buildLambda(lambdaName: string): Promise<void> {
   writeFileSync(join(outDir, 'meta.json'), JSON.stringify(result.metafile, null, 2));
 }
 
-function getLambdaNames(): string[] {
+function getLambdas(): string[] {
   if (!existsSync(SRC_DIR)) {
     return [];
   }
@@ -92,14 +87,9 @@ async function main(): Promise<void> {
   }
 
   try {
-    let lambdaNames: string[] = []
-    if (options.buildAll) {
-      lambdaNames = getLambdaNames();
-    } else if (options.specificLambda) {
-      lambdaNames = [options.specificLambda];
-    }
+    const lambdas: string[] = options.specificLambda ? [options.specificLambda] : getLambdas();
 
-    for (const lambdaName of lambdaNames) {
+    for (const lambdaName of lambdas) {
       await buildLambda(lambdaName);
     }
 
