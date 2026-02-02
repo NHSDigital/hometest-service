@@ -7,7 +7,7 @@ export function MoreInformationLinks() {
       <ul className="nhsuk-list" role="list">
         <li>
           <a
-            href="#"
+            href="https://www.nhs.uk/conditions/hiv-and-aids/"
             className="nhsuk-link"
             aria-label="Learn more about HIV and AIDS on NHS website"
           >

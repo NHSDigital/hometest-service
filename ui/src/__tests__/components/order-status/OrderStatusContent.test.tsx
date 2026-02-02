@@ -41,17 +41,30 @@ describe("OrderStatusContent", () => {
       ).toBeInTheDocument();
     });
 
-    it("displays all help links", () => {
+    it("displays all help links with correct URLs", () => {
       render(<OrderStatusContent order={baseOrder} />);
-      expect(
-        screen.getByText(/blood sample step-by-step guide/i),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/contact my nearest sexual health clinic/i),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/learn more about hiv and aids/i),
-      ).toBeInTheDocument();
+
+      const bloodSampleLink = screen.getByText(
+        /blood sample step-by-step guide/i,
+      );
+      expect(bloodSampleLink).toBeInTheDocument();
+      expect(bloodSampleLink).toHaveAttribute("href", "/blood-sample-guide");
+
+      const sexualHealthLink = screen.getByText(
+        /contact my nearest sexual health clinic/i,
+      );
+      expect(sexualHealthLink).toBeInTheDocument();
+      expect(sexualHealthLink).toHaveAttribute(
+        "href",
+        "https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/?postcode=<POSTCODE>",
+      );
+
+      const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
+      expect(hivInfoLink).toBeInTheDocument();
+      expect(hivInfoLink).toHaveAttribute(
+        "href",
+        "https://www.nhs.uk/conditions/hiv-and-aids/",
+      );
     });
   });
 
@@ -121,11 +134,14 @@ describe("OrderStatusContent", () => {
       ).toBeInTheDocument();
     });
 
-    it("displays HIV info link", () => {
+    it("displays HIV info link with correct URL", () => {
       render(<OrderStatusContent order={receivedOrder} />);
-      expect(
-        screen.getByText(/learn more about hiv and aids/i),
-      ).toBeInTheDocument();
+      const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
+      expect(hivInfoLink).toBeInTheDocument();
+      expect(hivInfoLink).toHaveAttribute(
+        "href",
+        "https://www.nhs.uk/conditions/hiv-and-aids/",
+      );
     });
   });
 
@@ -152,11 +168,14 @@ describe("OrderStatusContent", () => {
       ).toBeInTheDocument();
     });
 
-    it("displays HIV info link", () => {
+    it("displays HIV info link with correct URL", () => {
       render(<OrderStatusContent order={readyOrder} />);
-      expect(
-        screen.getByText(/learn more about hiv and aids/i),
-      ).toBeInTheDocument();
+      const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
+      expect(hivInfoLink).toBeInTheDocument();
+      expect(hivInfoLink).toHaveAttribute(
+        "href",
+        "https://www.nhs.uk/conditions/hiv-and-aids/",
+      );
     });
   });
 

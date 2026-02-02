@@ -5,6 +5,7 @@ export async function getOrderDetails(orderId: string): Promise<Order> {
 }
 
 export function getMockOrderDetails(orderId: string): Order {
+
   // Mock data for different order statuses
   const mockOrders: Record<string, Order> = {
     "1": {
