@@ -12,3 +12,8 @@ output "eligibility_test_info_endpoint" {
   description = "Eligibility Test Info Lambda endpoint"
   value       = module.eligibility_test_info_lambda.localstack_endpoint_url
 }
+
+output "hello_world_endpoint" {
+  description = "Hello World Lambda endpoint"
+  value       = module.hello_world_lambda.localstack_endpoint_url
+}
