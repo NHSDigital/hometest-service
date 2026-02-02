@@ -21,22 +21,6 @@ inputs:
 runs:
     using: composite
     steps:
-        - name: Install tfswitch
-          run: |
-              curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b ~/.local/bin latest
-              echo "$HOME/.local/bin" >> $GITHUB_PATH
-              tfswitch
-          working-directory: infrastructure/src/bootstrap/
-          shell: bash
-
-        - name: Install tgswitch
-          run: |
-              curl -L https://raw.githubusercontent.com/warrensbox/tgswitch/release/install.sh | bash -s -- -b ~/.local/bin latest
-              echo "$HOME/.local/bin" >> $GITHUB_PATH
-              tgswitch 0.97.2
-          working-directory: infrastructure/environments/poc/core/bootstrap/
-          shell: bash
-
         - name: Install pre-commit dependencies
           working-directory: /tmp
           shell: bash
