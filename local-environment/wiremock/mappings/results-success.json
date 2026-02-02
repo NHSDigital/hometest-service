@@ -1,0 +1,92 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/results",
+    "headers": {
+      "X-Correlation-ID": {
+        "matches": ".*"
+      }
+    },
+    "queryParameters": {
+      "order_uid": {
+        "matches": ".{10,}"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "Bundle",
+      "type": "searchset",
+      "total": 1,
+      "link": [
+        {
+          "relation": "self",
+          "url": "/results?order_uid=550e8400-e29b-41d4-a716-446655440000"
+        }
+      ],
+      "entry": [
+        {
+          "fullUrl": "urn:uuid:{{randomValue type='UUID'}}",
+          "resource": {
+            "resourceType": "Observation",
+            "id": "{{randomValue type='UUID'}}",
+            "basedOn": [
+              {
+                "reference": "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
+              }
+            ],
+            "status": "final",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "31676001",
+                  "display": "HIV antigen test"
+                }
+              ],
+              "text": "HIV antigen test"
+            },
+            "subject": {
+              "reference": "Patient/123e4567-e89b-12d3-a456-426614174000"
+            },
+            "effectiveDateTime": "{{now offset='-2 days' format='yyyy-MM-dd'}}T15:45:00Z",
+            "issued": "{{now offset='-1 days' format='yyyy-MM-dd'}}T16:00:00Z",
+            "performer": [
+              {
+                "reference": "Organization/SUP001",
+                "display": "Test Supplier Ltd"
+              }
+            ],
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "260415000",
+                  "display": "Not detected"
+                }
+              ]
+            },
+            "interpretation": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                    "code": "N",
+                    "display": "Normal"
+                  }
+                ],
+                "text": "Normal"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "transformers": ["response-template"]
+  }
+}
