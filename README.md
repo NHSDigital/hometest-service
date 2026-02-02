@@ -95,9 +95,9 @@ The frontend is a Next.js application located in the `/ui` directory.
 - When creating a new page, use the PageLayout component found in `/ui/src/components`.
 - To create a new route, create a directory with the name of your route in `/ui/src/app`, and add a `page.tsx` file within.
 
-### Infrastructure
+### Local Infrastructure
 
-Infrastructure is managed via Terraform in the [`/local-environment/infra`](./local-environment/infra) directory.
+Local infrastructure is managed via Terraform in the [`/local-environment/infra`](./local-environment/infra) directory.
 
 ## Testing
 
@@ -113,7 +113,7 @@ The service follows a serverless-first architecture on AWS:
 - **Frontend**: Next.js (React)
 - **Backend**: AWS Lambda (Node.js/TypeScript)
 - **Database**: PostgreSQL (managed via Docker locally)
-- **Infrastructure**: AWS CDK and Terraform
+- **Infrastructure**: Terraform
 
 System diagrams and design documents can be found in the [`/docs`](./docs) and [
 `/architecture`](./architecture) folders.

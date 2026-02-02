@@ -38,7 +38,6 @@ function parseArgs(): PackageOptions {
 
 const LAMBDA_INDEX = 'index.js';
 const LAMBDA_INDEX_MAP = 'index.js.map';
-const LAMBDA_PACKAGE_JSON = 'package.json';
 
 async function createLambdaZip(lambda: string): Promise<void> {
   console.log(`Creating deployment zip for ${lambda}...`);
@@ -46,7 +45,6 @@ async function createLambdaZip(lambda: string): Promise<void> {
   const lambdaPath = join(DIST_DIR, lambda);
   const indexPath = join(lambdaPath, LAMBDA_INDEX);
   const sourcemapPath = join(lambdaPath, LAMBDA_INDEX_MAP);
-  const packageJsonPath = join(LAMBDAS_DIR, LAMBDA_PACKAGE_JSON);
   const zipPath = join(DIST_DIR, `${lambda}.zip`);
 
   if (!existsSync(lambdaPath)) {
