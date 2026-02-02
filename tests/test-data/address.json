@@ -1,42 +1,72 @@
 [
   {
     "postcode": "SW1A 1AA",
-    "address": "Buckingham Palace"
+    "addressline1": "Buckingham Palace",
+    "addressline2": "",
+    "addressline3": "",
+    "towncity": "London"
   },
   {
     "postcode": "EC1A1BB",
-    "address": "London Post Office"
+    "addressline1": "Mount Pleasant Mail Centre",
+    "addressline2": "Farringdon Road",
+    "addressline3": "",
+    "towncity": "London"
   },
   {
     "postcode": "RG6 7DU",
-    "address": "Wokingham Road, Earley"
+    "addressline1": "215",
+    "addressline2": "Wokingham Road",
+    "addressline3": "Earley",
+    "towncity": "Reading"
   },
   {
     "postcode": "E66AN",
-    "address": "Primarily terraced housing"
+    "addressline1": "12",
+    "addressline2": "Bromley Road",
+    "addressline3": "London",
+    "towncity": "London"
   },
   {
     "postcode": "PA3 2SW",
-    "address": "Renfrewshire, Scotland"
+    "addressline1": "5",
+    "addressline2": "Inchinnan Road",
+    "addressline3": "Renfrew",
+    "towncity": "Renfrewshire"
   },
   {
     "postcode": "BT294AB",
-    "address": "Aldergrove, Antrim"
+    "addressline1": "10",
+    "addressline2": "Airport Road",
+    "addressline3": "Aldergrove",
+    "towncity": "Antrim"
   },
   {
     "postcode": "LL11 2DG",
-    "address": "Wrexham Industrial Estate"
+    "addressline1": "Unit 5",
+    "addressline2": "Wrexham Industrial Estate",
+    "addressline3": "",
+    "towncity": "Wrexham"
   },
   {
     "postcode": "ZE1 0AA",
-    "address": "Lerwick, Shetland Islands"
+    "addressline1": "1",
+    "addressline2": "North Road",
+    "addressline3": "Lerwick",
+    "towncity": "Shetland Islands"
   },
   {
     "postcode": "HS1 2BW",
-    "address": "Stornoway, Isle of Lewis"
+    "addressline1": "3",
+    "addressline2": "Bayhead",
+    "addressline3": "Stornoway",
+    "towncity": "Isle of Lewis"
   },
   {
     "postcode": "CF62 3BD",
-    "address": "Cardiff Airport Vale of Glamorgan"
+    "addressline1": "Cardiff Airport",
+    "addressline2": "Rhoose",
+    "addressline3": "Vale of Glamorgan",
+    "towncity": "Cardiff"
   }
 ]
