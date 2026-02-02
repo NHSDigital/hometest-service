@@ -15,7 +15,7 @@ This is a Playwright-based end-to-end test framework for the hometest-service ap
 
 ## Project Structure
 
-```
+```text
 tests/
 ├── api/                    # API testing utilities
 │   ├── clients/            # API client classes
@@ -211,6 +211,7 @@ npx playwright test --project=chromium
 ## Browser Projects
 
 Available browser projects in `playwright.config.ts`:
+
 - `chromium` - Desktop Chrome
 - `firefox` - Desktop Firefox
 - `safari` - Desktop Safari

@@ -22,7 +22,7 @@ export class AccessibilityModule {
     // Get absolute path to tests/testResults/accessibility
     // __dirname is tests/utils, so go up one level to tests, then into testResults/accessibility
     const absoluteDir = path.resolve(__dirname, '..', 'testResults', 'accessibility');
-    
+
     // axe-html-reporter always treats outputDir as relative and prepends cwd,
     // so we need to provide a relative path from cwd to the target directory
     this.reportDirectory = path.relative(process.cwd(), absoluteDir);
