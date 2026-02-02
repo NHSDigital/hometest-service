@@ -1,6 +1,7 @@
+# SEE: https://github.com/hadolint/hadolint#configure
 ---
 trustedRegistries:
-    - docker.io
-    - '*.gcr.io'
-    - '*.dkr.ecr.*.amazonaws.com'
-    - '*.azurecr.io'
+  - docker.io
+  - "*.gcr.io"
+  - "*.dkr.ecr.*.amazonaws.com"
+  - "*.azurecr.io"
