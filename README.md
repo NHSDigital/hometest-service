@@ -42,17 +42,10 @@ The following software packages, or their equivalents, are expected to be instal
 - [Docker](https://www.docker.com/)
 - [Node v24](https://nodejs.org/en) LTS,
 - A tool version manager:
-<<<<<<< HEAD
   - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [`.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
   - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [`.tool-versions`](./.tool-versions))
-=======
-  - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [
-    `.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
-  - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
-    `.tool-versions`](./.tool-versions))
 - [Terraform](https://developer.hashicorp.com/terraform). The version is specified in [.tool-versions].
   - Local development uses Terraform to deploy to LocalStack.
->>>>>>> 864ad17a3b4e1531463fd34a9efad3e89735061b
 
 #### Version Manager configuration
 
