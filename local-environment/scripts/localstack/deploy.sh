@@ -41,4 +41,3 @@ for file in "$SECRETS_DIR"/*.json; do
 done
 
 echo "All secrets created."
-
