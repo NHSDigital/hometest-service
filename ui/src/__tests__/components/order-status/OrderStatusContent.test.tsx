@@ -160,23 +160,6 @@ describe("OrderStatusContent", () => {
       render(<OrderStatusContent order={readyOrder} />);
       expect(screen.getByText(/view your result/i)).toBeInTheDocument();
     });
-
-    it('displays "More information" section', () => {
-      render(<OrderStatusContent order={readyOrder} />);
-      expect(
-        screen.getByRole("heading", { name: /more information/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("displays HIV info link with correct URL", () => {
-      render(<OrderStatusContent order={readyOrder} />);
-      const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
-      expect(hivInfoLink).toBeInTheDocument();
-      expect(hivInfoLink).toHaveAttribute(
-        "href",
-        "https://www.nhs.uk/conditions/hiv-and-aids/",
-      );
-    });
   });
 
   describe("Custom delivery days", () => {

@@ -1,5 +1,3 @@
-import { MoreInformationLinks } from "./MoreInformationLinks";
-
 export function ReadyStatus() {
   return (
     <>
@@ -14,7 +12,6 @@ export function ReadyStatus() {
         </a>
       </p>
       <hr />
-      <MoreInformationLinks />
     </>
   );
 }
