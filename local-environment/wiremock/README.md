@@ -55,8 +55,7 @@ To test the WireMock API stubs, you'll need:
 
 ### Running Postman Tests
 
-1. Import the Supplier Contract collection from: https://github.com/NHSDigital/hometest-supplier-integration-framework/blob/feature/initial-api-schemas/tests/postman/collections/supplier-contract.postman_collection.json
-
+1. Import the Supplier Contract collection from supplier integration framework - latest [here](https://github.com/NHSDigital/hometest-supplier-integration-framework/blob/feature/initial-api-schemas/tests/postman/collections/supplier-contract.postman_collection.json).
 
 2. Configure the collection-level environment variables in Postman.
 
