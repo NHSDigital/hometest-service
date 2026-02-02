@@ -1046,8 +1046,8 @@ components:
                                 type: string
                                 description: Error or warning code
                                 enum: [invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing,
-                                    not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule,
-                                    conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational]
+                                       not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule,
+                                       conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational]
                                 example: business-rule
                             details:
                                 type: object

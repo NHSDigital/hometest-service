@@ -12,10 +12,17 @@ infrastructure-as-code.
   - [Table of Contents](#table-of-contents)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
+      - [Version Manager configuration](#version-manager-configuration)
+        - [asdf](#asdf)
+        - [mise](#mise)
     - [Configuration](#configuration)
   - [Usage](#usage)
+    - [Local Development](#local-development)
+    - [Frontend](#frontend)
+    - [Infrastructure](#infrastructure)
   - [Testing](#testing)
   - [Design](#design)
+    - [Architecture](#architecture)
   - [Contributing](#contributing)
   - [Licence](#licence)
 
@@ -35,10 +42,8 @@ The following software packages, or their equivalents, are expected to be instal
 - [Docker](https://www.docker.com/)
 - [Node v24](https://nodejs.org/en) LTS,
 - A tool version manager:
-  - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [
-    `.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
-  - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
-    `.tool-versions`](./.tool-versions))
+  - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [`.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
+  - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [`.tool-versions`](./.tool-versions))
 
 #### Version Manager configuration
 
@@ -75,8 +80,7 @@ npm start
 
 This command:
 
-1. Starts the Docker containers defined in [
-   `local-environment/docker-compose.yml`](./local-environment/docker-compose.yml).
+1. Starts the Docker containers defined in [`local-environment/docker-compose.yml`](./local-environment/docker-compose.yml).
 2. Bootstraps and deploys the CDK stacks to LocalStack.
 3. Starts the frontend on [http://localhost:3000](http://localhost:3000).
 
@@ -114,8 +118,7 @@ The service follows a serverless-first architecture on AWS:
 - **Database**: PostgreSQL (managed via Docker locally)
 - **Infrastructure**: AWS CDK and Terraform
 
-System diagrams and design documents can be found in the [`/docs`](./docs) and [
-`/architecture`](./architecture) folders.
+System diagrams and design documents can be found in the [`/docs`](./docs) and [`/architecture`](./architecture) folders.
 
 ## Contributing
 
