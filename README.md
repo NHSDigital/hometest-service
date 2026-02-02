@@ -40,7 +40,7 @@ The following software packages, or their equivalents, are expected to be instal
   - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
     `.tool-versions`](./.tool-versions))
 - [Terraform](https://developer.hashicorp.com/terraform). The version is specified in [.tool-versions].
-- Local development uses terraform to deploy to LocalStack.
+- Local development uses Terraform to deploy to LocalStack.
 
 #### Version Manager configuration
 
@@ -97,7 +97,7 @@ The frontend is a Next.js application located in the `/ui` directory.
 
 ### Infrastructure
 
-Infrastructure is managed via terraform in the [`/local-environment/infra`](./local-environment/infra) directory.
+Infrastructure is managed via Terraform in the [`/local-environment/infra`](./local-environment/infra) directory.
 
 ## Testing
 

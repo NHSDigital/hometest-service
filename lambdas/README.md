@@ -30,7 +30,6 @@ lambdas/
 
 - Shared `package.json` at the root level for all Lambdas
 - All dependencies are managed centrally
-- Use monorepo approach for dependency management
 
 ### Build Process
 
