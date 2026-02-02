@@ -29,7 +29,7 @@ export class HomeTestStartPage {
     return await this.page.title();
   }
 
-  async verifyPageLoaded(): Promise<void> {
+  async waitUntilPageLoad(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
   }
 
