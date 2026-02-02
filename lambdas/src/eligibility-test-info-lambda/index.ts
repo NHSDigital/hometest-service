@@ -1,5 +1,5 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
-import { createFhirErrorResponse, createFhirResponse } from '../../lib/fhir-response'
+import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response'
 import {Bundle, BundleEntry} from "fhir/r4";
 import {init} from "./init";
 import {validatePostcodeFormat} from "./postcode-validator";

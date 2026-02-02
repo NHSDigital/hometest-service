@@ -13,9 +13,7 @@ services:
       - AWS_DEFAULT_REGION=eu-west-1
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./localstack-data:/var/lib/localstack"
-      - "./scripts/localstack/:/etc/scripts/"
-      - "./scripts/localstack/deploy.sh:/etc/localstack/init/ready.d/deploy.sh"
+
   ui:
     image: node:24
     container_name: ui
