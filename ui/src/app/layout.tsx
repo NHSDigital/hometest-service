@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import 'nhsuk-frontend/dist/nhsuk.css';
+import { OrderProvider, NavigationProvider } from "@/state";
 
 export const metadata: Metadata = {
   title: "NHS HIV Home Test Service"
