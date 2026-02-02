@@ -27,8 +27,12 @@ export class FindAddressPage {
     await this.continueButton.click();
   }
 
-    async waitUntilPageLoad(): Promise<void> {
-      await this.page.waitForLoadState('domcontentloaded');
+  async waitUntilPageLoad(): Promise<void> {
+    await this.page.waitForLoadState('domcontentloaded');
+  }
+
+  async clickEnterAddressManuallyLink(): Promise<void> {
+    await this.enterAddressManuallyLink.click();
   }
 
 }

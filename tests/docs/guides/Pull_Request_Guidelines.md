@@ -572,13 +572,13 @@ Reference the fixtures file to understand what's available:
 ```typescript
 // tests/fixtures/index.ts
 import { test as base } from '@playwright/test';
-import { PlaywrightDevPage, WPHomePage, HomeTestPage } from '../page-objects';
+import { PlaywrightDevPage, WPHomePage, HomeStartTestPage } from '../page-objects';
 import { AccessibilityModule } from '../utils';
 
 type MyFixtures = {
   playwrightDevPage: PlaywrightDevPage;
   wpHomePage: WPHomePage;
-  homeTestPage: HomeTestPage;
+  homeTestStartPage: HomeTestStartPage;
   accessibility: AccessibilityModule;
 };
 
@@ -589,8 +589,8 @@ export const test = base.extend<MyFixtures>({
   wpHomePage: async ({ page }, use) => {
     await use(new WPHomePage(page));
   },
-  homeTestPage: async ({ page }, use) => {
-    await use(new HomeTestPage(page));
+  homeTestStartPage: async ({ page }, use) => {
+    await use(new HomeTestStartPage(page));
   },
   accessibility: async ({}, use) => {
     await use(new AccessibilityModule());
