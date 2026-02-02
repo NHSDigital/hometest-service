@@ -40,7 +40,7 @@ The following software packages, or their equivalents, are expected to be instal
   - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
     `.tool-versions`](./.tool-versions))
 - [Terraform](https://developer.hashicorp.com/terraform). The version is specified in [.tool-versions].
-- Local development uses Terraform to deploy to LocalStack.
+  - Local development uses Terraform to deploy to LocalStack.
 
 #### Version Manager configuration
 
