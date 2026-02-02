@@ -50,7 +50,7 @@ lambdas/
 ### Local Deployment
 
 - Lambdas are deployed via Terraform using `archive_file` data source
-- To deploy all Lambdas, run `npm run local:terrform:apply`
+- To deploy all Lambdas, run `npm run local:terraform:apply`
   - This is a wrapper for the script with the same name in the root `package.json`
 - Each Lambda gets its own IAM role with minimal required permissions
 

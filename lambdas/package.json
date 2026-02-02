@@ -9,7 +9,7 @@
     "build": "npx tsx scripts/build.ts",
     "package": "npx tsx scripts/package.ts",
     "local:deploy": "npm --prefix ../ run local:deploy",
-    "local:terrform:apply": "npm --prefix ../ run local:terraform:apply",
+    "local:terraform:apply": "npm --prefix ../ run local:terraform:apply",
     "clean": "rm -rf dist"
   },
   "dependencies": {
