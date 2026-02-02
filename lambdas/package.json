@@ -1,21 +1,29 @@
 {
-  "name": "hometest-lambdas",
+  "name": "@hometest-service/lambdas",
   "version": "1.0.0",
   "description": "Lambdas for the Home Test Service",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\"",
+    "build": "npx tsx scripts/build.ts",
+    "package": "npx tsx scripts/package.ts",
+    "local:deploy": "npm --prefix ../ run local:deploy",
+    "local:terraform:apply": "npm --prefix ../ run local:terraform:apply",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.965.0",
-    "pg": "^8.16.3"
+    "pg": "8.16.3"
   },
   "devDependencies": {
+    "@types/archiver": "7.0.0",
     "@types/aws-lambda": "^8.10.159",
     "@types/fhir": "^0.0.41",
-    "@types/jest": "^30.0.0",
     "@types/pg": "^8.16.0",
+    "archiver": "7.0.1",
+    "esbuild": "0.27.2",
+    "tsx": "4.21.0",
     "typescript": "^5.9.3"
   }
 }
