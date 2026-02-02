@@ -21,18 +21,7 @@ The WireMock service provides mock responses for the Supplier API, simulating th
 - **Order Endpoint**: Simulates successful order creation and validation errors
 - **Results Endpoint**: Mocks result retrieval with success and not-found scenarios
 
-The mock mappings are located in the [`mappings`](./mappings) directory and include:
-
-- `oauth-token.json` - Successful OAuth token generation
-- `oauth-invalid-credentials.json` - Invalid client credentials
-- `oauth-invalid-grant-type.json` - Invalid grant type
-- `oauth-missing-params.json` - Missing required parameters
-- `order-success.json` - Successful order creation
-- `order-missing-email.json` - Validation error for missing email
-- `order-missing-phone.json` - Validation error for missing phone
-- `order-missing-telecom.json` - Validation error for missing telecom
-- `results-success.json` - Successful results retrieval
-- `results-not-found.json` - Results not found
+The mock mappings are located in the [`mappings`](./mappings) directory.
 
 ## Usage
 
