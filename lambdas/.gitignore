@@ -30,6 +30,3 @@ Thumbs.db
 # Built js files
 src/**/*.js
 src/**/*.js.map
-
-# Zipped lambdas
-out/
