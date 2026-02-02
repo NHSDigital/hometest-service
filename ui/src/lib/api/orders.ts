@@ -2,13 +2,12 @@ import { Order } from "@/types/order";
 
 export async function getOrderDetails(orderId: string): Promise<Order> {
   // Simulate slow API call
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   return getMockOrderDetails(orderId) as Order;
 }
 
 export function getMockOrderDetails(orderId: string): Order {
-
   // Mock data for different order statuses
   const mockOrders: Record<string, Order> = {
     "1": {
@@ -48,7 +47,5 @@ export function getMockOrderDetails(orderId: string): Order {
     },
   };
 
-  return (
-    mockOrders[orderId] || null
-  );
+  return mockOrders[orderId] || null;
 }
