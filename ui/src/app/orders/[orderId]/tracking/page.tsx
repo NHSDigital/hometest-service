@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, use } from "react";
 
 import { AboutService } from "@/components/AboutService";
 import { Order } from "@/types/order";
@@ -14,63 +14,45 @@ interface OrderTrackingPageProps {
   }>;
 }
 
-export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
-  const [order, setOrder] = useState<Order | null>(null);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
+function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
+  const order = use(orderPromise);
 
-  useEffect(() => {
-    async function fetchOrderData() {
-      try {
-        const { orderId } = await params;
-        const data = await getOrderDetails(orderId);
-        setOrder(data);
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchOrderData();
-  }, [params]);
-
-  if (loading) {
+  if (!order) {
     return (
-      <PageLayout>
-        <div className="nhsuk-u-padding-top-5">
-          <p>Loading order details...</p>
-        </div>
-      </PageLayout>
-    );
-  }
-
-  if (error || !order) {
-    return (
-      <PageLayout>
-        <div
-          className="nhsuk-error-summary"
-          role="alert"
-          aria-labelledby="error-summary-title"
-        >
-          <h2 className="nhsuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
-          <div className="nhsuk-error-summary__body">
-            <p>
-              We could not find this order. Please check your order reference
-              and try again.
-            </p>
-          </div>
-        </div>
-      </PageLayout>
+      <div role="alert">
+        <h1 className="nhsuk-heading-l">There is a problem</h1>
+        <p className="nhsuk-body">We could not find this order.</p>
+      </div>
     );
   }
 
   return (
-    <PageLayout>
+    <>
       <OrderStatus order={order} />
       <AboutService supplier={order.supplier} />
+    </>
+  );
+}
+
+export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
+  const { orderId } = use(params);
+  const orderPromise = getOrderDetails(orderId);
+
+  return (
+    <PageLayout>
+      <Suspense
+        fallback={
+          <div
+            className="nhsuk-body nhsuk-u-padding-top-5"
+            role="status"
+            aria-live="polite"
+          >
+            <p>Loading...</p>
+          </div>
+        }
+      >
+        <OrderContent orderPromise={orderPromise} />
+      </Suspense>
     </PageLayout>
   );
 }

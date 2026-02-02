@@ -1,6 +1,9 @@
 import { Order } from "@/types/order";
 
 export async function getOrderDetails(orderId: string): Promise<Order> {
+  // Simulate slow API call
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
   return getMockOrderDetails(orderId) as Order;
 }
 
@@ -45,16 +48,7 @@ export function getMockOrderDetails(orderId: string): Order {
     },
   };
 
-  // Return specific mock data for IDs 1, 2, 3, or default for any other ID
   return (
-    mockOrders[orderId] || {
-      id: orderId,
-      testType: "HIV self-test",
-      orderedDate: "2026-01-15",
-      referenceNumber: orderId,
-      status: "confirmed",
-      supplier: "Preventx",
-      maxDeliveryDays: 5,
-    }
+    mockOrders[orderId] || null
   );
 }
