@@ -45,17 +45,18 @@ jobs:
           fetch-depth: 0  # Full history is needed to scan all commits
       - name: "Scan secrets"
         uses: ./.github/actions/scan-secrets
-  check-file-format:
-    name: "Check file format"
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0  # Full history is needed to compare branches
-      - name: "Check file format"
-        uses: ./.github/actions/check-file-format
+  # Replaced by pre-commit
+  # check-file-format:
+  #   name: "Check file format"
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 2
+  #   steps:
+  #     - name: "Checkout code"
+  #       uses: actions/checkout@v6
+  #       with:
+  #         fetch-depth: 0  # Full history is needed to compare branches
+  #     - name: "Check file format"
+  #       uses: ./.github/actions/check-file-format
   # Replaced by pre-commit
   # check-markdown-format:
   #   name: "Check Markdown format"
@@ -68,18 +69,17 @@ jobs:
   #         fetch-depth: 0 # Full history is needed to compare branches
   #     - name: "Check Markdown format"
   #       uses: ./.github/actions/check-markdown-format
-  # Will be migrated to pre-commit in near future
-  # check-english-usage:
-  #   name: "Check English usage"
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 2
-  #   steps:
-  #     - name: "Checkout code"
-  #       uses: actions/checkout@v6
-  #       with:
-  #         fetch-depth: 0 # Full history is needed to compare branches
-  #     - name: "Check English usage"
-  #       uses: ./.github/actions/check-english-usage
+  check-english-usage:
+    name: "Check English usage"
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Full history is needed to compare branches
+      - name: "Check English usage"
+        uses: ./.github/actions/check-english-usage
   # Replaced by pre-commit
   # lint-terraform:
   #   name: "Lint Terraform"
@@ -130,16 +130,8 @@ jobs:
           idp_aws_report_upload_bucket_endpoint: "${{ secrets.IDP_AWS_REPORT_UPLOAD_BUCKET_ENDPOINT }}"
   pre-commit:
     runs-on: ubuntu-latest
-    # permissions:
-    #   id-token: write    # REQUIRED for OIDC token
-    #   contents: read     # For checkout
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-      #     aws-region: "eu-west-2"
       - name: Run pre-commit checks
         uses: ./.github/actions/perform-pre-commit

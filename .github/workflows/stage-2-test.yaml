@@ -41,12 +41,17 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
-      - name: "Run unit test suite"
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v6
+        with:
+          node-version: "${{ inputs.nodejs_version }}"
+          cache: npm
+      - name: "Install dependencies"
         run: |
-          make test-unit
-      - name: "Save the result of fast test suite"
+          npm ci && npm --prefix ui ci && npm --prefix lambdas ci
+      - name: "Run UI unit test suite"
         run: |
-          echo "Nothing to save"
+          npm --prefix ui run test
   test-lint:
     name: "Linting"
     runs-on: ubuntu-latest
