@@ -4,26 +4,25 @@
   "description": "NHS Home Test Service",
   "private": true,
   "scripts": {
-    "start": "npm run local:up && npm run cdk:local:bootstrap && npm run cdk:local:deploy",
-    "stop": "npm run cdk:local:destroy && npm run local:down",
+    "start": "npm run local:up && npm run local:terraform:init && npm run local:deploy",
+    "stop": "npm run local:terraform:destroy && npm run local:down",
+    "test": "npm --prefix ui run test && npm --prefix lambdas run test",
     "local:up": "docker compose -f local-environment/docker-compose.yml up -d",
     "local:down": "docker compose -f local-environment/docker-compose.yml down",
     "local:restart": "npm run local:down && npm run local:up",
-    "cdk:local": "cdklocal --app \"npx ts-node --prefer-ts-exts infra/main/index.ts\"",
-    "cdk:local:bootstrap": "npm run cdk:local -- bootstrap",
-    "cdk:local:deploy": "npm run cdk:local -- deploy",
-    "cdk:local:destroy": "npm run cdk:local -- destroy"
+    "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
+    "local:terraform:init": "terraform -chdir=local-environment/infra init",
+    "local:terraform:plan": "terraform -chdir=local-environment/infra plan",
+    "local:terraform:apply": "terraform -chdir=local-environment/infra apply -auto-approve",
+    "local:terraform:destroy": "terraform -chdir=local-environment/infra destroy -auto-approve",
+    "build:lambdas": "npm --prefix lambdas run build",
+    "package:lambdas": "npm --prefix lambdas run package"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.160",
-    "@types/node": "^25.0.9",
-    "aws-cdk": "^2.1101.0",
-    "aws-cdk-local": "^3.0.1",
+    "@types/node": "^25.0.10",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.235.1",
-    "constructs": "^10.4.5",
     "jsonwebtoken": "^9.0.3",
     "source-map-support": "^0.5.21",
     "uuid": "^13.0.0"

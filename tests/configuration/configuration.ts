@@ -38,7 +38,7 @@ export class Configuration {
       [EnvironmentVariables.TIMEOUT, '30000'],
       [EnvironmentVariables.SLOW_MO, '0'],
       [EnvironmentVariables.ACCESSIBILITY_STANDARDS, 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa'],
-      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'testResults'],
+      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'tests/testResults'],
       [EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC, 'https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/'],
       [EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE, 'https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/'],
       [EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO, 'https://www.nhs.uk/conditions/hiv-and-aids/'],

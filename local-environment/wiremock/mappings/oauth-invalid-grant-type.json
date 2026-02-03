@@ -1,0 +1,23 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/oauth/token",
+    "bodyPatterns": [
+      {
+        "matches": ".*grant_type=(?!client_credentials).*"
+      }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    },
+    "jsonBody": {
+      "error": "unsupported_grant_type",
+      "error_description": "The authorization grant type is not supported. Only 'client_credentials' is allowed"
+    }
+  }
+}

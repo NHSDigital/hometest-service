@@ -12,9 +12,7 @@ services:
       - AWS_DEFAULT_REGION=eu-west-1
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./localstack-data:/var/lib/localstack"
-      - "./scripts/localstack/:/etc/scripts/"
-      - "./scripts/localstack/deploy.sh:/etc/localstack/init/ready.d/deploy.sh"
+
   ui:
     image: node:24
     container_name: ui
@@ -40,6 +38,15 @@ services:
       - "5432:5432"
     volumes:
       - ./db-data:/var/lib/postgresql
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: wiremock
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+      - ./wiremock/__files:/home/wiremock/__files
+    command: ["--verbose"]
 
 volumes:
   ui_node_modules:

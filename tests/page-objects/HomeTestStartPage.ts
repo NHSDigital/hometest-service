@@ -1,8 +1,8 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator, Page} from '@playwright/test';
 import { config, EnvironmentVariables } from '../configuration';
+import { BasePage } from './BasePage';
 
-export class HomeTestStartPage {
-  readonly page: Page;
+export class HomeTestStartPage extends BasePage {
   readonly headerText: Locator;
   readonly findClinicLink: Locator;
   readonly nearestAELink: Locator;
@@ -12,7 +12,7 @@ export class HomeTestStartPage {
 
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.headerText = page.locator('h1');
     this.findClinicLink = page.getByRole('link', { name: 'Find a sexual health clinic' });
     this.nearestAELink = page.getByRole('link', { name: 'your nearest A&E' });
@@ -23,15 +23,6 @@ export class HomeTestStartPage {
   }
   async navigate(): Promise<void> {
     await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
-  }
-
-  async getTitle(): Promise<string> {
-    return await this.page.title();
-  }
-
-  async waitForPageLoaded(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-
   }
 
   async getHeaderText(): Promise<string> {

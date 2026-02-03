@@ -12,7 +12,7 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/test-step",
 }));
 
-// Mock the useNavigationContext hook
+// Mock the useJourneyNavigationContext hook
 const mockNavigationContext = {
   currentStep: "test-step",
   stepHistory: ["previous-step", "test-step"],
@@ -23,7 +23,7 @@ const mockNavigationContext = {
 };
 
 jest.mock("@/state", () => ({
-  useNavigationContext: () => mockNavigationContext,
+  useJourneyNavigationContext: () => mockNavigationContext,
 }));
 
 // Mock console.log to avoid noise in test output
