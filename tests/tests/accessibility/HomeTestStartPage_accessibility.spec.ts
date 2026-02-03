@@ -7,7 +7,7 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.navigate();
 
     // Wait for page to load
-    await homeTestStartPage.waitForPageLoaded();
+    await homeTestStartPage.waitUntilPageLoad();
     const hasViolations = await accessibility.runAccessibilityCheck(homeTestStartPage, "Home Test Start Page");
     expect(hasViolations).toBe(false);
   });

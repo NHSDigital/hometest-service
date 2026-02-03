@@ -19,15 +19,16 @@ export class AccessibilityModule {
     const standardsConfig = config.get(EnvironmentVariables.ACCESSIBILITY_STANDARDS);
     this.standards = standardsConfig.split(',').map(s => s.trim());
 
-    // Get report directory from configuration
-    const outputDir = config.get(EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY);
+    // Get absolute path to tests/testResults/accessibility
+    // __dirname is tests/utils, so go up one level to tests, then into testResults/accessibility
+    const absoluteDir = path.resolve(__dirname, '..', 'testResults', 'accessibility');
 
-    // Ensure reports are always written to tests directory regardless of execution context
-    const baseDir = path.basename(process.cwd()) === 'tests' ? '.' : './tests';
-    this.reportDirectory = path.join(baseDir, outputDir, 'accessibility');
+    // axe-html-reporter always treats outputDir as relative and prepends cwd,
+    // so we need to provide a relative path from cwd to the target directory
+    this.reportDirectory = path.relative(process.cwd(), absoluteDir);
 
-    // Ensure report directory exists
-    this.ensureReportDirectoryExists();
+    // Ensure report directory exists (use absolute path for fs operations)
+    this.ensureReportDirectoryExists(absoluteDir);
   }
 
   /**
@@ -104,10 +105,10 @@ export class AccessibilityModule {
   /**
    * Ensure report directory exists
    */
-  private ensureReportDirectoryExists(): void {
-    if (!existsSync(this.reportDirectory)) {
-      mkdirSync(this.reportDirectory, { recursive: true });
-      console.log(`📁 Created accessibility report directory: ${this.reportDirectory}`);
+  private ensureReportDirectoryExists(absolutePath: string): void {
+    if (!existsSync(absolutePath)) {
+      mkdirSync(absolutePath, { recursive: true });
+      console.log(`📁 Created accessibility report directory: ${absolutePath}`);
     }
   }
 

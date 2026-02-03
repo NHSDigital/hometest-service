@@ -1,0 +1,43 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "POST",
+    "urlPath": "/order",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/fhir+json"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && @.telecom.length() >= 1)]"
+      },
+      {
+        "matchesJsonPath": {
+          "expression": "$.contained[*].telecom[?(@.system == 'phone')]",
+          "absent": true
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "OperationOutcome",
+      "issue": [
+        {
+          "severity": "error",
+          "code": "required",
+          "details": {
+            "text": "Validation Error"
+          },
+          "diagnostics": "Patient must have at least 2 telecom entries including both phone and email",
+          "expression": ["ServiceRequest.contained[0].telecom"]
+        }
+      ]
+    }
+  }
+}

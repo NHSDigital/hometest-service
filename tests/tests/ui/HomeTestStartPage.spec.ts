@@ -12,7 +12,7 @@ test.describe('HIV Start Test Page', () => {
 
 
   test('Opening external links', async ({ homeTestStartPage }) => {
-    await homeTestStartPage.waitForPageLoaded();
+    await homeTestStartPage.waitUntilPageLoad();
 
     const sexualHealthClinicUrl = config.get(EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC);
     const nearestAEUrl = config.get(EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE);

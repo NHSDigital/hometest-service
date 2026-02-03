@@ -1,6 +1,7 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class FindAddressPage {
+export class FindAddressPage extends BasePage {
   readonly postcodeInput: Locator;
   readonly numNameInput: Locator;
   readonly continueButton: Locator;
@@ -8,10 +9,9 @@ export class FindAddressPage {
   readonly postcodeErrorMessage: Locator;
   readonly BuildingNoErrorMessage: Locator;
   readonly enterAddressManuallyLink: Locator;
-  readonly page: Page;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.postcodeInput = page.locator('#postcode');
     this.numNameInput = page.locator('#building-number-or-name');
     this.continueButton = page.getByRole('button', { name: 'Continue' });
@@ -25,10 +25,6 @@ export class FindAddressPage {
     await this.postcodeInput.fill(postcode);
     await this.numNameInput.fill(firstLineAddress);
     await this.continueButton.click();
-  }
-
-  async waitUntilPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async clickEnterAddressManuallyLink(): Promise<void> {
