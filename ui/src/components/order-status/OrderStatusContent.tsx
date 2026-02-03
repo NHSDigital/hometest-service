@@ -5,10 +5,10 @@ import {
   ReceivedStatus,
 } from "./statuses";
 
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
 
 interface OrderStatusContentProps {
-  order: Order;
+  order: IOrderDetails;
 }
 
 export function OrderStatusContent({ order }: OrderStatusContentProps) {

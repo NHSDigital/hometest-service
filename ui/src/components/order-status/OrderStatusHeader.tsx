@@ -1,7 +1,7 @@
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
 
 interface OrderStatusHeaderProps {
-  order: Order;
+  order: IOrderDetails;
 }
 
 export function OrderStatusHeader({ order }: OrderStatusHeaderProps) {
@@ -16,9 +16,7 @@ export function OrderStatusHeader({ order }: OrderStatusHeaderProps) {
 
   return (
     <header className="nhsuk-u-margin-bottom-5" aria-label="Order details">
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-2">
-        {order.testType}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-2">HIV self-test</h1>
       <p className="nhsuk-body nhsuk-u-margin-bottom-1">
         <span aria-label={`Order date: ${formattedDate}`}>
           Ordered {formattedDate}

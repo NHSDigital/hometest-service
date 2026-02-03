@@ -1,8 +1,7 @@
 export type OrderStatus = "confirmed" | "dispatched" | "received" | "ready";
 
-export interface Order {
+export interface IOrderDetails {
   id: string;
-  testType: string;
   orderedDate: string;
   referenceNumber: string;
   status: OrderStatus;

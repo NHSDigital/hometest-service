@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react";
 
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
 import { OrderStatusContent } from "@/components/order-status";
 
 describe("OrderStatusContent", () => {
-  const baseOrder: Order = {
+  const baseOrder: IOrderDetails = {
     id: "123",
-    testType: "HIV self-test",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
     status: "confirmed",
@@ -69,7 +68,7 @@ describe("OrderStatusContent", () => {
   });
 
   describe("Dispatched status", () => {
-    const dispatchedOrder: Order = {
+    const dispatchedOrder: IOrderDetails = {
       ...baseOrder,
       status: "dispatched",
       dispatchedDate: "2026-01-16",
@@ -100,7 +99,7 @@ describe("OrderStatusContent", () => {
     });
 
     it('does not display "Sent" text when dispatchedDate is not provided', () => {
-      const orderWithoutDate: Order = {
+      const orderWithoutDate: IOrderDetails = {
         ...baseOrder,
         status: "dispatched",
       };
@@ -110,7 +109,7 @@ describe("OrderStatusContent", () => {
   });
 
   describe("Received status", () => {
-    const receivedOrder: Order = {
+    const receivedOrder: IOrderDetails = {
       ...baseOrder,
       status: "received",
     };
@@ -146,7 +145,7 @@ describe("OrderStatusContent", () => {
   });
 
   describe("Ready status", () => {
-    const readyOrder: Order = {
+    const readyOrder: IOrderDetails = {
       ...baseOrder,
       status: "ready",
     };

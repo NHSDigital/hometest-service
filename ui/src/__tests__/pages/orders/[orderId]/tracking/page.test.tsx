@@ -1,16 +1,18 @@
 import "@testing-library/jest-dom";
 
-import * as ordersApi from "@/lib/api/orders";
-
 import { render, screen } from "@testing-library/react";
 
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
 import OrderTrackingPage from "@/app/orders/[orderId]/tracking/page";
 import { act } from "react";
+import orderDetailsService from "@/lib/services/order-details-service";
 
-// Mock the orders API
-jest.mock("@/lib/api/orders", () => ({
-  getOrderDetails: jest.fn(),
+// Mock the order details service
+jest.mock("@/lib/services/order-details-service", () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn(),
+  },
 }));
 
 // Mock Next.js components
@@ -21,9 +23,8 @@ jest.mock("@/components/PageLayout", () => ({
 }));
 
 jest.mock("@/components/order-status", () => ({
-  OrderStatus: ({ order }: { order: Order }) => (
+  OrderStatus: ({ order }: { order: IOrderDetails }) => (
     <div data-testid="order-status">
-      <h1>{order.testType}</h1>
       <p>Status: {order.status}</p>
     </div>
   ),
@@ -36,9 +37,8 @@ jest.mock("@/components/AboutService", () => ({
 }));
 
 describe("OrderTrackingPage", () => {
-  const mockOrder: Order = {
+  const mockOrder: IOrderDetails = {
     id: "123",
-    testType: "HIV self-test",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
     status: "confirmed",
@@ -52,7 +52,7 @@ describe("OrderTrackingPage", () => {
 
   describe("Successful order loading", () => {
     it("renders the order details when order is found", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -63,12 +63,11 @@ describe("OrderTrackingPage", () => {
       // Wait for order content to appear
       const orderStatus = await screen.findByTestId("order-status");
       expect(orderStatus).toBeInTheDocument();
-      expect(screen.getByText("HIV self-test")).toBeInTheDocument();
       expect(screen.getByText("Status: confirmed")).toBeInTheDocument();
     });
 
     it("renders AboutService component with correct supplier", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -82,7 +81,7 @@ describe("OrderTrackingPage", () => {
     });
 
     it("renders PageLayout wrapper", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -94,8 +93,8 @@ describe("OrderTrackingPage", () => {
       expect(pageLayout).toBeInTheDocument();
     });
 
-    it("calls getOrderDetails with correct orderId", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
+    it("calls orderDetailsService.get with correct orderId and patient", async () => {
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       const params = Promise.resolve({ orderId: "456" });
 
@@ -105,19 +104,20 @@ describe("OrderTrackingPage", () => {
 
       await screen.findByTestId("order-status");
 
-      expect(ordersApi.getOrderDetails).toHaveBeenCalledWith("456");
-      expect(ordersApi.getOrderDetails).toHaveBeenCalledTimes(1);
+      expect(orderDetailsService.get).toHaveBeenCalledWith("456", {
+        nhsNumber: "2657119018",
+        dateOfBirth: "1990-08-11",
+      });
+      expect(orderDetailsService.get).toHaveBeenCalledTimes(1);
     });
 
     it("handles dispatched order status", async () => {
-      const dispatchedOrder: Order = {
+      const dispatchedOrder: IOrderDetails = {
         ...mockOrder,
         status: "dispatched",
         dispatchedDate: "2026-01-20",
       };
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(
-        dispatchedOrder,
-      );
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(dispatchedOrder);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -132,7 +132,7 @@ describe("OrderTrackingPage", () => {
 
   describe("Order not found", () => {
     it("displays error message when order is null", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(null);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(null);
 
       const params = Promise.resolve({ orderId: "999" });
 
@@ -151,7 +151,7 @@ describe("OrderTrackingPage", () => {
     });
 
     it("displays error message when order is undefined", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(undefined);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(undefined);
 
       const params = Promise.resolve({ orderId: "999" });
 
@@ -167,7 +167,7 @@ describe("OrderTrackingPage", () => {
     });
 
     it("does not render OrderStatus or AboutService when order not found", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(null);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(null);
 
       const params = Promise.resolve({ orderId: "999" });
 
@@ -184,7 +184,7 @@ describe("OrderTrackingPage", () => {
 
   describe("Loading state", () => {
     it("displays loading message initially", async () => {
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -200,11 +200,11 @@ describe("OrderTrackingPage", () => {
 
     it("has correct accessibility attributes on loading state", async () => {
       // For this test, we need to delay the promise resolution to catch loading state
-      let resolveOrder: (value: Order) => void;
-      const orderPromise = new Promise<Order>((resolve) => {
+      let resolveOrder: (value: IOrderDetails) => void;
+      const orderPromise = new Promise<IOrderDetails>((resolve) => {
         resolveOrder = resolve;
       });
-      (ordersApi.getOrderDetails as jest.Mock).mockReturnValue(orderPromise);
+      (orderDetailsService.get as jest.Mock).mockReturnValue(orderPromise);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -226,11 +226,10 @@ describe("OrderTrackingPage", () => {
 
   describe("Different order types", () => {
     it("handles different test types", async () => {
-      const syphilisOrder: Order = {
+      const syphilisOrder: IOrderDetails = {
         ...mockOrder,
-        testType: "Syphilis self-test",
       };
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(syphilisOrder);
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(syphilisOrder);
 
       const params = Promise.resolve({ orderId: "123" });
 
@@ -239,15 +238,15 @@ describe("OrderTrackingPage", () => {
       });
 
       await screen.findByTestId("order-status");
-      expect(screen.getByText("Syphilis self-test")).toBeInTheDocument();
+      expect(screen.getByText("Status: confirmed")).toBeInTheDocument();
     });
 
     it("handles different suppliers", async () => {
-      const differentSupplierOrder: Order = {
+      const differentSupplierOrder: IOrderDetails = {
         ...mockOrder,
         supplier: "SH:24",
       };
-      (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(
         differentSupplierOrder,
       );
 

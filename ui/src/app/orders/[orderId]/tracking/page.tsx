@@ -3,10 +3,11 @@
 import { Suspense, use } from "react";
 
 import { AboutService } from "@/components/AboutService";
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
+import { IPatient } from "@/lib/models/patient";
 import { OrderStatus } from "@/components/order-status";
 import { PageLayout } from "@/components/PageLayout";
-import { getOrderDetails } from "@/lib/api/orders";
+import orderDetailsService from "@/lib/services/order-details-service";
 
 interface OrderTrackingPageProps {
   params: Promise<{
@@ -14,7 +15,19 @@ interface OrderTrackingPageProps {
   }>;
 }
 
-function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
+function getPatient(): IPatient {
+  // hardcoded - will be obtained from logged user later
+  return {
+    nhsNumber: "2657119018",
+    dateOfBirth: "1990-08-11",
+  };
+}
+
+function OrderContent({
+  orderPromise,
+}: {
+  orderPromise: Promise<IOrderDetails>;
+}) {
   const order = use(orderPromise);
 
   if (!order) {
@@ -36,7 +49,8 @@ function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
 
 export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
   const { orderId } = use(params);
-  const orderPromise = getOrderDetails(orderId);
+  const patient = getPatient();
+  const orderPromise = orderDetailsService.get(orderId, patient);
 
   return (
     <PageLayout>

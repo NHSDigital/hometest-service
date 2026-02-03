@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react";
 
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
 import { OrderStatusHeader } from "@/components/order-status";
 
 describe("OrderStatusHeader", () => {
-  const mockOrder: Order = {
+  const mockOrder: IOrderDetails = {
     id: "123",
-    testType: "HIV self-test",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
     status: "confirmed",

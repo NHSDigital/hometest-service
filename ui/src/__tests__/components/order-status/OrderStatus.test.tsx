@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react";
 
-import { Order } from "@/types/order";
+import { IOrderDetails } from "@/lib/models/order-details";
 import { OrderStatus } from "@/components/order-status";
 
 describe("OrderStatus", () => {
-  const mockOrder: Order = {
+  const mockOrder: IOrderDetails = {
     id: "123",
-    testType: "HIV self-test",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
     status: "confirmed",
@@ -30,7 +29,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for dispatched status", () => {
-    const dispatchedOrder: Order = {
+    const dispatchedOrder: IOrderDetails = {
       ...mockOrder,
       status: "dispatched",
       dispatchedDate: "2026-01-20",
@@ -49,7 +48,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for received status", () => {
-    const receivedOrder: Order = {
+    const receivedOrder: IOrderDetails = {
       ...mockOrder,
       status: "received",
     };
@@ -65,7 +64,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for ready status", () => {
-    const readyOrder: Order = {
+    const readyOrder: IOrderDetails = {
       ...mockOrder,
       status: "ready",
     };
