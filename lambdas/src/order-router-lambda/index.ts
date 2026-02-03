@@ -1,5 +1,5 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
-import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
+import {getSecretValue} from '../lib/secrets/secrets-manager-client';
 
 const name = 'order-router-lambda';
 
@@ -10,34 +10,6 @@ interface OAuthTokenResponse {
   scope?: string;
 }
 
-const getRegion = (): string => {
-  return process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'eu-west-1';
-};
-
-const secretsClient = new SecretsManagerClient({region: getRegion()});
-
-const getClientSecret = async (secretName: string): Promise<string> => {
-  const response = await secretsClient.send(
-    new GetSecretValueCommand({SecretId: secretName})
-  );
-
-  if (!response.SecretString) {
-    throw new Error('Secret string is empty');
-  }
-
-  try {
-    const parsed = JSON.parse(response.SecretString) as {client_secret?: string};
-    if (!parsed.client_secret) {
-      throw new Error('client_secret missing in secret JSON');
-    }
-    return parsed.client_secret;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      return response.SecretString;
-    }
-    throw error;
-  }
-};
 
 export const handler = async (_event: APIGatewayProxyEvent, _context: Context): Promise<APIGatewayProxyResult> => {
 
@@ -54,7 +26,7 @@ export const handler = async (_event: APIGatewayProxyEvent, _context: Context): 
       };
     }
 
-    const clientSecret = await getClientSecret(secretName);
+    const clientSecret = await getSecretValue(secretName, {jsonKey: 'client_secret'});
 
     const tokenUrl = `${baseUrl.replace(/\/$/, '')}${tokenPath}`;
     const formBody = new URLSearchParams({

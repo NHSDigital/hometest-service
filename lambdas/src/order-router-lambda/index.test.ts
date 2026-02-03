@@ -112,37 +112,6 @@ describe('order-router-lambda', () => {
       );
     });
 
-    it('should handle plain string secret', async () => {
-      mockSend.mockResolvedValue({
-        SecretString: 'plain-secret-value',
-      });
-
-      const mockTokenResponse = {
-        access_token: 'test-token',
-        token_type: 'Bearer',
-        expires_in: 3600,
-      };
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(mockTokenResponse),
-        headers: {
-          get: (name: string) => (name === 'content-type' ? 'application/json' : null),
-        },
-      });
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
-
-      expect(result.statusCode).toBe(200);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: expect.stringContaining('client_secret=plain-secret-value'),
-        })
-      );
-    });
-
     it('should use custom token path from environment', async () => {
       process.env.SUPPLIER_OAUTH_TOKEN_PATH = '/custom/token/endpoint';
 
