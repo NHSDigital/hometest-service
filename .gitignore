@@ -39,3 +39,6 @@ cdk.context.json
 *.pem
 private_key.pem
 public_key.pem
+
+# MCP
+mcp.json
