@@ -1,7 +1,11 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
-import {getSecretValue} from '../lib/secrets/secrets-manager-client';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
+import { getSecretValue } from "../lib/secrets/secrets-manager-client";
 
-const name = 'order-router-lambda';
+const name = "order-router-lambda";
 
 interface OAuthTokenResponse {
   access_token: string;
@@ -10,65 +14,73 @@ interface OAuthTokenResponse {
   scope?: string;
 }
 
-
-export const handler = async (_event: APIGatewayProxyEvent, _context: Context): Promise<APIGatewayProxyResult> => {
-
+export const handler = async (
+  _event: APIGatewayProxyEvent,
+  _context: Context,
+): Promise<APIGatewayProxyResult> => {
   try {
     const baseUrl = process.env.SUPPLIER_BASE_URL;
-    const tokenPath = process.env.SUPPLIER_OAUTH_TOKEN_PATH || '/oauth/token';
+    const tokenPath = process.env.SUPPLIER_OAUTH_TOKEN_PATH || "/oauth/token";
     const clientId = process.env.SUPPLIER_CLIENT_ID;
     const secretName = process.env.SUPPLIER_CLIENT_SECRET_NAME;
 
     if (!baseUrl || !clientId || !secretName) {
       return {
         statusCode: 500,
-        body: JSON.stringify({message: `${name}: Missing required configuration`}),
+        body: JSON.stringify({
+          message: `${name}: Missing required configuration`,
+        }),
       };
     }
 
-    const clientSecret = await getSecretValue(secretName, {jsonKey: 'client_secret'});
+    const clientSecret = await getSecretValue(secretName, {
+      jsonKey: "client_secret",
+    });
 
-    const tokenUrl = `${baseUrl.replace(/\/$/, '')}${tokenPath}`;
+    const tokenUrl = `${baseUrl.replace(/\/$/, "")}${tokenPath}`;
     const formBody = new URLSearchParams({
-      grant_type: 'client_credentials',
+      grant_type: "client_credentials",
       client_id: clientId,
       client_secret: clientSecret,
     });
 
     const response = await fetch(tokenUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: formBody.toString(),
     });
 
     const responseText = await response.text();
-    const contentType = response.headers.get('content-type') || 'application/json';
+    const contentType =
+      response.headers.get("content-type") || "application/json";
 
     if (!response.ok) {
       return {
         statusCode: response.status,
-        headers: {'Content-Type': contentType},
+        headers: { "Content-Type": contentType },
         body: responseText,
       };
     }
 
     let body: OAuthTokenResponse | string = responseText;
-    if (contentType.includes('application/json')) {
+    if (contentType.includes("application/json")) {
       body = JSON.parse(responseText) as OAuthTokenResponse;
     }
 
     return {
       statusCode: response.status,
-      headers: {'Content-Type': contentType},
-      body: typeof body === 'string' ? body : JSON.stringify(body),
+      headers: { "Content-Type": contentType },
+      body: typeof body === "string" ? body : JSON.stringify(body),
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({message: `${name}: ${error instanceof Error ? error.message : 'Unknown error'}`}),
+      body: JSON.stringify({
+        message: `${name}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      }),
     };
   }
 };
