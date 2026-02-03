@@ -1,13 +1,13 @@
 "use client";
 
 import { PageLayout } from "@/components/PageLayout";
-import { useOrderContext, useNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import Link from "next/link";
 
 
 export default function NoAddressFoundPage() {
-  const { goToStep, goBack, stepHistory } = useNavigationContext();
-  const { orderAnswers } = useOrderContext();
+  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { orderAnswers } = useCreateOrderContext();
 
   return (
     <PageLayout

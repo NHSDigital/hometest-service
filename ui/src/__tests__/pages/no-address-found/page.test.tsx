@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import NoAddressFoundPage from "@/app/no-address-found/page";
-import { OrderProvider } from "@/state/OrderContext";
-import { NavigationProvider } from "@/state/NavigationContext";
+import NoAddressFoundPage from "@/app/(journeys)/get-self-test-kit-for-HIV/no-address-found/page";
+import { CreateOrderProvider } from "@/state/OrderContext";
+import { JourneyNavigationProvider } from "@/state/NavigationContext";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     back: jest.fn(),
   }),
-  usePathname: () => "/no-address-found",
+  usePathname: () => "/get-self-test-kit-for-HIV/no-address-found",
 }));
 
 jest.mock("next/link", () => {
@@ -21,9 +21,9 @@ jest.mock("next/link", () => {
 });
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <NavigationProvider>
-    <OrderProvider>{children}</OrderProvider>
-  </NavigationProvider>
+  <JourneyNavigationProvider>
+    <CreateOrderProvider>{children}</CreateOrderProvider>
+  </JourneyNavigationProvider>
 );
 
 describe("NoAddressFoundPage", () => {
