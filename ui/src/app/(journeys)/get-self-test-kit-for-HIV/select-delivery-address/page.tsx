@@ -1,0 +1,155 @@
+"use client";
+
+import { useState } from "react";
+import { PageLayout } from "@/components/PageLayout";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import Link from "next/link";
+import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
+import mockAddressResponse from "@/mocks/addressLookupResponse.json";
+
+interface AddressResult {
+  DPA: {
+    UPRN: string;
+    ADDRESS: string;
+    BUILDING_NAME?: string;
+    BUILDING_NUMBER?: string;
+    THOROUGHFARE_NAME?: string;
+    DEPENDENT_LOCALITY?: string;
+    POST_TOWN: string;
+    POSTCODE: string;
+  };
+}
+
+export default function SelectDeliveryAddressPage() {
+  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [addressError, setAddressError] = useState<string | null>(null);
+
+  const addresses = mockAddressResponse.results as AddressResult[];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedAddress || selectedAddress.trim() === "") {
+      setAddressError("Select a delivery address");
+      return;
+    }
+
+    setAddressError(null);
+
+    const selected = addresses.find((addr) => addr.DPA.UPRN === selectedAddress);
+    if (selected) {
+      const addressLines = [];
+
+      if (selected.DPA.BUILDING_NAME) {
+        addressLines.push(selected.DPA.BUILDING_NAME);
+      }
+      if (selected.DPA.BUILDING_NUMBER) {
+        addressLines.push(selected.DPA.BUILDING_NUMBER);
+      }
+      if (selected.DPA.THOROUGHFARE_NAME) {
+        addressLines.push(selected.DPA.THOROUGHFARE_NAME);
+      }
+
+      updateOrderAnswers({
+        deliveryAddress: {
+          addressLine1: addressLines[0],
+          addressLine2: addressLines[1],
+          addressLine3: selected.DPA.DEPENDENT_LOCALITY,
+          postTown: selected.DPA.POST_TOWN,
+          postcode: selected.DPA.POSTCODE,
+        },
+      });
+
+      // TODO: Navigate to next step
+      // goToStep("how-comfortable");
+    }
+  };
+
+  const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedAddress(e.target.value);
+    setAddressError(null);
+  };
+
+  return (
+    <PageLayout
+      showBackButton
+      onBackButtonClick={() => {
+        if (stepHistory.length > 1) {
+          goBack();
+        } else {
+          goToStep("enter-delivery-address");
+        }
+      }}>
+        <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
+          {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} found
+        </h1>
+        <p>Postcode: <strong>{orderAnswers.postcodeSearch} </strong>
+          <Link href="enter-delivery-address" onClick={() => goToStep("enter-delivery-address")}>
+            Edit postcode
+          </Link>
+        </p>
+
+        {addressError && (
+          <ErrorSummary aria-labelledby="error-summary-title" role="alert">
+            <ErrorSummary.Title id="error-summary-title">
+              There is a problem
+            </ErrorSummary.Title>
+            <ErrorSummary.Body>
+              <ErrorSummary.List>
+                <ErrorSummary.Item
+                  href="#collection-point"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('collection-point-1')?.focus();
+                  }}
+                >
+                  {addressError}
+                </ErrorSummary.Item>
+              </ErrorSummary.List>
+            </ErrorSummary.Body>
+          </ErrorSummary>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <Radios
+            id="collection-point"
+            name="collection-point"
+            label="Select your delivery address"
+            labelProps={{
+                isPageHeading: false,
+                size: "s",
+              }}
+            error={addressError || undefined}
+            onChange={handleRadioChange}
+          >
+            {addresses.map((address) => (
+              <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
+                {address.DPA.ADDRESS}
+              </Radios.Radio>
+            ))}
+          </Radios>
+
+          <Button type="submit">Continue</Button>
+        </form>
+
+        <p className="nhsuk-body">
+          <Link
+            href="enter-address-manually"
+            className="nhsuk-link"
+            onClick={() => {
+              updateOrderAnswers({
+                postcodeSearch: undefined,
+                buildingNumber: undefined
+              });
+              goToStep("enter-address-manually");
+            }}
+          >
+            Enter address manually
+          </Link>
+        </p>
+    </PageLayout>
+  );
+}

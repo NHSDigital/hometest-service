@@ -76,7 +76,14 @@ export default function GetSelfTestKitPage() {
         <Details.Text>{content.dataSharing.details}</Details.Text>
       </Details>
 
-      <Button onClick={() => goToStep("enter-delivery-address")}>
+      <Button onClick={() => {
+        updateOrderAnswers({
+          postcodeSearch: undefined,
+          buildingNumber: undefined,
+          deliveryAddress: undefined
+        });
+        goToStep("enter-delivery-address");
+      }}>
         {content.startButton}
       </Button>
 

@@ -7,12 +7,16 @@ import Link from "next/link";
 
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
-  const { orderAnswers } = useCreateOrderContext();
+  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
 
   return (
     <PageLayout
       showBackButton
       onBackButtonClick={() => {
+        updateOrderAnswers({
+          postcodeSearch: undefined,
+          buildingNumber: undefined
+        });
         if (stepHistory.length > 1) {
           goBack();
         } else {
@@ -27,7 +31,13 @@ export default function NoAddressFoundPage() {
       <p className="nhsuk-body">
         <Link
           href="enter-delivery-address"
-          onClick={() => goToStep("enter-delivery-address")}
+          onClick={() => {
+            updateOrderAnswers({
+              postcodeSearch: undefined,
+              buildingNumber: undefined
+            });
+            goToStep("enter-delivery-address");
+          }}
         >
           Try a new search
         </Link>
@@ -36,7 +46,13 @@ export default function NoAddressFoundPage() {
       <p className="nhsuk-body">
         <Link
           href="enter-address-manually"
-          onClick={() => goToStep("enter-address-manually")}
+          onClick={() => {
+            updateOrderAnswers({
+              postcodeSearch: undefined,
+              buildingNumber: undefined
+            });
+            goToStep("enter-address-manually");
+          }}
         >
           Enter address manually
         </Link>
