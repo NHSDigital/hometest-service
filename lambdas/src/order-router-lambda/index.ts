@@ -15,12 +15,13 @@ interface OAuthTokenResponse {
 }
 
 export const handler = async (
-  _event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEvent,
   _context: Context,
 ): Promise<APIGatewayProxyResult> => {
   try {
     const baseUrl = process.env.SUPPLIER_BASE_URL;
     const tokenPath = process.env.SUPPLIER_OAUTH_TOKEN_PATH || "/oauth/token";
+    const orderPath = process.env.SUPPLIER_ORDER_PATH || "/order";
     const clientId = process.env.SUPPLIER_CLIENT_ID;
     const secretName = process.env.SUPPLIER_CLIENT_SECRET_NAME;
 
@@ -33,6 +34,7 @@ export const handler = async (
       };
     }
 
+    // Get OAuth token
     const clientSecret = await getSecretValue(secretName, {
       jsonKey: "client_secret",
     });
@@ -44,7 +46,7 @@ export const handler = async (
       client_secret: clientSecret,
     });
 
-    const response = await fetch(tokenUrl, {
+    const tokenResponse = await fetch(tokenUrl, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -53,27 +55,48 @@ export const handler = async (
       body: formBody.toString(),
     });
 
-    const responseText = await response.text();
-    const contentType =
-      response.headers.get("content-type") || "application/json";
-
-    if (!response.ok) {
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
       return {
-        statusCode: response.status,
-        headers: { "Content-Type": contentType },
-        body: responseText,
+        statusCode: tokenResponse.status,
+        body: JSON.stringify({
+          message: `${name}: OAuth token request failed`,
+          details: errorText,
+        }),
       };
     }
 
-    let body: OAuthTokenResponse | string = responseText;
-    if (contentType.includes("application/json")) {
-      body = JSON.parse(responseText) as OAuthTokenResponse;
-    }
+    const tokenData = await tokenResponse.json() as OAuthTokenResponse;
+    const accessToken = tokenData.access_token;
+
+    // Call order endpoint with the token
+    const orderUrl = `${baseUrl.replace(/\/$/, "")}${orderPath}`;
+    const correlationId = event.headers["X-Correlation-ID"] || 
+                          event.headers["x-correlation-id"] || 
+                          crypto.randomUUID();
+
+    const orderResponse = await fetch(orderUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/fhir+json",
+        Accept: "application/fhir+json",
+        "X-Correlation-ID": correlationId,
+      },
+      body: event.body || "",
+    });
+
+    const responseText = await orderResponse.text();
+    const contentType =
+      orderResponse.headers.get("content-type") || "application/fhir+json";
 
     return {
-      statusCode: response.status,
-      headers: { "Content-Type": contentType },
-      body: typeof body === "string" ? body : JSON.stringify(body),
+      statusCode: orderResponse.status,
+      headers: { 
+        "Content-Type": contentType,
+        "X-Correlation-ID": correlationId,
+      },
+      body: responseText,
     };
   } catch (error) {
     return {
