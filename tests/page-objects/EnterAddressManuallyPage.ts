@@ -1,16 +1,16 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class EnterAddressManuallyPage {
+export class EnterAddressManuallyPage extends BasePage {
   readonly addressLine1Input: Locator;
   readonly addressLine2Input: Locator;
   readonly addressLine3Input: Locator;
   readonly addressTownInput: Locator;
   readonly postcodeInput: Locator;
   readonly continueButton: Locator;
-  readonly page: Page;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.addressLine1Input = page.locator('#address-line-1');
     this.addressLine2Input = page.locator('#address-line-2');
     this.addressLine3Input = page.locator('#address-line-3');
