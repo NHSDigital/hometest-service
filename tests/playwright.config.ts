@@ -13,6 +13,8 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
  */
 export default defineConfig({
   testDir: './tests',
+  /* Output directory for test artifacts */
+  outputDir: './testResults',
   /* Global setup script */
   globalSetup: './global-setup.ts',
   /* Global teardown script */

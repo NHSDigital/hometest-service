@@ -1,0 +1,36 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/results",
+    "headers": {
+      "X-Correlation-ID": {
+        "matches": ".*"
+      }
+    },
+    "queryParameters": {
+      "order_uid": {
+        "matches": ".*"
+      }
+    }
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "OperationOutcome",
+      "issue": [
+        {
+          "severity": "error",
+          "code": "not-found",
+          "details": {
+            "text": "Results Not Found"
+          },
+          "diagnostics": "No test results were found for the specified order"
+        }
+      ]
+    }
+  }
+}

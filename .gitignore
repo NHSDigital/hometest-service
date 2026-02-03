@@ -152,3 +152,6 @@ venv/
 
 # Ignore Terraform lock file
 .terraform.lock.hcl
+
+# MCP
+mcp.json

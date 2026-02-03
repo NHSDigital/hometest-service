@@ -39,6 +39,15 @@ services:
       - "5432:5432"
     volumes:
       - ./db-data:/var/lib/postgresql
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: wiremock
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+      - ./wiremock/__files:/home/wiremock/__files
+    command: ["--verbose"]
 
 volumes:
   ui_node_modules:

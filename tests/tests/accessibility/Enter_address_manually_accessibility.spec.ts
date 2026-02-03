@@ -1,6 +1,5 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
-import { EnterAddressManuallyPage } from '../../page-objects';
 
 test.describe('Accessibility Testing @accessibility', () => {
 
@@ -9,7 +8,7 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.clickStartNowButton();
     await findAddressPage.clickEnterAddressManuallyLink();
     // Wait for page to load
-    await findAddressPage.waitUntilPageLoad();
+    await enterAddressManuallyPage.waitUntilPageLoad();
     const hasViolations = await accessibility.runAccessibilityCheck(enterAddressManuallyPage.page, "Enter Address Manually Page");
     expect(hasViolations).toBe(false);
   });
