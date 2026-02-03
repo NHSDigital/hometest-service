@@ -65,6 +65,24 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
 }
 
+resource "aws_iam_role_policy" "lambda_secrets_read" {
+  name = "${var.project_name}-lambda-secrets-read"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "api" {
   name        = "${var.project_name}-api"
   description = "API Gateway for ${var.project_name}"
@@ -110,12 +128,37 @@ module "hello_world_lambda" {
   }
 }
 
+module "order_router_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "order-router"
+  zip_path                      = "${path.module}/../../lambdas/dist/order-router-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "test-order/order"
+  api_method                    = "POST"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  environment_variables = {
+    NODE_OPTIONS                = "--enable-source-maps"
+    SUPPLIER_BASE_URL           = "http://wiremock:8080"
+    SUPPLIER_OAUTH_TOKEN_PATH   = "/oauth/token"
+    SUPPLIER_CLIENT_ID          = "supplier-client"
+    SUPPLIER_CLIENT_SECRET_NAME = "supplier-oauth-client-secret"
+  }
+}
+
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
   depends_on = [
     module.eligibility_test_info_lambda,
+    module.order_router_lambda,
   ]
 
   lifecycle {
