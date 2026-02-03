@@ -6,6 +6,9 @@
     "headers": {
       "Content-Type": {
         "contains": "application/fhir+json"
+      },
+      "X-Correlation-ID": {
+        "matches": ".*"
       }
     },
     "bodyPatterns": [
