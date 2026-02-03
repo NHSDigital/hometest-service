@@ -42,3 +42,6 @@ public_key.pem
 
 # MCP
 mcp.json
+
+/frontend/
+/test-results/
