@@ -1,0 +1,79 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPath": "/order",
+    "queryParameters": {
+      "nhs_number": {
+        "matches": "^(\\d{3}\\s?\\d{3}\\s?\\d{4})$"
+      },
+      "date_of_birth": {
+        "matches": "^(19|20)\\d\\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+      },
+      "order_id": {
+        "matches": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/fhir+json",
+      "Access-Control-Allow-Origin": "*"
+    },
+    "jsonBody": {
+      "resourceType": "Bundle",
+      "type": "searchset",
+      "total": 1,
+      "entry": [
+        {
+          "fullUrl": "urn:uuid:550e8400-e29b-41d4-a716-446655440000",
+          "resource": {
+            "resourceType": "ServiceRequest",
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "status": "active",
+            "intent": "order",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "31676001",
+                  "display": "HIV antigen test"
+                }
+              ],
+              "text": "HIV antigen test"
+            },
+            "subject": {
+              "reference": "#patient-1"
+            },
+            "requester": {
+              "reference": "Organization/ORG001"
+            },
+            "performer": [
+              {
+                "reference": "Organization/SUPP001",
+                "type": "Organization",
+                "display": "Test Supplier Ltd"
+              }
+            ],
+            "extension": [
+              {
+                "url": "https://fhir.hometest.nhs.uk/StructureDefinition/business-status",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
+                      "code": "dispatched",
+                      "display": "Kit dispatched to patient"
+                    }
+                  ],
+                  "text": "dispatched"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

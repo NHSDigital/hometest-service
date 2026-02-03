@@ -16,55 +16,36 @@ const orderDetailsService: IOrderDetailsService = {
     url.searchParams.append("date_of_birth", patient.dateOfBirth);
     url.searchParams.append("order_id", orderId);
 
-    fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/fhir+json",
-        Accept: "application/fhir+json",
-      },
-    });
+    try {
+      const result = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          Accept: "application/fhir+json",
+        },
+      });
 
-    return getMockOrderDetails(orderId);
+      const fhirBundle = await result.json();
+      console.log(fhirBundle);
+
+      if (fhirBundle.entry && fhirBundle.entry.length > 0) {
+        const serviceRequest = fhirBundle.entry[0].resource;
+        return {
+          id: serviceRequest.id || "",
+          orderedDate: serviceRequest.authoredOn || "",
+          referenceNumber: serviceRequest.identifier?.[0]?.value || "",
+          status: serviceRequest?.extension?.[0]?.valueCodeableConcept?.text,
+          supplier: serviceRequest.performer?.[0]?.display || "",
+          dispatchedDate: undefined,
+          maxDeliveryDays: undefined,
+        };
+      } else {
+        throw new Error("not found");
+      }
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
   },
 };
-
-function getMockOrderDetails(orderId: string): IOrderDetails {
-  // Mock data for different order statuses
-  const mockOrders: Record<string, IOrderDetails> = {
-    "1": {
-      id: "1",
-      orderedDate: "2026-01-15",
-      referenceNumber: "12345",
-      status: "confirmed",
-      supplier: "Preventx",
-      maxDeliveryDays: 5,
-    },
-    "2": {
-      id: "2",
-      orderedDate: "2026-01-10",
-      referenceNumber: "67890",
-      status: "dispatched",
-      supplier: "SH24",
-      dispatchedDate: "2026-01-16",
-      maxDeliveryDays: 5,
-    },
-    "3": {
-      id: "3",
-      orderedDate: "2025-05-04",
-      referenceNumber: "11223",
-      status: "received",
-      supplier: "Preventx",
-    },
-    "4": {
-      id: "4",
-      orderedDate: "2025-05-04",
-      referenceNumber: "12345",
-      status: "ready",
-      supplier: "Preventx",
-    },
-  };
-
-  return mockOrders[orderId] || null;
-}
 
 export default orderDetailsService;
