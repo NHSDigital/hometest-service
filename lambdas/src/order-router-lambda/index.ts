@@ -66,14 +66,15 @@ export const handler = async (
       };
     }
 
-    const tokenData = await tokenResponse.json() as OAuthTokenResponse;
+    const tokenData = (await tokenResponse.json()) as OAuthTokenResponse;
     const accessToken = tokenData.access_token;
 
     // Call order endpoint with the token
     const orderUrl = `${baseUrl.replace(/\/$/, "")}${orderPath}`;
-    const correlationId = event.headers["X-Correlation-ID"] || 
-                          event.headers["x-correlation-id"] || 
-                          crypto.randomUUID();
+    const correlationId =
+      event.headers["X-Correlation-ID"] ||
+      event.headers["x-correlation-id"] ||
+      crypto.randomUUID();
 
     const orderResponse = await fetch(orderUrl, {
       method: "POST",
@@ -92,7 +93,7 @@ export const handler = async (
 
     return {
       statusCode: orderResponse.status,
-      headers: { 
+      headers: {
         "Content-Type": contentType,
         "X-Correlation-ID": correlationId,
       },
