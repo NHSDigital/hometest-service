@@ -1,0 +1,86 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "urlPath": "/order",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/fhir+json"
+      },
+      "X-Correlation-ID": {
+        "matches": ".*"
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "ServiceRequest",
+      "id": "{{randomValue type='UUID'}}",
+      "status": "active",
+      "intent": "order",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "31676001",
+            "display": "HIV antigen test"
+          }
+        ],
+        "text": "HIV antigen test"
+      },
+      "contained": [
+        {
+          "resourceType": "Patient",
+          "id": "patient-1",
+          "name": [
+            {
+              "use": "official",
+              "family": "Doe",
+              "given": ["John"],
+              "text": "John Doe"
+            }
+          ],
+          "telecom": [
+            {
+              "system": "phone",
+              "value": "+447700900000",
+              "use": "mobile"
+            },
+            {
+              "system": "email",
+              "value": "john.doe@example.com",
+              "use": "home"
+            }
+          ],
+          "address": [
+            {
+              "use": "home",
+              "type": "both",
+              "line": ["123 Main Street", "Flat 4B"],
+              "city": "London",
+              "postalCode": "SW1A 1AA",
+              "country": "United Kingdom"
+            }
+          ],
+          "birthDate": "1990-01-01"
+        }
+      ],
+      "subject": {
+        "reference": "#patient-1"
+      },
+      "requester": {
+        "reference": "Organization/ORG001"
+      },
+      "performer": [
+        {
+          "reference": "Organization/SUP001"
+        }
+      ]
+    },
+    "transformers": ["response-template"]
+  }
+}
