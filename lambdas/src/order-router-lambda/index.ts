@@ -4,6 +4,7 @@ import {
   Context,
 } from "aws-lambda";
 import { getSecretValue } from "../lib/secrets/secrets-manager-client";
+import { FetchHttpClient, HttpError } from "../lib/http/http-client";
 
 const name = "order-router-lambda";
 
@@ -39,6 +40,8 @@ export const handler = async (
       jsonKey: "client_secret",
     });
 
+    const httpClient = new FetchHttpClient();
+
     const tokenUrl = `${baseUrl.replace(/\/$/, "")}${tokenPath}`;
     const formBody = new URLSearchParams({
       grant_type: "client_credentials",
@@ -46,27 +49,13 @@ export const handler = async (
       client_secret: clientSecret,
     });
 
-    const tokenResponse = await fetch(tokenUrl, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: formBody.toString(),
-    });
+    const tokenData = await httpClient.post<OAuthTokenResponse>(
+      tokenUrl,
+      formBody.toString(),
+      { Accept: "application/json" },
+      "application/x-www-form-urlencoded",
+    );
 
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      return {
-        statusCode: tokenResponse.status,
-        body: JSON.stringify({
-          message: `${name}: OAuth token request failed`,
-          details: errorText,
-        }),
-      };
-    }
-
-    const tokenData = (await tokenResponse.json()) as OAuthTokenResponse;
     const accessToken = tokenData.access_token;
 
     // Call order endpoint with the token
@@ -76,16 +65,16 @@ export const handler = async (
       event.headers["x-correlation-id"] ||
       crypto.randomUUID();
 
-    const orderResponse = await fetch(orderUrl, {
-      method: "POST",
-      headers: {
+    const orderResponse = await httpClient.postRaw(
+      orderUrl,
+      event.body || "",
+      {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/fhir+json",
         Accept: "application/fhir+json",
         "X-Correlation-ID": correlationId,
       },
-      body: event.body || "",
-    });
+      "application/fhir+json",
+    );
 
     const responseText = await orderResponse.text();
     const contentType =
@@ -100,10 +89,13 @@ export const handler = async (
       body: responseText,
     };
   } catch (error) {
+    const statusCode = error instanceof HttpError ? error.status : 500;
     return {
-      statusCode: 500,
+      statusCode,
       body: JSON.stringify({
         message: `${name}: ${error instanceof Error ? error.message : "Unknown error"}`,
+        details: error instanceof HttpError ? error.body : undefined,
+        stack: error instanceof Error ? error.stack : undefined,
       }),
     };
   }

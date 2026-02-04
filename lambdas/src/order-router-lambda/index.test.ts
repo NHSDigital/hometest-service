@@ -347,10 +347,12 @@ describe("order-router-lambda", () => {
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
       });
 
+      const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
+
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
         status: 401,
-        text: async () => JSON.stringify({ error: "invalid_client" }),
+        text: async () => mockErrorResponse,
         headers: { get: () => "application/json" },
       });
 
@@ -360,14 +362,26 @@ describe("order-router-lambda", () => {
       );
 
       expect(result.statusCode).toBe(401);
-      expect(JSON.parse(result.body).message).toContain(
-        "OAuth token request failed",
+      expect(JSON.parse(result.body).message).toEqual(
+        "order-router-lambda: HTTP POST request failed with status: 401",
       );
+      expect(JSON.parse(result.body).details).toEqual(mockErrorResponse);
     });
 
     it("should handle order endpoint errors", async () => {
       mockSend.mockResolvedValue({
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
+      });
+
+      const mockErrorResponse = JSON.stringify({
+        resourceType: "OperationOutcome",
+        issue: [
+          {
+            severity: "error",
+            code: "business-rule",
+            details: { text: "Out of stock" },
+          },
+        ],
       });
 
       (global.fetch as jest.Mock)
@@ -380,17 +394,7 @@ describe("order-router-lambda", () => {
         .mockResolvedValueOnce({
           ok: false,
           status: 409,
-          text: async () =>
-            JSON.stringify({
-              resourceType: "OperationOutcome",
-              issue: [
-                {
-                  severity: "error",
-                  code: "business-rule",
-                  details: { text: "Out of stock" },
-                },
-              ],
-            }),
+          text: async () => mockErrorResponse,
           headers: { get: () => "application/fhir+json" },
         });
 
@@ -400,7 +404,10 @@ describe("order-router-lambda", () => {
       );
 
       expect(result.statusCode).toBe(409);
-      expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
+      expect(JSON.parse(result.body).message).toEqual(
+        "order-router-lambda: HTTP POST request failed with status: 409",
+      );
+      expect(JSON.parse(result.body).details).toEqual(mockErrorResponse);
     });
 
     it("should handle fetch network errors", async () => {
