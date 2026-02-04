@@ -9,7 +9,7 @@ import Link from "next/link";
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers } = useCreateOrderContext();
-  const { "no-address-found": content } = useContent();
+  const { commonContent, "no-address-found": content } = useContent();
 
   return (
     <PageLayout
