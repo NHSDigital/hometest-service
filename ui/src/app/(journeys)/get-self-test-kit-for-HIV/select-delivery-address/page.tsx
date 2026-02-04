@@ -63,8 +63,7 @@ export default function SelectDeliveryAddressPage() {
         },
       });
 
-      // TODO: Navigate to next step
-      // goToStep("how-comfortable");
+      goToStep("how-comfortable-pricking-finger");
     }
   };
 
