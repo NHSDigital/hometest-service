@@ -5,29 +5,15 @@ import { render, screen } from "@testing-library/react";
 import { CreateOrderProvider } from "@/state/OrderContext";
 import GetSelfTestKitPage from "@/routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { MemoryRouter } from "react-router-dom";
 import PageLayout from "@/layouts/PageLayout";
 
-// Mock Next.js router and Link
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    back: jest.fn(),
-  }),
-  usePathname: () => "/get-self-test-kit-for-HIV",
-}));
-
-jest.mock("next/link", () => {
-  const MockLink = ({ children, href }: { children: React.ReactNode; href: string }) => {
-    return <a href={href}>{children}</a>;
-  };
-  MockLink.displayName = "MockLink";
-  return MockLink;
-});
-
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <JourneyNavigationProvider>
-    <CreateOrderProvider>{children}</CreateOrderProvider>
-  </JourneyNavigationProvider>
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV"]}>
+    <JourneyNavigationProvider>
+      <CreateOrderProvider>{children}</CreateOrderProvider>
+    </JourneyNavigationProvider>
+  </MemoryRouter>
 );
 
 describe('PageLayout', () => {
