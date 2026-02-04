@@ -39,9 +39,9 @@ export default function GetSelfTestKitPage() {
       <Card cardType="urgent">
         <Card.Heading>{content.urgentCard.heading}</Card.Heading>
         <Card.Content>
-          <p style={{ listStyle: 'disc', marginLeft: '1.2em', display: 'list-item' }}>
-            {content.urgentCard.exposureWarning}
-          </p>
+          <ul>
+            <li>{content.urgentCard.exposureWarning}</li>
+          </ul>
 
           <p>{content.urgentCard.clinicAdvice}</p>
 
@@ -60,8 +60,7 @@ export default function GetSelfTestKitPage() {
       </Card>
 
       <div className="nhsuk-inset-text">
-        <span className="nhsuk-u-visually-hidden">{content.infoBox.hiddenText}</span>
-        <p>{content.infoBox.antibodyInfo}</p>
+        <p>{content.infoBox.text}</p>
       </div>
 
       <h2>{content.howItWorks.heading}</h2>
@@ -99,7 +98,8 @@ export default function GetSelfTestKitPage() {
         {content.otherOptions.sexualHealthText}{" "}
         <a href={content.otherOptions.sexualHealthLink.href}>
           {content.otherOptions.sexualHealthLink.text}
-        </a>.
+        </a>
+        .
       </p>
       <p>
         <a href={content.otherOptions.learnMoreLink.href}>

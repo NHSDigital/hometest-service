@@ -4,7 +4,9 @@ import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
 import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useContent } from "@/hooks";
 import Link from "next/link";
+import type { ValidationMessages } from "@/content/schema";
 
 // TODO: update redirect logic if user has selected manual address entry (use goToStep)
 // TODO: add postcode lookup integration
@@ -14,31 +16,31 @@ const MAX_POSTCODE_LENGTH = 8;
 const MAX_BUILDING_NAME_LENGTH = 100;
 
 // Validation functions
-const validatePostcode = (postcode: string): { valid: true; value: string } | { valid: false; message: string } => {
+const validatePostcode = (postcode: string, validationMessages: ValidationMessages): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
-    return { valid: false, message: "Enter a full UK postcode" };
+    return { valid: false, message: validationMessages.postcode.required };
   }
 
   if (postcode.length > MAX_POSTCODE_LENGTH) {
-    return { valid: false, message: "Postcode must be 8 characters or less" };
+    return { valid: false, message: validationMessages.postcode.maxLength };
   }
 
   const normalizedPostcode = postcode.trim().toUpperCase();
 
   if (!POSTCODE_REGEX.test(normalizedPostcode)) {
-    return { valid: false, message: "Enter a postcode using letters and numbers" };
+    return { valid: false, message: validationMessages.postcode.invalid };
   }
 
   return { valid: true, value: normalizedPostcode };
 };
 
-const validateBuildingName = (buildingName: string): string | null => {
+const validateBuildingName = (buildingName: string, validationMessages: ValidationMessages): string | null => {
   if (!buildingName || buildingName.trim() === "") {
     return null;
   }
 
   if (buildingName.length > MAX_BUILDING_NAME_LENGTH) {
-    return "Building number or name must be 100 characters or less";
+    return validationMessages.buildingName.maxLength;
   }
 
   return null;
@@ -47,6 +49,7 @@ const validateBuildingName = (buildingName: string): string | null => {
 export default function EnterDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { commonContent, "enter-delivery-address": content } = useContent();
 
   const [postcode, setPostcode] = useState("");
   const [buildingName, setBuildingName] = useState("");
@@ -66,8 +69,8 @@ export default function EnterDeliveryAddressPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const postcodeValidation = validatePostcode(postcode);
-    const buildingNameValidationError = validateBuildingName(buildingName);
+    const postcodeValidation = validatePostcode(postcode, commonContent.validation);
+    const buildingNameValidationError = validateBuildingName(buildingName, commonContent.validation);
 
     setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
     setBuildingNameError(buildingNameValidationError);
@@ -102,14 +105,13 @@ export default function EnterDeliveryAddressPage() {
       }}
     >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        Enter your delivery address and we&apos;ll check if the kit&apos;s
-        available
+        {content.title}
       </h1>
 
       {(postcodeError || buildingNameError) && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
           <ErrorSummary.Title id="error-summary-title">
-            There is a problem
+            {commonContent.errorSummary.title}
           </ErrorSummary.Title>
           <ErrorSummary.Body>
             <ErrorSummary.List>
@@ -144,12 +146,12 @@ export default function EnterDeliveryAddressPage() {
         <TextInput
           id="postcode"
           name="postcode"
-          label="Postcode"
+          label={content.form.postcodeLabel}
           labelProps={{
             isPageHeading: false,
             size: "s",
           }}
-          hint="For example, LS1 1AB"
+          hint={content.form.postcodeHint}
           value={postcode}
           onChange={handlePostcodeChange}
           error={postcodeError || undefined}
@@ -158,18 +160,18 @@ export default function EnterDeliveryAddressPage() {
         <TextInput
           id="building-number-or-name"
           name="building-number-or-name"
-          label="Building number or name (optional)"
+          label={content.form.buildingNameLabel}
           labelProps={{
             isPageHeading: false,
             size: "s",
           }}
-          hint="For example, 15 or Prospect Cottage"
+          hint={content.form.buildingNameHint}
           value={buildingName}
           onChange={handleBuildingNameChange}
           error={buildingNameError || undefined}
         ></TextInput>
 
-        <Button type="submit">Continue</Button>
+        <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
 
       <p className="nhsuk-body">
@@ -177,7 +179,7 @@ export default function EnterDeliveryAddressPage() {
           href="enter-address-manually"
           onClick={() => goToStep("enter-address-manually")}
         >
-          Enter address manually
+          {content.manualEntryLink}
         </Link>
       </p>
     </PageLayout>

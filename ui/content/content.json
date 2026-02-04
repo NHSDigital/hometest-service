@@ -55,11 +55,10 @@
         "heading": "Go to a sexual health clinic if:",
         "exposureWarning": "you think you've been exposed to the HIV virus in the last 72 hours",
         "clinicAdvice": "Clinic staff can offer you emergency HIV medicine, which may stop you getting infected.",
-        "aeAdvice": "You can also get emergency HIV medicine from"
+        "aeAdvice": "You can also get emergency HIV medicine from your"
       },
       "infoBox": {
-        "hiddenText": "Information: ",
-        "antibodyInfo": "HIV antibodies take time to develop. The test is accurate if you take it 45 days or more after potential exposure."
+        "text": "HIV antibodies take time to develop. The test is accurate if you take it 45 days or more after potential exposure."
       },
       "howItWorks": {
         "heading": "How it works",
@@ -98,20 +97,21 @@
       "title": "Enter your delivery address and we'll check if the kit's available",
       "form": {
         "postcodeLabel": "Postcode",
-        "postcodeHint": "For example, LS1 3BE",
+        "postcodeHint": "For example, LS1 1AB",
         "buildingNameLabel": "Building number or name (optional)",
-        "buildingNameHint": "For example, 32 or Rose Cottage"
+        "buildingNameHint": "For example, 15 or Prospect Cottage"
       },
-      "manualEntryLink": "I can't find my address"
+      "manualEntryLink": "Enter address manually"
     },
     "enter-address-manually": {
-      "title": "Enter your address",
+      "title": "Enter your delivery address manually and we'll check if the kit's available",
       "form": {
         "addressLine1Label": "Address line 1",
         "addressLine2Label": "Address line 2 (optional)",
         "addressLine3Label": "Address line 3 (optional)",
         "townOrCityLabel": "Town or city",
-        "postcodeLabel": "Postcode"
+        "postcodeLabel": "Postcode",
+        "postcodeHint": "For example, LS1 1AB"
       }
     },
     "no-address-found": {
