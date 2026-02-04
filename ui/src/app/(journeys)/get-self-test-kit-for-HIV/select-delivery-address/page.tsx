@@ -36,7 +36,7 @@ export default function SelectDeliveryAddressPage() {
 
     if (!selectedAddress || selectedAddress.trim() === "") {
       setAddressError(commonContent.validation.deliveryAddress.required);
-      return;x
+      return;
     }
 
     setAddressError(null);
