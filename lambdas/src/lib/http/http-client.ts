@@ -33,13 +33,11 @@ export class FetchHttpClient implements HttpClient {
   async get<T>(
     url: string,
     headers?: Record<string, string>,
-    contentType?: string,
   ): Promise<T> {
     const response = await fetch(url, {
       method: "GET",
       headers: {
         Accept: "application/json",
-        ...(contentType ? { "Content-Type": contentType } : {}),
         ...headers,
       },
     });
