@@ -1,9 +1,6 @@
 import { Order } from "@/types/order";
 
 export async function getOrderDetails(orderId: string): Promise<Order> {
-  // Simulate slow API call
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-
   return getMockOrderDetails(orderId) as Order;
 }
 

@@ -90,7 +90,13 @@ export default function EnterDeliveryAddressPage() {
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
-      // goToStep("select-delivery-address");
+      // Navigate to next step using NavigationContext
+      // for now use hard coded value to simulate no address found
+      if (updatedData.postcodeSearch == "BT655EU") {
+        goToStep("no-address-found");
+      } else {
+        goToStep("select-delivery-address");
+      }
     }
   };
 

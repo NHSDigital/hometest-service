@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { CreateOrderProvider } from "@/state/OrderContext";
-import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/enter-address-manually/EnterAddressManuallyPage";
+import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
 

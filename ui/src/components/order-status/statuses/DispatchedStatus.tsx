@@ -23,7 +23,7 @@ export function DispatchedStatus({
 
   return (
     <>
-      <Tag color="blue" aria-label="Order status: Dispatched">
+      <Tag id="order-status-tag" color="blue" aria-label="Order status: Dispatched">
         Dispatched
       </Tag>
       <h2 className="nhsuk-heading-m">Wait for your kit to arrive</h2>

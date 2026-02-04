@@ -14,7 +14,7 @@ export function ConfirmedStatus({
 
   return (
     <>
-      <Tag color="purple" aria-label="Order status: Confirmed">
+      <Tag id="order-status-tag"color="purple" aria-label="Order status: Confirmed">
         Confirmed
       </Tag>
       <h2 className="nhsuk-heading-m">Wait for your kit to be dispatched</h2>

@@ -19,12 +19,12 @@ export function OrderStatusHeader({ order }: OrderStatusHeaderProps) {
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-2">
         {order.testType}
       </h1>
-      <p className="nhsuk-body nhsuk-u-margin-bottom-1">
+      <p id="order-date" className="nhsuk-body nhsuk-u-margin-bottom-1">
         <span aria-label={`Order date: ${formattedDate}`}>
           Ordered {formattedDate}
         </span>
       </p>
-      <p className="nhsuk-body">
+      <p id="reference-number" className="nhsuk-body">
         <span aria-label={`Reference number: ${order.referenceNumber}`}>
           Reference number {order.referenceNumber}
         </span>
