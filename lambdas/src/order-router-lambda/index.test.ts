@@ -2,6 +2,8 @@ import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 // Setup mocks
 const mockSend = jest.fn();
+const mockHttpClientPost = jest.fn();
+const mockHttpClientPostRaw = jest.fn();
 
 jest.mock("@aws-sdk/client-secrets-manager", () => {
   return {
@@ -12,12 +14,17 @@ jest.mock("@aws-sdk/client-secrets-manager", () => {
   };
 });
 
+jest.mock("./init", () => ({
+  init: jest.fn(() => ({
+    httpClient: {
+      post: mockHttpClientPost,
+      postRaw: mockHttpClientPostRaw,
+    },
+  })),
+}));
+
 // Import handler after mocking
 import { handler } from "./index";
-import { GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
-
-// Mock fetch
-global.fetch = jest.fn() as any;
 
 describe("order-router-lambda", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
@@ -49,7 +56,8 @@ describe("order-router-lambda", () => {
 
     // Reset mocks
     mockSend.mockReset();
-    (global.fetch as jest.Mock).mockReset();
+    mockHttpClientPost.mockReset();
+    mockHttpClientPostRaw.mockReset();
 
     // Set environment variables
     process.env.SUPPLIER_BASE_URL = "http://wiremock:8080";
@@ -77,20 +85,20 @@ describe("order-router-lambda", () => {
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
       });
 
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
+      mockHttpClientPost.mockResolvedValue({ access_token: "token" });
+      mockHttpClientPostRaw.mockResolvedValue({
         status: 200,
-        text: async () => JSON.stringify({ access_token: "token" }),
-        headers: {
-          get: () => "application/json",
-        },
+        text: async () => "{}",
+        headers: { get: () => "application/json" },
       });
 
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockHttpClientPost).toHaveBeenCalledWith(
         "http://wiremock:8080/custom/token/endpoint",
-        expect.any(Object),
+        expect.any(String),
+        { Accept: "application/json" },
+        "application/x-www-form-urlencoded",
       );
     });
 
@@ -101,20 +109,20 @@ describe("order-router-lambda", () => {
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
       });
 
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
+      mockHttpClientPost.mockResolvedValue({ access_token: "token" });
+      mockHttpClientPostRaw.mockResolvedValue({
         status: 200,
-        text: async () => JSON.stringify({ access_token: "token" }),
-        headers: {
-          get: () => "application/json",
-        },
+        text: async () => "{}",
+        headers: { get: () => "application/json" },
       });
 
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockHttpClientPost).toHaveBeenCalledWith(
         "http://wiremock:8080/oauth/token",
-        expect.any(Object),
+        expect.any(String),
+        { Accept: "application/json" },
+        "application/x-www-form-urlencoded",
       );
     });
 
@@ -143,24 +151,15 @@ describe("order-router-lambda", () => {
         intent: "order",
       };
 
-      (global.fetch as jest.Mock)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => mockTokenResponse,
-          headers: {
-            get: () => "application/json",
-          },
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 201,
-          text: async () => JSON.stringify(mockOrderResponse),
-          headers: {
-            get: (name: string) =>
-              name === "content-type" ? "application/fhir+json" : null,
-          },
-        });
+      mockHttpClientPost.mockResolvedValue(mockTokenResponse);
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify(mockOrderResponse),
+        headers: {
+          get: (name: string) =>
+            name === "content-type" ? "application/fhir+json" : null,
+        },
+      });
 
       mockEvent.body = JSON.stringify(mockOrderRequest);
       mockEvent.headers = { "X-Correlation-ID": "test-correlation-id" };
@@ -175,20 +174,15 @@ describe("order-router-lambda", () => {
       expect(result.headers?.["X-Correlation-ID"]).toBe("test-correlation-id");
       expect(JSON.parse(result.body)).toEqual(mockOrderResponse);
 
-      expect(global.fetch).toHaveBeenCalledTimes(2);
-      expect(global.fetch).toHaveBeenNthCalledWith(
-        2,
+      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         "http://wiremock:8080/order",
+        JSON.stringify(mockOrderRequest),
         expect.objectContaining({
-          method: "POST",
-          headers: expect.objectContaining({
-            Authorization: "Bearer " + mockTokenResponse.access_token,
-            "Content-Type": "application/fhir+json",
-            Accept: "application/fhir+json",
-            "X-Correlation-ID": "test-correlation-id",
-          }),
-          body: JSON.stringify(mockOrderRequest),
+          Authorization: "Bearer " + mockTokenResponse.access_token,
+          Accept: "application/fhir+json",
+          "X-Correlation-ID": "test-correlation-id",
         }),
+        "application/fhir+json",
       );
     });
 
@@ -197,19 +191,12 @@ describe("order-router-lambda", () => {
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
       });
 
-      (global.fetch as jest.Mock)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ access_token: "token" }),
-          headers: { get: () => "application/json" },
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 201,
-          text: async () => "{}",
-          headers: { get: () => "application/fhir+json" },
-        });
+      mockHttpClientPost.mockResolvedValue({ access_token: "token" });
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => "{}",
+        headers: { get: () => "application/fhir+json" },
+      });
 
       mockEvent.headers = {};
 
@@ -230,26 +217,20 @@ describe("order-router-lambda", () => {
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
       });
 
-      (global.fetch as jest.Mock)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ access_token: "token" }),
-          headers: { get: () => "application/json" },
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 201,
-          text: async () => "{}",
-          headers: { get: () => "application/fhir+json" },
-        });
+      mockHttpClientPost.mockResolvedValue({ access_token: "token" });
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => "{}",
+        headers: { get: () => "application/fhir+json" },
+      });
 
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
-      expect(global.fetch).toHaveBeenNthCalledWith(
-        2,
+      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         "http://wiremock:8080/custom/order/endpoint",
+        expect.any(String),
         expect.any(Object),
+        "application/fhir+json",
       );
     });
   });
@@ -348,13 +329,15 @@ describe("order-router-lambda", () => {
       });
 
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
+      const { HttpError } = require("../lib/http/http-client");
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        text: async () => mockErrorResponse,
-        headers: { get: () => "application/json" },
-      });
+      mockHttpClientPost.mockRejectedValue(
+        new HttpError(
+          "HTTP POST request failed with status: 401",
+          401,
+          mockErrorResponse,
+        ),
+      );
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -384,19 +367,16 @@ describe("order-router-lambda", () => {
         ],
       });
 
-      (global.fetch as jest.Mock)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ access_token: "token" }),
-          headers: { get: () => "application/json" },
-        })
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 409,
-          text: async () => mockErrorResponse,
-          headers: { get: () => "application/fhir+json" },
-        });
+      const { HttpError } = require("../lib/http/http-client");
+
+      mockHttpClientPost.mockResolvedValue({ access_token: "token" });
+      mockHttpClientPostRaw.mockRejectedValue(
+        new HttpError(
+          "HTTP POST request failed with status: 409",
+          409,
+          mockErrorResponse,
+        ),
+      );
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -415,7 +395,7 @@ describe("order-router-lambda", () => {
         SecretString: JSON.stringify({ client_secret: "test-secret" }),
       });
 
-      (global.fetch as jest.Mock).mockRejectedValue(new Error("Network error"));
+      mockHttpClientPost.mockRejectedValue(new Error("Network error"));
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
