@@ -9,7 +9,7 @@ import Link from "next/link";
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { "no-address-found": content } = useContent();
+  const { commonContent, "no-address-found": content } = useContent();
 
   return (
     <PageLayout
@@ -56,7 +56,7 @@ export default function NoAddressFoundPage() {
             goToStep("enter-address-manually");
           }}
         >
-          {content.enterManuallyLink}
+          {commonContent.navigation.manualEntryLink}
         </Link>
       </p>
     </PageLayout>

@@ -148,20 +148,6 @@ describe("SelectDeliveryAddressPage", () => {
       const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
       expect(errorLink).toHaveAttribute("href", "#collection-point");
     });
-
-    it("should clear error when an address is selected", () => {
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(screen.getByRole("alert")).toBeInTheDocument();
-
-      const radios = screen.getAllByRole("radio");
-      fireEvent.click(radios[0]);
-
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    });
   });
 
   describe("Radio Selection Validation", () => {

@@ -10,6 +10,7 @@
 export interface NavigationContent {
   back: string;
   continue: string;
+  manualEntryLink: string;
 }
 
 export interface ValidationMessages {
@@ -38,6 +39,9 @@ export interface ValidationMessages {
     required: string;
     maxLength: string;
     invalid: string;
+  };
+  deliveryAddress: {
+    required: string;
   };
 }
 
@@ -122,7 +126,6 @@ export interface EnterDeliveryAddressContent {
     buildingNameLabel: string;
     buildingNameHint: string;
   };
-  manualEntryLink: string;
 }
 
 export interface EnterAddressManuallyContent {
@@ -141,7 +144,13 @@ export interface NoAddressFoundContent {
   title: string;
   notFoundMessage: string;
   tryNewSearchLink: string;
-  enterManuallyLink: string;
+}
+
+export interface SelectDeliveryAddressContent {
+  title: string;
+  postcodeLabel: string;
+  editPostcodeLink: string;
+  formLabel: string;
 }
 
 // ============================================================================
@@ -153,6 +162,7 @@ export interface PagesContent {
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
   "no-address-found": NoAddressFoundContent;
+  "select-delivery-address": SelectDeliveryAddressContent;
 }
 
 // ============================================================================

@@ -10,7 +10,7 @@ This folder contains a lightweight, build-time JSON CMS for managing static cont
 
 ## File Structure
 
-```
+```text
 content/
 ├── content.json          # All content lives here
 ├── schema.ts             # TypeScript type definitions
@@ -76,6 +76,7 @@ Shared content used across multiple pages:
 | `errorSummary` | Error summary component text |
 
 Example:
+
 ```json
 {
   "commonContent": {
@@ -260,7 +261,7 @@ assertValidContent(contentData);
 - Don't duplicate content—use `commonContent` for shared text
 - Don't forget to update the schema when adding fields
 
-## Validation
+## Content Validation
 
 Content is validated automatically when the application starts. The validator checks:
 
