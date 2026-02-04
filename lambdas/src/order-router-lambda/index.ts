@@ -8,27 +8,18 @@ import { HttpError } from "../lib/http/http-client";
 
 const name = "order-router-lambda";
 
-interface OAuthTokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  scope?: string;
-}
-
-const { httpClient, secretsClient } = init();
+const { httpClient, supplierAuthClient, environmentVariables } = init();
 
 export const handler = async (
   event: APIGatewayProxyEvent,
   _context: Context,
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const baseUrl = process.env.SUPPLIER_BASE_URL;
-    const tokenPath = process.env.SUPPLIER_OAUTH_TOKEN_PATH || "/oauth/token";
-    const orderPath = process.env.SUPPLIER_ORDER_PATH || "/order";
-    const clientId = process.env.SUPPLIER_CLIENT_ID;
-    const secretName = process.env.SUPPLIER_CLIENT_SECRET_NAME;
-
-    if (!baseUrl || !clientId || !secretName) {
+    if (
+      !environmentVariables.SUPPLIER_BASE_URL ||
+      !environmentVariables.SUPPLIER_CLIENT_ID ||
+      !environmentVariables.SUPPLIER_CLIENT_SECRET_NAME
+    ) {
       return {
         statusCode: 500,
         body: JSON.stringify({
@@ -38,28 +29,10 @@ export const handler = async (
     }
 
     // Get OAuth token
-    const clientSecret = await secretsClient.getSecretValue(secretName, {
-      jsonKey: "client_secret",
-    });
-
-    const tokenUrl = `${baseUrl.replace(/\/$/, "")}${tokenPath}`;
-    const formBody = new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: clientId,
-      client_secret: clientSecret,
-    });
-
-    const tokenData = await httpClient.post<OAuthTokenResponse>(
-      tokenUrl,
-      formBody.toString(),
-      { Accept: "application/json" },
-      "application/x-www-form-urlencoded",
-    );
-
-    const accessToken = tokenData.access_token;
+    const accessToken = await supplierAuthClient.getAccessToken();
 
     // Call order endpoint with the token
-    const orderUrl = `${baseUrl.replace(/\/$/, "")}${orderPath}`;
+    const orderUrl = `${environmentVariables.SUPPLIER_BASE_URL.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
     const correlationId =
       event.headers["X-Correlation-ID"] ||
       event.headers["x-correlation-id"] ||
