@@ -18,9 +18,20 @@ output "hello_world_endpoint" {
   value       = module.hello_world_lambda.localstack_endpoint_url
 }
 
+<<<<<<< HEAD
 output "order_router_endpoint" {
   description = "Order Router Lambda endpoint"
   value       = module.order_router_lambda.localstack_endpoint_url
+=======
+output "order_result_endpoint" {
+  description = "Order Result Lambda endpoint"
+  value       = module.order_result_lambda.localstack_endpoint_url
+}
+
+output "order_results_queue_url" {
+  description = "SQS Queue URL for order results"
+  value       = aws_sqs_queue.order_results.url
+>>>>>>> a595829 (add order-result-lambda and Amazon SQS message queue to localStack for localdev)
 }
 
 output "login_endpoint" {
