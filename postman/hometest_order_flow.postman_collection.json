@@ -1,0 +1,177 @@
+{
+  "info": {
+    "_postman_id": "b96d1526-04d3-4f0a-bfde-fd29a834d8b6",
+    "name": "HomeTest Order Flow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51889907",
+    "_collection_link": "https://go.postman.co/collection/51889907-b96d1526-04d3-4f0a-bfde-fd29a834d8b6?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "order-router",
+      "item": [
+        {
+          "name": "success",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"ServiceRequest\",\n  \"status\": \"active\",\n  \"intent\": \"order\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://snomed.info/sct\",\n        \"code\": \"31676001\",\n        \"display\": \"HIV antigen test\"\n      }\n    ],\n    \"text\": \"HIV antigen test\"\n  },\n  \"contained\": [\n    {\n      \"resourceType\": \"Patient\",\n      \"id\": \"patient-1\",\n      \"name\": [\n        {\n          \"use\": \"official\",\n          \"family\": \"Doe\",\n          \"given\": [\"Alex\"],\n          \"text\": \"Alex Doe\"\n        }\n      ],\n      \"telecom\": [\n        {\n          \"system\": \"phone\",\n          \"value\": \"+447700900000\",\n          \"use\": \"mobile\"\n        },\n        {\n          \"system\": \"email\",\n          \"value\": \"alex.doe@example.com\",\n          \"use\": \"home\"\n        }\n      ],\n      \"address\": [\n        {\n          \"use\": \"home\",\n          \"type\": \"both\",\n          \"line\": [\"123 Main Street\", \"Flat 4B\"],\n          \"city\": \"London\",\n          \"postalCode\": \"SW1A 1AA\",\n          \"country\": \"United Kingdom\"\n        }\n      ],\n      \"birthDate\": \"1990-01-01\"\n    }\n  ],\n  \"subject\": {\n    \"reference\": \"#patient-1\"\n  },\n  \"requester\": {\n    \"reference\": \"Organization/ORG001\"\n  },\n  \"performer\": [\n    {\n      \"reference\": \"Organization/SUP001\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{order_router_endpoint_localstack}}",
+              "host": ["{{order_router_endpoint_localstack}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "unprocessable",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{order_router_endpoint_localstack}}",
+              "host": ["{{order_router_endpoint_localstack}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "missing-email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"ServiceRequest\",\n  \"status\": \"active\",\n  \"intent\": \"order\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://snomed.info/sct\",\n        \"code\": \"31676001\",\n        \"display\": \"HIV antigen test\"\n      }\n    ],\n    \"text\": \"HIV antigen test\"\n  },\n  \"contained\": [\n    {\n      \"resourceType\": \"Patient\",\n      \"id\": \"patient-1\",\n      \"name\": [\n        {\n          \"use\": \"official\",\n          \"family\": \"Doe\",\n          \"given\": [\"Alex\"],\n          \"text\": \"Alex Doe\"\n        }\n      ],\n      \"telecom\": [\n        {\n          \"system\": \"phone\",\n          \"value\": \"+447700900000\",\n          \"use\": \"mobile\"\n        }\n      ],\n      \"address\": [\n        {\n          \"use\": \"home\",\n          \"type\": \"both\",\n          \"line\": [\"123 Main Street\", \"Flat 4B\"],\n          \"city\": \"London\",\n          \"postalCode\": \"SW1A 1AA\",\n          \"country\": \"United Kingdom\"\n        }\n      ],\n      \"birthDate\": \"1990-01-01\"\n    }\n  ],\n  \"subject\": {\n    \"reference\": \"#patient-1\"\n  },\n  \"requester\": {\n    \"reference\": \"Organization/ORG001\"\n  },\n  \"performer\": [\n    {\n      \"reference\": \"Organization/SUP001\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{order_router_endpoint_localstack}}",
+              "host": ["{{order_router_endpoint_localstack}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "missing-phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"ServiceRequest\",\n  \"status\": \"active\",\n  \"intent\": \"order\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://snomed.info/sct\",\n        \"code\": \"31676001\",\n        \"display\": \"HIV antigen test\"\n      }\n    ],\n    \"text\": \"HIV antigen test\"\n  },\n  \"contained\": [\n    {\n      \"resourceType\": \"Patient\",\n      \"id\": \"patient-1\",\n      \"name\": [\n        {\n          \"use\": \"official\",\n          \"family\": \"Doe\",\n          \"given\": [\"Alex\"],\n          \"text\": \"Alex Doe\"\n        }\n      ],\n      \"telecom\": [\n        {\n          \"system\": \"email\",\n          \"value\": \"alex.doe@example.com\",\n          \"use\": \"home\"\n        }\n      ],\n      \"address\": [\n        {\n          \"use\": \"home\",\n          \"type\": \"both\",\n          \"line\": [\"123 Main Street\", \"Flat 4B\"],\n          \"city\": \"London\",\n          \"postalCode\": \"SW1A 1AA\",\n          \"country\": \"United Kingdom\"\n        }\n      ],\n      \"birthDate\": \"1990-01-01\"\n    }\n  ],\n  \"subject\": {\n    \"reference\": \"#patient-1\"\n  },\n  \"requester\": {\n    \"reference\": \"Organization/ORG001\"\n  },\n  \"performer\": [\n    {\n      \"reference\": \"Organization/SUP001\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{order_router_endpoint_localstack}}",
+              "host": ["{{order_router_endpoint_localstack}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "missing-telecom",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"ServiceRequest\",\n  \"status\": \"active\",\n  \"intent\": \"order\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://snomed.info/sct\",\n        \"code\": \"31676001\",\n        \"display\": \"HIV antigen test\"\n      }\n    ],\n    \"text\": \"HIV antigen test\"\n  },\n  \"contained\": [\n    {\n      \"resourceType\": \"Patient\",\n      \"id\": \"patient-1\",\n      \"name\": [\n        {\n          \"use\": \"official\",\n          \"family\": \"Doe\",\n          \"given\": [\"Alex\"],\n          \"text\": \"Alex Doe\"\n        }\n      ],\n      \"telecom\": [\n      ],\n      \"address\": [\n        {\n          \"use\": \"home\",\n          \"type\": \"both\",\n          \"line\": [\"123 Main Street\", \"Flat 4B\"],\n          \"city\": \"London\",\n          \"postalCode\": \"SW1A 1AA\",\n          \"country\": \"United Kingdom\"\n        }\n      ],\n      \"birthDate\": \"1990-01-01\"\n    }\n  ],\n  \"subject\": {\n    \"reference\": \"#patient-1\"\n  },\n  \"requester\": {\n    \"reference\": \"Organization/ORG001\"\n  },\n  \"performer\": [\n    {\n      \"reference\": \"Organization/SUP001\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{order_router_endpoint_localstack}}",
+              "host": ["{{order_router_endpoint_localstack}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "order_router_endpoint_localstack",
+      "value": ""
+    }
+  ]
+}
