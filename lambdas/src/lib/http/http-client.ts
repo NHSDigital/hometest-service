@@ -2,7 +2,6 @@ export interface HttpClient {
   get<T>(
     url: string,
     headers?: Record<string, string>,
-    contentType?: string,
   ): Promise<T>;
   post<T>(
     url: string,
@@ -30,10 +29,7 @@ export class HttpError extends Error {
 }
 
 export class FetchHttpClient implements HttpClient {
-  async get<T>(
-    url: string,
-    headers?: Record<string, string>,
-  ): Promise<T> {
+  async get<T>(url: string, headers?: Record<string, string>): Promise<T> {
     const response = await fetch(url, {
       method: "GET",
       headers: {
