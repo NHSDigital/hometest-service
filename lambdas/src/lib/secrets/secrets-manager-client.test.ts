@@ -15,15 +15,12 @@ describe("AwsSecretsClient", () => {
   let client: AwsSecretsClient;
 
   beforeEach(() => {
-    client = new AwsSecretsClient();
+    client = new AwsSecretsClient("eu-west-1");
     mockSend.mockReset();
-    process.env.AWS_REGION = "eu-west-1";
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-    delete process.env.AWS_REGION;
-    delete process.env.AWS_DEFAULT_REGION;
   });
 
   describe("getSecretString", () => {

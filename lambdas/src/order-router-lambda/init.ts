@@ -17,15 +17,16 @@ export interface Environment {
 }
 
 export function init(): Environment {
-  const httpClient = new FetchHttpClient();
-  const secretsClient = new AwsSecretsClient();
-
   const baseUrl = process.env.SUPPLIER_BASE_URL || "";
   const tokenPath = process.env.SUPPLIER_OAUTH_TOKEN_PATH || "/oauth/token";
   const clientId = process.env.SUPPLIER_CLIENT_ID || "";
   const secretName = process.env.SUPPLIER_CLIENT_SECRET_NAME || "";
   const orderPath = process.env.SUPPLIER_ORDER_PATH || "/order";
+  const awsRegion =
+    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-1";
 
+  const httpClient = new FetchHttpClient();
+  const secretsClient = new AwsSecretsClient(awsRegion);
   const supplierAuthClient = new OAuthSupplierAuthClient(
     httpClient,
     secretsClient,

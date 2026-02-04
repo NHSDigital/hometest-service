@@ -14,13 +14,8 @@ export interface SecretsClient {
 export class AwsSecretsClient implements SecretsClient {
   private client: AwsSecretsManagerClient;
 
-  constructor(region?: string) {
-    const awsRegion =
-      region ||
-      process.env.AWS_REGION ||
-      process.env.AWS_DEFAULT_REGION ||
-      "eu-west-1";
-    this.client = new AwsSecretsManagerClient({ region: awsRegion });
+  constructor(region: string) {
+    this.client = new AwsSecretsManagerClient({ region: region });
   }
 
   async getSecretString(secretName: string): Promise<string> {
