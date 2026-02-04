@@ -2,7 +2,8 @@
   "commonContent": {
     "navigation": {
       "back": "Back",
-      "continue": "Continue"
+      "continue": "Continue",
+      "manualEntryLink": "Enter address manually"
     },
     "validation": {
       "postcode": {
@@ -100,8 +101,7 @@
         "postcodeHint": "For example, LS1 1AB",
         "buildingNameLabel": "Building number or name (optional)",
         "buildingNameHint": "For example, 15 or Prospect Cottage"
-      },
-      "manualEntryLink": "Enter address manually"
+      }
     },
     "enter-address-manually": {
       "title": "Enter your delivery address manually and we'll check if the kit's available",
@@ -117,8 +117,7 @@
     "no-address-found": {
       "title": "No address found",
       "notFoundMessage": "We could not find an address that matches",
-      "tryNewSearchLink": "Try a new search",
-      "enterManuallyLink": "Enter address manually"
+      "tryNewSearchLink": "Try a new search"
     }
   }
 }

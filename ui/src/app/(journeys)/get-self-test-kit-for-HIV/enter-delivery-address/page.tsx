@@ -185,7 +185,7 @@ export default function EnterDeliveryAddressPage() {
             goToStep("enter-address-manually");
           }}
         >
-          {content.manualEntryLink}
+          {commonContent.navigation.manualEntryLink}
         </Link>
       </p>
     </PageLayout>

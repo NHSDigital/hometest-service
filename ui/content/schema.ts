@@ -10,6 +10,7 @@
 export interface NavigationContent {
   back: string;
   continue: string;
+  manualEntryLink: string;
 }
 
 export interface ValidationMessages {
@@ -122,7 +123,6 @@ export interface EnterDeliveryAddressContent {
     buildingNameLabel: string;
     buildingNameHint: string;
   };
-  manualEntryLink: string;
 }
 
 export interface EnterAddressManuallyContent {
@@ -141,7 +141,6 @@ export interface NoAddressFoundContent {
   title: string;
   notFoundMessage: string;
   tryNewSearchLink: string;
-  enterManuallyLink: string;
 }
 
 // ============================================================================
