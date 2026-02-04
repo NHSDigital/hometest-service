@@ -4,6 +4,7 @@ import {
   Context,
 } from "aws-lambda";
 import { getSecretValue } from "../lib/secrets/secrets-manager-client";
+import {init} from "./init";
 import { FetchHttpClient, HttpError } from "../lib/http/http-client";
 
 const name = "order-router-lambda";
@@ -14,6 +15,8 @@ interface OAuthTokenResponse {
   expires_in: number;
   scope?: string;
 }
+
+const {httpClient} = init()
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -39,8 +42,6 @@ export const handler = async (
     const clientSecret = await getSecretValue(secretName, {
       jsonKey: "client_secret",
     });
-
-    const httpClient = new FetchHttpClient();
 
     const tokenUrl = `${baseUrl.replace(/\/$/, "")}${tokenPath}`;
     const formBody = new URLSearchParams({
