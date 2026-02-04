@@ -2,12 +2,14 @@
 
 import { PageLayout } from "@/components/PageLayout";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useContent } from "@/hooks";
 import Link from "next/link";
 
 
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { "no-address-found": content } = useContent();
 
   return (
     <PageLayout
@@ -23,9 +25,9 @@ export default function NoAddressFoundPage() {
           goToStep("enter-delivery-address");
         }
       }}>
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">No address found</h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
       <p>
-        We could not find an address that matches <strong>{orderAnswers.postcodeSearch}</strong>{orderAnswers.buildingNumber && <> and <strong>{orderAnswers.buildingNumber}</strong></>}.
+        {content.notFoundMessage} <strong>{orderAnswers.postcodeSearch}</strong>{orderAnswers.buildingNumber && <> and <strong>{orderAnswers.buildingNumber}</strong></>}.
       </p>
 
       <p className="nhsuk-body">
@@ -39,7 +41,7 @@ export default function NoAddressFoundPage() {
             goToStep("enter-delivery-address");
           }}
         >
-          Try a new search
+          {content.tryNewSearchLink}
         </Link>
       </p>
 
@@ -54,7 +56,7 @@ export default function NoAddressFoundPage() {
             goToStep("enter-address-manually");
           }}
         >
-          Enter address manually
+          {content.enterManuallyLink}
         </Link>
       </p>
     </PageLayout>

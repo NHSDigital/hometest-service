@@ -78,8 +78,7 @@ export interface StartPageContent {
     aeAdvice: string;
   };
   infoBox: {
-    hiddenText: string;
-    antibodyInfo: string;
+    text: string;
   };
   howItWorks: {
     heading: string;
@@ -134,6 +133,7 @@ export interface EnterAddressManuallyContent {
     addressLine3Label: string;
     townOrCityLabel: string;
     postcodeLabel: string;
+    postcodeHint: string;
   };
 }
 
