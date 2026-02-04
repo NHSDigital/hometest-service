@@ -4,7 +4,7 @@ import { Tag } from "nhsuk-react-components";
 export function ReceivedStatus() {
   return (
     <>
-      <Tag color="blue" aria-label="Order status: Test received">
+      <Tag id="order-status-tag" color="blue" aria-label="Order status: Test received">
         Test received
       </Tag>
       <h2 className="nhsuk-heading-m">Wait for your result</h2>
