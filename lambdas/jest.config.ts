@@ -1,13 +1,16 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-module.exports = {
+export default {
+  preset: 'ts-jest',
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/jest/jest.setup.js'],
   testRegex: '.*\\.test\\.ts$',
   moduleNameMapper: {
     '^@hometest-service/shared/(.*)$': '<rootDir>/../shared/$1'
   },
+  extensionsToTreatAsEsm: ['.ts'],
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest'
+    '^.+\\.ts$': ['ts-jest', {
+      useESM: true,
+    }],
   },
-  extensionsToTreatAsEsm: ['.ts']
 };
