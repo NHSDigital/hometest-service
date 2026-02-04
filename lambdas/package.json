@@ -19,6 +19,7 @@
     "@aws-lambda-powertools/tracer": "^2.30.2",
     "@aws-sdk/client-athena": "^3.978.0",
     "@aws-sdk/client-lambda": "^3.965.0",
+    "@aws-sdk/client-sqs": "^3.980.0",
     "@aws-sdk/client-secrets-manager": "^3.975.0",
     "@middy/core": "^6.4.5",
     "@middy/http-cors": "^6.4.5",
@@ -30,6 +31,7 @@
     "jsonwebtoken": "^9.0.3",
     "jwks-rsa": "^3.2.2",
     "middy": "^0.24.0",
+    "zod": "^4.3.6",
     "pg": "^8.16.3",
     "titlecase": "^1.1.3"
   },
