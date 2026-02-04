@@ -45,30 +45,6 @@ jobs:
           fetch-depth: 0  # Full history is needed to scan all commits
       - name: "Scan secrets"
         uses: ./.github/actions/scan-secrets
-  # Replaced by pre-commit
-  # check-file-format:
-  #   name: "Check file format"
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 2
-  #   steps:
-  #     - name: "Checkout code"
-  #       uses: actions/checkout@v6
-  #       with:
-  #         fetch-depth: 0  # Full history is needed to compare branches
-  #     - name: "Check file format"
-  #       uses: ./.github/actions/check-file-format
-  # Replaced by pre-commit
-  # check-markdown-format:
-  #   name: "Check Markdown format"
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 2
-  #   steps:
-  #     - name: "Checkout code"
-  #       uses: actions/checkout@v6
-  #       with:
-  #         fetch-depth: 0 # Full history is needed to compare branches
-  #     - name: "Check Markdown format"
-  #       uses: ./.github/actions/check-markdown-format
   check-english-usage:
     name: "Check English usage"
     runs-on: ubuntu-latest
@@ -80,16 +56,6 @@ jobs:
           fetch-depth: 0 # Full history is needed to compare branches
       - name: "Check English usage"
         uses: ./.github/actions/check-english-usage
-  # Replaced by pre-commit
-  # lint-terraform:
-  #   name: "Lint Terraform"
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 2
-  #   steps:
-  #     - name: "Checkout code"
-  #       uses: actions/checkout@v6
-  #     - name: "Lint Terraform"
-  #       uses: ./.github/actions/lint-terraform
   count-lines-of-code:
     name: "Count lines of code"
     runs-on: ubuntu-latest

@@ -24,14 +24,6 @@ repos:
         language: system
         pass_filenames: false
 
-  # - repo: https://github.com/mxab/pre-commit-trivy.git
-  #   rev: v0.17.0
-  #   hooks:
-  #     - id: trivyfs-docker
-  #       args:
-  #         - --skip-dirs
-  #         - ./tests
-
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0
     hooks:
@@ -62,70 +54,3 @@ repos:
         files: ^local-environment/infra
         args:
           - --args=-recursive
-
-    # - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-    #   rev: 0.2.3 # or other specific tag
-    #   files: ^architecture/api_spec.yaml
-    #   hooks:
-    #       - id: yamlfmt
-
-    # - repo: local
-    #   hooks:
-    #     # Format code (fast, staged files only)
-    #     - id: prettier
-    #       name: prettier
-    #       language: node
-    #       entry: npx prettier --write
-    #       files: "\\.(ts|tsx|js|jsx|json|ya?ml|md)$"
-    #       types_or: [file]
-    #       pass_filenames: true
-
-    #     # Lint staged TS/JS
-    #     - id: eslint
-    #       name: eslint
-    #       language: node
-    #       entry: npx eslint --max-warnings=0
-    #       files: "\\.(ts|tsx|js|jsx)$"
-    #       pass_filenames: true
-
-    #     # Type-check staged TS files only (fast incremental)
-    #     # requires `tsc-files` dev dependency
-    #     - id: typescript-staged-check
-    #       name: TypeScript staged type-check
-    #       language: node
-    #       entry: npx tsc-files --noEmit
-    #       files: "\\.(ts|tsx)$"
-    #       pass_filenames: true
-
-    #     # Quick unit tests for changed files / critical packages
-    #     # assume you have a jest config and use testMatch by filename pattern
-    #     - id: jest-quick
-    #       name: Jest quick tests on staged files
-    #       language: system
-    #       entry: bash
-    #       pass_filenames: true
-    #       args:
-    #         - -c
-    #         - |
-    #           STAGED_TESTS=$(printf '%s\n' "$@" | grep -E '\.test\.ts$' || true)
-    #           if [ -n "$STAGED_TESTS" ]; then
-    #             npx jest --runInBand --findRelatedTests $STAGED_TESTS
-    #           fi
-
-    #     # -----------------------
-    #     # Security / secrets / basic SAST
-    #     # -----------------------
-
-    #     # Node.js dependency audit (fast, local)
-    #     # use `--production=false` or `--omit=dev` depending on your policy
-    #     - id: npm-audit
-    #       name: npm audit (quick)
-    #       language: system
-    #       entry: bash
-    #       pass_filenames: false
-    #       args:
-    #         - -c
-    #         - |
-    #           if command -v npm >/dev/null 2>&1; then
-    #             npm audit --audit-level=high --omit=dev || exit 1
-    #           fi
