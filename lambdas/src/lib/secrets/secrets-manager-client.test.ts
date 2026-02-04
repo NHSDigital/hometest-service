@@ -9,10 +9,13 @@ jest.mock("@aws-sdk/client-secrets-manager", () => {
   };
 });
 
-import { getSecretString, getSecretValue } from "./secrets-manager-client";
+import { AwsSecretsClient } from "./secrets-manager-client";
 
-describe("secrets-manager-client", () => {
+describe("AwsSecretsClient", () => {
+  let client: AwsSecretsClient;
+
   beforeEach(() => {
+    client = new AwsSecretsClient();
     mockSend.mockReset();
     process.env.AWS_REGION = "eu-west-1";
   });
@@ -27,7 +30,7 @@ describe("secrets-manager-client", () => {
     it("should return secret string when present", async () => {
       mockSend.mockResolvedValue({ SecretString: "plain-secret" });
 
-      const result = await getSecretString("my-secret");
+      const result = await client.getSecretString("my-secret");
 
       expect(result).toBe("plain-secret");
       expect(mockSend).toHaveBeenCalledWith(
@@ -38,7 +41,7 @@ describe("secrets-manager-client", () => {
     it("should throw when secret string is empty", async () => {
       mockSend.mockResolvedValue({ SecretString: "" });
 
-      await expect(getSecretString("my-secret")).rejects.toThrow(
+      await expect(client.getSecretString("my-secret")).rejects.toThrow(
         "Secret string is empty",
       );
     });
@@ -48,7 +51,7 @@ describe("secrets-manager-client", () => {
     it("should return raw secret when no jsonKey provided", async () => {
       mockSend.mockResolvedValue({ SecretString: "raw-secret" });
 
-      const result = await getSecretValue("my-secret");
+      const result = await client.getSecretValue("my-secret");
 
       expect(result).toBe("raw-secret");
     });
@@ -58,7 +61,7 @@ describe("secrets-manager-client", () => {
         SecretString: JSON.stringify({ client_secret: "json-secret" }),
       });
 
-      const result = await getSecretValue("my-secret", {
+      const result = await client.getSecretValue("my-secret", {
         jsonKey: "client_secret",
       });
 
@@ -71,14 +74,14 @@ describe("secrets-manager-client", () => {
       });
 
       await expect(
-        getSecretValue("my-secret", { jsonKey: "client_secret" }),
+        client.getSecretValue("my-secret", { jsonKey: "client_secret" }),
       ).rejects.toThrow("client_secret missing in secret JSON");
     });
 
     it("should return raw secret when secret is not JSON", async () => {
       mockSend.mockResolvedValue({ SecretString: "not-json" });
 
-      const result = await getSecretValue("my-secret", {
+      const result = await client.getSecretValue("my-secret", {
         jsonKey: "client_secret",
       });
 

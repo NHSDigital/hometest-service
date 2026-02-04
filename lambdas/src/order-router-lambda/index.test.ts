@@ -4,21 +4,16 @@ import { APIGatewayProxyEvent, Context } from "aws-lambda";
 const mockSend = jest.fn();
 const mockHttpClientPost = jest.fn();
 const mockHttpClientPostRaw = jest.fn();
-
-jest.mock("@aws-sdk/client-secrets-manager", () => {
-  return {
-    SecretsManagerClient: jest.fn().mockImplementation(() => ({
-      send: mockSend,
-    })),
-    GetSecretValueCommand: jest.fn().mockImplementation((params) => params),
-  };
-});
+const mockSecretsClientGetSecretValue = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
     httpClient: {
       post: mockHttpClientPost,
       postRaw: mockHttpClientPostRaw,
+    },
+    secretsClient: {
+      getSecretValue: mockSecretsClientGetSecretValue,
     },
   })),
 }));
@@ -58,6 +53,7 @@ describe("order-router-lambda", () => {
     mockSend.mockReset();
     mockHttpClientPost.mockReset();
     mockHttpClientPostRaw.mockReset();
+    mockSecretsClientGetSecretValue.mockReset();
 
     // Set environment variables
     process.env.SUPPLIER_BASE_URL = "http://wiremock:8080";
@@ -81,9 +77,7 @@ describe("order-router-lambda", () => {
     it("should use custom token path from environment", async () => {
       process.env.SUPPLIER_OAUTH_TOKEN_PATH = "/custom/token/endpoint";
 
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       mockHttpClientPost.mockResolvedValue({ access_token: "token" });
       mockHttpClientPostRaw.mockResolvedValue({
@@ -105,9 +99,7 @@ describe("order-router-lambda", () => {
     it("should handle base URL with trailing slash", async () => {
       process.env.SUPPLIER_BASE_URL = "http://wiremock:8080/";
 
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       mockHttpClientPost.mockResolvedValue({ access_token: "token" });
       mockHttpClientPostRaw.mockResolvedValue({
@@ -127,10 +119,7 @@ describe("order-router-lambda", () => {
     });
 
     it("should retrieve OAuth token and call order endpoint successfully", async () => {
-      const mockSecret = JSON.stringify({ client_secret: "test-secret-123" });
-      mockSend.mockResolvedValue({
-        SecretString: mockSecret,
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret-123");
 
       const mockTokenResponse = {
         access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test",
@@ -187,9 +176,7 @@ describe("order-router-lambda", () => {
     });
 
     it("should generate correlation ID if not provided", async () => {
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       mockHttpClientPost.mockResolvedValue({ access_token: "token" });
       mockHttpClientPostRaw.mockResolvedValue({
@@ -213,9 +200,7 @@ describe("order-router-lambda", () => {
     it("should use custom order path from environment", async () => {
       process.env.SUPPLIER_ORDER_PATH = "/custom/order/endpoint";
 
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       mockHttpClientPost.mockResolvedValue({ access_token: "token" });
       mockHttpClientPostRaw.mockResolvedValue({
@@ -248,7 +233,7 @@ describe("order-router-lambda", () => {
       expect(JSON.parse(result.body).message).toContain(
         "Missing required configuration",
       );
-      expect(mockSend).not.toHaveBeenCalled();
+      expect(mockSecretsClientGetSecretValue).not.toHaveBeenCalled();
     });
 
     it("should return 500 when SUPPLIER_CLIENT_ID is missing", async () => {
@@ -280,9 +265,9 @@ describe("order-router-lambda", () => {
     });
 
     it("should return 500 when secret string is empty", async () => {
-      mockSend.mockResolvedValue({
-        SecretString: "",
-      });
+      mockSecretsClientGetSecretValue.mockRejectedValue(
+        new Error("Secret string is empty"),
+      );
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -296,9 +281,9 @@ describe("order-router-lambda", () => {
     });
 
     it("should return 500 when secret JSON is missing client_secret", async () => {
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ other_field: "value" }),
-      });
+      mockSecretsClientGetSecretValue.mockRejectedValue(
+        new Error("client_secret missing in secret JSON"),
+      );
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -312,7 +297,9 @@ describe("order-router-lambda", () => {
     });
 
     it("should return 500 when SecretsManager throws error", async () => {
-      mockSend.mockRejectedValue(new Error("Secret not found"));
+      mockSecretsClientGetSecretValue.mockRejectedValue(
+        new Error("Secret not found"),
+      );
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -324,9 +311,7 @@ describe("order-router-lambda", () => {
     });
 
     it("should return error when OAuth token request fails", async () => {
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
       const { HttpError } = require("../lib/http/http-client");
@@ -352,9 +337,7 @@ describe("order-router-lambda", () => {
     });
 
     it("should handle order endpoint errors", async () => {
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       const mockErrorResponse = JSON.stringify({
         resourceType: "OperationOutcome",
@@ -391,9 +374,7 @@ describe("order-router-lambda", () => {
     });
 
     it("should handle fetch network errors", async () => {
-      mockSend.mockResolvedValue({
-        SecretString: JSON.stringify({ client_secret: "test-secret" }),
-      });
+      mockSecretsClientGetSecretValue.mockResolvedValue("test-secret");
 
       mockHttpClientPost.mockRejectedValue(new Error("Network error"));
 

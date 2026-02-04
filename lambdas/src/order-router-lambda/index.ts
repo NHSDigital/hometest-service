@@ -3,9 +3,8 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { getSecretValue } from "../lib/secrets/secrets-manager-client";
-import {init} from "./init";
-import { FetchHttpClient, HttpError } from "../lib/http/http-client";
+import { init } from "./init";
+import { HttpError } from "../lib/http/http-client";
 
 const name = "order-router-lambda";
 
@@ -16,7 +15,7 @@ interface OAuthTokenResponse {
   scope?: string;
 }
 
-const {httpClient} = init()
+const { httpClient, secretsClient } = init();
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -39,7 +38,7 @@ export const handler = async (
     }
 
     // Get OAuth token
-    const clientSecret = await getSecretValue(secretName, {
+    const clientSecret = await secretsClient.getSecretValue(secretName, {
       jsonKey: "client_secret",
     });
 
