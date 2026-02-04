@@ -37,7 +37,7 @@
           "details": {
             "text": "Validation Error"
           },
-          "diagnostics": "Patient must have at least 2 telecom entries including both phone and email",
+          "diagnostics": "Patient telecom must include a phone system",
           "expression": ["ServiceRequest.contained[0].telecom"]
         }
       ]

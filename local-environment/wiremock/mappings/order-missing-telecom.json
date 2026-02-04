@@ -13,7 +13,7 @@
     },
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && !@.telecom)]"
+        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && (!@.telecom || @.telecom.length() == 0))]"
       }
     ]
   },
