@@ -5,7 +5,7 @@ import * as ordersApi from "@/lib/api/orders";
 import { render, screen } from "@testing-library/react";
 
 import { Order } from "@/types/order";
-import OrderTrackingPage from "@/app/orders/[orderId]/tracking/page";
+import OrderTrackingPage from "@/routes/OrderTrackingPage";
 import { act } from "react";
 
 // Mock the orders API
@@ -14,7 +14,7 @@ jest.mock("@/lib/api/orders", () => ({
 }));
 
 // Mock Next.js components
-jest.mock("@/components/PageLayout", () => ({
+jest.mock("@/layouts/PageLayout", () => ({
   PageLayout: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="page-layout">{children}</div>
   ),

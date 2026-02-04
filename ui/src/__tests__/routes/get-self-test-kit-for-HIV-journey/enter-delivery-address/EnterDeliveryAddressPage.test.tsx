@@ -1,7 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import EnterDeliveryAddressPage from "@/app/(journeys)/get-self-test-kit-for-HIV/enter-delivery-address/page";
+
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
+import EnterDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/enter-delivery-address/EnterDeliveryAddressPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 
 // Mock Next.js router

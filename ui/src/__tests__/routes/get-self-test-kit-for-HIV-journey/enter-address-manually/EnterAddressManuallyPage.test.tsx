@@ -1,7 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import EnterAddressManuallyPage from "@/app/(journeys)/get-self-test-kit-for-HIV/enter-address-manually/page";
+
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
+import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/enter-address-manually/EnterAddressManuallyPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 
 jest.mock("next/navigation", () => ({

@@ -1,6 +1,7 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import React from "react";
+
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { FormBackLink } from "@/components/FormBackLink";
 
 // Mock Next.js router

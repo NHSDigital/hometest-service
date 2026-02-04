@@ -1,9 +1,11 @@
-import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import GetSelfTestKitPage from "@/app/(journeys)/get-self-test-kit-for-HIV/page";
-import { PageLayout } from "@/components/PageLayout";
+
+import { render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
+import GetSelfTestKitPage from "@/routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import PageLayout from "@/layouts/PageLayout";
 
 // Mock Next.js router and Link
 jest.mock("next/navigation", () => ({

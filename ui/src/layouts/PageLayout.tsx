@@ -1,4 +1,4 @@
-import { FormBackLink } from "./FormBackLink";
+import { FormBackLink } from "../components/FormBackLink";
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -7,7 +7,7 @@ interface PageLayoutProps {
   onBackButtonClick?: () => void;
 }
 
-export function PageLayout({
+export  default function PageLayout({
   children,
   showBackButton = false,
   backButtonText,
