@@ -31,7 +31,7 @@ function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
 
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
-  
+
   if (!orderId) {
     return (
       <PageLayout>
