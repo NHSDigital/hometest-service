@@ -34,6 +34,9 @@
       },
       "deliveryAddress": {
         "required": "Select a delivery address"
+      },
+      "comfortableDoingTest": {
+        "required": "Select yes if you're comfortable doing the test yourself"
       }
     },
     "links": {
@@ -44,6 +47,9 @@
       "nearestAE": {
         "text": "your nearest A&E",
         "href": "https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/"
+      },
+      "bloodSampleGuide": {
+        "text": "Blood sample step-by-step guide"
       }
     },
     "errorSummary": {
@@ -67,7 +73,6 @@
       "howItWorks": {
         "heading": "How it works",
         "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within [n] working days. This does not have to be your usual address.",
-        "stepByStepLink": "Blood sample step-by-step guide",
         "sampleInstructions": "You'll need to prick your finger and fill a tube with blood. Then send it to the address in the pre-paid envelope."
       },
       "dataSharing": {
@@ -127,6 +132,28 @@
       "postcodeLabel": "Postcode:",
       "editPostcodeLink": "Edit postcode",
       "formLabel": "Select your delivery address"
+    },
+    "how-comfortable-pricking-finger": {
+      "title": "This is what you'll need to do to give a blood sample",
+      "instructions": "To give a sample of blood, you'll need to:",
+      "steps": {
+        "prickFinger": "prick your finger",
+        "fillTube": "fill a tube with blood"
+      },
+      "image": {
+        "alt": "Person collecting blood sample by pricking finger, with blood droplet falling into collection tube."
+      },
+      "formLabel": "Are you comfortable doing the HIV self-test?",
+      "options": {
+        "yes": {
+          "text": "Yes I'm comfortable, send me the kit",
+          "hint": "The test is supplied by [Supplier], a trusted partner of the NHS"
+        },
+        "no": {
+          "text": "No, I'd rather go to a sexual health clinic instead",
+          "hint": "They will take a blood sample for you"
+        }
+      }
     }
   }
 }

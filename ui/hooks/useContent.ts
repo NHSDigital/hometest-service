@@ -27,6 +27,7 @@ import type {
   EnterAddressManuallyContent,
   NoAddressFoundContent,
   SelectDeliveryAddressContent,
+  HowComfortablePrickingFingerContent,
 } from "@/content/schema";
 
 export interface UseContentReturn {
@@ -42,6 +43,8 @@ export interface UseContentReturn {
   "no-address-found": NoAddressFoundContent;
   /** Select delivery address page content */
   "select-delivery-address": SelectDeliveryAddressContent;
+  /** How comfortable pricking finger page content */
+  "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
 }
 
 /**
@@ -60,6 +63,7 @@ export const useContent = (): UseContentReturn => {
     "enter-address-manually": content.pages["enter-address-manually"],
     "no-address-found": content.pages["no-address-found"],
     "select-delivery-address": content.pages["select-delivery-address"],
+    "how-comfortable-pricking-finger": content.pages["how-comfortable-pricking-finger"],
   };
 };
 
@@ -85,8 +89,9 @@ export function usePageContent(page: "enter-delivery-address"): EnterDeliveryAdd
 export function usePageContent(page: "enter-address-manually"): EnterAddressManuallyContent;
 export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
 export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
+export function usePageContent(page: "how-comfortable-pricking-finger"): HowComfortablePrickingFingerContent;
 export function usePageContent(
-  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address"
+  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address" | "how-comfortable-pricking-finger"
 ) {
   return content.pages[page];
 }

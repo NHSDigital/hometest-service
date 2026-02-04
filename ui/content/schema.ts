@@ -43,6 +43,9 @@ export interface ValidationMessages {
   deliveryAddress: {
     required: string;
   };
+  comfortableDoingTest: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -53,6 +56,9 @@ export interface CommonLinks {
   nearestAE: {
     text: string;
     href: string;
+  };
+  bloodSampleGuide: {
+    text: string;
   };
 }
 
@@ -87,7 +93,6 @@ export interface StartPageContent {
   howItWorks: {
     heading: string;
     deliveryInfo: string;
-    stepByStepLink: string;
     sampleInstructions: string;
   };
   dataSharing: {
@@ -153,6 +158,29 @@ export interface SelectDeliveryAddressContent {
   formLabel: string;
 }
 
+export interface HowComfortablePrickingFingerContent {
+  title: string;
+  instructions: string;
+  steps: {
+    prickFinger: string;
+    fillTube: string;
+  };
+  image: {
+    alt: string;
+  };
+  formLabel: string;
+  options: {
+    yes: {
+      text: string;
+      hint: string;
+    };
+    no: {
+      text: string;
+      hint: string;
+    };
+  };
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -163,6 +191,7 @@ export interface PagesContent {
   "enter-address-manually": EnterAddressManuallyContent;
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
+  "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
 }
 
 // ============================================================================

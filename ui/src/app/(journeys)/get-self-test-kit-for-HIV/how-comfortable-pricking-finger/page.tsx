@@ -11,7 +11,7 @@ import Link from "next/link";
 export default function HowComfortablePrickingFingerPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  // const { "how-comfortable-pricking-finger": content } = useContent();
+  const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [optionError, setOptionError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export default function HowComfortablePrickingFingerPage() {
     e.preventDefault();
 
     if (!selectedOption || selectedOption.trim() === "") {
-      setOptionError("Select yes if you're comfortable doing the test yourself");
+      setOptionError(commonContent.validation.comfortableDoingTest.required);
       return;
     }
 
@@ -53,13 +53,12 @@ export default function HowComfortablePrickingFingerPage() {
           goToStep("enter-delivery-address");
         }
       }}>
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">This is what you'll need to do to give a blood sample</h1>
-      <p></p>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       {optionError && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
           <ErrorSummary.Title id="error-summary-title">
-            There is a problem
+            {commonContent.errorSummary.title}
           </ErrorSummary.Title>
           <ErrorSummary.Body>
             <ErrorSummary.List>
@@ -81,27 +80,27 @@ export default function HowComfortablePrickingFingerPage() {
         src="/images/self-sample-step4.jpg"
         sizes="(max-width: 768px) 100vw, 66vw"
         srcSet="/images/self-sample-step4.png 600w, /images/self-sample-step4.png 1000w"
-        alt="Person collecting blood sample by pricking finger, with blood droplet falling into collection tube."
+        alt={content.image.alt}
       />
 
       <p className="nhsuk-body">
-        To give a sample of blood, you'll need to:
+        {content.instructions}
       </p>
 
       <ul className="nhsuk-list nhsuk-list--bullet">
-        <li>prick your finger</li>
-        <li>fill a tube with blood</li>
+        <li>{content.steps.prickFinger}</li>
+        <li>{content.steps.fillTube}</li>
       </ul>
 
       <p>
-        <Link href="blood-sample-guide">Blood sample step-by-step guide</Link>
+        <Link href="blood-sample-guide">{commonContent.links.bloodSampleGuide.text}</Link>
       </p>
 
       <form onSubmit={handleSubmit}>
         <Radios
           id="comfortable"
           name="comfortable"
-          label="Are you comfortable doing the HIV self-test?"
+          label={content.formLabel}
           labelProps={{
             isPageHeading: false,
             size: "m",
@@ -109,15 +108,15 @@ export default function HowComfortablePrickingFingerPage() {
           error={optionError || undefined}
           onChange={handleRadioChange}
         >
-          <Radios.Radio value="Yes" hint="The test is supplied by [Supplier], a trusted partner of the NHS">
-            Yes I'm comfortable, send me the kit
+          <Radios.Radio value="Yes" hint={content.options.yes.hint}>
+            {content.options.yes.text}
           </Radios.Radio>
-          <Radios.Radio value="No" hint="They will take a blood sample for you">
-            No, I'd rather go to a sexual health clinic instead
+          <Radios.Radio value="No" hint={content.options.no.hint}>
+            {content.options.no.text}
           </Radios.Radio>
         </Radios>
 
-        <Button type="submit">Continue</Button>
+        <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
     </PageLayout>
   );
