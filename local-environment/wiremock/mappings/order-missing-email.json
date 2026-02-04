@@ -1,0 +1,43 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/order",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/fhir+json"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && @.telecom.length() >= 1)]"
+      },
+      {
+        "matchesJsonPath": {
+          "expression": "$.contained[*].telecom[?(@.system == 'email')]",
+          "absent": true
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "OperationOutcome",
+      "issue": [
+        {
+          "severity": "error",
+          "code": "required",
+          "details": {
+            "text": "Validation Error"
+          },
+          "diagnostics": "Patient telecom must include an email system",
+          "expression": ["ServiceRequest.contained[0].telecom"]
+        }
+      ]
+    }
+  }
+}
