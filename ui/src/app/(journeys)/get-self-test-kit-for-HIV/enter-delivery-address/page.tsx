@@ -179,7 +179,7 @@ export default function EnterDeliveryAddressPage() {
           href="enter-address-manually"
           onClick={() => goToStep("enter-address-manually")}
         >
-          {content.manualEntryLink}
+          {commonContent.navigation.manualEntryLink}
         </Link>
       </p>
     </PageLayout>

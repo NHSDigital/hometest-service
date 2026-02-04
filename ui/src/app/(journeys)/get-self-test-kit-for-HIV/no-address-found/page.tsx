@@ -40,7 +40,7 @@ export default function NoAddressFoundPage() {
           href="enter-address-manually"
           onClick={() => goToStep("enter-address-manually")}
         >
-          {content.enterManuallyLink}
+          {commonContent.navigation.manualEntryLink}
         </Link>
       </p>
     </PageLayout>
