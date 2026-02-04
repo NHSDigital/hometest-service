@@ -40,6 +40,9 @@ export interface ValidationMessages {
     maxLength: string;
     invalid: string;
   };
+  deliveryAddress: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -143,6 +146,13 @@ export interface NoAddressFoundContent {
   tryNewSearchLink: string;
 }
 
+export interface SelectDeliveryAddressContent {
+  title: string;
+  postcodeLabel: string;
+  editPostcodeLink: string;
+  formLabel: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -152,6 +162,7 @@ export interface PagesContent {
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
   "no-address-found": NoAddressFoundContent;
+  "select-delivery-address": SelectDeliveryAddressContent;
 }
 
 // ============================================================================

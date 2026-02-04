@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useContent } from "@/hooks";
 import Link from "next/link";
 import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import mockAddressResponse from "@/mocks/addressLookupResponse.json";
@@ -23,6 +24,7 @@ interface AddressResult {
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { commonContent, "select-delivery-address": content } = useContent();
 
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -33,8 +35,8 @@ export default function SelectDeliveryAddressPage() {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
-      setAddressError("Select a delivery address");
-      return;
+      setAddressError(commonContent.validation.deliveryAddress.required);
+      return;x
     }
 
     setAddressError(null);
@@ -70,7 +72,6 @@ export default function SelectDeliveryAddressPage() {
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedAddress(e.target.value);
-    setAddressError(null);
   };
 
   return (
@@ -84,18 +85,18 @@ export default function SelectDeliveryAddressPage() {
         }
       }}>
         <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-          {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} found
+          {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
         </h1>
-        <p>Postcode: <strong>{orderAnswers.postcodeSearch} </strong>
+        <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
           <Link href="enter-delivery-address" onClick={() => goToStep("enter-delivery-address")}>
-            Edit postcode
+            {content.editPostcodeLink}
           </Link>
         </p>
 
         {addressError && (
           <ErrorSummary aria-labelledby="error-summary-title" role="alert">
             <ErrorSummary.Title id="error-summary-title">
-              There is a problem
+              {commonContent.errorSummary.title}
             </ErrorSummary.Title>
             <ErrorSummary.Body>
               <ErrorSummary.List>
@@ -117,7 +118,7 @@ export default function SelectDeliveryAddressPage() {
           <Radios
             id="collection-point"
             name="collection-point"
-            label="Select your delivery address"
+            label={content.formLabel}
             labelProps={{
                 isPageHeading: false,
                 size: "s",
@@ -132,7 +133,7 @@ export default function SelectDeliveryAddressPage() {
             ))}
           </Radios>
 
-          <Button type="submit">Continue</Button>
+          <Button type="submit">{commonContent.navigation.continue}</Button>
         </form>
 
         <p className="nhsuk-body">
@@ -147,7 +148,7 @@ export default function SelectDeliveryAddressPage() {
               goToStep("enter-address-manually");
             }}
           >
-            Enter address manually
+            {commonContent.navigation.manualEntryLink}
           </Link>
         </p>
     </PageLayout>

@@ -31,6 +31,9 @@
         "required": "Enter a city or town",
         "maxLength": "City or town must be 100 characters or less",
         "invalid": "Enter a city or town"
+      },
+      "deliveryAddress": {
+        "required": "Select a delivery address"
       }
     },
     "links": {
@@ -118,6 +121,12 @@
       "title": "No address found",
       "notFoundMessage": "We could not find an address that matches",
       "tryNewSearchLink": "Try a new search"
+    },
+    "select-delivery-address": {
+      "title": "found",
+      "postcodeLabel": "Postcode:",
+      "editPostcodeLink": "Edit postcode",
+      "formLabel": "Select your delivery address"
     }
   }
 }
