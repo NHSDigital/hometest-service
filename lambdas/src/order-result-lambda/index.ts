@@ -43,8 +43,10 @@ export const handler = async (
   // Parse the FHIR Observation from request body
   let observation: Observation;
   try {
-    observation = JSON.parse(event.body || '{}');
-
+    if (event.body === '{}' || event.body === null) {
+      throw new Error('Empty body');
+    }
+    observation = JSON.parse(event.body);
   } catch (error) {
     commons.logError('order-result-lambda', 'Invalid JSON in request body', { error });
     return createFhirErrorResponse(400, 'invalid', 'Invalid JSON in request body', 'error');
@@ -54,8 +56,13 @@ export const handler = async (
   const validationResult = observationSchema.safeParse(observation);
 
   if (!validationResult.success) {
-    commons.logError('order-result-lambda', 'Validation failed', { error: z.prettifyError(validationResult.error) });
-    return createFhirErrorResponse(400, 'invalid', z.prettifyError(validationResult.error), 'error');
+
+    // clean up error output to remove instances of '✖ '
+    let errorDetails: string = z.prettifyError(validationResult.error);
+    errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, '');
+
+    commons.logError('order-result-lambda', 'Validation failed', { error: errorDetails});
+    return createFhirErrorResponse(400, 'invalid', errorDetails, 'error');
   }
 
   try{
