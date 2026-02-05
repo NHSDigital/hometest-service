@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 
 import { IOrderDetails } from "@/lib/models/order-details";
+import { MemoryRouter } from "react-router-dom";
 import { OrderStatusContent } from "@/components/order-status";
+
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<MemoryRouter>{component}</MemoryRouter>);
+};
 
 describe("OrderStatusContent", () => {
   const baseOrder: IOrderDetails = {
@@ -15,33 +20,33 @@ describe("OrderStatusContent", () => {
 
   describe("Confirmed status", () => {
     it("renders confirmed status heading", () => {
-      render(<OrderStatusContent order={baseOrder} />);
+      renderWithRouter(<OrderStatusContent order={baseOrder} />);
       expect(
         screen.getByText(/wait for your kit to be dispatched/i),
       ).toBeInTheDocument();
     });
 
     it("displays expected delivery timeframe", () => {
-      render(<OrderStatusContent order={baseOrder} />);
+      renderWithRouter(<OrderStatusContent order={baseOrder} />);
       expect(screen.getByText(/within 5 working days/i)).toBeInTheDocument();
     });
 
     it('displays "Still need help?" section', () => {
-      render(<OrderStatusContent order={baseOrder} />);
+      renderWithRouter(<OrderStatusContent order={baseOrder} />);
       expect(
         screen.getByRole("heading", { name: /still need help/i }),
       ).toBeInTheDocument();
     });
 
     it("displays supplier contact link", () => {
-      render(<OrderStatusContent order={baseOrder} />);
+      renderWithRouter(<OrderStatusContent order={baseOrder} />);
       expect(
         screen.getByText(/contact preventx, the kit supplier/i),
       ).toBeInTheDocument();
     });
 
     it("displays all help links with correct URLs", () => {
-      render(<OrderStatusContent order={baseOrder} />);
+      renderWithRouter(<OrderStatusContent order={baseOrder} />);
 
       const bloodSampleLink = screen.getByText(
         /blood sample step-by-step guide/i,
@@ -75,24 +80,24 @@ describe("OrderStatusContent", () => {
     };
 
     it("renders dispatched status heading", () => {
-      render(<OrderStatusContent order={dispatchedOrder} />);
+      renderWithRouter(<OrderStatusContent order={dispatchedOrder} />);
       expect(
         screen.getByText(/wait for your kit to arrive/i),
       ).toBeInTheDocument();
     });
 
     it("displays dispatched date", () => {
-      render(<OrderStatusContent order={dispatchedOrder} />);
+      renderWithRouter(<OrderStatusContent order={dispatchedOrder} />);
       expect(screen.getByText(/16 January 2026/i)).toBeInTheDocument();
     });
 
     it("displays expected delivery timeframe", () => {
-      render(<OrderStatusContent order={dispatchedOrder} />);
+      renderWithRouter(<OrderStatusContent order={dispatchedOrder} />);
       expect(screen.getByText(/within 5 working days/i)).toBeInTheDocument();
     });
 
     it('displays "Still need help?" section', () => {
-      render(<OrderStatusContent order={dispatchedOrder} />);
+      renderWithRouter(<OrderStatusContent order={dispatchedOrder} />);
       expect(
         screen.getByRole("heading", { name: /still need help/i }),
       ).toBeInTheDocument();
@@ -103,7 +108,7 @@ describe("OrderStatusContent", () => {
         ...baseOrder,
         status: "dispatched",
       };
-      render(<OrderStatusContent order={orderWithoutDate} />);
+      renderWithRouter(<OrderStatusContent order={orderWithoutDate} />);
       expect(screen.queryByText(/sent/i)).not.toBeInTheDocument();
     });
   });
@@ -115,26 +120,26 @@ describe("OrderStatusContent", () => {
     };
 
     it("renders received status heading", () => {
-      render(<OrderStatusContent order={receivedOrder} />);
+      renderWithRouter(<OrderStatusContent order={receivedOrder} />);
       expect(screen.getByText(/wait for your result/i)).toBeInTheDocument();
     });
 
     it("displays contact message", () => {
-      render(<OrderStatusContent order={receivedOrder} />);
+      renderWithRouter(<OrderStatusContent order={receivedOrder} />);
       expect(
         screen.getByText(/we.ll contact you when it.s ready/i),
       ).toBeInTheDocument();
     });
 
     it('displays "More information" section', () => {
-      render(<OrderStatusContent order={receivedOrder} />);
+      renderWithRouter(<OrderStatusContent order={receivedOrder} />);
       expect(
         screen.getByRole("heading", { name: /more information/i }),
       ).toBeInTheDocument();
     });
 
     it("displays HIV info link with correct URL", () => {
-      render(<OrderStatusContent order={receivedOrder} />);
+      renderWithRouter(<OrderStatusContent order={receivedOrder} />);
       const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
       expect(hivInfoLink).toBeInTheDocument();
       expect(hivInfoLink).toHaveAttribute(
@@ -151,12 +156,12 @@ describe("OrderStatusContent", () => {
     };
 
     it("renders ready status heading", () => {
-      render(<OrderStatusContent order={readyOrder} />);
+      renderWithRouter(<OrderStatusContent order={readyOrder} />);
       expect(screen.getByText(/your result is ready/i)).toBeInTheDocument();
     });
 
     it('displays "View your result" link', () => {
-      render(<OrderStatusContent order={readyOrder} />);
+      renderWithRouter(<OrderStatusContent order={readyOrder} />);
       expect(screen.getByText(/view your result/i)).toBeInTheDocument();
     });
   });
@@ -164,7 +169,7 @@ describe("OrderStatusContent", () => {
   describe("Custom delivery days", () => {
     it("uses custom maxDeliveryDays when provided", () => {
       const customOrder = { ...baseOrder, maxDeliveryDays: 7 };
-      render(<OrderStatusContent order={customOrder} />);
+      renderWithRouter(<OrderStatusContent order={customOrder} />);
       expect(screen.getByText(/within 7 working days/i)).toBeInTheDocument();
     });
   });

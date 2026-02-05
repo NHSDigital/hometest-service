@@ -23,6 +23,10 @@ We follow the **Gitflow** workflow. Please ensure your work is branched correctl
 
 ## Development Standards
 
+Most of the checks are run using pre-commit check `../.pre-commit-config.yaml` for more details.
+
+You can enable automatic pre-commit run as pre-commit hook, just execute `pre-commit install`, if you want to trigger that manually just run `pre-commit run --all-files --show-diff-on-failure` or `mise run pre-commit`.
+
 ### Local Quality Checks
 
 We use several scripts to maintain code quality, which are also run in our CI pipeline. You can run

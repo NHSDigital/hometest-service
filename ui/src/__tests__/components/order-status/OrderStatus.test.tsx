@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 
 import { IOrderDetails } from "@/lib/models/order-details";
+import { MemoryRouter } from "react-router-dom";
 import { OrderStatus } from "@/components/order-status";
+
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<MemoryRouter>{component}</MemoryRouter>);
+};
 
 describe("OrderStatus", () => {
   const mockOrder: IOrderDetails = {
@@ -14,7 +19,7 @@ describe("OrderStatus", () => {
   };
 
   it("renders OrderStatusHeader component", () => {
-    render(<OrderStatus order={mockOrder} />);
+    renderWithRouter(<OrderStatus order={mockOrder} />);
     expect(
       screen.getByRole("heading", { name: "HIV self-test" }),
     ).toBeInTheDocument();
@@ -22,7 +27,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders OrderStatusContent component", () => {
-    render(<OrderStatus order={mockOrder} />);
+    renderWithRouter(<OrderStatus order={mockOrder} />);
     expect(
       screen.getByText(/wait for your kit to be dispatched/i),
     ).toBeInTheDocument();
@@ -34,7 +39,7 @@ describe("OrderStatus", () => {
       status: "dispatched",
       dispatchedDate: "2026-01-20",
     };
-    render(<OrderStatus order={dispatchedOrder} />);
+    renderWithRouter(<OrderStatus order={dispatchedOrder} />);
 
     // Header content
     expect(
@@ -52,7 +57,7 @@ describe("OrderStatus", () => {
       ...mockOrder,
       status: "received",
     };
-    render(<OrderStatus order={receivedOrder} />);
+    renderWithRouter(<OrderStatus order={receivedOrder} />);
 
     // Header content
     expect(
@@ -68,7 +73,7 @@ describe("OrderStatus", () => {
       ...mockOrder,
       status: "ready",
     };
-    render(<OrderStatus order={readyOrder} />);
+    renderWithRouter(<OrderStatus order={readyOrder} />);
 
     // Header content
     expect(

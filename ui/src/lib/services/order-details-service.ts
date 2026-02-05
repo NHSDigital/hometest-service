@@ -11,12 +11,12 @@ const orderDetailsService: IOrderDetailsService = {
     orderId: string,
     patient: IPatient,
   ): Promise<IOrderDetails> {
-    const url = new URL(`${backendApiEndpoint}/order`);
-    url.searchParams.append("nhs_number", patient.nhsNumber);
-    url.searchParams.append("date_of_birth", patient.dateOfBirth);
-    url.searchParams.append("order_id", orderId);
-
     try {
+      const url = new URL(`${backendApiEndpoint}/order`);
+      url.searchParams.append("nhs_number", patient.nhsNumber);
+      url.searchParams.append("date_of_birth", patient.dateOfBirth);
+      url.searchParams.append("order_id", orderId);
+      
       const result = await fetch(url.toString(), {
         method: "GET",
         headers: {
@@ -25,7 +25,6 @@ const orderDetailsService: IOrderDetailsService = {
       });
 
       const fhirBundle = await result.json();
-      console.log(fhirBundle);
 
       if (fhirBundle.entry && fhirBundle.entry.length > 0) {
         const serviceRequest = fhirBundle.entry[0].resource;
