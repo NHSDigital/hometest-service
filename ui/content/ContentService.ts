@@ -1,3 +1,11 @@
+/**
+ * ContentService - Provides typed access to static content loaded at build time.
+ *
+ * This service imports the JSON content directly, ensuring it's bundled with
+ * the application at build time. No runtime fetching occurs.
+ *
+ * The content is validated on import to ensure structural integrity.
+ */
 import contentData from "./content.json";
 import type { ContentFile } from "./schema";
 import { assertValidContent } from "./ContentValidator";
