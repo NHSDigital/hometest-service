@@ -25,4 +25,3 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new OrderStatusPage(page));
   },
 });
-

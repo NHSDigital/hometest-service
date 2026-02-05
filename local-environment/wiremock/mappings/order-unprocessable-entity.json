@@ -1,0 +1,43 @@
+{
+  "priority": 4,
+  "request": {
+    "method": "POST",
+    "urlPath": "/order",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/fhir+json"
+      },
+      "X-Correlation-ID": {
+        "matches": ".*"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": {
+          "expression": "$.subject",
+          "absent": true
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 422,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "OperationOutcome",
+      "issue": [
+        {
+          "severity": "error",
+          "code": "structure",
+          "details": {
+            "text": "FHIR Validation Error"
+          },
+          "diagnostics": "The FHIR resource contains validation errors and cannot be processed",
+          "expression": ["ServiceRequest.subject"]
+        }
+      ]
+    }
+  }
+}

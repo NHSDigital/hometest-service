@@ -1,0 +1,37 @@
+{
+  "priority": 0,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/results",
+    "headers": {
+      "X-Correlation-ID": {
+        "matches": ".*"
+      }
+    },
+    "queryParameters": {
+      "order_uid": {
+        "absent": true
+      }
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/fhir+json"
+    },
+    "jsonBody": {
+      "resourceType": "OperationOutcome",
+      "issue": [
+        {
+          "severity": "error",
+          "code": "invalid",
+          "details": {
+            "text": "Validation Error"
+          },
+          "diagnostics": "The request contains invalid data that cannot be processed",
+          "expression": ["order_uid"]
+        }
+      ]
+    }
+  }
+}
