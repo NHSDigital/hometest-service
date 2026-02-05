@@ -20,4 +20,3 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new EnterAddressManuallyPage(page));
   }
 });
-
