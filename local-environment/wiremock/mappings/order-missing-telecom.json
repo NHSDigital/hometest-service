@@ -6,11 +6,14 @@
     "headers": {
       "Content-Type": {
         "contains": "application/fhir+json"
+      },
+      "X-Correlation-ID": {
+        "matches": ".*"
       }
     },
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && !@.telecom)]"
+        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && (!@.telecom || @.telecom.length() == 0))]"
       }
     ]
   },

@@ -5,7 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "build": "npx tsx scripts/build.ts",
     "package": "npx tsx scripts/package.ts",
     "local:deploy": "npm --prefix ../ run local:deploy",
@@ -14,15 +16,20 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.965.0",
+    "@aws-sdk/client-secrets-manager": "^3.965.0",
     "pg": "8.16.3"
   },
   "devDependencies": {
     "@types/archiver": "7.0.0",
     "@types/aws-lambda": "^8.10.159",
     "@types/fhir": "^0.0.41",
+    "@types/jest": "^29.5.0",
     "@types/pg": "^8.16.0",
     "archiver": "7.0.1",
     "esbuild": "0.27.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.0",
+    "ts-node": "^10.9.2",
     "tsx": "4.21.0",
     "typescript": "^5.9.3"
   }
