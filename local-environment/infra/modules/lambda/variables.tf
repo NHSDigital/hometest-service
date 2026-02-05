@@ -4,11 +4,11 @@ variable "environment" { type = string }
 variable "zip_path" { type = string }
 variable "lambda_role_arn" { type = string }
 variable "handler" {
-  type = string
+  type    = string
   default = "index.handler"
 }
 variable "runtime" {
-  type = string
+  type    = string
   default = "nodejs24.x"
 }
 variable "environment_variables" {
@@ -22,11 +22,11 @@ variable "api_gateway_root_resource_id" { type = string }
 variable "api_gateway_execution_arn" { type = string }
 variable "api_path" { type = string }
 variable "http_method" {
-  type = string
+  type    = string
   default = "GET"
 }
 variable "authorization" {
-  type = string
+  type    = string
   default = "NONE"
 }
 variable "lambda_role_policy_attachment" {}
