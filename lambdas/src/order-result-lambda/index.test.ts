@@ -93,12 +93,12 @@ describe('Order Result Lambda Handler', () => {
     test('should process valid result successfully', async () => {
 
       mockEvent.body = JSON.stringify(body);
-      
+
       mockSQSClientSendMessage.mockResolvedValue({
         MessageId: 'test-message-id-123',
         SequenceNumber: '1',
       });
-        
+
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
@@ -432,12 +432,12 @@ describe('Order Result Lambda Handler', () => {
   describe('Environment configuration', () => {
     test('should use configured queue URL from environment', async () => {
       mockEvent.body = JSON.stringify(body);
-      
+
       mockSQSClientSendMessage.mockResolvedValue({
         MessageId: 'test-message-id-123',
         SequenceNumber: '1',
       });
-        
+
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(201);
