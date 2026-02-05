@@ -155,3 +155,6 @@ venv/
 
 # MCP
 mcp.json
+
+/frontend/
+/test-results/
