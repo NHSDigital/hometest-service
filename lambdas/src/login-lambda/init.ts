@@ -7,6 +7,7 @@ import {
   retrieveMandatoryEnvVariable,
   retrieveOptionalEnvVariable
 } from '../lib/utils';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { HttpClient } from '../lib/http/login-http-client';
 import { AuthTokenService } from '../lib/auth/auth-token-service';
 import {
@@ -71,7 +72,6 @@ const className = 'init';
 
 // ALPHA: Removed commons temporarily.
 export async function init(): Promise<LoginLambdaDependencies> {
-
 
   const secretManagerClient = new AwsSecretsClient(process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2");
   const authCookiePrivateKeySecret = {'key': ''} as Record<string, string>;
