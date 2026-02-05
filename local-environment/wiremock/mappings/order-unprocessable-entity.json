@@ -1,5 +1,5 @@
 {
-  "priority": 2,
+  "priority": 4,
   "request": {
     "method": "POST",
     "urlPath": "/order",
@@ -13,18 +13,15 @@
     },
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$.contained[?(@.resourceType == 'Patient' && @.telecom.length() >= 1)]"
-      },
-      {
         "matchesJsonPath": {
-          "expression": "$.contained[*].telecom[?(@.system == 'email')]",
+          "expression": "$.subject",
           "absent": true
         }
       }
     ]
   },
   "response": {
-    "status": 400,
+    "status": 422,
     "headers": {
       "Content-Type": "application/fhir+json"
     },
@@ -33,12 +30,12 @@
       "issue": [
         {
           "severity": "error",
-          "code": "required",
+          "code": "structure",
           "details": {
-            "text": "Validation Error"
+            "text": "FHIR Validation Error"
           },
-          "diagnostics": "Patient telecom must include an email system",
-          "expression": ["ServiceRequest.contained[0].telecom"]
+          "diagnostics": "The FHIR resource contains validation errors and cannot be processed",
+          "expression": ["ServiceRequest.subject"]
         }
       ]
     }
