@@ -47,6 +47,12 @@ ALTER
   UPDATE
   ON SEQUENCES TO app_migrator;
 
+-- Required for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Make admin see hometest tables by default
+ALTER ROLE admin SET search_path TO hometest;
+
 -- ===========
 -- Create an app user
 -- ===========
@@ -89,3 +95,6 @@ ALTER
   DEFAULT PRIVILEGES IN SCHEMA hometest
   GRANT USAGE, SELECT, UPDATE
   ON SEQUENCES TO app_user;
+
+-- Ensure the admin user can create tables in the schema
+GRANT CREATE, USAGE ON SCHEMA hometest TO admin;

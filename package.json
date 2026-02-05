@@ -7,7 +7,7 @@
     "start": "npm run local:up && npm run local:terraform:init && npm run local:deploy",
     "stop": "npm run local:terraform:destroy && npm run local:down",
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
-    "local:up": "docker compose -f local-environment/docker-compose.yml up -d",
+    "local:up": "docker compose -f local-environment/docker-compose.yml up -d --force-recreate",
     "local:down": "docker compose -f local-environment/docker-compose.yml down",
     "local:restart": "npm run local:down && npm run local:up",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
