@@ -1,3 +1,4 @@
+---
 name: "Commit stage"
 
 on:
@@ -41,31 +42,9 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0 # Full history is needed to scan all commits
+          fetch-depth: 0  # Full history is needed to scan all commits
       - name: "Scan secrets"
         uses: ./.github/actions/scan-secrets
-  check-file-format:
-    name: "Check file format"
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0 # Full history is needed to compare branches
-      - name: "Check file format"
-        uses: ./.github/actions/check-file-format
-  check-markdown-format:
-    name: "Check Markdown format"
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0 # Full history is needed to compare branches
-      - name: "Check Markdown format"
-        uses: ./.github/actions/check-markdown-format
   check-english-usage:
     name: "Check English usage"
     runs-on: ubuntu-latest
@@ -115,3 +94,10 @@ jobs:
           idp_aws_report_upload_region: "${{ secrets.IDP_AWS_REPORT_UPLOAD_REGION }}"
           idp_aws_report_upload_role_name: "${{ secrets.IDP_AWS_REPORT_UPLOAD_ROLE_NAME }}"
           idp_aws_report_upload_bucket_endpoint: "${{ secrets.IDP_AWS_REPORT_UPLOAD_BUCKET_ENDPOINT }}"
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Run pre-commit checks
+        uses: ./.github/actions/perform-pre-commit
