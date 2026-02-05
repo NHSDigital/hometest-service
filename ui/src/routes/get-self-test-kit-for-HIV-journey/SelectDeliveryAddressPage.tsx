@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
-import Link from "next/link";
 import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import mockAddressResponse from "@/mocks/addressLookupResponse.json";
+import PageLayout from "@/layouts/PageLayout";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 
 interface AddressResult {
   DPA: {
@@ -88,9 +88,12 @@ export default function SelectDeliveryAddressPage() {
           {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
         </h1>
         <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
-          <Link href="enter-delivery-address" onClick={() => goToStep("enter-delivery-address")}>
+          <a href="enter-delivery-address" onClick={(e) => {
+            e.preventDefault();
+            goToStep(JourneyStepNames.EnterDeliveryAddress);
+          }}>
             {content.editPostcodeLink}
-          </Link>
+          </a>
         </p>
 
         {addressError && (
@@ -137,10 +140,10 @@ export default function SelectDeliveryAddressPage() {
         </form>
 
         <p className="nhsuk-body">
-          <Link
+          <a
             href="enter-address-manually"
-            className="nhsuk-link"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
               updateOrderAnswers({
                 postcodeSearch: undefined,
                 buildingNumber: undefined
@@ -149,7 +152,7 @@ export default function SelectDeliveryAddressPage() {
             }}
           >
             {commonContent.navigation.manualEntryLink}
-          </Link>
+          </a>
         </p>
     </PageLayout>
   );

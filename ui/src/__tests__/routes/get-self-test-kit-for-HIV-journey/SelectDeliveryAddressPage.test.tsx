@@ -1,19 +1,12 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import SelectDeliveryAddressPage from "@/app/(journeys)/get-self-test-kit-for-HIV/select-delivery-address/page";
+
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { MemoryRouter } from "react-router-dom";
+import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 
-// Mock Next.js router
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    back: jest.fn(),
-  }),
-  usePathname: () => "/get-self-test-kit-for-HIV/select-delivery-address",
-}));
-
-// Mock the address lookup response
 jest.mock("@/mocks/addressLookupResponse.json", () => ({
   header: {
     totalresults: 3,
@@ -55,22 +48,15 @@ jest.mock("@/mocks/addressLookupResponse.json", () => ({
   ],
 }));
 
-// Test wrapper with both providers and initial state
-const TestWrapper = ({
-  children,
-  initialOrderState = { postcodeSearch: "CM7 4BY" }
-}: {
-  children: React.ReactNode;
-  initialOrderState?: Record<string, any>;
-}) => {
-  return (
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <MemoryRouter
+    initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
+  >
     <JourneyNavigationProvider>
-      <CreateOrderProvider>
-        {children}
-      </CreateOrderProvider>
+      <CreateOrderProvider>{children}</CreateOrderProvider>
     </JourneyNavigationProvider>
-  );
-};
+  </MemoryRouter>
+);
 
 describe("SelectDeliveryAddressPage", () => {
   describe("Component Rendering", () => {

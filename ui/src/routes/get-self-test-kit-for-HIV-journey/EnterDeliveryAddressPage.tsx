@@ -179,11 +179,14 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <a onClick={() => {updateOrderAnswers({
+        <a href="enter-address-manually" onClick={(e) => {
+            e.preventDefault();
+            updateOrderAnswers({
               postcodeSearch: undefined,
               buildingNumber: undefined
             });
-            goToStep(JourneyStepNames.EnterAddressManually)}}>
+            goToStep(JourneyStepNames.EnterAddressManually);
+          }}>
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>

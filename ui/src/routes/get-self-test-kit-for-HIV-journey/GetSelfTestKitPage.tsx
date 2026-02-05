@@ -84,7 +84,7 @@ export default function GetSelfTestKitPage() {
           buildingNumber: undefined,
           deliveryAddress: undefined
         });
-        goToStep("enter-delivery-address");
+        goToStep(JourneyStepNames.EnterDeliveryAddress);
       }}>
         {content.startButton}
       </Button>

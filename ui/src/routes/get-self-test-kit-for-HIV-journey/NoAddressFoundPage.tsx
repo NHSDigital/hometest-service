@@ -1,7 +1,6 @@
 "use client";
 
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
@@ -36,13 +35,13 @@ export default function NoAddressFoundPage() {
       </p>
 
       <p className="nhsuk-body">
-        <a onClick={() => goToStep(JourneyStepNames.EnterDeliveryAddress)}>
+        <a href="enter-delivery-address" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterDeliveryAddress);}}>
           Try a new search
         </a>
       </p>
 
       <p className="nhsuk-body">
-        <a onClick={() => goToStep(JourneyStepNames.EnterAddressManually)}>
+        <a href="enter-address-manually" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterAddressManually);}}>
           Enter address manually
         </a>
       </p>

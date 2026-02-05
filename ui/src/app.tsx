@@ -13,6 +13,7 @@ import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import { setBodyClassName } from "./js/setClassName";
+import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 
 const router = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.NoAddressFound,
             element: <NoAddressFoundPage />,
+          },
+          {
+            path: JourneyStepNames.SelectDeliveryAddress,
+            element: <SelectDeliveryAddressPage />,
           },
         ],
       },
