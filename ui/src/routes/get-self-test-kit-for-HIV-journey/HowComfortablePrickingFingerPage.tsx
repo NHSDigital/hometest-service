@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
 import { Radios, Images, Button, ErrorSummary } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
-import Link from "next/link";
+import PageLayout from "@/layouts/PageLayout";
 
+// TODO: update to dynamically render supplier based on API (probably stored in state)
 
 export default function HowComfortablePrickingFingerPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
@@ -93,7 +93,15 @@ export default function HowComfortablePrickingFingerPage() {
       </ul>
 
       <p>
-        <Link href="blood-sample-guide">{commonContent.links.bloodSampleGuide.text}</Link>
+        <a
+            href="blood-sample-guide"
+            onClick={(e) => {
+              e.preventDefault();
+              goToStep("blood-sample-guide");
+            }}
+          >
+            {commonContent.links.bloodSampleGuide.text}
+          </a>
       </p>
 
       <form onSubmit={handleSubmit}>

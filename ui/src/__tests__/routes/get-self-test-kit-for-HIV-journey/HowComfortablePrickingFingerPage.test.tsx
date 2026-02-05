@@ -1,19 +1,12 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import HowComfortablePrickingFingerPage from "@/app/(journeys)/get-self-test-kit-for-HIV/how-comfortable-pricking-finger/page";
+
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
+import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { MemoryRouter } from "react-router-dom";
 
-// Mock Next.js router
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    back: jest.fn(),
-  }),
-  usePathname: () => "/get-self-test-kit-for-HIV/how-comfortable-pricking-finger",
-}));
-
-// Mock the useContent hook
 jest.mock("@/hooks", () => ({
   useContent: () => ({
     commonContent: {
@@ -60,20 +53,15 @@ jest.mock("@/hooks", () => ({
   }),
 }));
 
-// Test wrapper with both providers
-const TestWrapper = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  return (
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <MemoryRouter
+    initialEntries={["/get-self-test-kit-for-HIV/how-comfortable-pricking-finger"]}
+  >
     <JourneyNavigationProvider>
-      <CreateOrderProvider>
-        {children}
-      </CreateOrderProvider>
+      <CreateOrderProvider>{children}</CreateOrderProvider>
     </JourneyNavigationProvider>
-  );
-};
+  </MemoryRouter>
+);
 
 describe("HowComfortablePrickingFingerPage", () => {
   describe("Component Rendering", () => {
