@@ -222,6 +222,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 
   depends_on = [
     module.eligibility_test_info_lambda,
+    module.order_router_lambda,
+    module.order_result_lambda,
     module.login_lambda,
   ]
 
