@@ -1,21 +1,21 @@
-import type { Metadata } from "next";
 import "./globals.css";
-import 'nhsuk-frontend/dist/nhsuk.css';
+import "nhsuk-frontend/dist/nhsuk.css";
+
+import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "NHS HIV Home Test Service"
+  title: DEFAULT_PAGE_TITLE,
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type RootLayoutProps = Readonly<{
   children: React.ReactNode;
-}>) {
+}>;
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>
-        {children}
-      </body>
+      <body className={`antialiased`}>{children}</body>
     </html>
   );
 }

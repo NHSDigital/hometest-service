@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
-import { PageLayout } from "@/components/PageLayout";
+import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import { Link } from "react-router-dom";
+import PageLayout from "@/layouts/PageLayout";
+import { useEffect } from "react";
+
+// TODO: Replace [n] with actual number of working days once confirmed
 
 export default function GetSelfTestKitPage() {
   const { updateOrderAnswers } = useCreateOrderContext();
@@ -66,7 +69,7 @@ export default function GetSelfTestKitPage() {
       <h2>{content.howItWorks.heading}</h2>
       <p>{content.howItWorks.deliveryInfo}</p>
       <p>
-        <Link href="step-by-step-guide">{content.howItWorks.stepByStepLink}</Link>
+        <Link to="step-by-step-guide">{content.howItWorks.stepByStepLink}</Link>
       </p>
       <p>{content.howItWorks.sampleInstructions}</p>
 
@@ -75,15 +78,15 @@ export default function GetSelfTestKitPage() {
         <Details.Text>{content.dataSharing.details}</Details.Text>
       </Details>
 
-      <Button onClick={() => goToStep("enter-delivery-address")}>
+      <Button onClick={() => goToStep(JourneyStepNames.EnterDeliveryAddress)}>
         {content.startButton}
       </Button>
 
       <h2>{content.aboutService.heading}</h2>
       <p>
         {content.aboutService.text}{" "}
-        <Link href="terms-and-conditions">{content.aboutService.termsLink}</Link> and{" "}
-        <Link href="privacy-policy">{content.aboutService.privacyLink}</Link>.
+        <Link to="terms-and-conditions">{content.aboutService.termsLink}</Link> and{" "}
+        <Link to="privacy-policy">{content.aboutService.privacyLink}</Link>.
       </p>
 
       <h2>{content.otherOptions.heading}</h2>

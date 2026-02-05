@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
+import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
-import Link from "next/link";
 import type { ValidationMessages } from "@/content/schema";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import PageLayout from "@/layouts/PageLayout";
+import { useState } from "react";
 
 // TODO: update redirect logic if user has selected manual address entry (use goToStep)
 // TODO: add postcode lookup integration
@@ -54,7 +54,9 @@ export default function EnterDeliveryAddressPage() {
   const [postcode, setPostcode] = useState("");
   const [buildingName, setBuildingName] = useState("");
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
-  const [buildingNameError, setBuildingNameError] = useState<string | null>(null);
+  const [buildingNameError, setBuildingNameError] = useState<string | null>(
+    null,
+  );
 
   console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
 
@@ -72,7 +74,9 @@ export default function EnterDeliveryAddressPage() {
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
     const buildingNameValidationError = validateBuildingName(buildingName, commonContent.validation);
 
-    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
+    setPostcodeError(
+      postcodeValidation.valid ? null : postcodeValidation.message,
+    );
     setBuildingNameError(buildingNameValidationError);
 
     if (postcodeValidation.valid && !buildingNameValidationError) {
@@ -120,7 +124,7 @@ export default function EnterDeliveryAddressPage() {
                   href="#postcode"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('postcode')?.focus();
+                    document.getElementById("postcode")?.focus();
                   }}
                 >
                   {postcodeError}
@@ -131,7 +135,7 @@ export default function EnterDeliveryAddressPage() {
                   href="#building-number-or-name"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('building-number-or-name')?.focus();
+                    document.getElementById("building-number-or-name")?.focus();
                   }}
                 >
                   {buildingNameError}
@@ -175,12 +179,9 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <Link
-          href="enter-address-manually"
-          onClick={() => goToStep("enter-address-manually")}
-        >
+        <a onClick={() => goToStep(JourneyStepNames.EnterAddressManually)}>
           {commonContent.navigation.manualEntryLink}
-        </Link>
+        </a>
       </p>
     </PageLayout>
   );

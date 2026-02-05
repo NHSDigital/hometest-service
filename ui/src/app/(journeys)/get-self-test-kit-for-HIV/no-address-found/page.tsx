@@ -1,9 +1,9 @@
 "use client";
 
-import { PageLayout } from "@/components/PageLayout";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import Link from "next/link";
+import PageLayout from "@/layouts/PageLayout";
 
 
 export default function NoAddressFoundPage() {
