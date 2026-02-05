@@ -30,3 +30,29 @@ variable "authorization" {
   default = "NONE"
 }
 variable "lambda_role_policy_attachment" {}
+
+variable "enable_cors" {
+  type    = bool
+  default = false
+}
+
+variable "cors_allow_origin" {
+  type        = string
+  default     = ""
+  description = "Exact origin, e.g. https://app.example.com or http://localhost:3000 (not *) when allow_credentials=true"
+}
+
+variable "cors_allow_credentials" {
+  type    = bool
+  default = true
+}
+
+variable "cors_allow_headers" {
+  type    = list(string)
+  default = ["Content-Type", "Authorization", "X-Requested-With"]
+}
+
+variable "cors_allow_methods" {
+  type    = list(string)
+  default = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+}
