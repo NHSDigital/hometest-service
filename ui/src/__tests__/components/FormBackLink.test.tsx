@@ -1,16 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import React from "react";
-import { FormBackLink } from "@/components/FormBackLink";
 
-// Mock Next.js router
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    back: jest.fn(),
-  }),
-  usePathname: () => "/test-step",
-}));
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { FormBackLink } from "@/components/FormBackLink";
 
 // Mock the useJourneyNavigationContext hook
 const mockNavigationContext = {

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { Card, ActionLink, Button, Details } from "nhsuk-react-components";
-import { PageLayout } from "@/components/PageLayout";
+import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import { Link } from "react-router-dom";
+import PageLayout from "@/layouts/PageLayout";
+import { useEffect } from "react";
 
 // TODO: Replace [n] with actual number of working days once confirmed
 
@@ -78,7 +80,7 @@ export default function GetSelfTestKitPage() {
         This does not have to be your usual address.
       </p>
       <p>
-        <Link href="step-by-step-guide">Blood sample step-by-step guide</Link>
+        <Link to="step-by-step-guide">Blood sample step-by-step guide</Link>
       </p>
       <p>
         You&apos;ll need to prick your finger and fill a tube with blood. Then send
@@ -97,15 +99,15 @@ export default function GetSelfTestKitPage() {
         </Details.Text>
       </Details>
 
-      <Button onClick={() => goToStep("enter-delivery-address")}>
+      <Button onClick={() => goToStep(JourneyStepNames.EnterDeliveryAddress)}>
         Start now
       </Button>
 
       <h2>About using this service</h2>
       <p>
         By using this service, you agree to our{" "}
-        <Link href="terms-and-conditions">terms of use</Link> and{" "}
-        <Link href="privacy-policy">privacy policy</Link>.
+        <Link to="terms-and-conditions">terms of use</Link> and{" "}
+        <Link to="privacy-policy">privacy policy</Link>.
       </p>
 
       <h2>Other options to home testing, and more support</h2>

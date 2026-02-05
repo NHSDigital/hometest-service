@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
+import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import Link from "next/link";
+
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import PageLayout from "@/layouts/PageLayout";
+import { useState } from "react";
 
 // TODO: update redirect logic if user has selected manual address entry (use goToStep)
 // TODO: add postcode lookup integration
@@ -14,7 +15,9 @@ const MAX_POSTCODE_LENGTH = 8;
 const MAX_BUILDING_NAME_LENGTH = 100;
 
 // Validation functions
-const validatePostcode = (postcode: string): { valid: true; value: string } | { valid: false; message: string } => {
+const validatePostcode = (
+  postcode: string,
+): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
     return { valid: false, message: "Enter a full UK postcode" };
   }
@@ -26,7 +29,10 @@ const validatePostcode = (postcode: string): { valid: true; value: string } | { 
   const normalizedPostcode = postcode.trim().toUpperCase();
 
   if (!POSTCODE_REGEX.test(normalizedPostcode)) {
-    return { valid: false, message: "Enter a postcode using letters and numbers" };
+    return {
+      valid: false,
+      message: "Enter a postcode using letters and numbers",
+    };
   }
 
   return { valid: true, value: normalizedPostcode };
@@ -51,7 +57,9 @@ export default function EnterDeliveryAddressPage() {
   const [postcode, setPostcode] = useState("");
   const [buildingName, setBuildingName] = useState("");
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
-  const [buildingNameError, setBuildingNameError] = useState<string | null>(null);
+  const [buildingNameError, setBuildingNameError] = useState<string | null>(
+    null,
+  );
 
   console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
 
@@ -69,7 +77,9 @@ export default function EnterDeliveryAddressPage() {
     const postcodeValidation = validatePostcode(postcode);
     const buildingNameValidationError = validateBuildingName(buildingName);
 
-    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
+    setPostcodeError(
+      postcodeValidation.valid ? null : postcodeValidation.message,
+    );
     setBuildingNameError(buildingNameValidationError);
 
     if (postcodeValidation.valid && !buildingNameValidationError) {
@@ -118,7 +128,7 @@ export default function EnterDeliveryAddressPage() {
                   href="#postcode"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('postcode')?.focus();
+                    document.getElementById("postcode")?.focus();
                   }}
                 >
                   {postcodeError}
@@ -129,7 +139,7 @@ export default function EnterDeliveryAddressPage() {
                   href="#building-number-or-name"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('building-number-or-name')?.focus();
+                    document.getElementById("building-number-or-name")?.focus();
                   }}
                 >
                   {buildingNameError}
@@ -173,12 +183,9 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <Link
-          href="enter-address-manually"
-          onClick={() => goToStep("enter-address-manually")}
-        >
+        <a onClick={() => goToStep(JourneyStepNames.EnterAddressManually)}>
           Enter address manually
-        </Link>
+        </a>
       </p>
     </PageLayout>
   );

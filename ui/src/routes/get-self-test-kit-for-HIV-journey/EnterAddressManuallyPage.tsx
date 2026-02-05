@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { TextInput, Button, ErrorSummary } from "nhsuk-react-components";
+import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import PageLayout from "@/layouts/PageLayout";
+import { useState } from "react";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -78,7 +80,9 @@ const validateTownOrCity = (value: string): string | null => {
   return null;
 };
 
-const validatePostcode = (postcode: string): { valid: true; value: string } | { valid: false; message: string } => {
+const validatePostcode = (
+  postcode: string,
+): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
     return { valid: false, message: "Enter a full UK postcode" };
   }
@@ -90,7 +94,10 @@ const validatePostcode = (postcode: string): { valid: true; value: string } | { 
   const normalizedPostcode = postcode.trim().toUpperCase();
 
   if (!POSTCODE_REGEX.test(normalizedPostcode)) {
-    return { valid: false, message: "Enter a postcode using letters and numbers" };
+    return {
+      valid: false,
+      message: "Enter a postcode using letters and numbers",
+    };
   }
 
   return { valid: true, value: normalizedPostcode };
@@ -106,9 +113,15 @@ export default function EnterAddressManuallyPage() {
   const [townOrCity, setTownOrCity] = useState("");
   const [postcode, setPostcode] = useState("");
 
-  const [addressLine1Error, setAddressLine1Error] = useState<string | null>(null);
-  const [addressLine2Error, setAddressLine2Error] = useState<string | null>(null);
-  const [addressLine3Error, setAddressLine3Error] = useState<string | null>(null);
+  const [addressLine1Error, setAddressLine1Error] = useState<string | null>(
+    null,
+  );
+  const [addressLine2Error, setAddressLine2Error] = useState<string | null>(
+    null,
+  );
+  const [addressLine3Error, setAddressLine3Error] = useState<string | null>(
+    null,
+  );
   const [townOrCityError, setTownOrCityError] = useState<string | null>(null);
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
@@ -147,7 +160,9 @@ export default function EnterAddressManuallyPage() {
     setAddressLine2Error(addressLine2ValidationError);
     setAddressLine3Error(addressLine3ValidationError);
     setTownOrCityError(townOrCityValidationError);
-    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
+    setPostcodeError(
+      postcodeValidation.valid ? null : postcodeValidation.message,
+    );
 
     if (
       !addressLine1ValidationError &&
@@ -180,7 +195,7 @@ export default function EnterAddressManuallyPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("enter-delivery-address");
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
         }
       }}
     >
@@ -189,7 +204,11 @@ export default function EnterAddressManuallyPage() {
         kit&apos;s available
       </h1>
 
-      {(addressLine1Error || addressLine2Error || addressLine3Error || townOrCityError || postcodeError) && (
+      {(addressLine1Error ||
+        addressLine2Error ||
+        addressLine3Error ||
+        townOrCityError ||
+        postcodeError) && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
           <ErrorSummary.Title id="error-summary-title">
             There is a problem
@@ -201,7 +220,7 @@ export default function EnterAddressManuallyPage() {
                   href="#address-line-1"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('address-line-1')?.focus();
+                    document.getElementById("address-line-1")?.focus();
                   }}
                 >
                   {addressLine1Error}
@@ -212,7 +231,7 @@ export default function EnterAddressManuallyPage() {
                   href="#address-line-2"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('address-line-2')?.focus();
+                    document.getElementById("address-line-2")?.focus();
                   }}
                 >
                   {addressLine2Error}
@@ -223,7 +242,7 @@ export default function EnterAddressManuallyPage() {
                   href="#address-line-3"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('address-line-3')?.focus();
+                    document.getElementById("address-line-3")?.focus();
                   }}
                 >
                   {addressLine3Error}
@@ -234,7 +253,7 @@ export default function EnterAddressManuallyPage() {
                   href="#address-town"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('address-town')?.focus();
+                    document.getElementById("address-town")?.focus();
                   }}
                 >
                   {townOrCityError}
@@ -245,7 +264,7 @@ export default function EnterAddressManuallyPage() {
                   href="#postcode"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('postcode')?.focus();
+                    document.getElementById("postcode")?.focus();
                   }}
                 >
                   {postcodeError}
@@ -259,76 +278,76 @@ export default function EnterAddressManuallyPage() {
       <form onSubmit={handleSubmit}>
         <TextInput
           id="address-line-1"
-            name="address-line-1"
-            label="Address line 1"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={addressLine1}
-            onChange={handleAddressLine1Change}
-            error={addressLine1Error || undefined}
-            autoComplete="address-line1"
-          />
+          name="address-line-1"
+          label="Address line 1"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={addressLine1}
+          onChange={handleAddressLine1Change}
+          error={addressLine1Error || undefined}
+          autoComplete="address-line1"
+        />
 
-          <TextInput
-            id="address-line-2"
-            name="address-line-2"
-            label="Address line 2 (optional)"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={addressLine2}
-            onChange={handleAddressLine2Change}
-            error={addressLine2Error || undefined}
-            autoComplete="address-line2"
-          />
+        <TextInput
+          id="address-line-2"
+          name="address-line-2"
+          label="Address line 2 (optional)"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={addressLine2}
+          onChange={handleAddressLine2Change}
+          error={addressLine2Error || undefined}
+          autoComplete="address-line2"
+        />
 
-          <TextInput
-            id="address-line-3"
-            name="address-line-3"
-            label="Address line 3 (optional)"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={addressLine3}
-            onChange={handleAddressLine3Change}
-            error={addressLine3Error || undefined}
-            autoComplete="address-line3"
-          />
+        <TextInput
+          id="address-line-3"
+          name="address-line-3"
+          label="Address line 3 (optional)"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={addressLine3}
+          onChange={handleAddressLine3Change}
+          error={addressLine3Error || undefined}
+          autoComplete="address-line3"
+        />
 
-          <TextInput
-            id="address-town"
-            name="address-town"
-            label="Town or city"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={townOrCity}
-            onChange={handleTownOrCityChange}
-            error={townOrCityError || undefined}
-            autoComplete="address-level2"
-          />
+        <TextInput
+          id="address-town"
+          name="address-town"
+          label="Town or city"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={townOrCity}
+          onChange={handleTownOrCityChange}
+          error={townOrCityError || undefined}
+          autoComplete="address-level2"
+        />
 
-          <TextInput
-            id="postcode"
-            name="postcode"
-            label="Postcode"
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            hint="For example, LS1 1AB"
-            value={postcode}
-            onChange={handlePostcodeChange}
-            error={postcodeError || undefined}
-            autoComplete="postal-code"
-            inputMode="text"
-            spellCheck={false}
-          />
+        <TextInput
+          id="postcode"
+          name="postcode"
+          label="Postcode"
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          hint="For example, LS1 1AB"
+          value={postcode}
+          onChange={handlePostcodeChange}
+          error={postcodeError || undefined}
+          autoComplete="postal-code"
+          inputMode="text"
+          spellCheck={false}
+        />
 
         <Button type="submit">Continue</Button>
       </form>

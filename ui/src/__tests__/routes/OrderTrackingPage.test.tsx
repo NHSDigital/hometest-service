@@ -2,10 +2,11 @@ import "@testing-library/jest-dom";
 
 import * as ordersApi from "@/lib/api/orders";
 
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
 
 import { Order } from "@/types/order";
-import OrderTrackingPage from "@/app/orders/[orderId]/tracking/page";
+import OrderTrackingPage from "@/routes/OrderTrackingPage";
 import { act } from "react";
 
 // Mock the orders API
@@ -14,8 +15,9 @@ jest.mock("@/lib/api/orders", () => ({
 }));
 
 // Mock Next.js components
-jest.mock("@/components/PageLayout", () => ({
-  PageLayout: ({ children }: { children: React.ReactNode }) => (
+jest.mock("@/layouts/PageLayout", () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="page-layout">{children}</div>
   ),
 }));
@@ -46,6 +48,17 @@ describe("OrderTrackingPage", () => {
     maxDeliveryDays: 5,
   };
 
+  // Helper function to render with router
+  const renderWithRouter = (orderId: string) => {
+    return render(
+      <MemoryRouter initialEntries={[`/orders/${orderId}/tracking`]}>
+        <Routes>
+          <Route path="/orders/:orderId/tracking" element={<OrderTrackingPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -54,10 +67,8 @@ describe("OrderTrackingPage", () => {
     it("renders the order details when order is found", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       // Wait for order content to appear
@@ -70,10 +81,8 @@ describe("OrderTrackingPage", () => {
     it("renders AboutService component with correct supplier", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       const aboutService = await screen.findByTestId("about-service");
@@ -84,10 +93,8 @@ describe("OrderTrackingPage", () => {
     it("renders PageLayout wrapper", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       const pageLayout = screen.getByTestId("page-layout");
@@ -97,10 +104,8 @@ describe("OrderTrackingPage", () => {
     it("calls getOrderDetails with correct orderId", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
 
-      const params = Promise.resolve({ orderId: "456" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("456");
       });
 
       await screen.findByTestId("order-status");
@@ -119,10 +124,8 @@ describe("OrderTrackingPage", () => {
         dispatchedOrder,
       );
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       await screen.findByTestId("order-status");
@@ -134,10 +137,8 @@ describe("OrderTrackingPage", () => {
     it("displays error message when order is null", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(null);
 
-      const params = Promise.resolve({ orderId: "999" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("999");
       });
 
       const errorAlert = await screen.findByRole("alert");
@@ -153,10 +154,8 @@ describe("OrderTrackingPage", () => {
     it("displays error message when order is undefined", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(undefined);
 
-      const params = Promise.resolve({ orderId: "999" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("999");
       });
 
       const errorAlert = await screen.findByRole("alert");
@@ -169,10 +168,8 @@ describe("OrderTrackingPage", () => {
     it("does not render OrderStatus or AboutService when order not found", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(null);
 
-      const params = Promise.resolve({ orderId: "999" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("999");
       });
 
       await screen.findByRole("alert");
@@ -186,10 +183,8 @@ describe("OrderTrackingPage", () => {
     it("displays loading message initially", async () => {
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(mockOrder);
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       // After params resolve, check if loading or content is shown
@@ -206,10 +201,8 @@ describe("OrderTrackingPage", () => {
       });
       (ordersApi.getOrderDetails as jest.Mock).mockReturnValue(orderPromise);
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       // Check loading state appears
@@ -232,10 +225,8 @@ describe("OrderTrackingPage", () => {
       };
       (ordersApi.getOrderDetails as jest.Mock).mockResolvedValue(syphilisOrder);
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       await screen.findByTestId("order-status");
@@ -251,10 +242,8 @@ describe("OrderTrackingPage", () => {
         differentSupplierOrder,
       );
 
-      const params = Promise.resolve({ orderId: "123" });
-
       await act(async () => {
-        render(<OrderTrackingPage params={params} />);
+        renderWithRouter("123");
       });
 
       await screen.findByTestId("about-service");
