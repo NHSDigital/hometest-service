@@ -12,21 +12,46 @@ infrastructure-as-code.
   - [Table of Contents](#table-of-contents)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
-    - [Configuration](#configuration)
+      - [mise](#mise)
   - [Usage](#usage)
+    - [Local Development](#local-development)
+    - [Frontend](#frontend)
+    - [Local Infrastructure](#local-infrastructure)
   - [Testing](#testing)
   - [Design](#design)
+    - [Architecture](#architecture)
   - [Contributing](#contributing)
   - [Licence](#licence)
 
 ## Setup
 
-Clone the repository
+1. Clone the repository
 
-```shell
-git clone https://github.com/NHSDigital/hometest-service.git
-cd hometest-service
-```
+   ```shell
+   git clone https://github.com/NHSDigital/hometest-service.git
+   cd hometest-service
+   ```
+
+2. [Install mise](https://mise.jdx.dev/installing-mise.html) (recommended package manager)
+
+   ```shell
+   curl https://mise.run | sh
+   echo 'eval "$(mise activate zsh)"' >> ~/.zshrc  # or ~/.bashrc for bash
+   source ~/.zshrc
+   ```
+
+3. Install project dependencies using mise
+
+   ```shell
+   mise install  # Installs Node.js and Terraform versions from .mise.toml
+   ```
+
+4. Install dependencies for the root, lambdas, and tests, start the local development environment
+
+   ```shell
+   npm install && npm --prefix ./lambdas install
+   npm run start
+   ```
 
 ### Prerequisites
 
@@ -35,35 +60,14 @@ The following software packages, or their equivalents, are expected to be instal
 - [Docker](https://www.docker.com/)
 - [Node v24](https://nodejs.org/en) LTS,
 - A tool version manager:
-  - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [
-    `.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
-  - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev) (reads [
-    `.tool-versions`](./.tool-versions))
+  - [nvm](https://github.com/nvm-sh/nvm) version manager. This repository contains a [`.nvmrc`](./.nvmrc) file, to make the runtime version consistent.
+  - [mise](https://mise.jdx.dev) (reads [`.mise.toml`](./.mise.toml))
 - [Terraform](https://developer.hashicorp.com/terraform). The version is specified in [.tool-versions].
   - Local development uses Terraform to deploy to LocalStack.
 
-#### Version Manager configuration
+#### mise
 
-If you are using `asdf` or `mise`, you can set it up so that it reads the `.nvmrc` file and makes
-nvm redundant.
-
-##### asdf
-
-ASDF can read the `.nvmrc` file by following
-the [instructions](https://github.com/asdf-vm/asdf-nodejs?tab=readme-ov-file#nvmrc-and-node-version-support).
-
-##### mise
-
-Mise can read the `.nvmrc` file by following
-the [instructions](https://mise.jdx.dev/configuration.html#idiomatic-version-files).
-
-### Configuration
-
-Install dependencies for the root, lambdas, and tests:
-
-```shell
-npm install && npm --prefix ./lambdas install
-```
+Mise can read the `.nvmrc` file by following the [instructions](https://mise.jdx.dev/configuration.html#idiomatic-version-files).
 
 ## Usage
 
@@ -77,8 +81,7 @@ npm start
 
 This command:
 
-1. Starts the Docker containers defined in [
-   `local-environment/docker-compose.yml`](./local-environment/docker-compose.yml).
+1. Starts the Docker containers defined in [`local-environment/docker-compose.yml`](./local-environment/docker-compose.yml).
 2. Bootstraps LocalStack [via Terraform](local-environment/infra), and deploys the lambdas to it from the `/lambdas` directory.
 3. Starts the frontend on [http://localhost:3000](http://localhost:3000).
 
@@ -119,8 +122,7 @@ The service follows a serverless-first architecture on AWS:
 - **Database**: PostgreSQL (managed via Docker locally)
 - **Infrastructure**: Terraform
 
-System diagrams and design documents can be found in the [`/docs`](./docs) and [
-`/architecture`](./architecture) folders.
+System diagrams and design documents can be found in the [`/docs`](./docs) and [`/architecture`](./architecture) folders.
 
 ## Contributing
 

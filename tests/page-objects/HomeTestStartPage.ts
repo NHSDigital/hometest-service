@@ -22,7 +22,8 @@ export class HomeTestStartPage extends BasePage {
 
   }
   async navigate(): Promise<void> {
-    await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
+    await this.page.goto(`${config.get(EnvironmentVariables.UI_BASE_URL)}/get-self-test-kit-for-HIV`);
+
   }
 
   async getHeaderText(): Promise<string> {
