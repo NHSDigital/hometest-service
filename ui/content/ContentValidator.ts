@@ -13,9 +13,6 @@ export interface ValidationResult {
   errors: string[];
 }
 
-/**
- * Required keys that must exist in commonContent.
- */
 const REQUIRED_COMMON_KEYS: (keyof CommonContent)[] = [
   "navigation",
   "validation",
@@ -23,9 +20,6 @@ const REQUIRED_COMMON_KEYS: (keyof CommonContent)[] = [
   "errorSummary",
 ];
 
-/**
- * Required keys that must exist in pages.
- */
 const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "get-self-test-kit-for-HIV",
   "enter-delivery-address",
@@ -33,21 +27,12 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "no-address-found",
 ];
 
-/**
- * Validates that a value is a non-null object.
- */
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/**
- * Validates that a string property exists and is non-empty.
- */
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
 
-/**
- * Validates the structure of commonContent.
- */
 const validateCommonContent = (
   content: unknown,
   errors: string[]
@@ -65,7 +50,6 @@ const validateCommonContent = (
     }
   }
 
-  // Validate navigation structure
   if (isObject(content.navigation)) {
     if (!isNonEmptyString(content.navigation.back)) {
       errors.push("commonContent.navigation.back must be a non-empty string");
@@ -80,9 +64,6 @@ const validateCommonContent = (
   return errors.length === 0;
 };
 
-/**
- * Validates the structure of pages content.
- */
 const validatePagesContent = (
   content: unknown,
   errors: string[]
@@ -100,7 +81,6 @@ const validatePagesContent = (
     }
   }
 
-  // Validate each page has a title
   for (const key of REQUIRED_PAGE_KEYS) {
     const page = content[key];
     if (isObject(page) && !isNonEmptyString(page.title)) {
@@ -111,23 +91,6 @@ const validatePagesContent = (
   return errors.length === 0;
 };
 
-/**
- * Validates the entire content file structure.
- *
- * @param content - The content object to validate
- * @returns ValidationResult with valid flag and any error messages
- *
- * @example
- * ```ts
- * import { validateContent } from '@/content/ContentValidator';
- * import content from '@/content/content.json';
- *
- * const result = validateContent(content);
- * if (!result.valid) {
- *   console.error('Content validation failed:', result.errors);
- * }
- * ```
- */
 export const validateContent = (content: unknown): ValidationResult => {
   const errors: string[] = [];
 
@@ -138,7 +101,6 @@ export const validateContent = (content: unknown): ValidationResult => {
     };
   }
 
-  // Check top-level required keys
   if (!("commonContent" in content)) {
     errors.push("Content is missing required key: commonContent");
   } else {
@@ -157,20 +119,11 @@ export const validateContent = (content: unknown): ValidationResult => {
   };
 };
 
-/**
- * Type guard to check if content is a valid ContentFile.
- */
 export const isValidContentFile = (content: unknown): content is ContentFile => {
   const result = validateContent(content);
   return result.valid;
 };
 
-/**
- * Validates content and throws an error if invalid.
- * Useful for fail-fast validation during app initialization.
- *
- * @throws Error if content is invalid
- */
 export const assertValidContent = (content: unknown): asserts content is ContentFile => {
   const result = validateContent(content);
   if (!result.valid) {
