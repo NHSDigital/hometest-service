@@ -19,12 +19,12 @@ export class EnterAddressManuallyPage extends BasePage {
     this.continueButton = page.getByRole('button', { name: 'Continue' });
   }
 
-  async fillAddressAndContinue(addressLine1: string, addressLine2: string, addressLine3: string, addressTown: string, postcode: string): Promise<void> {
-    await this.addressLine1Input.fill(addressLine1);
-    await this.addressLine2Input.fill(addressLine2);
-    await this.addressLine3Input.fill(addressLine3);
-    await this.addressTownInput.fill(addressTown);
-    await this.postcodeInput.fill(postcode);
+  async fillAddressAndContinue(randomEntry: { addressline1: string; addressline2: string; addressline3: string; towncity: string; postcode: string; }): Promise<void> {
+    await this.addressLine1Input.fill(randomEntry.addressline1);
+    await this.addressLine2Input.fill(randomEntry.addressline2);
+    await this.addressLine3Input.fill(randomEntry.addressline3);
+    await this.addressTownInput.fill(randomEntry.towncity);
+    await this.postcodeInput.fill(randomEntry.postcode);
     await this.continueButton.click();
   }
 

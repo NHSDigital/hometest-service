@@ -13,8 +13,11 @@ export class SelectDeliveryAddressPage extends BasePage {
     this.continueButton = page.getByRole('button', { name: 'Continue' });
   }
 
-  async clickEditAddressLinkAndClickContinue(): Promise<void> {
+  async clickEditAddressLink(): Promise<void> {
     await this.editAddressLink.click();
+  }
+
+  async clickContinueButton(): Promise<void> {
     await this.continueButton.click();
   }
 

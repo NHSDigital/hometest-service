@@ -1,6 +1,11 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
+type addressEntry = {
+  postcode: string;
+  addressline1: string;
+};
+
 export class FindAddressPage extends BasePage {
   readonly postcodeInput: Locator;
   readonly numNameInput: Locator;
@@ -21,14 +26,20 @@ export class FindAddressPage extends BasePage {
     this.enterAddressManuallyLink = page.locator("a[href='enter-address-manually']");
   }
 
-  async fillPostCodeAndAddressAndContinue(postcode: string, firstLineAddress: string): Promise<void> {
-    await this.postcodeInput.fill(postcode);
-    await this.numNameInput.fill(firstLineAddress);
+  async fillPostCodeAndAddressAndContinue(randomEntry: addressEntry): Promise<void> {
+    await this.postcodeInput.fill(randomEntry.postcode);
+    await this.numNameInput.fill(randomEntry.addressline1);
     await this.continueButton.click();
   }
 
   async clickEnterAddressManuallyLink(): Promise<void> {
     await this.enterAddressManuallyLink.click();
+  }
+
+  async getPostcodeAndAddressValues(): Promise<{ postcode: string, firstLineAddress: string }> {
+    const postcodeValue = await this.postcodeInput.inputValue();
+    const firstLineAddressValue = await this.numNameInput.inputValue();
+    return { postcode: postcodeValue, firstLineAddress: firstLineAddressValue };
   }
 
 }

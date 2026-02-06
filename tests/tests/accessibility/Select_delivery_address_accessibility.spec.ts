@@ -8,7 +8,7 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomEntry.postcode, randomEntry.addressline1);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomEntry);
     await selectDeliveryAddressPage.waitUntilPageLoad();
     const hasViolations = await accessibility.runAccessibilityCheck(selectDeliveryAddressPage.page, "Select Delivery Address Page");
     expect(hasViolations).toBe(false);
