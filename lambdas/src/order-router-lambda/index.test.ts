@@ -25,6 +25,7 @@ import { handler } from "./index";
 describe("order-router-lambda", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
   let mockContext: Partial<Context>;
+  const validUUID = "123e4567-e89b-12d3-a456-426614174000";
 
   beforeEach(() => {
     mockEvent = {
@@ -81,12 +82,17 @@ describe("order-router-lambda", () => {
         headers: { get: () => "application/json" },
       });
 
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         "http://wiremock:8080/order",
-        expect.any(String),
+        JSON.stringify({ resourceType: "ServiceRequest" }),
         expect.objectContaining({
           Authorization: "Bearer test-secret",
           Accept: "application/fhir+json",
@@ -123,7 +129,10 @@ describe("order-router-lambda", () => {
         },
       });
 
-      mockEvent.body = JSON.stringify(mockOrderRequest);
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: mockOrderRequest,
+      });
       mockEvent.headers = { "X-Correlation-ID": "test-correlation-id" };
 
       const result = await handler(
@@ -160,6 +169,10 @@ describe("order-router-lambda", () => {
       });
 
       mockEvent.headers = {};
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -182,20 +195,127 @@ describe("order-router-lambda", () => {
         headers: { get: () => "application/fhir+json" },
       });
 
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         "http://wiremock:8080/custom/order/endpoint",
-        expect.any(String),
+        JSON.stringify({ resourceType: "ServiceRequest" }),
         expect.any(Object),
         "application/fhir+json",
       );
     });
   });
 
-  describe("error handling", () => {
+  describe("validation and error handling", () => {
+    it("should return 400 for invalid JSON in event.body", async () => {
+      mockEvent.body = "{ invalid json }";
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body).message).toContain(
+        "Invalid JSON in event.body",
+      );
+    });
+
+    it("should return 400 for missing supplier_code", async () => {
+      mockEvent.body = JSON.stringify({
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body).message).toContain(
+        "event.body must match schema",
+      );
+    });
+
+    it("should return 400 for non-UUID supplier_code", async () => {
+      mockEvent.body = JSON.stringify({
+        supplier_code: "not-a-uuid",
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body).message).toContain(
+        "event.body must match schema",
+      );
+    });
+
+    it("should return 400 for missing order_body", async () => {
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body).message).toContain(
+        "event.body must match schema",
+      );
+    });
+
+    it("should return 400 for null order_body", async () => {
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: null,
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body).message).toContain(
+        "event.body must match schema",
+      );
+    });
+
+    it("should return 400 for non-object order_body", async () => {
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: "not-an-object",
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body).message).toContain(
+        "event.body must match schema",
+      );
+    });
+
     it("should return 500 when SUPPLIER_BASE_URL is missing", async () => {
       mockEnvironmentVariables.SUPPLIER_BASE_URL = "";
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -212,6 +332,11 @@ describe("order-router-lambda", () => {
     it("should return 500 when SUPPLIER_CLIENT_ID is missing", async () => {
       mockEnvironmentVariables.SUPPLIER_CLIENT_ID = "";
 
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
         mockContext as Context,
@@ -225,6 +350,11 @@ describe("order-router-lambda", () => {
 
     it("should return 500 when SUPPLIER_CLIENT_SECRET_NAME is missing", async () => {
       mockEnvironmentVariables.SUPPLIER_CLIENT_SECRET_NAME = "";
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -248,6 +378,11 @@ describe("order-router-lambda", () => {
           mockErrorResponse,
         ),
       );
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -284,6 +419,11 @@ describe("order-router-lambda", () => {
           mockErrorResponse,
         ),
       );
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,

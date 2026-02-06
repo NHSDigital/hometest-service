@@ -5,6 +5,7 @@ import {
 } from "aws-lambda";
 import { init } from "./init";
 import { HttpError } from "../lib/http/http-client";
+import { isUUID } from "../lib/utils";
 
 const name = "order-router-lambda";
 
@@ -31,6 +32,34 @@ export const handler = async (
     // Get OAuth token
     const accessToken = await supplierAuthClient.getAccessToken();
 
+    // Parse and validate event.body
+    let parsedBody: { supplier_code: string; order_body: any };
+    try {
+      parsedBody = JSON.parse(event.body || "");
+    } catch {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: `${name}: Invalid JSON in event.body`,
+        }),
+      };
+    }
+
+    if (
+      !parsedBody ||
+      typeof parsedBody.supplier_code !== "string" ||
+      !isUUID(parsedBody.supplier_code) ||
+      typeof parsedBody.order_body !== "object" ||
+      parsedBody.order_body === null
+    ) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: `${name}: event.body must match schema { supplier_code: UUID, order_body: JSON }`,
+        }),
+      };
+    }
+
     // Call order endpoint with the token
     const orderUrl = `${environmentVariables.SUPPLIER_BASE_URL.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
     const correlationId =
@@ -40,7 +69,7 @@ export const handler = async (
 
     const orderResponse = await httpClient.postRaw(
       orderUrl,
-      event.body || "",
+      JSON.stringify(parsedBody.order_body),
       {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/fhir+json",
