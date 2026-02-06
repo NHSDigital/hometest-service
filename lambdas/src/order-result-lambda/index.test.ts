@@ -31,7 +31,6 @@ describe('Order Result Lambda Handler', () => {
   let body;
 
   beforeEach(() => {
-
     mockEvent = {
       httpMethod: 'POST',
       path: "/result",
@@ -91,14 +90,12 @@ describe('Order Result Lambda Handler', () => {
 
   describe('Success scenarios', () => {
     test('should process valid result successfully', async () => {
-
       mockEvent.body = JSON.stringify(body);
 
       mockSQSClientSendMessage.mockResolvedValue({
         MessageId: 'test-message-id-123',
         SequenceNumber: '1',
       });
-
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
@@ -126,7 +123,6 @@ describe('Order Result Lambda Handler', () => {
 
   describe('Validation scenarios', () => {
     test('should fail validation when interpretation system is missing', async () => {
-
       body.interpretation[0].coding[0].system = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -146,7 +142,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when interpretation code is missing', async () => {
-
       body.interpretation[0].coding[0].code = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -166,7 +161,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when interpretation display is missing', async () => {
-
       body.interpretation[0].coding[0].display = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -185,7 +179,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when interpretation coding is missing', async () => {
-
       body.interpretation[0].coding = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -204,7 +197,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when interpretation is missing', async () => {
-
       body.interpretation = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -223,7 +215,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when subject reference is missing', async () => {
-
       body.subject.reference = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -242,7 +233,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when subject is missing', async () => {
-
       body.subject = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -261,7 +251,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when basedOn reference is missing', async () => {
-
       body.basedOn[0].reference = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -280,7 +269,6 @@ describe('Order Result Lambda Handler', () => {
     });
 
     test('should fail validation when basedOn is missing', async () => {
-
       body.basedOn = undefined;
       mockEvent.body = JSON.stringify(body);
 
@@ -431,7 +419,6 @@ describe('Order Result Lambda Handler', () => {
   describe('Environment configuration', () => {
     test('should use configured queue URL from environment', async () => {
       mockEvent.body = JSON.stringify(body);
-
       mockSQSClientSendMessage.mockResolvedValue({
         MessageId: 'test-message-id-123',
         SequenceNumber: '1',
