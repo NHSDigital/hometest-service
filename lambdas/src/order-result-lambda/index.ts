@@ -40,6 +40,7 @@ export const handler = async (
   });
 
   let observation: Observation;
+
   try {
     if (event.body === '{}' || event.body === null) {
       throw new Error('Empty body');
@@ -53,7 +54,6 @@ export const handler = async (
   const validationResult = observationSchema.safeParse(observation);
 
   if (!validationResult.success) {
-
     let errorDetails: string = z.prettifyError(validationResult.error);
     // clean up error output to remove unnesesary decoration
     errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, '');
@@ -70,6 +70,7 @@ export const handler = async (
       correlationId,
       receivedAt: new Date().toISOString(),
     });
+
     await sqsClient.sendMessage(QUEUE_URL, messageBody, {
       CorrelationId: {
         DataType: 'String',
@@ -80,7 +81,9 @@ export const handler = async (
         StringValue: orderUid || '',
       },
     });
+
     commons.logInfo('order-result-lambda', 'Result posted to SQS', { orderUid, correlationId });
+
     const timestamp = new Date().toISOString();
     const responseResource: Parameters = {
       resourceType: 'Parameters',
@@ -99,6 +102,7 @@ export const handler = async (
         },
       ],
     };
+
     return createFhirResponse(201, responseResource);
 
   } catch (error) {
@@ -109,16 +113,17 @@ export const handler = async (
 };
 
 function extractOrderUid(observation: Observation): string | null {
-  if (!observation.basedOn || observation.basedOn.length === 0) {
+  if (observation.basedOn?.length === 0) {
     return null;
   }
 
-  const reference = observation.basedOn[0].reference;
+  const reference = observation.basedOn?.[0]?.reference;
+
   if (!reference) {
     return null;
   }
 
   // Extract UUID from reference like "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
   const parts = reference.split('/');
-  return parts.length > 1 ? parts[1] : null;
+  return parts.length == 2 ? parts[1] : null;
 }
