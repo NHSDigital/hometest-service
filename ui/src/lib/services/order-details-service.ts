@@ -1,4 +1,4 @@
-import { Bundle, OperationOutcome } from "@medplum/fhirtypes";
+import { Bundle, OperationOutcome } from "fhir/r4";
 
 import { OrderDetails } from "@/lib/models/order-details";
 import { OrderDetailsMapper } from "@/lib/mappers/order-details-mapper";

@@ -5,7 +5,7 @@ import {
   Extension,
   Identifier,
   Resource,
-} from "@medplum/fhirtypes";
+} from "fhir/r4";
 
 export class FhirUtils {
   static findResource<T extends Resource>(

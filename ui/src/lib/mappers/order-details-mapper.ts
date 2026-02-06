@@ -1,4 +1,4 @@
-import { Bundle, ServiceRequest } from "@medplum/fhirtypes";
+import { Bundle, ServiceRequest } from "fhir/r4";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 import { FhirConstants } from "../utils/fhir-constants";
