@@ -5,6 +5,7 @@ This is a Single Page Application (SPA) built with React and React Router, using
 ## Architecture
 
 The application uses a hybrid approach:
+
 - **Client-side routing**: [React Router](https://reactrouter.com/) for all navigation and routing
 - **Build tool**: [Next.js](https://nextjs.org) for development server and static export
 - **Production**: Static HTML/CSS/JS files served from a CDN or web server
@@ -64,6 +65,7 @@ NEXT_PUBLIC_BACKEND_API_ENDPOINT=http://localhost:8080
 This allows the application to communicate with the local WireMock server for API mocking during development.
 
 ## Routing
+
 the technologies used in this project:
 
 - [React Router Documentation](https://reactrouter.com/) - Client-side routing library
@@ -76,7 +78,7 @@ the technologies used in this project:
 Since this is a static SPA, you can deploy the built files to any static hosting service:
 
 1. Build the static files: `npm run build`
-2. Deploy the `build/` directory to your hosting service (e.g., AWS S3, Azure Static Web Apps, Netlify, Vercel)
+2. Deploy the `build/` directory to your hosting service (e.g., AWS S3, Azure Static Web Apps)
 3. Configure the hosting service to serve `index.html` for all routes (for client-side routing support)
 
 ```bash
