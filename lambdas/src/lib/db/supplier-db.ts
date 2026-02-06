@@ -28,6 +28,29 @@ export class SupplierService {
     this.dbClient = dbClient;
   }
 
+  async getSupplierServiceUrlBySupplierId(supplierId: string): Promise<string | null> {
+    const query = `
+      SELECT service_url
+      FROM hometest.supplier
+      WHERE supplier_id = $1;
+    `;
+
+    try {
+      const result = await this.dbClient.query<{ service_url: string }, [string]>(
+        query,
+        [supplierId],
+      );
+
+      if (result.rowCount === 0) {
+        return null;
+      }
+
+      return result.rows[0].service_url;
+    } catch (error) {
+      throw new Error("Failed to fetch service URL from database");
+    }
+  }
+
   async getSuppliersByLocalAuthorityAndTest(
     laCode: LaCode,
     testCode?: TestCode,
