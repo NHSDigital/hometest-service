@@ -1,10 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
-
-type addressEntry = {
-  postcode: string;
-  addressline1: string;
-};
+import { AddressModel } from '../models';
 
 export class FindAddressPage extends BasePage {
   readonly postcodeInput: Locator;
@@ -12,7 +8,7 @@ export class FindAddressPage extends BasePage {
   readonly continueButton: Locator;
   readonly addressResults: Locator;
   readonly postcodeErrorMessage: Locator;
-  readonly BuildingNoErrorMessage: Locator;
+  readonly buildingNoErrorMessage: Locator;
   readonly enterAddressManuallyLink: Locator;
 
   constructor(page: Page) {
@@ -22,11 +18,11 @@ export class FindAddressPage extends BasePage {
     this.continueButton = page.getByRole('button', { name: 'Continue' });
     this.addressResults = page.locator('.nhsuk-heading-l');
     this.postcodeErrorMessage = page.locator('#postcode--error-message');
-    this.BuildingNoErrorMessage = page.locator('#building-number-or-name--error-message');
+    this.buildingNoErrorMessage = page.locator('#building-number-or-name--error-message');
     this.enterAddressManuallyLink = page.locator("a[href='enter-address-manually']");
   }
 
-  async fillPostCodeAndAddressAndContinue(randomEntry: addressEntry): Promise<void> {
+  async fillPostCodeAndAddressAndContinue(randomEntry: AddressModel): Promise<void> {
     await this.postcodeInput.fill(randomEntry.postcode);
     await this.numNameInput.fill(randomEntry.addressline1);
     await this.continueButton.click();

@@ -1,5 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { AddressModel } from '../models';
 
 export class EnterAddressManuallyPage extends BasePage {
   readonly addressLine1Input: Locator;
@@ -19,12 +20,12 @@ export class EnterAddressManuallyPage extends BasePage {
     this.continueButton = page.getByRole('button', { name: 'Continue' });
   }
 
-  async fillAddressAndContinue(randomEntry: { addressline1: string; addressline2: string; addressline3: string; towncity: string; postcode: string; }): Promise<void> {
-    await this.addressLine1Input.fill(randomEntry.addressline1);
-    await this.addressLine2Input.fill(randomEntry.addressline2);
-    await this.addressLine3Input.fill(randomEntry.addressline3);
-    await this.addressTownInput.fill(randomEntry.towncity);
-    await this.postcodeInput.fill(randomEntry.postcode);
+  async fillAddressAndContinue(address: AddressModel): Promise<void> {
+    await this.addressLine1Input.fill(address.addressline1);
+    await this.addressLine2Input.fill(address.addressline2);
+    await this.addressLine3Input.fill(address.addressline3);
+    await this.addressTownInput.fill(address.towncity);
+    await this.postcodeInput.fill(address.postcode);
     await this.continueButton.click();
   }
 

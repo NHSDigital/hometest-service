@@ -1,14 +1,14 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
-import data from '../../test-data/address.json';
+import { AddressModel } from '../../models';
 
 test.describe('Accessibility Testing @accessibility', () => {
 
   test('Select Delivery Address Page', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomEntry);
+    const randomAddress = AddressModel.getRandomAddress();
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.waitUntilPageLoad();
     const hasViolations = await accessibility.runAccessibilityCheck(selectDeliveryAddressPage.page, "Select Delivery Address Page");
     expect(hasViolations).toBe(false);
