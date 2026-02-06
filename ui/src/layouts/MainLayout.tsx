@@ -5,6 +5,9 @@ import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type React from "react";
 import { RoutePath } from "../lib/models/route-paths";
 
+// it will be improved in future
+const isNhsApp = true;
+
 interface MainLayoutProps {
   readonly children?: React.ReactNode;
 }
@@ -25,7 +28,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </span>
       }
       <ScrollRestoration />
-      {
+      {!isNhsApp && (
         <Header transactional>
           <Header.Container>
             <Header.Logo to={"https://www.nhs.uk/"} asElement={Link} />
@@ -34,11 +37,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </Header.ServiceName>
           </Header.Container>
         </Header>
-      }
+      )}
       <Container>{children ?? <Outlet />}</Container>
-      <Footer>
-        <Footer.Copyright>&copy; Crown Copyright</Footer.Copyright>
-      </Footer>
+      {!isNhsApp && (
+        <Footer>
+          <Footer.Copyright>&copy; Crown Copyright</Footer.Copyright>
+        </Footer>
+      )}
     </>
   );
 }
