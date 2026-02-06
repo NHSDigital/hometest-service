@@ -9,7 +9,7 @@ test.describe('Accessibility Testing @accessibility', () => {
 
     // Wait for page to load
     await findAddressPage.waitUntilPageLoad();
-    const hasViolations = await accessibility.runAccessibilityCheck(findAddressPage.page, "Find Delivery Address Page");
-    expect(hasViolations).toBe(false);
+    const accessErrors = await accessibility.runAccessibilityCheck(findAddressPage.page, "Find Delivery Address Page");
+    expect(accessErrors).toHaveLength(0);
   });
 });

@@ -8,8 +8,8 @@ test.describe('Accessibility Testing @accessibility', () => {
 
     // Wait for page to load
     await homeTestStartPage.waitUntilPageLoad();
-    const hasViolations = await accessibility.runAccessibilityCheck(homeTestStartPage, "Home Test Start Page");
-    expect(hasViolations).toBe(false);
+    const accessErrors = await accessibility.runAccessibilityCheck(homeTestStartPage, "Home Test Start Page");
+     expect(accessErrors).toHaveLength(0);
   });
 
 });
