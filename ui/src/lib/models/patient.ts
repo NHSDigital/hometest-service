@@ -1,4 +1,4 @@
 export interface Patient {
-    nhsNumber: string,
-    dateOfBirth: string
+  nhsNumber: string;
+  dateOfBirth: string;
 }
