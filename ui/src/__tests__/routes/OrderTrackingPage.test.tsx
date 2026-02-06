@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom";
 
+import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
 
-import { IOrderDetails } from "@/lib/models/order-details";
 import { IPatient } from "@/lib/models/patient";
 import OrderTrackingPage from "@/routes/OrderTrackingPage";
 import { act } from "react";
@@ -41,11 +41,12 @@ jest.mock("@/components/AboutService", () => ({
 }));
 
 describe("OrderTrackingPage", () => {
+  const orderId = "550e8400-e29b-41d4-a716-446655440000";
   const mockOrder: IOrderDetails = {
-    id: "123",
+    id: orderId,
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: "confirmed",
+    status: OrderStatus.ORDER_RECEIVED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
@@ -78,21 +79,21 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       // Wait for order content to appear
       const orderStatus = await screen.findByTestId("order-status");
       expect(orderStatus).toBeInTheDocument();
       expect(screen.getByText("HIV self-test")).toBeInTheDocument();
-      expect(screen.getByText("Status: confirmed")).toBeInTheDocument();
+      expect(screen.getByText("Status: ORDER_RECEIVED")).toBeInTheDocument();
     });
 
     it("renders AboutService component with correct supplier", async () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       const aboutService = await screen.findByTestId("about-service");
@@ -104,7 +105,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       const pageLayout = screen.getByTestId("page-layout");
@@ -115,29 +116,32 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       await act(async () => {
-        renderWithRouter("456");
+        renderWithRouter(orderId);
       });
 
       await screen.findByTestId("order-status");
 
-      expect(orderDetailsService.get).toHaveBeenCalledWith("456", mockPatient);
+      expect(orderDetailsService.get).toHaveBeenCalledWith(
+        orderId,
+        mockPatient,
+      );
       expect(orderDetailsService.get).toHaveBeenCalledTimes(1);
     });
 
     it("handles dispatched order status", async () => {
       const dispatchedOrder: IOrderDetails = {
         ...mockOrder,
-        status: "dispatched",
+        status: OrderStatus.DISPATCHED,
         dispatchedDate: "2026-01-20",
       };
       (orderDetailsService.get as jest.Mock).mockResolvedValue(dispatchedOrder);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       await screen.findByTestId("order-status");
-      expect(screen.getByText("Status: dispatched")).toBeInTheDocument();
+      expect(screen.getByText("Status: DISPATCHED")).toBeInTheDocument();
     });
   });
 
@@ -146,7 +150,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(null);
 
       await act(async () => {
-        renderWithRouter("999");
+        renderWithRouter(orderId);
       });
 
       const errorAlert = await screen.findByRole("alert");
@@ -163,7 +167,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(undefined);
 
       await act(async () => {
-        renderWithRouter("999");
+        renderWithRouter(orderId);
       });
 
       const errorAlert = await screen.findByRole("alert");
@@ -177,7 +181,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(null);
 
       await act(async () => {
-        renderWithRouter("999");
+        renderWithRouter(orderId);
       });
 
       await screen.findByRole("alert");
@@ -192,7 +196,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       // After params resolve, check if loading or content is shown
@@ -210,7 +214,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockReturnValue(orderPromise);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       // Check loading state appears
@@ -233,7 +237,7 @@ describe("OrderTrackingPage", () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(syphilisOrder);
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       await screen.findByTestId("order-status");
@@ -250,11 +254,62 @@ describe("OrderTrackingPage", () => {
       );
 
       await act(async () => {
-        renderWithRouter("123");
+        renderWithRouter(orderId);
       });
 
       await screen.findByTestId("about-service");
       expect(screen.getByText("Supplier: SH:24")).toBeInTheDocument();
+    });
+  });
+
+  describe("Invalid order ID validation", () => {
+    it("displays error for invalid GUID format", async () => {
+      const invalidOrderId = "invalid-id-123";
+
+      renderWithRouter(invalidOrderId);
+
+      const errorAlert = screen.getByRole("alert");
+      expect(errorAlert).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "There is a problem" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("The order identifier is not valid."),
+      ).toBeInTheDocument();
+
+      // Should not call service with invalid ID
+      expect(orderDetailsService.get).not.toHaveBeenCalled();
+    });
+
+    it("displays error for malformed GUID", async () => {
+      const malformedGuid = "550e8400-e29b-41d4-a716";
+
+      renderWithRouter(malformedGuid);
+
+      const errorAlert = screen.getByRole("alert");
+      expect(errorAlert).toBeInTheDocument();
+      expect(
+        screen.getByText("The order identifier is not valid."),
+      ).toBeInTheDocument();
+      expect(orderDetailsService.get).not.toHaveBeenCalled();
+    });
+
+    it("renders PageLayout for invalid order ID", async () => {
+      const invalidOrderId = "not-a-guid";
+
+      renderWithRouter(invalidOrderId);
+
+      const pageLayout = screen.getByTestId("page-layout");
+      expect(pageLayout).toBeInTheDocument();
+    });
+
+    it("does not render OrderStatus or AboutService for invalid ID", async () => {
+      const invalidOrderId = "abc123";
+
+      renderWithRouter(invalidOrderId);
+
+      expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
     });
   });
 });

@@ -12,12 +12,14 @@
     "serve:static": "npm run build && npx http-server build -p 8085 -c-1 --proxy http://localhost:8085?"
   },
   "dependencies": {
+    "@medplum/fhirtypes": "^5.0.14",
     "next": "^16.1.6",
     "nhsuk-frontend": "^9.6.4",
     "nhsuk-react-components": "^5.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.13.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",

@@ -1,4 +1,9 @@
-export type OrderStatus = "confirmed" | "dispatched" | "received" | "ready";
+export enum OrderStatus {
+  ORDER_RECEIVED = "ORDER_RECEIVED",
+  DISPATCHED = "DISPATCHED",
+  RECEIVED = "RECEIVED",
+  COMPLETE = "COMPLETE",
+}
 
 export interface IOrderDetails {
   id: string;

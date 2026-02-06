@@ -1,6 +1,9 @@
+import {
+  IOrderDetails,
+  OrderStatus as OrderStatusEnum,
+} from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
-import { IOrderDetails } from "@/lib/models/order-details";
 import { MemoryRouter } from "react-router-dom";
 import { OrderStatus } from "@/components/order-status";
 
@@ -13,7 +16,7 @@ describe("OrderStatus", () => {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: "confirmed",
+    status: OrderStatusEnum.ORDER_RECEIVED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
@@ -36,7 +39,7 @@ describe("OrderStatus", () => {
   it("renders both header and content for dispatched status", () => {
     const dispatchedOrder: IOrderDetails = {
       ...mockOrder,
-      status: "dispatched",
+      status: OrderStatusEnum.DISPATCHED,
       dispatchedDate: "2026-01-20",
     };
     renderWithRouter(<OrderStatus order={dispatchedOrder} />);
@@ -55,7 +58,7 @@ describe("OrderStatus", () => {
   it("renders both header and content for received status", () => {
     const receivedOrder: IOrderDetails = {
       ...mockOrder,
-      status: "received",
+      status: OrderStatusEnum.RECEIVED,
     };
     renderWithRouter(<OrderStatus order={receivedOrder} />);
 
@@ -68,10 +71,10 @@ describe("OrderStatus", () => {
     expect(screen.getByText(/wait for your result/i)).toBeInTheDocument();
   });
 
-  it("renders both header and content for ready status", () => {
+  it("renders both header and content for complete status", () => {
     const readyOrder: IOrderDetails = {
       ...mockOrder,
-      status: "ready",
+      status: OrderStatusEnum.COMPLETE,
     };
     renderWithRouter(<OrderStatus order={readyOrder} />);
 

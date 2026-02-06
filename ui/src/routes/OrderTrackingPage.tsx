@@ -9,6 +9,7 @@ import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import orderDetailsService from "@/lib/services/order-details-service";
 import { useParams } from "react-router-dom";
+import { z } from "zod";
 
 function getPatient(): IPatient {
   // hardcoded - will be obtained from logged user later
@@ -18,7 +19,16 @@ function getPatient(): IPatient {
   };
 }
 
-function OrderContent({ orderPromise }: { orderPromise: Promise<IOrderDetails> }) {
+function isValidGuid(value: string): boolean {
+  const result = z.uuid().safeParse(value);
+  return result.success;
+}
+
+function OrderContent({
+  orderPromise,
+}: {
+  orderPromise: Promise<IOrderDetails>;
+}) {
   const order = use(orderPromise);
 
   if (!order) {
@@ -41,19 +51,19 @@ function OrderContent({ orderPromise }: { orderPromise: Promise<IOrderDetails> }
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const patient = getPatient();
-  
-  if (!orderId) {
+
+  if (!orderId || !isValidGuid(orderId)) {
     return (
       <PageLayout>
         <div role="alert">
           <h1 className="nhsuk-heading-l">There is a problem</h1>
-          <p className="nhsuk-body">Order ID is required.</p>
+          <p className="nhsuk-body">The order identifier is not valid.</p>
         </div>
       </PageLayout>
     );
   }
 
-    const orderPromise = orderDetailsService.get(orderId, patient);
+  const orderPromise = orderDetailsService.get(orderId, patient);
 
   return (
     <PageLayout>

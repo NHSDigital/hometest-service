@@ -1,6 +1,6 @@
+import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
-import { IOrderDetails } from "@/lib/models/order-details";
 import { MemoryRouter } from "react-router-dom";
 import { OrderStatusContent } from "@/components/order-status";
 
@@ -13,7 +13,7 @@ describe("OrderStatusContent", () => {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: "confirmed",
+    status: OrderStatus.ORDER_RECEIVED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
@@ -75,7 +75,7 @@ describe("OrderStatusContent", () => {
   describe("Dispatched status", () => {
     const dispatchedOrder: IOrderDetails = {
       ...baseOrder,
-      status: "dispatched",
+      status: OrderStatus.DISPATCHED,
       dispatchedDate: "2026-01-16",
     };
 
@@ -106,7 +106,7 @@ describe("OrderStatusContent", () => {
     it('does not display "Sent" text when dispatchedDate is not provided', () => {
       const orderWithoutDate: IOrderDetails = {
         ...baseOrder,
-        status: "dispatched",
+        status: OrderStatus.DISPATCHED,
       };
       renderWithRouter(<OrderStatusContent order={orderWithoutDate} />);
       expect(screen.queryByText(/sent/i)).not.toBeInTheDocument();
@@ -116,7 +116,7 @@ describe("OrderStatusContent", () => {
   describe("Received status", () => {
     const receivedOrder: IOrderDetails = {
       ...baseOrder,
-      status: "received",
+      status: OrderStatus.RECEIVED,
     };
 
     it("renders received status heading", () => {
@@ -149,10 +149,10 @@ describe("OrderStatusContent", () => {
     });
   });
 
-  describe("Ready status", () => {
+  describe("Complete status", () => {
     const readyOrder: IOrderDetails = {
       ...baseOrder,
-      status: "ready",
+      status: OrderStatus.COMPLETE,
     };
 
     it("renders ready status heading", () => {

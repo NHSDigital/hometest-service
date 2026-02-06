@@ -11,7 +11,7 @@
         "matches": "^(19|20)\\d\\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
       },
       "order_id": {
-        "matches": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3c"
+        "matches": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3e"
       }
     }
   },
@@ -27,14 +27,14 @@
       "total": 1,
       "entry": [
         {
-          "fullUrl": "urn:uuid:018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3c",
+          "fullUrl": "urn:uuid:018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3e",
           "resource": {
             "resourceType": "ServiceRequest",
-            "id": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3c",
+            "id": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3e",
             "identifier": [
               {
                 "system": "https://fhir.hometest.nhs.uk/Id/order-id",
-                "value": "23456"
+                "value": "56789"
               }
             ],
             "status": "active",
@@ -76,11 +76,11 @@
                   "coding": [
                     {
                       "system": "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
-                      "code": "DISPATCHED",
-                      "display": "Kit dispatched to patient"
+                      "code": "COMPLETE",
+                      "display": "Result ready"
                     }
                   ],
-                  "text": "DISPATCHED"
+                  "text": "COMPLETE"
                 }
               }
             ]

@@ -1,6 +1,6 @@
+import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
-import { IOrderDetails } from "@/lib/models/order-details";
 import { OrderStatusHeader } from "@/components/order-status";
 
 describe("OrderStatusHeader", () => {
@@ -8,7 +8,7 @@ describe("OrderStatusHeader", () => {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: "confirmed",
+    status: OrderStatus.ORDER_RECEIVED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
