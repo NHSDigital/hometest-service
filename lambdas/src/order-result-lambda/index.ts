@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { Observation, Parameters } from 'fhir/r4'; //TODO: confirm version (R5, R4B, R4, R3, R2)
+import { Observation, Parameters } from 'fhir/r4';
 import { z } from 'zod';
 import { AWSSQSClient } from '../lib/sqs/sqs-client';
 import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
@@ -9,8 +9,7 @@ const sqsClient = new AWSSQSClient();
 const commons = new ConsoleCommons();
 const QUEUE_URL = process.env.RESULT_QUEUE_URL || '';
 
-// Zod schema for validating required FHIR Observation fields
-// TODO: verify schema
+// Zod schema for validating FHIR Observation fields that we care about
 const observationSchema = z.looseObject({
   basedOn: z.array(z.strictObject({
     reference: z.string(),
@@ -40,7 +39,6 @@ export const handler = async (
     method: event.httpMethod,
   });
 
-  // Parse the FHIR Observation from request body
   let observation: Observation;
   try {
     if (event.body === '{}' || event.body === null) {
@@ -52,13 +50,12 @@ export const handler = async (
     return createFhirErrorResponse(400, 'invalid', 'Invalid JSON in request body', 'error');
   }
 
-  // Validate required fields
   const validationResult = observationSchema.safeParse(observation);
 
   if (!validationResult.success) {
 
-    // clean up error output to remove instances of '✖ '
     let errorDetails: string = z.prettifyError(validationResult.error);
+    // clean up error output to remove unnesesary decoration
     errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, '');
 
     commons.logError('order-result-lambda', 'Validation failed', { error: errorDetails});
@@ -66,11 +63,8 @@ export const handler = async (
   }
 
   try{
-    // Extract order UID from basedOn reference
     const orderUid = extractOrderUid(observation);
-    // Get correlation ID from header
     const correlationId = event.headers['X-Correlation-ID'];
-    // Send message to SQS queue
     const messageBody = JSON.stringify({
       observation,
       correlationId,
@@ -87,7 +81,6 @@ export const handler = async (
       },
     });
     commons.logInfo('order-result-lambda', 'Result posted to SQS', { orderUid, correlationId });
-    // Return 201 response as FHIR Parameters resource
     const timestamp = new Date().toISOString();
     const responseResource: Parameters = {
       resourceType: 'Parameters',

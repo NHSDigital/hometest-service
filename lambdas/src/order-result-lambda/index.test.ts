@@ -299,7 +299,6 @@ describe('Order Result Lambda Handler', () => {
     });
   });
 
-  //TODO: verify if all these are needed
   describe('Invalid JSON scenarios', () => {
     test('should handle invalid JSON in request body', async () => {
       mockEvent.body = '{ invalid json body}';
