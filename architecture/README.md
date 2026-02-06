@@ -12,15 +12,15 @@ our [Confluence Space](https://nhsd-confluence.digital.nhs.uk/spaces/HOM/pages/1
 
 ### API Specifications
 
-The service uses [OpenAPI 3.0](https://www.openapis.org/) and [HL7 FHIR](https://www.hl7.org/fhir/)
+The service uses [OpenAPI 3.0](https://www.openapis.org/) and [HL7 FHIRv4](https://www.hl7.org/fhir/)
 standards for data exchange.
 
 #### Home Test API Specifications
 
-- **[`api_spec.yaml`](./api_spec.yaml)**: The primary API definition for the HomeTest Service. It covers:
-  - **Test Order Service**: Retrieving supplier info, checking eligibility (using NHS numbers and postcodes), and placing orders.
-  - **Result Service**: Submitting and viewing test results.
-  - **FHIR Resources**: Utilizes `ServiceRequest` for orders, `Observation` for results, and `Task` for status tracking.
+- **[`home-test-consumer-api.yaml`](home-test-consumer-api.yaml)**: The primary API definition for the HomeTest Service. It covers:
+  - **Order Management**: Creating test orders and retrieving order history using NHS numbers and date of birth for patient verification.
+  - **Result Service**: Viewing test results for completed orders with patient identity verification.
+  - **FHIR Resources**: Utilizes `ServiceRequest` for orders, `Observation` for results, and `Bundle` for search result collections.
 
 #### Supplier API Specifications
 

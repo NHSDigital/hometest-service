@@ -35,13 +35,22 @@ export class AccessibilityModule {
    * Run accessibility check on a page
    * @param pageOrPageObject - Playwright Page object or PageObject with page property
    * @param pageName - Name identifier for the page (used in report naming)
-   * @returns true if violations found, false if no violations
+   * @param prefix - Optional prefix for the report filename
+   * @returns Array of accessibility errors found
    */
-  async runAccessibilityCheck(pageOrPageObject: Page | { page: Page }, pageName: string): Promise<boolean> {
+  async runAccessibilityCheck(
+    pageOrPageObject: Page | { page: Page },
+    pageName: string,
+    prefix: string = ''
+  ): Promise<Result[]> {
     const page = 'page' in pageOrPageObject ? pageOrPageObject.page : pageOrPageObject;
+    const accessErrors: Result[] = [];
 
     console.log(`🔍 Running accessibility check on: ${pageName}`);
     console.log(`📋 Testing against standards: ${this.standards.join(', ')}`);
+
+    // Verify page title
+    await this.verifyPageTitle(page);
 
     // Run accessibility scan
     const scanResult: AxeResults = await new AxeBuilder({ page })
@@ -49,37 +58,63 @@ export class AccessibilityModule {
       .analyze();
 
     // Generate HTML report
-    await this.generateReport(scanResult, pageName);
+    await this.createHtmlAccessibilityReport(scanResult, pageName, prefix);
 
-    const hasViolations = scanResult.violations.length > 0;
+    // Collect violations
+    scanResult.violations.forEach((element) => {
+      accessErrors.push(element);
+    });
 
-    if (hasViolations) {
-      console.log(`❌ Found ${scanResult.violations.length} accessibility violation(s) on ${pageName}`);
-      this.logViolations(scanResult.violations, pageName);
+    if (accessErrors.length > 0) {
+      console.log(`❌ ${accessErrors.length} accessibility errors found on ${pageName}`);
+      this.logViolations(accessErrors, pageName);
     } else {
       console.log(`✅ No accessibility violations found on ${pageName}`);
     }
 
-    return hasViolations;
+    return accessErrors;
   }
 
   /**
-   * Generate HTML accessibility report
+   * Verify page has a title
    */
-  private async generateReport(scanResult: AxeResults, pageName: string): Promise<void> {
-    const reportFileName = `${pageName}-accessibility-report.html`;
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  private async verifyPageTitle(page: Page): Promise<void> {
+    const title = await page.title();
+    if (!title || title.trim().length === 0) {
+      console.warn(`⚠️  Warning: Page has no title`);
+    }
+  }
+
+  /**
+   * Create HTML accessibility report
+   */
+  private async createHtmlAccessibilityReport(
+    scanResult: AxeResults,
+    pageName: string,
+    prefix: string = ''
+  ): Promise<void> {
+    const accessibilityReportPath = this.reportDirectory;
+    const accessibilityReportHtml =
+      prefix === ''
+        ? `${pageName}-accessibility-report.html`
+        : `${prefix}-${pageName}-accessibility-report.html`;
+
+    // Ensure directory exists
+    const absolutePath = path.resolve(__dirname, '..', 'testResults', 'accessibility');
+    if (!existsSync(absolutePath)) {
+      mkdirSync(absolutePath, { recursive: true });
+    }
 
     createHtmlReport({
       results: scanResult,
       options: {
-        projectKey: pageName,
-        outputDir: this.reportDirectory,
-        reportFileName: `${timestamp}-${reportFileName}`,
-      },
+        projectKey: `${pageName}`,
+        outputDir: accessibilityReportPath,
+        reportFileName: accessibilityReportHtml
+      }
     });
 
-    console.log(`📄 Report generated: ${this.reportDirectory}/${timestamp}-${reportFileName}`);
+    console.log(`📄 Report generated: ${accessibilityReportPath}/${accessibilityReportHtml}`);
   }
 
   /**
