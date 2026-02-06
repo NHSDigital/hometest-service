@@ -1,10 +1,10 @@
-import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
 import { OrderStatusHeader } from "@/components/order-status";
 
 describe("OrderStatusHeader", () => {
-  const mockOrder: IOrderDetails = {
+  const mockOrder: OrderDetails = {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",

@@ -4,10 +4,10 @@ import {
   ReadyStatus,
   ReceivedStatus,
 } from "./statuses";
-import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 interface OrderStatusContentProps {
-  order: IOrderDetails;
+  order: OrderDetails;
 }
 
 export function OrderStatusContent({ order }: OrderStatusContentProps) {

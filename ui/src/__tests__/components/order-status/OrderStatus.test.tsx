@@ -1,5 +1,5 @@
 import {
-  IOrderDetails,
+  OrderDetails,
   OrderStatus as OrderStatusEnum,
 } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
@@ -12,7 +12,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 };
 
 describe("OrderStatus", () => {
-  const mockOrder: IOrderDetails = {
+  const mockOrder: OrderDetails = {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
@@ -37,7 +37,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for dispatched status", () => {
-    const dispatchedOrder: IOrderDetails = {
+    const dispatchedOrder: OrderDetails = {
       ...mockOrder,
       status: OrderStatusEnum.DISPATCHED,
       dispatchedDate: "2026-01-20",
@@ -56,7 +56,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for received status", () => {
-    const receivedOrder: IOrderDetails = {
+    const receivedOrder: OrderDetails = {
       ...mockOrder,
       status: OrderStatusEnum.RECEIVED,
     };
@@ -72,7 +72,7 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for complete status", () => {
-    const readyOrder: IOrderDetails = {
+    const readyOrder: OrderDetails = {
       ...mockOrder,
       status: OrderStatusEnum.COMPLETE,
     };

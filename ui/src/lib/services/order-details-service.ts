@@ -1,16 +1,12 @@
 import { Bundle, OperationOutcome } from "@medplum/fhirtypes";
 
-import { IOrderDetails } from "@/lib/models/order-details";
-import { IPatient } from "@/lib/models/patient";
+import { OrderDetails } from "@/lib/models/order-details";
 import { OrderDetailsMapper } from "@/lib/mappers/order-details-mapper";
+import { Patient } from "@/lib/models/patient";
 import { backendApiEndpoint } from "@/settings";
 
-export interface IOrderDetailsService {
-  get: (orderId: string, patient: IPatient) => Promise<IOrderDetails | null>;
-}
-
-class OrderDetailsService implements IOrderDetailsService {
-  async get(orderId: string, patient: IPatient): Promise<IOrderDetails | null> {
+class OrderDetailsService {
+  async get(orderId: string, patient: Patient): Promise<OrderDetails | null> {
     const response = await this.getOrderFromApi(orderId, patient);
 
     if (response.status !== 200) {
@@ -34,7 +30,7 @@ class OrderDetailsService implements IOrderDetailsService {
 
   private async getOrderFromApi(
     orderId: string,
-    patient: IPatient,
+    patient: Patient,
   ): Promise<Response> {
     const url = new URL(`${backendApiEndpoint}/order`);
     url.searchParams.append("nhs_number", patient.nhsNumber);

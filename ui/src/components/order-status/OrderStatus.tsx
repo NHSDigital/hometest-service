@@ -1,9 +1,9 @@
-import { IOrderDetails } from "@/lib/models/order-details";
+import { OrderDetails } from "@/lib/models/order-details";
 import { OrderStatusContent } from "./OrderStatusContent";
 import { OrderStatusHeader } from "./OrderStatusHeader";
 
 interface OrderStatusProps {
-  order: IOrderDetails;
+  order: OrderDetails;
 }
 
 export function OrderStatus({ order }: OrderStatusProps) {

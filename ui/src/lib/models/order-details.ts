@@ -5,7 +5,7 @@ export enum OrderStatus {
   COMPLETE = "COMPLETE",
 }
 
-export interface IOrderDetails {
+export interface OrderDetails {
   id: string;
   orderedDate: string;
   referenceNumber: string;

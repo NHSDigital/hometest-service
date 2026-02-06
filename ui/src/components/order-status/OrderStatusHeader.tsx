@@ -1,7 +1,7 @@
-import { IOrderDetails } from "@/lib/models/order-details";
+import { OrderDetails } from "@/lib/models/order-details";
 
 interface OrderStatusHeaderProps {
-  order: IOrderDetails;
+  order: OrderDetails;
 }
 
 export function OrderStatusHeader({ order }: OrderStatusHeaderProps) {

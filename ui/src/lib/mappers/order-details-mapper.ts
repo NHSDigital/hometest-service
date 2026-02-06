@@ -1,5 +1,5 @@
 import { Bundle, ServiceRequest } from "@medplum/fhirtypes";
-import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 import { FhirConstants } from "../utils/fhir-constants";
 import { FhirUtils } from "../utils/fhir-utils";
@@ -7,7 +7,7 @@ import { FhirUtils } from "../utils/fhir-utils";
 const MAX_DELIVERY_DAYS = 5;
 
 export class OrderDetailsMapper {
-  static mapBundleToOrderDetails(bundle: Bundle): IOrderDetails {
+  static mapBundleToOrderDetails(bundle: Bundle): OrderDetails {
     const serviceRequest = FhirUtils.findResource<ServiceRequest>(
       bundle,
       "ServiceRequest",

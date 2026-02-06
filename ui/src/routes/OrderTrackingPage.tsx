@@ -3,15 +3,15 @@
 import { Suspense, use } from "react";
 
 import { AboutService } from "@/components/AboutService";
-import { IOrderDetails } from "@/lib/models/order-details";
-import { IPatient } from "@/lib/models/patient";
+import { OrderDetails } from "@/lib/models/order-details";
 import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
+import { Patient } from "@/lib/models/patient";
 import orderDetailsService from "@/lib/services/order-details-service";
 import { useParams } from "react-router-dom";
 import { z } from "zod";
 
-function getPatient(): IPatient {
+function getPatient(): Patient {
   // hardcoded - will be obtained from logged user later
   return {
     nhsNumber: "2657119018",
@@ -27,7 +27,7 @@ function isValidGuid(value: string): boolean {
 function OrderContent({
   orderPromise,
 }: {
-  orderPromise: Promise<IOrderDetails>;
+  orderPromise: Promise<OrderDetails | null>;
 }) {
   const order = use(orderPromise);
 

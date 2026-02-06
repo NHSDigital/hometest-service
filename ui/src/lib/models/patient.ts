@@ -1,4 +1,4 @@
-export interface IPatient {
+export interface Patient {
     nhsNumber: string,
     dateOfBirth: string
 }

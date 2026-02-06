@@ -1,11 +1,11 @@
 import "@testing-library/jest-dom";
 
-import { IOrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
-import { IPatient } from "@/lib/models/patient";
 import OrderTrackingPage from "@/routes/OrderTrackingPage";
+import { Patient } from "@/lib/models/patient";
 import { act } from "react";
 import orderDetailsService from "@/lib/services/order-details-service";
 
@@ -26,7 +26,7 @@ jest.mock("@/layouts/PageLayout", () => ({
 }));
 
 jest.mock("@/components/order-status", () => ({
-  OrderStatus: ({ order }: { order: IOrderDetails }) => (
+  OrderStatus: ({ order }: { order: OrderDetails }) => (
     <div data-testid="order-status">
       <h1>HIV self-test</h1>
       <p>Status: {order.status}</p>
@@ -42,7 +42,7 @@ jest.mock("@/components/AboutService", () => ({
 
 describe("OrderTrackingPage", () => {
   const orderId = "550e8400-e29b-41d4-a716-446655440000";
-  const mockOrder: IOrderDetails = {
+  const mockOrder: OrderDetails = {
     id: orderId,
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
@@ -51,7 +51,7 @@ describe("OrderTrackingPage", () => {
     maxDeliveryDays: 5,
   };
 
-  const mockPatient: IPatient = {
+  const mockPatient: Patient = {
     nhsNumber: "2657119018",
     dateOfBirth: "1990-08-11",
   };
@@ -129,7 +129,7 @@ describe("OrderTrackingPage", () => {
     });
 
     it("handles dispatched order status", async () => {
-      const dispatchedOrder: IOrderDetails = {
+      const dispatchedOrder: OrderDetails = {
         ...mockOrder,
         status: OrderStatus.DISPATCHED,
         dispatchedDate: "2026-01-20",
@@ -207,8 +207,8 @@ describe("OrderTrackingPage", () => {
 
     it("has correct accessibility attributes on loading state", async () => {
       // For this test, we need to delay the promise resolution to catch loading state
-      let resolveOrder: (value: IOrderDetails) => void;
-      const orderPromise = new Promise<IOrderDetails>((resolve) => {
+      let resolveOrder: (value: OrderDetails) => void;
+      const orderPromise = new Promise<OrderDetails>((resolve) => {
         resolveOrder = resolve;
       });
       (orderDetailsService.get as jest.Mock).mockReturnValue(orderPromise);
@@ -231,7 +231,7 @@ describe("OrderTrackingPage", () => {
 
   describe("Different order types", () => {
     it("handles different test types", async () => {
-      const syphilisOrder: IOrderDetails = {
+      const syphilisOrder: OrderDetails = {
         ...mockOrder,
       };
       (orderDetailsService.get as jest.Mock).mockResolvedValue(syphilisOrder);
@@ -245,7 +245,7 @@ describe("OrderTrackingPage", () => {
     });
 
     it("handles different suppliers", async () => {
-      const differentSupplierOrder: IOrderDetails = {
+      const differentSupplierOrder: OrderDetails = {
         ...mockOrder,
         supplier: "SH:24",
       };
