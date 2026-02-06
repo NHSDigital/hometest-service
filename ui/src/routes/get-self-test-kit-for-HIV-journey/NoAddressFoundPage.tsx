@@ -8,7 +8,7 @@ import PageLayout from "@/layouts/PageLayout";
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers } = useCreateOrderContext();
-  const { "no-address-found": content } = useContent();
+  const { commonContent, "no-address-found": content } = useContent();
 
   return (
     <PageLayout
@@ -44,7 +44,7 @@ export default function NoAddressFoundPage() {
 
       <p className="nhsuk-body">
         <a onClick={() => goToStep(JourneyStepNames.EnterAddressManually)}>
-          {content.enterAddressManuallyLink}
+          {commonContent.navigation.manualEntryLink}
         </a>
       </p>
     </PageLayout>

@@ -166,8 +166,7 @@
     "no-address-found": {
       "title": "No address found",
       "notFoundMessage": "We could not find an address that matches",
-      "tryNewSearchLink": "Try a new search",
-      "enterAddressManuallyLink": "Enter address manually"
+      "tryNewSearchLink": "Try a new search"
     },
     "global-error": {
       "title": "Oops!",

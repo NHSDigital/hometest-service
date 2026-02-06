@@ -212,7 +212,6 @@ export interface NoAddressFoundContent {
   title: string;
   notFoundMessage: string;
   tryNewSearchLink: string;
-  enterAddressManuallyLink: string;
 }
 
 export interface GlobalErrorContent {
