@@ -5,7 +5,7 @@ import { type Result } from 'axe-core';
 const accessErrors: Result[] = [];
 test.describe('Accessibility Testing @accessibility', () => {
 
-  test('Home Test - Confirmed Order Accessibility', async ({ orderStatusPage, accessibility }) => {
+  test('Home Test - Status Order Accessibility', async ({ orderStatusPage, accessibility }) => {
     await orderStatusPage.navigateToOrder('1');
     await orderStatusPage.waitUntilPageLoad();
     accessErrors.push(...await accessibility.runAccessibilityCheck(orderStatusPage, "Status Confirmed", "Order Tracking Page"));
