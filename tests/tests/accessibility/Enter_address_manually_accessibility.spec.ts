@@ -9,7 +9,7 @@ test.describe('Accessibility Testing @accessibility', () => {
     await findAddressPage.clickEnterAddressManuallyLink();
     // Wait for page to load
     await enterAddressManuallyPage.waitUntilPageLoad();
-    const hasViolations = await accessibility.runAccessibilityCheck(enterAddressManuallyPage.page, "Enter Address Manually Page");
-    expect(hasViolations).toBe(false);
+    const accessErrors = await accessibility.runAccessibilityCheck(enterAddressManuallyPage.page, "Enter Address Manually Page");
+    expect(accessErrors).toHaveLength(0);
   });
 });
