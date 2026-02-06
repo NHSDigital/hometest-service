@@ -4,8 +4,8 @@ SET search_path TO hometest;
 CREATE TABLE IF NOT EXISTS patient_mapping
 (
   uid          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  nhs_login_id uuid UNIQUE,
-  dob          DATE NOT NULL
+  nhs_number   VARCHAR(50) UNIQUE,
+  birth_date   DATE NOT NULL
 );
 
 -- Tests
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS supplier
 
 CREATE TABLE IF NOT EXISTS la_supplier_offering
 (
-  offering_id    BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  offering_id    uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   supplier_id    uuid REFERENCES supplier (supplier_id),
   test_code      VARCHAR(50) REFERENCES test_type (test_code),
   la_code        VARCHAR(10) NOT NULL,
@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS la_supplier_offering
 CREATE TABLE IF NOT EXISTS "order"
 (
   order_uid   uuid PRIMARY KEY         DEFAULT gen_random_uuid(),
+  order_reference BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 100000) UNIQUE,
   supplier_id uuid        NOT NULL REFERENCES supplier (supplier_id),
   patient_uid uuid        NOT NULL REFERENCES patient_mapping (uid),
   test_code   VARCHAR(50) NOT NULL REFERENCES test_type (test_code),
@@ -54,16 +55,18 @@ CREATE TABLE IF NOT EXISTS status_type
 
 CREATE TABLE IF NOT EXISTS order_status
 (
-  status_id   BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  status_id   uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   order_uid   uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
+  order_reference BIGINT,
   status_code VARCHAR(50) NOT NULL REFERENCES status_type (status_code),
   "timestamp" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS result_status
 (
-  result_id   BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  result_id   uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   order_uid   uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
+  order_reference BIGINT,
   status_code VARCHAR(50) NOT NULL REFERENCES status_type (status_code),
   "timestamp" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -73,4 +76,4 @@ CREATE INDEX IF NOT EXISTS idx_order_patient_uid ON "order" (patient_uid);
 CREATE INDEX IF NOT EXISTS idx_order_supplier_id ON "order" (supplier_id);
 CREATE INDEX IF NOT EXISTS idx_order_status_order_uid ON order_status (order_uid);
 CREATE INDEX IF NOT EXISTS idx_result_status_order_uid ON result_status (order_uid);
-CREATE INDEX IF NOT EXISTS idx_patient_nhs_number ON patient_mapping (nhs_login_id);
+CREATE INDEX IF NOT EXISTS idx_patient_nhs_number ON patient_mapping (nhs_number);
