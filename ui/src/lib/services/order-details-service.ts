@@ -6,22 +6,26 @@ import { OrderDetailsMapper } from "@/lib/mappers/order-details-mapper";
 import { backendApiEndpoint } from "@/settings";
 
 export interface IOrderDetailsService {
-  get: (orderId: string, patient: IPatient) => Promise<IOrderDetails>;
+  get: (orderId: string, patient: IPatient) => Promise<IOrderDetails | null>;
 }
 
 class OrderDetailsService implements IOrderDetailsService {
-  async get(orderId: string, patient: IPatient): Promise<IOrderDetails> {
+  async get(orderId: string, patient: IPatient): Promise<IOrderDetails | null> {
     const response = await this.getOrderFromApi(orderId, patient);
 
     if (response.status !== 200) {
       const operationOutcome: OperationOutcome = await response.json();
       const issue = operationOutcome.issue?.[0];
+      if (issue.code === "not-found") {
+        return null;
+      }
+
       const errorMessage =
         issue?.details?.text ??
         issue?.diagnostics ??
         issue?.code ??
         "Unknown error";
-      throw new Error(errorMessage);
+      if (errorMessage === "") throw new Error(errorMessage);
     }
 
     const bundle: Bundle = await response.json();

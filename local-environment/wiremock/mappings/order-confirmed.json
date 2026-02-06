@@ -1,5 +1,5 @@
 {
-  "priority": 10,
+  "priority": 5,
   "request": {
     "method": "GET",
     "urlPath": "/order",
@@ -11,12 +11,12 @@
         "matches": "^(19|20)\\d\\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
       },
       "order_id": {
-        "matches": "018f6b6e-8b8e-7c2a-8f3b-8b8e7c2a8f3b"
+        "matches": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3b"
       }
     }
   },
   "response": {
-    "status": 201,
+    "status": 200,
     "headers": {
       "Content-Type": "application/fhir+json",
       "Access-Control-Allow-Origin": "*"
@@ -27,10 +27,10 @@
       "total": 1,
       "entry": [
         {
-          "fullUrl": "urn:uuid:018f6b6e-8b8e-7c2a-8f3b-8b8e7c2a8f3b",
+          "fullUrl": "urn:uuid:018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3b",
           "resource": {
             "resourceType": "ServiceRequest",
-            "id": "018f6b6e-8b8e-7c2a-8f3b-8b8e7c2a8f3b",
+            "id": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3b",
             "identifier": [
               {
                 "system": "https://fhir.hometest.nhs.uk/Id/order-id",

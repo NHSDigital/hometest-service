@@ -1,5 +1,5 @@
 {
-  "priority": 10,
+  "priority": 5,
   "request": {
     "method": "GET",
     "urlPath": "/order",
@@ -16,7 +16,7 @@
     }
   },
   "response": {
-    "status": 201,
+    "status": 200,
     "headers": {
       "Content-Type": "application/fhir+json",
       "Access-Control-Allow-Origin": "*"
