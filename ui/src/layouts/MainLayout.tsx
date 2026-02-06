@@ -4,12 +4,15 @@ import { Link, Outlet, ScrollRestoration } from "react-router-dom";
 import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type React from "react";
 import { RoutePath } from "../lib/models/route-paths";
+import { useCommonContent } from "@/hooks";
 
 interface MainLayoutProps {
   readonly children?: React.ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const commonContent = useCommonContent();
+
   return (
     <>
       {
@@ -37,7 +40,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       }
       <Container>{children ?? <Outlet />}</Container>
       <Footer>
-        <Footer.Copyright>&copy; Crown Copyright</Footer.Copyright>
+        <Footer.Copyright>{commonContent.footer.copyright}</Footer.Copyright>
       </Footer>
     </>
   );
