@@ -6,10 +6,11 @@ import {
 import { init } from "./init";
 import { HttpError } from "../lib/http/http-client";
 import { isUUID } from "../lib/utils";
+import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 
 const name = "order-router-lambda";
 
-const { httpClient, supplierAuthClient, environmentVariables } = init();
+const { httpClient, environmentVariables, supplierDb, secretsClient } = init();
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -17,7 +18,8 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   try {
     if (
-      !environmentVariables.SUPPLIER_BASE_URL ||
+      !environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH ||
+      !environmentVariables.SUPPLIER_ORDER_PATH ||
       !environmentVariables.SUPPLIER_CLIENT_ID ||
       !environmentVariables.SUPPLIER_CLIENT_SECRET_NAME
     ) {
@@ -28,9 +30,6 @@ export const handler = async (
         }),
       };
     }
-
-    // Get OAuth token
-    const accessToken = await supplierAuthClient.getAccessToken();
 
     // Parse and validate event.body
     let parsedBody: { supplier_code: string; order_body: any };
@@ -60,8 +59,32 @@ export const handler = async (
       };
     }
 
+    // Get supplier service_url from DB
+    const serviceUrl = await supplierDb.getSupplierServiceUrlBySupplierId(parsedBody.supplier_code);
+    if (!serviceUrl) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: `${name}: Supplier not found for supplier_code`,
+        }),
+      };
+    }
+
+    // Initialise supplierAuthClient with the correct baseUrl
+    const supplierAuthClient = new OAuthSupplierAuthClient(
+      httpClient,
+      secretsClient,
+      serviceUrl,
+      environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH,
+      environmentVariables.SUPPLIER_CLIENT_ID,
+      environmentVariables.SUPPLIER_CLIENT_SECRET_NAME,
+    );
+
+    // Get OAuth token
+    const accessToken = await supplierAuthClient.getAccessToken();
+
     // Call order endpoint with the token
-    const orderUrl = `${environmentVariables.SUPPLIER_BASE_URL.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
+    const orderUrl = `${serviceUrl.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
     const correlationId =
       event.headers["X-Correlation-ID"] ||
       event.headers["x-correlation-id"] ||

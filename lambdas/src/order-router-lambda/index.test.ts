@@ -4,6 +4,7 @@ import { EnvironmentVariables } from "./init";
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
 const mockSupplierAuthGetAccessToken = jest.fn();
+const mockGetSupplierServiceUrlBySupplierId = jest.fn();
 const mockEnvironmentVariables: EnvironmentVariables =
   {} as EnvironmentVariables;
 
@@ -16,8 +17,20 @@ jest.mock("./init", () => ({
       getAccessToken: mockSupplierAuthGetAccessToken,
     },
     environmentVariables: mockEnvironmentVariables,
+    supplierDb: {
+      getSupplierServiceUrlBySupplierId: mockGetSupplierServiceUrlBySupplierId,
+    },
   })),
 }));
+
+// Mock OAuthSupplierAuthClient
+jest.mock("../lib/supplier/supplier-auth-client", () => {
+  return {
+    OAuthSupplierAuthClient: jest.fn().mockImplementation(() => ({
+      getAccessToken: mockSupplierAuthGetAccessToken,
+    })),
+  };
+});
 
 // Import handler after mocking
 import { handler } from "./index";
@@ -26,6 +39,7 @@ describe("order-router-lambda", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
   let mockContext: Partial<Context>;
   const validUUID = "123e4567-e89b-12d3-a456-426614174000";
+  const mockServiceUrl = "http://supplier-service-url.com";
 
   beforeEach(() => {
     mockEvent = {
@@ -54,9 +68,9 @@ describe("order-router-lambda", () => {
     // Reset mocks
     mockHttpClientPostRaw.mockReset();
     mockSupplierAuthGetAccessToken.mockReset();
+    mockGetSupplierServiceUrlBySupplierId.mockReset();
 
     // Set environment variables
-    mockEnvironmentVariables.SUPPLIER_BASE_URL = "http://wiremock:8080";
     mockEnvironmentVariables.SUPPLIER_OAUTH_TOKEN_PATH = "/oauth/token";
     mockEnvironmentVariables.SUPPLIER_ORDER_PATH = "/order";
     mockEnvironmentVariables.SUPPLIER_CLIENT_ID = "supplier-client";
@@ -71,10 +85,9 @@ describe("order-router-lambda", () => {
   });
 
   describe("successful order placement", () => {
-    it("should handle base URL with trailing slash", async () => {
-      mockEnvironmentVariables.SUPPLIER_BASE_URL = "http://wiremock:8080/";
-
+    it("should fetch service_url from supplierDb and call order endpoint", async () => {
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-secret");
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
 
       mockHttpClientPostRaw.mockResolvedValue({
         status: 200,
@@ -89,9 +102,12 @@ describe("order-router-lambda", () => {
 
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
+      expect(mockGetSupplierServiceUrlBySupplierId).toHaveBeenCalledWith(
+        validUUID,
+      );
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        "http://wiremock:8080/order",
+        `${mockServiceUrl}/order`,
         JSON.stringify({ resourceType: "ServiceRequest" }),
         expect.objectContaining({
           Authorization: "Bearer test-secret",
@@ -102,92 +118,40 @@ describe("order-router-lambda", () => {
       );
     });
 
-    it("should retrieve OAuth token and call order endpoint successfully", async () => {
-      mockSupplierAuthGetAccessToken.mockResolvedValue(
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test",
+    it("should trim trailing slash from service_url", async () => {
+      mockSupplierAuthGetAccessToken.mockResolvedValue("test-secret");
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(
+        "http://supplier-url.com/",
       );
-
-      const mockOrderRequest = {
-        resourceType: "ServiceRequest",
-        status: "active",
-        intent: "order",
-      };
-
-      const mockOrderResponse = {
-        resourceType: "ServiceRequest",
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        status: "active",
-        intent: "order",
-      };
 
       mockHttpClientPostRaw.mockResolvedValue({
-        status: 201,
-        text: async () => JSON.stringify(mockOrderResponse),
-        headers: {
-          get: (name: string) =>
-            name === "content-type" ? "application/fhir+json" : null,
-        },
-      });
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: mockOrderRequest,
-      });
-      mockEvent.headers = { "X-Correlation-ID": "test-correlation-id" };
-
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
-
-      expect(result.statusCode).toBe(201);
-      expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
-      expect(result.headers?.["X-Correlation-ID"]).toBe("test-correlation-id");
-      expect(JSON.parse(result.body)).toEqual(mockOrderResponse);
-
-      expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
-      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        "http://wiremock:8080/order",
-        JSON.stringify(mockOrderRequest),
-        expect.objectContaining({
-          Authorization:
-            "Bearer " + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test",
-          Accept: "application/fhir+json",
-          "X-Correlation-ID": "test-correlation-id",
-        }),
-        "application/fhir+json",
-      );
-    });
-
-    it("should generate correlation ID if not provided", async () => {
-      mockSupplierAuthGetAccessToken.mockResolvedValue("token");
-
-      mockHttpClientPostRaw.mockResolvedValue({
-        status: 201,
+        status: 200,
         text: async () => "{}",
-        headers: { get: () => "application/fhir+json" },
+        headers: { get: () => "application/json" },
       });
 
-      mockEvent.headers = {};
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
         order_body: { resourceType: "ServiceRequest" },
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
-      expect(result.headers?.["X-Correlation-ID"]).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      expect(mockGetSupplierServiceUrlBySupplierId).toHaveBeenCalledWith(
+        validUUID,
+      );
+      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
+        "http://supplier-url.com/order",
+        expect.any(String),
+        expect.any(Object),
+        "application/fhir+json",
       );
     });
 
     it("should use custom order path from environment", async () => {
       mockEnvironmentVariables.SUPPLIER_ORDER_PATH = "/custom/order/endpoint";
-
       mockSupplierAuthGetAccessToken.mockResolvedValue("token");
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
 
       mockHttpClientPostRaw.mockResolvedValue({
         status: 201,
@@ -203,10 +167,80 @@ describe("order-router-lambda", () => {
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        "http://wiremock:8080/custom/order/endpoint",
+        `${mockServiceUrl}/custom/order/endpoint`,
         JSON.stringify({ resourceType: "ServiceRequest" }),
         expect.any(Object),
         "application/fhir+json",
+      );
+    });
+  });
+
+  describe("correlation ID header pass-through and generation", () => {
+    beforeEach(() => {
+      mockSupplierAuthGetAccessToken.mockResolvedValue("token");
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 200,
+        text: async () => "{}",
+        headers: { get: () => "application/json" },
+      });
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+    });
+
+    it("should pass through X-Correlation-ID header", async () => {
+      mockEvent.headers = { "X-Correlation-ID": "test-cid-upper" };
+
+      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
+
+      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({
+          "X-Correlation-ID": "test-cid-upper",
+        }),
+        expect.any(String),
+      );
+    });
+
+    it("should pass through x-correlation-id header", async () => {
+      mockEvent.headers = { "x-correlation-id": "test-cid-lower" };
+
+      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
+
+      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({
+          "X-Correlation-ID": "test-cid-lower",
+        }),
+        expect.any(String),
+      );
+    });
+
+    it("should generate correlation ID if not provided", async () => {
+      mockEvent.headers = {};
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      // Check that the generated correlation ID is a valid UUID
+      const correlationId = result.headers?.["X-Correlation-ID"];
+      expect(typeof correlationId).toBe("string");
+      expect(correlationId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
+      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({
+          "X-Correlation-ID": correlationId,
+        }),
+        expect.any(String),
       );
     });
   });
@@ -309,8 +343,30 @@ describe("order-router-lambda", () => {
       );
     });
 
-    it("should return 500 when SUPPLIER_BASE_URL is missing", async () => {
-      mockEnvironmentVariables.SUPPLIER_BASE_URL = "";
+    it("should return 404 if supplierDb returns null for service_url", async () => {
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(null);
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(mockGetSupplierServiceUrlBySupplierId).toHaveBeenCalledWith(
+        validUUID,
+      );
+      expect(result.statusCode).toBe(404);
+      expect(JSON.parse(result.body).message).toContain(
+        "Supplier not found for supplier_code",
+      );
+    });
+
+    it("should return 500 when SUPPLIER_ORDER_PATH is missing", async () => {
+      mockEnvironmentVariables.SUPPLIER_ORDER_PATH = "";
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
@@ -327,6 +383,7 @@ describe("order-router-lambda", () => {
         "Missing required configuration",
       );
       expect(mockSupplierAuthGetAccessToken).not.toHaveBeenCalled();
+      expect(mockGetSupplierServiceUrlBySupplierId).not.toHaveBeenCalled();
     });
 
     it("should return 500 when SUPPLIER_CLIENT_ID is missing", async () => {
@@ -378,6 +435,7 @@ describe("order-router-lambda", () => {
           mockErrorResponse,
         ),
       );
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
@@ -398,6 +456,7 @@ describe("order-router-lambda", () => {
 
     it("should return error when order request fails", async () => {
       mockSupplierAuthGetAccessToken.mockResolvedValue("token");
+      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
 
       const mockErrorResponse = JSON.stringify({
         resourceType: "OperationOutcome",
