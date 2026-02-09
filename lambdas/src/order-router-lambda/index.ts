@@ -72,6 +72,7 @@ const getSupplierAccessToken = async (serviceUrl: string): Promise<string> => {
     environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH!,
     environmentVariables.SUPPLIER_CLIENT_ID!,
     environmentVariables.SUPPLIER_CLIENT_SECRET_NAME!,
+    environmentVariables.SUPPLIER_OAUTH_SCOPE,
   );
 
   return await supplierAuthClient.getAccessToken();

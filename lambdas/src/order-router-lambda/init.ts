@@ -27,21 +27,12 @@ export function init(): Environment {
   const oauthScope = process.env.SUPPLIER_OAUTH_SCOPE || "orders results";
   const databaseUrl = process.env.DATABASE_URL || "";
   const awsRegion =
-    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-1";
+    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
 
   const httpClient = new FetchHttpClient();
   const dbClient = new PostgresDbClient(databaseUrl);
   const supplierDb = new SupplierService({ dbClient });
   const secretsClient = new AwsSecretsClient(awsRegion);
-  const supplierAuthClient = new OAuthSupplierAuthClient(
-    httpClient,
-    secretsClient,
-    baseUrl,
-    tokenPath,
-    clientId,
-    secretName,
-    oauthScope,
-  );
 
   return {
     httpClient,

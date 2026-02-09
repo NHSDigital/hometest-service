@@ -54,7 +54,7 @@ describe("order-router-lambda", () => {
       functionName: "order-router",
       functionVersion: "1",
       invokedFunctionArn:
-        "arn:aws:lambda:eu-west-1:123456789012:function:order-router",
+        "arn:aws:lambda:eu-west-2:123456789012:function:order-router",
       memoryLimitInMB: "128",
       awsRequestId: "test-request-id",
       logGroupName: "/aws/lambda/order-router",
@@ -76,9 +76,10 @@ describe("order-router-lambda", () => {
     mockEnvironmentVariables.SUPPLIER_CLIENT_ID = "supplier-client";
     mockEnvironmentVariables.SUPPLIER_CLIENT_SECRET_NAME =
       "supplier-oauth-client-secret";
+    mockEnvironmentVariables.SUPPLIER_OAUTH_SCOPE = "orders results";
     mockEnvironmentVariables.DATABASE_URL = "postgres://user:pass@host:5432/db";
 
-    process.env.AWS_REGION = "eu-west-1";
+    process.env.AWS_REGION = "eu-west-2";
   });
 
   afterEach(() => {
