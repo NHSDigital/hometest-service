@@ -4,7 +4,7 @@ import { EnvironmentVariables } from "./init";
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
 const mockSupplierAuthGetAccessToken = jest.fn();
-const mockGetSupplierServiceUrlBySupplierId = jest.fn();
+const mockGetSupplierConfigBySupplierId = jest.fn();
 const mockEnvironmentVariables: EnvironmentVariables =
   {} as EnvironmentVariables;
 
@@ -18,7 +18,7 @@ jest.mock("./init", () => ({
     },
     environmentVariables: mockEnvironmentVariables,
     supplierDb: {
-      getSupplierServiceUrlBySupplierId: mockGetSupplierServiceUrlBySupplierId,
+      getSupplierConfigBySupplierId: mockGetSupplierConfigBySupplierId,
     },
   })),
 }));
@@ -68,15 +68,9 @@ describe("order-router-lambda", () => {
     // Reset mocks
     mockHttpClientPostRaw.mockReset();
     mockSupplierAuthGetAccessToken.mockReset();
-    mockGetSupplierServiceUrlBySupplierId.mockReset();
+    mockGetSupplierConfigBySupplierId.mockReset();
 
     // Set environment variables
-    mockEnvironmentVariables.SUPPLIER_OAUTH_TOKEN_PATH = "/oauth/token";
-    mockEnvironmentVariables.SUPPLIER_ORDER_PATH = "/order";
-    mockEnvironmentVariables.SUPPLIER_CLIENT_ID = "supplier-client";
-    mockEnvironmentVariables.SUPPLIER_CLIENT_SECRET_NAME =
-      "supplier-oauth-client-secret";
-    mockEnvironmentVariables.SUPPLIER_OAUTH_SCOPE = "orders results";
     mockEnvironmentVariables.DATABASE_URL = "postgres://user:pass@host:5432/db";
 
     process.env.AWS_REGION = "eu-west-2";
@@ -86,11 +80,23 @@ describe("order-router-lambda", () => {
     jest.clearAllMocks();
   });
 
+  const mockDefaultSupplierConfig = () =>
+    mockGetSupplierConfigBySupplierId.mockResolvedValue({
+      serviceUrl: mockServiceUrl,
+      clientSecretName: "secret-name",
+      clientId: "client-id",
+      oauthTokenPath: "/oauth/token",
+      orderPath: "/order",
+      oauthScope: "orders results",
+    });
+
   describe("successful order placement", () => {
+    beforeEach(() => {
+      mockDefaultSupplierConfig();
+    });
+
     it("should fetch service_url from supplierDb and call order endpoint", async () => {
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-secret");
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
-
       mockHttpClientPostRaw.mockResolvedValue({
         status: 200,
         text: async () => "{}",
@@ -104,9 +110,7 @@ describe("order-router-lambda", () => {
 
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
 
-      expect(mockGetSupplierServiceUrlBySupplierId).toHaveBeenCalledWith(
-        validUUID,
-      );
+      expect(mockGetSupplierConfigBySupplierId).toHaveBeenCalledWith(validUUID);
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
@@ -119,68 +123,12 @@ describe("order-router-lambda", () => {
         "application/fhir+json",
       );
     });
-
-    it("should trim trailing slash from service_url", async () => {
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-secret");
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(
-        "http://supplier-url.com/",
-      );
-
-      mockHttpClientPostRaw.mockResolvedValue({
-        status: 200,
-        text: async () => "{}",
-        headers: { get: () => "application/json" },
-      });
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-
-      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
-
-      expect(mockGetSupplierServiceUrlBySupplierId).toHaveBeenCalledWith(
-        validUUID,
-      );
-      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        "http://supplier-url.com/order",
-        expect.any(String),
-        expect.any(Object),
-        "application/fhir+json",
-      );
-    });
-
-    it("should use custom order path from environment", async () => {
-      mockEnvironmentVariables.SUPPLIER_ORDER_PATH = "/custom/order/endpoint";
-      mockSupplierAuthGetAccessToken.mockResolvedValue("token");
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
-
-      mockHttpClientPostRaw.mockResolvedValue({
-        status: 201,
-        text: async () => "{}",
-        headers: { get: () => "application/fhir+json" },
-      });
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-
-      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
-
-      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        `${mockServiceUrl}/custom/order/endpoint`,
-        JSON.stringify({ resourceType: "ServiceRequest" }),
-        expect.any(Object),
-        "application/fhir+json",
-      );
-    });
   });
 
   describe("correlation ID header pass-through and generation", () => {
     beforeEach(() => {
+      mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("token");
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
       mockHttpClientPostRaw.mockResolvedValue({
         status: 200,
         text: async () => "{}",
@@ -345,8 +293,8 @@ describe("order-router-lambda", () => {
       );
     });
 
-    it("should return 404 if supplierDb returns null for service_url", async () => {
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(null);
+    it("should return 404 if supplierDb returns null for supplier config", async () => {
+      mockGetSupplierConfigBySupplierId.mockResolvedValue(null);
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
@@ -358,17 +306,17 @@ describe("order-router-lambda", () => {
         mockContext as Context,
       );
 
-      expect(mockGetSupplierServiceUrlBySupplierId).toHaveBeenCalledWith(
-        validUUID,
-      );
+      expect(mockGetSupplierConfigBySupplierId).toHaveBeenCalledWith(validUUID);
       expect(result.statusCode).toBe(404);
       expect(JSON.parse(result.body).message).toContain(
         "Supplier not found for supplier_code",
       );
     });
 
-    it("should return 500 when SUPPLIER_ORDER_PATH is missing", async () => {
-      mockEnvironmentVariables.SUPPLIER_ORDER_PATH = "";
+    it("should return 500 when supplier config validation fails", async () => {
+      mockGetSupplierConfigBySupplierId.mockRejectedValue(
+        new Error("Supplier configuration missing service URL"),
+      );
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
@@ -382,66 +330,7 @@ describe("order-router-lambda", () => {
 
       expect(result.statusCode).toBe(500);
       expect(JSON.parse(result.body).message).toContain(
-        "Missing required configuration",
-      );
-      expect(mockSupplierAuthGetAccessToken).not.toHaveBeenCalled();
-      expect(mockGetSupplierServiceUrlBySupplierId).not.toHaveBeenCalled();
-    });
-
-    it("should return 500 when SUPPLIER_CLIENT_ID is missing", async () => {
-      mockEnvironmentVariables.SUPPLIER_CLIENT_ID = "";
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body).message).toContain(
-        "Missing required configuration",
-      );
-    });
-
-    it("should return 500 when SUPPLIER_CLIENT_SECRET_NAME is missing", async () => {
-      mockEnvironmentVariables.SUPPLIER_CLIENT_SECRET_NAME = "";
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body).message).toContain(
-        "Missing required configuration",
-      );
-    });
-
-    it("should return 500 when SUPPLIER_OAUTH_TOKEN_PATH is missing", async () => {
-      mockEnvironmentVariables.SUPPLIER_OAUTH_TOKEN_PATH = "";
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body).message).toContain(
-        "Missing required configuration",
+        "Supplier configuration missing service URL",
       );
     });
 
@@ -475,7 +364,7 @@ describe("order-router-lambda", () => {
           mockErrorResponse,
         ),
       );
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
+      mockDefaultSupplierConfig();
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
@@ -496,7 +385,7 @@ describe("order-router-lambda", () => {
 
     it("should return error when order request fails", async () => {
       mockSupplierAuthGetAccessToken.mockResolvedValue("token");
-      mockGetSupplierServiceUrlBySupplierId.mockResolvedValue(mockServiceUrl);
+      mockDefaultSupplierConfig();
 
       const mockErrorResponse = JSON.stringify({
         resourceType: "OperationOutcome",

@@ -153,4 +153,116 @@ describe("SupplierService", () => {
       ).rejects.toThrow("Failed to fetch suppliers from database");
     });
   });
+
+  describe("getSupplierConfigBySupplierId", () => {
+    it("should return SupplierConfig when supplier exists", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [
+          {
+            service_url: "https://supplier.example.com",
+            client_secret_name: "secret-name",
+            client_id: "client-id",
+            oauth_token_path: "/oauth/token",
+            order_path: "/orders",
+            oauth_scope: "scope-value",
+          },
+        ],
+        rowCount: 1,
+      });
+
+      const result =
+        await supplierService.getSupplierConfigBySupplierId("SUP001");
+
+      expect(result).toEqual({
+        serviceUrl: "https://supplier.example.com",
+        clientSecretName: "secret-name",
+        clientId: "client-id",
+        oauthTokenPath: "/oauth/token",
+        orderPath: "/orders",
+        oauthScope: "scope-value",
+      });
+      expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
+        "SUP001",
+      ]);
+    });
+
+    it("should return null when supplier does not exist", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [],
+        rowCount: 0,
+      });
+
+      const result =
+        await supplierService.getSupplierConfigBySupplierId("SUP999");
+      expect(result).toBeNull();
+    });
+
+    it("should throw error when database query fails", async () => {
+      mockDbClient.query.mockRejectedValue(new Error("DB failure"));
+
+      await expect(
+        supplierService.getSupplierConfigBySupplierId("SUP001"),
+      ).rejects.toThrow("Failed to fetch supplier config from database");
+    });
+
+    it("should throw error if service_url is missing", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [
+          {
+            service_url: null,
+            client_secret_name: "secret-name",
+            client_id: "client-id",
+            oauth_token_path: "/oauth/token",
+            order_path: "/orders",
+            oauth_scope: "scope-value",
+          },
+        ],
+        rowCount: 1,
+      });
+
+      await expect(
+        supplierService.getSupplierConfigBySupplierId("SUP001"),
+      ).rejects.toThrow("Supplier configuration missing service URL");
+    });
+
+    it("should throw error if client_id is missing", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [
+          {
+            service_url: "https://supplier.example.com",
+            client_secret_name: "secret-name",
+            client_id: null,
+            oauth_token_path: "/oauth/token",
+            order_path: "/orders",
+            oauth_scope: "scope-value",
+          },
+        ],
+        rowCount: 1,
+      });
+
+      await expect(
+        supplierService.getSupplierConfigBySupplierId("SUP001"),
+      ).rejects.toThrow("Supplier configuration missing client ID");
+    });
+
+    it("should throw error if client_secret_name is missing", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [
+          {
+            service_url: "https://supplier.example.com",
+            client_secret_name: null,
+            client_id: "client-id",
+            oauth_token_path: "/oauth/token",
+            order_path: "/orders",
+            oauth_scope: "scope-value",
+          },
+        ],
+        rowCount: 1,
+      });
+
+      await expect(
+        supplierService.getSupplierConfigBySupplierId("SUP001"),
+      ).rejects.toThrow("Supplier configuration missing client secret name");
+    });
+  });
 });

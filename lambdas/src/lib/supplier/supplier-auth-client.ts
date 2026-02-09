@@ -17,7 +17,7 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
     private readonly httpClient: HttpClient,
     private readonly secretsClient: SecretsClient,
     private readonly baseUrl: string,
-    private readonly tokenPath: string,
+    private readonly tokenPath: string = "/oauth/token",
     private readonly clientId: string,
     private readonly secretName: string,
     private readonly scope: string = "orders results",

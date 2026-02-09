@@ -23,7 +23,10 @@ CREATE TABLE IF NOT EXISTS supplier
   service_url VARCHAR(255) NOT NULL,
   website_url VARCHAR(255),
   client_secret_name VARCHAR(255) NOT NULL,
-  client_id    VARCHAR(255) NOT NULL
+  client_id    VARCHAR(255) NOT NULL,
+  oauth_token_path VARCHAR(255),
+  order_path VARCHAR(255),
+  oauth_scope VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS la_supplier_offering

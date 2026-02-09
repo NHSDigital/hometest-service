@@ -7,6 +7,7 @@ import { init } from "./init";
 import { HttpError } from "../lib/http/http-client";
 import { isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
+import { SupplierConfig } from "src/lib/db/supplier-db";
 
 const name = "order-router-lambda";
 
@@ -18,13 +19,7 @@ interface ParsedOrderBody {
 }
 
 const validateEnvironmentVariables = (): void => {
-  if (
-    !environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH ||
-    !environmentVariables.SUPPLIER_ORDER_PATH ||
-    !environmentVariables.SUPPLIER_CLIENT_ID ||
-    !environmentVariables.SUPPLIER_CLIENT_SECRET_NAME ||
-    !environmentVariables.DATABASE_URL
-  ) {
+  if (!environmentVariables.DATABASE_URL) {
     throw new HttpError("Missing required configuration", 500);
   }
 };
@@ -55,36 +50,43 @@ const parseAndValidateRequestBody = (
   return parsedBody;
 };
 
-const getSupplierServiceUrl = async (supplierCode: string): Promise<string> => {
-  const serviceUrl =
-    await supplierDb.getSupplierServiceUrlBySupplierId(supplierCode);
-  if (!serviceUrl) {
+const getSupplierServiceConfig = async (
+  supplierCode: string,
+): Promise<SupplierConfig> => {
+  const serviceConfig =
+    await supplierDb.getSupplierConfigBySupplierId(supplierCode);
+  if (!serviceConfig) {
     throw new HttpError("Supplier not found for supplier_code", 404);
   }
-  return serviceUrl;
+  
+  return serviceConfig;
 };
 
-const getSupplierAccessToken = async (serviceUrl: string): Promise<string> => {
+const getSupplierAccessToken = async (
+  serviceConfig: SupplierConfig,
+): Promise<string> => {
   const supplierAuthClient = new OAuthSupplierAuthClient(
     httpClient,
     secretsClient,
-    serviceUrl,
-    environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH!,
-    environmentVariables.SUPPLIER_CLIENT_ID!,
-    environmentVariables.SUPPLIER_CLIENT_SECRET_NAME!,
-    environmentVariables.SUPPLIER_OAUTH_SCOPE,
+    serviceConfig.serviceUrl,
+    serviceConfig.oauthTokenPath,
+    serviceConfig.clientId,
+    serviceConfig.clientSecretName,
+    serviceConfig.oauthScope,
   );
 
   return await supplierAuthClient.getAccessToken();
 };
 
 const sendOrderToSupplier = async (
-  serviceUrl: string,
+  serviceConfig: SupplierConfig,
   orderBody: any,
   accessToken: string,
   correlationId: string,
 ): Promise<{ status: number; body: string; contentType: string }> => {
-  const orderUrl = `${serviceUrl.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
+  // Use a hardcoded path or fetch from serviceConfig if available
+  const orderPath = serviceConfig.orderPath || "/order";
+  const orderUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}${orderPath}`;
 
   const orderResponse = await httpClient.postRaw(
     orderUrl,
@@ -123,12 +125,14 @@ export const handler = async (
   try {
     validateEnvironmentVariables();
     const parsedBody = parseAndValidateRequestBody(event.body);
-    const serviceUrl = await getSupplierServiceUrl(parsedBody.supplier_code);
-    const accessToken = await getSupplierAccessToken(serviceUrl);
+    const serviceConfig = await getSupplierServiceConfig(
+      parsedBody.supplier_code,
+    );
+    const accessToken = await getSupplierAccessToken(serviceConfig);
     const correlationId = getCorrelationId(event);
 
     const orderResult = await sendOrderToSupplier(
-      serviceUrl,
+      serviceConfig,
       parsedBody.order_body,
       accessToken,
       correlationId,
