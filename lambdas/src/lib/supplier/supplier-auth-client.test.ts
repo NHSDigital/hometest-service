@@ -22,9 +22,7 @@ describe("OAuthSupplierAuthClient", () => {
     const token = await client.getAccessToken();
 
     expect(token).toBe("token-123");
-    expect(secretsClient.getSecretValue).toHaveBeenCalledWith("secret-name", {
-      jsonKey: "client_secret",
-    });
+    expect(secretsClient.getSecretValue).toHaveBeenCalledWith("secret-name");
     expect(httpClient.post).toHaveBeenCalledWith(
       "https://supplier.example.com/oauth/token",
       "grant_type=client_credentials&client_id=client-id&client_secret=secret-abc&scope=orders+results",

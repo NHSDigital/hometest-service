@@ -26,7 +26,6 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
   async getAccessToken(): Promise<string> {
     const clientSecret = await this.secretsClient.getSecretValue(
       this.secretName,
-      { jsonKey: "client_secret" },
     );
 
     const tokenUrl = `${this.baseUrl.replace(/\/$/, "")}${this.tokenPath}`;
