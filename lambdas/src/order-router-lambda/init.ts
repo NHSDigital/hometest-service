@@ -8,6 +8,7 @@ export interface EnvironmentVariables {
   SUPPLIER_CLIENT_ID: string;
   SUPPLIER_CLIENT_SECRET_NAME: string;
   SUPPLIER_ORDER_PATH: string;
+  SUPPLIER_OAUTH_SCOPE?: string;
   DATABASE_URL: string;
 }
 
@@ -23,6 +24,7 @@ export function init(): Environment {
   const clientId = process.env.SUPPLIER_CLIENT_ID || "";
   const secretName = process.env.SUPPLIER_CLIENT_SECRET_NAME || "";
   const orderPath = process.env.SUPPLIER_ORDER_PATH || "/order";
+  const oauthScope = process.env.SUPPLIER_OAUTH_SCOPE || "orders results";
   const databaseUrl = process.env.DATABASE_URL || "";
   const awsRegion =
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-1";
@@ -31,6 +33,15 @@ export function init(): Environment {
   const dbClient = new PostgresDbClient(databaseUrl);
   const supplierDb = new SupplierService({ dbClient });
   const secretsClient = new AwsSecretsClient(awsRegion);
+  const supplierAuthClient = new OAuthSupplierAuthClient(
+    httpClient,
+    secretsClient,
+    baseUrl,
+    tokenPath,
+    clientId,
+    secretName,
+    oauthScope,
+  );
 
   return {
     httpClient,
@@ -39,6 +50,7 @@ export function init(): Environment {
       SUPPLIER_CLIENT_ID: clientId,
       SUPPLIER_CLIENT_SECRET_NAME: secretName,
       SUPPLIER_ORDER_PATH: orderPath,
+      SUPPLIER_OAUTH_SCOPE: oauthScope,
       DATABASE_URL: databaseUrl,
     },
     supplierDb,

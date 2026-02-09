@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import { PageLayout } from '@/components/PageLayout';
 import '@testing-library/jest-dom';
+
+import { render, screen } from '@testing-library/react';
+
+import PageLayout from '@/layouts/PageLayout';
 
 describe('PageLayout', () => {
   it('renders without crashing', () => {
