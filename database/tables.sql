@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS supplier
 
 CREATE TABLE IF NOT EXISTS la_supplier_offering
 (
-  offering_id    uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  offering_id    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   supplier_id    uuid REFERENCES supplier (supplier_id),
   test_code      VARCHAR(50) REFERENCES test_type (test_code),
   la_code        VARCHAR(10) NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS status_type
 
 CREATE TABLE IF NOT EXISTS order_status
 (
-  status_id   uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  status_id   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_uid   uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
   order_reference BIGINT,
   status_code VARCHAR(50) NOT NULL REFERENCES status_type (status_code),
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS order_status
 
 CREATE TABLE IF NOT EXISTS result_status
 (
-  result_id   uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  result_id   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_uid   uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
   order_reference BIGINT,
   status_code VARCHAR(50) NOT NULL REFERENCES status_type (status_code),
