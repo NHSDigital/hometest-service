@@ -12,107 +12,134 @@ const name = "order-router-lambda";
 
 const { httpClient, environmentVariables, supplierDb, secretsClient } = init();
 
+interface ParsedOrderBody {
+  supplier_code: string;
+  order_body: any;
+}
+
+const validateEnvironmentVariables = (): void => {
+  if (
+    !environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH ||
+    !environmentVariables.SUPPLIER_ORDER_PATH ||
+    !environmentVariables.SUPPLIER_CLIENT_ID ||
+    !environmentVariables.SUPPLIER_CLIENT_SECRET_NAME ||
+    !environmentVariables.DATABASE_URL
+  ) {
+    throw new HttpError("Missing required configuration", 500);
+  }
+};
+
+const parseAndValidateRequestBody = (
+  eventBody: string | null,
+): ParsedOrderBody => {
+  let parsedBody: ParsedOrderBody;
+  try {
+    parsedBody = JSON.parse(eventBody || "");
+  } catch {
+    throw new HttpError("Invalid JSON in event.body", 400);
+  }
+
+  if (
+    !parsedBody ||
+    typeof parsedBody.supplier_code !== "string" ||
+    !isUUID(parsedBody.supplier_code) ||
+    typeof parsedBody.order_body !== "object" ||
+    parsedBody.order_body === null
+  ) {
+    throw new HttpError(
+      "event.body must match schema { supplier_code: UUID, order_body: JSON }",
+      400,
+    );
+  }
+
+  return parsedBody;
+};
+
+const getSupplierServiceUrl = async (supplierCode: string): Promise<string> => {
+  const serviceUrl =
+    await supplierDb.getSupplierServiceUrlBySupplierId(supplierCode);
+  if (!serviceUrl) {
+    throw new HttpError("Supplier not found for supplier_code", 404);
+  }
+  return serviceUrl;
+};
+
+const getSupplierAccessToken = async (serviceUrl: string): Promise<string> => {
+  const supplierAuthClient = new OAuthSupplierAuthClient(
+    httpClient,
+    secretsClient,
+    serviceUrl,
+    environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH!,
+    environmentVariables.SUPPLIER_CLIENT_ID!,
+    environmentVariables.SUPPLIER_CLIENT_SECRET_NAME!,
+  );
+
+  return await supplierAuthClient.getAccessToken();
+};
+
+const sendOrderToSupplier = async (
+  serviceUrl: string,
+  orderBody: any,
+  accessToken: string,
+  correlationId: string,
+): Promise<{ status: number; body: string; contentType: string }> => {
+  const orderUrl = `${serviceUrl.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
+
+  const orderResponse = await httpClient.postRaw(
+    orderUrl,
+    JSON.stringify(orderBody),
+    {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/fhir+json",
+      "X-Correlation-ID": correlationId,
+    },
+    "application/fhir+json",
+  );
+
+  const responseText = await orderResponse.text();
+  const contentType =
+    orderResponse.headers.get("content-type") || "application/fhir+json";
+
+  return {
+    status: orderResponse.status,
+    body: responseText,
+    contentType,
+  };
+};
+
+const getCorrelationId = (event: APIGatewayProxyEvent): string => {
+  return (
+    event.headers["X-Correlation-ID"] ||
+    event.headers["x-correlation-id"] ||
+    crypto.randomUUID()
+  );
+};
+
 export const handler = async (
   event: APIGatewayProxyEvent,
   _context: Context,
 ): Promise<APIGatewayProxyResult> => {
   try {
-    if (
-      !environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH ||
-      !environmentVariables.SUPPLIER_ORDER_PATH ||
-      !environmentVariables.SUPPLIER_CLIENT_ID ||
-      !environmentVariables.SUPPLIER_CLIENT_SECRET_NAME ||
-      !environmentVariables.DATABASE_URL
-    ) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          message: `${name}: Missing required configuration`,
-        }),
-      };
-    }
+    validateEnvironmentVariables();
+    const parsedBody = parseAndValidateRequestBody(event.body);
+    const serviceUrl = await getSupplierServiceUrl(parsedBody.supplier_code);
+    const accessToken = await getSupplierAccessToken(serviceUrl);
+    const correlationId = getCorrelationId(event);
 
-    // Parse and validate event.body
-    let parsedBody: { supplier_code: string; order_body: any };
-    try {
-      parsedBody = JSON.parse(event.body || "");
-    } catch {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: `${name}: Invalid JSON in event.body`,
-        }),
-      };
-    }
-
-    if (
-      !parsedBody ||
-      typeof parsedBody.supplier_code !== "string" ||
-      !isUUID(parsedBody.supplier_code) ||
-      typeof parsedBody.order_body !== "object" ||
-      parsedBody.order_body === null
-    ) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: `${name}: event.body must match schema { supplier_code: UUID, order_body: JSON }`,
-        }),
-      };
-    }
-
-    // Get supplier service_url from DB
-    const serviceUrl = await supplierDb.getSupplierServiceUrlBySupplierId(parsedBody.supplier_code);
-    if (!serviceUrl) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          message: `${name}: Supplier not found for supplier_code`,
-        }),
-      };
-    }
-
-    // Initialise supplierAuthClient with the correct baseUrl
-    const supplierAuthClient = new OAuthSupplierAuthClient(
-      httpClient,
-      secretsClient,
+    const orderResult = await sendOrderToSupplier(
       serviceUrl,
-      environmentVariables.SUPPLIER_OAUTH_TOKEN_PATH,
-      environmentVariables.SUPPLIER_CLIENT_ID,
-      environmentVariables.SUPPLIER_CLIENT_SECRET_NAME,
+      parsedBody.order_body,
+      accessToken,
+      correlationId,
     );
-
-    // Get OAuth token
-    const accessToken = await supplierAuthClient.getAccessToken();
-
-    // Call order endpoint with the token
-    const orderUrl = `${serviceUrl.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
-    const correlationId =
-      event.headers["X-Correlation-ID"] ||
-      event.headers["x-correlation-id"] ||
-      crypto.randomUUID();
-
-    const orderResponse = await httpClient.postRaw(
-      orderUrl,
-      JSON.stringify(parsedBody.order_body),
-      {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/fhir+json",
-        "X-Correlation-ID": correlationId,
-      },
-      "application/fhir+json",
-    );
-
-    const responseText = await orderResponse.text();
-    const contentType =
-      orderResponse.headers.get("content-type") || "application/fhir+json";
 
     return {
-      statusCode: orderResponse.status,
+      statusCode: orderResult.status,
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": orderResult.contentType,
         "X-Correlation-ID": correlationId,
       },
-      body: responseText,
+      body: orderResult.body,
     };
   } catch (error) {
     const statusCode = error instanceof HttpError ? error.status : 500;
