@@ -14,12 +14,20 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   _context: Context,
 ): Promise<APIGatewayProxyResult> => {
+  const correlationId =
+    event.headers["X-Correlation-ID"] ||
+    event.headers["x-correlation-id"] ||
+    crypto.randomUUID();
+
+  console.log(JSON.stringify({ level: "info", message: `${name}: Request received`, correlationId }));
+
   try {
     if (
       !environmentVariables.SUPPLIER_BASE_URL ||
       !environmentVariables.SUPPLIER_CLIENT_ID ||
       !environmentVariables.SUPPLIER_CLIENT_SECRET_NAME
     ) {
+      console.error(JSON.stringify({ level: "error", message: `${name}: Missing required configuration`, correlationId }));
       return {
         statusCode: 500,
         body: JSON.stringify({
@@ -33,10 +41,6 @@ export const handler = async (
 
     // Call order endpoint with the token
     const orderUrl = `${environmentVariables.SUPPLIER_BASE_URL.replace(/\/$/, "")}${environmentVariables.SUPPLIER_ORDER_PATH}`;
-    const correlationId =
-      event.headers["X-Correlation-ID"] ||
-      event.headers["x-correlation-id"] ||
-      crypto.randomUUID();
 
     const orderResponse = await httpClient.postRaw(
       orderUrl,
@@ -53,6 +57,8 @@ export const handler = async (
     const contentType =
       orderResponse.headers.get("content-type") || "application/fhir+json";
 
+    console.log(JSON.stringify({ level: "info", message: `${name}: Response`, correlationId, statusCode: orderResponse.status }));
+
     return {
       statusCode: orderResponse.status,
       headers: {
@@ -63,13 +69,15 @@ export const handler = async (
     };
   } catch (error) {
     const statusCode = error instanceof HttpError ? error.status : 500;
+    const errorResponse = {
+      message: `${name}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      details: error instanceof HttpError ? error.body : undefined,
+      stack: error instanceof Error ? error.stack : undefined,
+    };
+    console.error(JSON.stringify({ level: "error", ...errorResponse }));
     return {
       statusCode,
-      body: JSON.stringify({
-        message: `${name}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        details: error instanceof HttpError ? error.body : undefined,
-        stack: error instanceof Error ? error.stack : undefined,
-      }),
+      body: JSON.stringify(errorResponse),
     };
   }
 };
