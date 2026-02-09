@@ -10,7 +10,7 @@ services:
       - SERVICES=lambda,iam,logs,s3,cloudformation,sts,apigateway,ssm
       - DEBUG=1
       - LAMBDA_EXECUTOR=docker
-      - AWS_DEFAULT_REGION=eu-west-1
+      - AWS_DEFAULT_REGION=eu-west-2
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
