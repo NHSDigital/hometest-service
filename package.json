@@ -19,7 +19,7 @@
     "package:lambdas": "npm --prefix lambdas run package"
   },
   "devDependencies": {
-    "@types/node": "^25.1.0",
+    "@types/node": "^25.2.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
