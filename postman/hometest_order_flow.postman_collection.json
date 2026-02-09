@@ -37,9 +37,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -62,9 +60,7 @@
             ],
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -96,9 +92,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -130,9 +124,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -164,9 +156,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -198,9 +188,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -232,9 +220,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -266,9 +252,7 @@
             },
             "url": {
               "raw": "{{order_router_endpoint_localstack}}",
-              "host": [
-                "{{order_router_endpoint_localstack}}"
-              ]
+              "host": ["{{order_router_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -283,9 +267,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     },
     {
@@ -294,9 +276,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     }
   ],
