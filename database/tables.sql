@@ -20,8 +20,9 @@ CREATE TABLE IF NOT EXISTS supplier
 (
   supplier_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name        VARCHAR(255) NOT NULL,
-  service_url VARCHAR(255),
-  website_url VARCHAR(255)
+  service_url VARCHAR(255) NOT NULL,
+  website_url VARCHAR(255),
+  secret_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS la_supplier_offering
