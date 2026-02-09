@@ -13,4 +13,7 @@ export const API_ENDPOINTS = {
     createPost: '/posts',
     list: '/posts',
   },
+  results: {
+    base: '/restapis/fmd8qgka5j/local/_user_request_/result',
+  },
 } as const;
