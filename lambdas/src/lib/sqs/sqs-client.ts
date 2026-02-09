@@ -7,7 +7,6 @@ export interface SqsResult {
 
 export interface SQSClientInterface {
   sendMessage(queueUrl: string, messageBody: string, messageAttributes?: Record<string, any>): Promise<SqsResult>;
-  close(): Promise<void>;
 }
 export class AWSSQSClient implements SQSClientInterface {
   private client: SQSClient;
@@ -36,9 +35,5 @@ export class AWSSQSClient implements SQSClientInterface {
       messageId: result.MessageId,
       sequenceNumber: result.SequenceNumber,
     };
-  }
-
-  async close(): Promise<void> {
-    this.client.destroy();
   }
 }
