@@ -1,14 +1,12 @@
 "use client";
 
-import { Suspense, use } from "react";
-
 import { AboutService } from "@/components/AboutService";
-import { OrderDetails } from "@/lib/models/order-details";
 import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import orderDetailsService from "@/lib/services/order-details-service";
 import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 function getPatient(): Patient {
@@ -25,11 +23,16 @@ function isValidGuid(value: string): boolean {
 }
 
 function OrderContent({
-  orderPromise,
+  orderId,
+  patient,
 }: {
-  orderPromise: Promise<OrderDetails | null>;
+  orderId: string;
+  patient: Patient;
 }) {
-  const order = use(orderPromise);
+  const { data: order } = useQuery({
+    queryKey: ["orderStatus", orderId, patient.nhsNumber],
+    queryFn: () => orderDetailsService.get(orderId, patient),
+  });
 
   if (!order) {
     return (
@@ -63,23 +66,9 @@ export default function OrderTrackingPage() {
     );
   }
 
-  const orderPromise = orderDetailsService.get(orderId, patient);
-
   return (
     <PageLayout>
-      <Suspense
-        fallback={
-          <div
-            className="nhsuk-body nhsuk-u-padding-top-5"
-            role="status"
-            aria-live="polite"
-          >
-            <p>Loading...</p>
-          </div>
-        }
-      >
-        <OrderContent orderPromise={orderPromise} />
-      </Suspense>
+      <OrderContent orderId={orderId} patient={patient} />
     </PageLayout>
   );
 }

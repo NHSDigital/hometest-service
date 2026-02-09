@@ -1,5 +1,6 @@
 import { Container, Footer, Header } from "nhsuk-react-components";
 import { Link, Outlet, ScrollRestoration } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type React from "react";
@@ -11,6 +12,8 @@ const isNhsApp = true;
 interface MainLayoutProps {
   readonly children?: React.ReactNode;
 }
+
+const queryClient = new QueryClient();
 
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
@@ -38,7 +41,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </Header.Container>
         </Header>
       )}
-      <Container>{children ?? <Outlet />}</Container>
+      <Container>
+        {" "}
+        <QueryClientProvider client={queryClient}>
+          {children ?? <Outlet />}
+        </QueryClientProvider>
+      </Container>
       {!isNhsApp && (
         <Footer>
           <Footer.Copyright>&copy; Crown Copyright</Footer.Copyright>

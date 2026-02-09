@@ -2,6 +2,7 @@ import "@testing-library/jest-dom";
 
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 
 import OrderTrackingPage from "@/routes/OrderTrackingPage";
@@ -56,17 +57,21 @@ describe("OrderTrackingPage", () => {
     dateOfBirth: "1990-08-11",
   };
 
-  // Helper function to render with router
+  // Helper function to render with router and query client
   const renderWithRouter = (orderId: string) => {
+    const queryClient = new QueryClient();
+
     return render(
-      <MemoryRouter initialEntries={[`/orders/${orderId}/tracking`]}>
-        <Routes>
-          <Route
-            path="/orders/:orderId/tracking"
-            element={<OrderTrackingPage />}
-          />
-        </Routes>
-      </MemoryRouter>,
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[`/orders/${orderId}/tracking`]}>
+          <Routes>
+            <Route
+              path="/orders/:orderId/tracking"
+              element={<OrderTrackingPage />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
   };
 
@@ -188,44 +193,6 @@ describe("OrderTrackingPage", () => {
 
       expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
       expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
-    });
-  });
-
-  describe("Loading state", () => {
-    it("displays loading message initially", async () => {
-      (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
-
-      await act(async () => {
-        renderWithRouter(orderId);
-      });
-
-      // After params resolve, check if loading or content is shown
-      // Since Suspense resolves quickly in tests, content may already be loaded
-      const content = await screen.findByTestId("order-status");
-      expect(content).toBeInTheDocument();
-    });
-
-    it("has correct accessibility attributes on loading state", async () => {
-      // For this test, we need to delay the promise resolution to catch loading state
-      let resolveOrder: (value: OrderDetails) => void;
-      const orderPromise = new Promise<OrderDetails>((resolve) => {
-        resolveOrder = resolve;
-      });
-      (orderDetailsService.get as jest.Mock).mockReturnValue(orderPromise);
-
-      await act(async () => {
-        renderWithRouter(orderId);
-      });
-
-      // Check loading state appears
-      const loadingDiv = screen.getByRole("status");
-      expect(loadingDiv).toHaveClass("nhsuk-body");
-      expect(loadingDiv).toHaveClass("nhsuk-u-padding-top-5");
-
-      // Clean up - resolve the promise
-      await act(async () => {
-        resolveOrder!(mockOrder);
-      });
     });
   });
 

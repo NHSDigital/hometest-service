@@ -12,6 +12,7 @@
     "serve:static": "npm run build && npx http-server build -p 8085 -c-1 --proxy http://localhost:8085?"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
     "next": "^16.1.6",
     "nhsuk-frontend": "^9.6.4",
     "nhsuk-react-components": "^5.0.0",
