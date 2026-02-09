@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS supplier
   name        VARCHAR(255) NOT NULL,
   service_url VARCHAR(255) NOT NULL,
   website_url VARCHAR(255),
-  secret_name VARCHAR(255) NOT NULL
+  client_secret_name VARCHAR(255) NOT NULL,
+  client_id    VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS la_supplier_offering
