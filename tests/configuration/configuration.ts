@@ -1,86 +1,182 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import * as fs from 'fs';
 import { EnvironmentVariables, availableEnvironments, Environment } from './environment-variables';
 
-export class Configuration {
-  private static instance: Configuration;
-  private readonly defaultConfiguration: Map<EnvironmentVariables, string>;
-  private readonly environment: Environment;
 
-  private constructor() {
-    // Check if ENV is provided, default to 'dev' for local development
-    const env = process.env.ENV || 'local';
+export enum AuthType {
+  SANDBOX = 'sandbox'
+}
+
+export interface ConfigInterface {
+  uiBaseUrl: string;
+  apiBaseUrl: string;
+  headless: boolean;
+  timeout: number;
+  slowMo: number;
+  authType: AuthType;
+  accessibilityStandards: string;
+  reportingOutputDirectory: string;
+  externalLinkSexualHealthClinic: string;
+  externalLinkNearestAE: string;
+  externalLinkHivAidsInfo: string;
+  enableTracingOnGlobalSetup: boolean;
+}
+
+export class ConfigFactory {
+  private static cachedConfig: ConfigInterface | undefined;
+  private static envName: Environment;
+
+  public static getConfig(): ConfigInterface {
+    this.envName = (process.env.ENV as Environment) || 'local';
 
     // Validate environment
-    if (!availableEnvironments.includes(env as Environment)) {
+    if (!availableEnvironments.includes(this.envName)) {
       throw new Error(
-        `Invalid environment: ${env}. Available environments: ${availableEnvironments.join(', ')}`
+        `Invalid environment: ${this.envName}. Available environments: ${availableEnvironments.join(', ')}`
       );
     }
 
-    this.environment = env as Environment;
+    this.cachedConfig ??= this.loadConfiguration();
 
-    // Load environment-specific .env file
-    const envFilePath = path.resolve(__dirname, `.env.${this.environment}`);
+    return this.cachedConfig;
+  }
+
+  private static loadConfiguration(): ConfigInterface {
+    console.log('Loading configuration for the tests...');
+
+    const defaultConfig = this.loadDefaultConfiguration(); // start with default configuration
+    const envConfig = this.readConfigurationFromEnvFile(); // override with values from .env file
+    const localConfig = this.readConfigurationFromLocalFile(); // override with local JSON file
+
+    const cachedConfig = {
+      ...defaultConfig,
+      ...envConfig,
+      ...localConfig
+    };
+
+    return cachedConfig;
+  }
+
+  private static loadDefaultConfiguration(): ConfigInterface {
+    return {
+      uiBaseUrl: 'http://localhost:3000',
+      apiBaseUrl: 'http://localhost:4000/api',
+      headless: true,
+      timeout: 30000,
+      slowMo: 0,
+      authType: AuthType.SANDBOX,
+      accessibilityStandards: 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa',
+      reportingOutputDirectory: 'tests/testResults',
+      externalLinkSexualHealthClinic: 'https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/',
+      externalLinkNearestAE: 'https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/',
+      externalLinkHivAidsInfo: 'https://www.nhs.uk/conditions/hiv-and-aids/',
+      enableTracingOnGlobalSetup: false,
+    };
+  }
+
+  private static readConfigurationFromEnvFile(): Partial<ConfigInterface> {
+    const envFilePath = path.resolve(__dirname, `.env.${this.envName}`);
+    
     const result = dotenv.config({ path: envFilePath });
 
     if (result.error) {
-      console.warn(`Warning: Could not load ${envFilePath}. Using environment variables and defaults.`);
-    } else {
-      console.log(`✅ Loaded configuration from .env.${this.environment}`);
+      console.log(
+        `No .env file found for environment: ${this.envName}. Using default configuration.`
+      );
+      return {};
     }
 
-    // Initialize default configuration
-    this.defaultConfiguration = new Map([
-      [EnvironmentVariables.UI_BASE_URL, 'http://localhost:3000'],
-      [EnvironmentVariables.API_BASE_URL, 'http://localhost:4000/api'],
-      [EnvironmentVariables.HEADLESS, 'true'],
-      [EnvironmentVariables.TIMEOUT, '30000'],
-      [EnvironmentVariables.SLOW_MO, '0'],
-      [EnvironmentVariables.ACCESSIBILITY_STANDARDS, 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa'],
-      [EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY, 'tests/testResults'],
-      [EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC, 'https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/'],
-      [EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE, 'https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/'],
-      [EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO, 'https://www.nhs.uk/conditions/hiv-and-aids/'],
-    ]);
+    console.log(`✅ Loaded configuration from .env.${this.envName}`);
+
+    // Map environment variables to config interface
+    return {
+      uiBaseUrl: process.env[EnvironmentVariables.UI_BASE_URL],
+      apiBaseUrl: process.env[EnvironmentVariables.API_BASE_URL],
+      headless: process.env[EnvironmentVariables.HEADLESS] === 'true',
+      timeout: process.env[EnvironmentVariables.TIMEOUT] 
+        ? parseInt(process.env[EnvironmentVariables.TIMEOUT], 10) 
+        : undefined,
+      slowMo: process.env[EnvironmentVariables.SLOW_MO]
+        ? parseInt(process.env[EnvironmentVariables.SLOW_MO], 10)
+        : undefined,
+      accessibilityStandards: process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS],
+      reportingOutputDirectory: process.env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY],
+      externalLinkSexualHealthClinic: process.env[EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC],
+      externalLinkNearestAE: process.env[EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE],
+      externalLinkHivAidsInfo: process.env[EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO],
+    };
   }
 
-  public static getInstance(): Configuration {
-    if (!Configuration.instance) {
-      Configuration.instance = new Configuration();
+  private static readConfigurationFromLocalFile(): Partial<ConfigInterface> {
+    const localFilePath = path.join(__dirname, `./local.json`);
+    
+    if (!fs.existsSync(localFilePath)) {
+      console.log('No local configuration file found');
+      return {};
     }
-    return Configuration.instance;
+    
+    return this.readConfigurationFromFile(localFilePath);
   }
 
-  public get(key: EnvironmentVariables): string {
-    // First, check if the variable exists in process.env
-    const envValue = process.env[key];
-    if (envValue !== undefined) {
-      return envValue;
+  private static readConfigurationFromFile(filePath: string): Partial<ConfigInterface> {
+    try {
+      const configurationFileContent = fs.readFileSync(filePath, 'utf8');
+      const configuration = JSON.parse(configurationFileContent);
+      return configuration as Partial<ConfigInterface>;
+    } catch (e) {
+      console.log(`Error reading configuration file: ${filePath}`, e);
+      throw e;
     }
+  }
 
-    // If not found in process.env, check default configuration
-    const defaultValue = this.defaultConfiguration.get(key);
-    if (defaultValue !== undefined) {
-      return defaultValue;
+  public static get(key: keyof ConfigInterface): any {
+    const config = this.getConfig();
+    return config[key];
+  }
+
+  public static getEnvironment(): Environment {
+    return this.envName;
+  }
+}
+
+// Backward compatibility wrapper
+class ConfigWrapper {
+  get(key: EnvironmentVariables): string {
+    const config = ConfigFactory.getConfig();
+    
+    switch (key) {
+      case EnvironmentVariables.UI_BASE_URL:
+        return config.uiBaseUrl;
+      case EnvironmentVariables.API_BASE_URL:
+        return config.apiBaseUrl;
+      case EnvironmentVariables.HEADLESS:
+        return String(config.headless);
+      case EnvironmentVariables.TIMEOUT:
+        return String(config.timeout);
+      case EnvironmentVariables.SLOW_MO:
+        return String(config.slowMo);
+      case EnvironmentVariables.ACCESSIBILITY_STANDARDS:
+        return config.accessibilityStandards || 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa';
+      case EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY:
+        return config.reportingOutputDirectory;
+      case EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC:
+        return config.externalLinkSexualHealthClinic;
+      case EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE:
+        return config.externalLinkNearestAE;
+      case EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO:
+        return config.externalLinkHivAidsInfo;
+      default:
+        throw new Error(`Unknown configuration key: ${key}`);
     }
-
-    // If neither found, throw an error
-    throw new Error(
-      `Configuration error: Environment variable '${key}' is not set and has no default value.`
-    );
   }
 
-  public getEnvironment(): Environment {
-    return this.environment;
-  }
-
-  public getBoolean(key: EnvironmentVariables): boolean {
+  getBoolean(key: EnvironmentVariables): boolean {
     const value = this.get(key);
     return value.toLowerCase() === 'true';
   }
 
-  public getNumber(key: EnvironmentVariables): number {
+  getNumber(key: EnvironmentVariables): number {
     const value = this.get(key);
     const numValue = parseInt(value, 10);
     if (isNaN(numValue)) {
@@ -88,6 +184,10 @@ export class Configuration {
     }
     return numValue;
   }
+
+  getEnvironment(): Environment {
+    return ConfigFactory.getEnvironment();
+  }
 }
 
-export const config = Configuration.getInstance();
+export const config = new ConfigWrapper();

@@ -159,3 +159,5 @@ mcp.json
 /frontend/
 /test-results/
 .next
+WorkerUser*
+credentials.ts
