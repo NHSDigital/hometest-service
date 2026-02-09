@@ -76,6 +76,7 @@ describe("order-router-lambda", () => {
     mockEnvironmentVariables.SUPPLIER_CLIENT_ID = "supplier-client";
     mockEnvironmentVariables.SUPPLIER_CLIENT_SECRET_NAME =
       "supplier-oauth-client-secret";
+    mockEnvironmentVariables.DATABASE_URL = "postgres://user:pass@host:5432/db";
 
     process.env.AWS_REGION = "eu-west-1";
   });
@@ -407,6 +408,44 @@ describe("order-router-lambda", () => {
 
     it("should return 500 when SUPPLIER_CLIENT_SECRET_NAME is missing", async () => {
       mockEnvironmentVariables.SUPPLIER_CLIENT_SECRET_NAME = "";
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(500);
+      expect(JSON.parse(result.body).message).toContain(
+        "Missing required configuration",
+      );
+    });
+
+    it("should return 500 when SUPPLIER_OAUTH_TOKEN_PATH is missing", async () => {
+      mockEnvironmentVariables.SUPPLIER_OAUTH_TOKEN_PATH = "";
+
+      mockEvent.body = JSON.stringify({
+        supplier_code: validUUID,
+        order_body: { resourceType: "ServiceRequest" },
+      });
+
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        mockContext as Context,
+      );
+
+      expect(result.statusCode).toBe(500);
+      expect(JSON.parse(result.body).message).toContain(
+        "Missing required configuration",
+      );
+    });
+
+    it("should return 500 when DATABASE_URL is missing", async () => {
+      mockEnvironmentVariables.DATABASE_URL = "";
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,

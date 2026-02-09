@@ -8,6 +8,7 @@ export interface EnvironmentVariables {
   SUPPLIER_CLIENT_ID: string;
   SUPPLIER_CLIENT_SECRET_NAME: string;
   SUPPLIER_ORDER_PATH: string;
+  DATABASE_URL: string;
 }
 
 export interface Environment {
@@ -22,11 +23,12 @@ export function init(): Environment {
   const clientId = process.env.SUPPLIER_CLIENT_ID || "";
   const secretName = process.env.SUPPLIER_CLIENT_SECRET_NAME || "";
   const orderPath = process.env.SUPPLIER_ORDER_PATH || "/order";
+  const databaseUrl = process.env.DATABASE_URL || "";
   const awsRegion =
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-1";
 
   const httpClient = new FetchHttpClient();
-  const dbClient = new PostgresDbClient(process.env.DATABASE_URL!);
+  const dbClient = new PostgresDbClient(databaseUrl);
   const supplierDb = new SupplierService({ dbClient });
   const secretsClient = new AwsSecretsClient(awsRegion);
 
@@ -37,6 +39,7 @@ export function init(): Environment {
       SUPPLIER_CLIENT_ID: clientId,
       SUPPLIER_CLIENT_SECRET_NAME: secretName,
       SUPPLIER_ORDER_PATH: orderPath,
+      DATABASE_URL: databaseUrl,
     },
     supplierDb,
     secretsClient,
