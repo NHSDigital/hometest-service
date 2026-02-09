@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 interface AboutServiceProps {
   supplier: string;
 }
@@ -8,40 +10,40 @@ export function AboutService({ supplier }: AboutServiceProps) {
       <h2 className="nhsuk-heading-m">About this service</h2>
       <p className="nhsuk-body">
         {`HomeTest `}
-        <a
-          href="/home-test-terms-of-use"
+        <Link
+          to="/home-test-terms-of-use"
           className="nhsuk-link"
           aria-label="HomeTest terms of use"
         >
           terms of use
-        </a>
+        </Link>
         {" and "}
-        <a
-          href="/home-test-privacy-policy"
+        <Link
+          to="/home-test-privacy-policy"
           className="nhsuk-link"
           aria-label="HomeTest privacy policy"
         >
           privacy policy
-        </a>
+        </Link>
         .
       </p>
       <p className="nhsuk-body">
         {`${supplier} `}
-        <a
-          href="/suppliers-terms-conditions"
+        <Link
+          to="/suppliers-terms-conditions"
           className="nhsuk-link"
           aria-label={`${supplier} terms of use`}
         >
           terms of use
-        </a>
+        </Link>
         {" and "}
-        <a
-          href="/suppliers-privacy-policy"
+        <Link
+          to="/suppliers-privacy-policy"
           className="nhsuk-link"
           aria-label={`${supplier} privacy policy`}
         >
           privacy policy
-        </a>
+        </Link>
         .
       </p>
     </div>
