@@ -145,8 +145,9 @@ module "order_router_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                = "--enable-source-maps"
-    SUPPLIER_BASE_URL           = "http://wiremock:8080"
+    DATABASE_URL                = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/mydb?currentSchema=hometest"
     SUPPLIER_OAUTH_TOKEN_PATH   = "/oauth/token"
+    SUPPLIER_ORDER_PATH         = "/order"
     SUPPLIER_CLIENT_ID          = "supplier-client"
     SUPPLIER_CLIENT_SECRET_NAME = "supplier-oauth-client-secret"
   }
