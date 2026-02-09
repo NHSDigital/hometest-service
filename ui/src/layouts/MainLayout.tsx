@@ -42,7 +42,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </Header>
       )}
       <Container>
-        {" "}
         <QueryClientProvider client={queryClient}>
           {children ?? <Outlet />}
         </QueryClientProvider>
