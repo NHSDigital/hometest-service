@@ -20,6 +20,7 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
     private readonly tokenPath: string,
     private readonly clientId: string,
     private readonly secretName: string,
+    private readonly scope: string = "orders results",
   ) {}
 
   async getAccessToken(): Promise<string> {
@@ -33,6 +34,7 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
       grant_type: "client_credentials",
       client_id: this.clientId,
       client_secret: clientSecret,
+      scope: this.scope,
     });
 
     const tokenData = await this.httpClient.post<OAuthTokenResponse>(
