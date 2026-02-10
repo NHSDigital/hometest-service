@@ -7,10 +7,17 @@ export default {
   moduleNameMapper: {
     '^@hometest-service/shared/(.*)$': '<rootDir>/../shared/$1'
   },
-  extensionsToTreatAsEsm: ['.ts'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      useESM: true,
-    }],
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        useESM: false,
+        tsconfig: { module: "CommonJS" },
+      },
+    ],
+    "^.+\\.jsx?$": ["babel-jest", { configFile: "./babel.config.cjs" }],
   },
+  transformIgnorePatterns: [
+    "/node_modules/(?!(@middy|uuid)/)", // add ESM packages here
+  ],
 };
