@@ -23,9 +23,11 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@/content/*": ["./content/*"],
+      "@/content": ["./content/index.ts"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/hooks": ["./hooks/index.ts"]
     }
   },
   "include": [
