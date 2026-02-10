@@ -5,7 +5,7 @@ import {
 } from "aws-lambda";
 import { init } from "./init";
 import { HttpError } from "../lib/http/http-client";
-import { isUUID } from "../lib/utils";
+import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { SupplierConfig } from "src/lib/db/supplier-db";
 
@@ -110,14 +110,6 @@ const sendOrderToSupplier = async (
   };
 };
 
-const getCorrelationId = (event: APIGatewayProxyEvent): string => {
-  return (
-    event.headers["X-Correlation-ID"] ||
-    event.headers["x-correlation-id"] ||
-    crypto.randomUUID()
-  );
-};
-
 export const handler = async (
   event: APIGatewayProxyEvent,
   _context: Context,
@@ -129,7 +121,7 @@ export const handler = async (
       parsedBody.supplier_code,
     );
     const accessToken = await getSupplierAccessToken(serviceConfig);
-    const correlationId = getCorrelationId(event);
+    const correlationId = getCorrelationIdFromEventHeaders(event);
 
     const orderResult = await sendOrderToSupplier(
       serviceConfig,

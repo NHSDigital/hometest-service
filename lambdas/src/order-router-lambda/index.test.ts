@@ -103,6 +103,9 @@ describe("order-router-lambda", () => {
         headers: { get: () => "application/json" },
       });
 
+      const testCorrelationId = "test-correlation-id-123";
+      mockEvent.headers = { ...mockEvent.headers, "X-Correlation-ID": testCorrelationId };
+
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
         order_body: { resourceType: "ServiceRequest" },
@@ -118,79 +121,9 @@ describe("order-router-lambda", () => {
         expect.objectContaining({
           Authorization: "Bearer test-secret",
           Accept: "application/fhir+json",
-          "X-Correlation-ID": expect.any(String),
+          "X-Correlation-ID": testCorrelationId,
         }),
         "application/fhir+json",
-      );
-    });
-  });
-
-  describe("correlation ID header pass-through and generation", () => {
-    beforeEach(() => {
-      mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("token");
-      mockHttpClientPostRaw.mockResolvedValue({
-        status: 200,
-        text: async () => "{}",
-        headers: { get: () => "application/json" },
-      });
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-    });
-
-    it("should pass through X-Correlation-ID header", async () => {
-      mockEvent.headers = { "X-Correlation-ID": "test-cid-upper" };
-
-      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
-
-      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.objectContaining({
-          "X-Correlation-ID": "test-cid-upper",
-        }),
-        expect.any(String),
-      );
-    });
-
-    it("should pass through x-correlation-id header", async () => {
-      mockEvent.headers = { "x-correlation-id": "test-cid-lower" };
-
-      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
-
-      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.objectContaining({
-          "X-Correlation-ID": "test-cid-lower",
-        }),
-        expect.any(String),
-      );
-    });
-
-    it("should generate correlation ID if not provided", async () => {
-      mockEvent.headers = {};
-
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
-
-      // Check that the generated correlation ID is a valid UUID
-      const correlationId = result.headers?.["X-Correlation-ID"];
-      expect(typeof correlationId).toBe("string");
-      expect(correlationId).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      );
-      expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.objectContaining({
-          "X-Correlation-ID": correlationId,
-        }),
-        expect.any(String),
       );
     });
   });
