@@ -15,7 +15,7 @@ export interface Environment {
 }
 
 export function init(): Environment {
-  const databaseUrl = process.env.DATABASE_URL || "";
+  const databaseUrl = process.env.DATABASE_URL!;
   const awsRegion =
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
 

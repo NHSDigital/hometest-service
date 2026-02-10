@@ -267,25 +267,6 @@ describe("order-router-lambda", () => {
       );
     });
 
-    it("should return 500 when DATABASE_URL is missing", async () => {
-      mockEnvironmentVariables.DATABASE_URL = "";
-
-      mockEvent.body = JSON.stringify({
-        supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
-      });
-
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body).message).toContain(
-        "Missing required configuration",
-      );
-    });
-
     it("should return error when supplierAuthClient token request fails", async () => {
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
       const { HttpError } = require("../lib/http/http-client");

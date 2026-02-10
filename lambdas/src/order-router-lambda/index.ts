@@ -18,12 +18,6 @@ interface ParsedOrderBody {
   order_body: any;
 }
 
-const validateEnvironmentVariables = (): void => {
-  if (!environmentVariables.DATABASE_URL) {
-    throw new HttpError("Missing required configuration", 500);
-  }
-};
-
 const parseAndValidateRequestBody = (
   eventBody: string | null,
 ): ParsedOrderBody => {
@@ -115,7 +109,6 @@ export const handler = async (
   _context: Context,
 ): Promise<APIGatewayProxyResult> => {
   try {
-    validateEnvironmentVariables();
     const parsedBody = parseAndValidateRequestBody(event.body);
     const serviceConfig = await getSupplierServiceConfig(
       parsedBody.supplier_code,
