@@ -1,16 +1,21 @@
+import { useCommonContent } from "@/hooks";
+
 export function MoreInformationLinks() {
+  const commonContent = useCommonContent();
+  const content = commonContent.orderStatus.moreInformation;
+
   return (
     <section aria-labelledby="more-info-heading">
       <h2 id="more-info-heading" className="nhsuk-heading-m">
-        More information
+        {content.heading}
       </h2>
       <p className="nhsuk-body">
         <a
           href="https://www.nhs.uk/conditions/hiv-and-aids/"
           className="nhsuk-link"
-          aria-label="Learn more about HIV and AIDS on NHS website"
+          aria-label={content.learnMoreHIV}
         >
-          Learn more about HIV and AIDS
+          {content.learnMoreHIV}
         </a>
       </p>
     </section>

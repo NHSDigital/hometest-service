@@ -1,5 +1,6 @@
 import { HelpLinks } from "./HelpLinks";
 import { Tag } from "nhsuk-react-components";
+import { useCommonContent } from "@/hooks";
 
 interface DispatchedStatusProps {
   maxDeliveryDays?: number;
@@ -12,6 +13,8 @@ export function DispatchedStatus({
   supplier,
   dispatchedDate,
 }: DispatchedStatusProps) {
+  const commonContent = useCommonContent();
+  const content = commonContent.orderStatus.statuses.dispatched;
   const maxDays = maxDeliveryDays || 5;
   const formattedDispatchedDate = dispatchedDate
     ? new Date(dispatchedDate).toLocaleDateString("en-GB", {
@@ -23,16 +26,16 @@ export function DispatchedStatus({
 
   return (
     <>
-      <Tag id="order-status-tag" color="blue" aria-label="Order status: Dispatched">
-        Dispatched
+      <Tag id="order-status-tag" color="blue" aria-label={`Order status: ${content.tag}`}>
+        {content.tag}
       </Tag>
-      <h2 className="nhsuk-heading-m">Wait for your kit to arrive</h2>
+      <h2 className="nhsuk-heading-m">{content.heading}</h2>
       {formattedDispatchedDate && (
         <p aria-label={`Kit dispatched on ${formattedDispatchedDate}`}>
-          Sent {formattedDispatchedDate}
+          {content.sentPrefix} {formattedDispatchedDate}
         </p>
       )}
-      <p>You should receive it within {maxDays} working days.</p>
+      <p>{content.message.replace("{maxDays}", String(maxDays))}</p>
       <hr />
       <HelpLinks supplier={supplier} />
     </>

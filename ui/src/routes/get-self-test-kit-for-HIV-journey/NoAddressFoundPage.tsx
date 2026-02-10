@@ -1,12 +1,14 @@
 "use client";
 
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers } = useCreateOrderContext();
+  const { commonContent, "no-address-found": content } = useContent();
 
   return (
     <PageLayout
@@ -20,10 +22,10 @@ export default function NoAddressFoundPage() {
       }}
     >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        No address found
+        {content.title}
       </h1>
       <p>
-        We could not find an address that matches{" "}
+        {content.notFoundMessage}{" "}
         <strong>{orderAnswers.postcodeSearch}</strong>
         {orderAnswers.buildingNumber && (
           <>
@@ -36,13 +38,13 @@ export default function NoAddressFoundPage() {
 
       <p className="nhsuk-body">
         <a href="enter-delivery-address" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterDeliveryAddress);}}>
-          Try a new search
+          {content.tryNewSearchLink}
         </a>
       </p>
 
       <p className="nhsuk-body">
         <a href="enter-address-manually" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterAddressManually);}}>
-          Enter address manually
+          {commonContent.navigation.manualEntryLink}
         </a>
       </p>
     </PageLayout>

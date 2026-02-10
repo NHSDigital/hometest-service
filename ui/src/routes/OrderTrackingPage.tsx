@@ -8,15 +8,17 @@ import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { getOrderDetails } from "@/lib/api/orders";
 import { useParams } from "react-router-dom";
+import { useContent } from "@/hooks";
 
 function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
   const order = use(orderPromise);
+  const { "order-tracking": content } = useContent();
 
   if (!order) {
     return (
       <div role="alert">
-        <h1 className="nhsuk-heading-l">There is a problem</h1>
-        <p className="nhsuk-body">We could not find this order.</p>
+        <h1 className="nhsuk-heading-l">{content.error.title}</h1>
+        <p className="nhsuk-body">{content.error.orderNotFound}</p>
       </div>
     );
   }
@@ -31,13 +33,14 @@ function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
 
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const { "order-tracking": content } = useContent();
 
   if (!orderId) {
     return (
       <PageLayout>
         <div role="alert">
-          <h1 className="nhsuk-heading-l">There is a problem</h1>
-          <p className="nhsuk-body">Order ID is required.</p>
+          <h1 className="nhsuk-heading-l">{content.error.title}</h1>
+          <p className="nhsuk-body">{content.error.orderIdRequired}</p>
         </div>
       </PageLayout>
     );
@@ -54,7 +57,7 @@ export default function OrderTrackingPage() {
             role="status"
             aria-live="polite"
           >
-            <p>Loading...</p>
+            <p>{content.loading}</p>
           </div>
         }
       >

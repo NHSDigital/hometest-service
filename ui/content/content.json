@@ -48,6 +48,55 @@
     },
     "errorSummary": {
       "title": "There is a problem"
+    },
+    "orderStatus": {
+      "header": {
+        "orderedPrefix": "Ordered",
+        "referenceNumberPrefix": "Reference number"
+      },
+      "statuses": {
+        "confirmed": {
+          "tag": "Confirmed",
+          "heading": "Wait for your kit to be dispatched",
+          "message": "You should receive it within {maxDays} working days from when you placed the order."
+        },
+        "dispatched": {
+          "tag": "Dispatched",
+          "heading": "Wait for your kit to arrive",
+          "sentPrefix": "Sent",
+          "message": "You should receive it within {maxDays} working days."
+        },
+        "received": {
+          "tag": "Test received",
+          "heading": "Wait for your result",
+          "message": "We'll contact you when it's ready."
+        },
+        "ready": {
+          "heading": "Your result is ready",
+          "viewResultLink": "View your result"
+        }
+      },
+      "helpLinks": {
+        "heading": "Still need help?",
+        "contactSupplier": "Contact {supplier}, the kit supplier",
+        "bloodSampleGuide": "Blood sample step-by-step guide",
+        "contactClinic": "Contact my nearest sexual health clinic",
+        "learnMoreHIV": "Learn more about HIV and AIDS"
+      },
+      "moreInformation": {
+        "heading": "More information",
+        "learnMoreHIV": "Learn more about HIV and AIDS"
+      },
+      "aboutService": {
+        "heading": "About this service",
+        "homeTestPrefix": "HomeTest",
+        "termsOfUse": "terms of use",
+        "and": "and",
+        "privacyPolicy": "privacy policy"
+      }
+    },
+    "footer": {
+      "copyright": "© Crown Copyright"
     }
   },
   "pages": {
@@ -66,7 +115,7 @@
       },
       "howItWorks": {
         "heading": "How it works",
-        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within [n] working days. This does not have to be your usual address.",
+        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within 5 working days. This does not have to be your usual address.",
         "stepByStepLink": "Blood sample step-by-step guide",
         "sampleInstructions": "You'll need to prick your finger and fill a tube with blood. Then send it to the address in the pre-paid envelope."
       },
@@ -127,6 +176,19 @@
       "postcodeLabel": "Postcode:",
       "editPostcodeLink": "Edit postcode",
       "formLabel": "Select your delivery address"
+    },
+    "global-error": {
+      "title": "Oops!",
+      "message": "Sorry, an unexpected error has occurred."
+    },
+    "order-tracking": {
+      "title": "Track your order",
+      "error": {
+        "title": "There is a problem",
+        "orderNotFound": "We could not find this order.",
+        "orderIdRequired": "Order ID is required."
+      },
+      "loading": "Loading..."
     }
   }
 }
