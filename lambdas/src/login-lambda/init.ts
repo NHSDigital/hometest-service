@@ -73,8 +73,7 @@ const className = 'init';
 export async function init(): Promise<LoginLambdaDependencies> {
 
 
-  const secretManagerClient = new AwsSecretsClient(process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
-);
+  const secretManagerClient = new AwsSecretsClient(process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2");
   const authCookiePrivateKeySecret = {'key': ''} as Record<string, string>;
   // ALPHA: Requires a proper private key for cookie signing. Currently reusing nhs login key. Fix soon.
     // await secretManagerClient.getSecretKeyValuePair(
