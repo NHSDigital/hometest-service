@@ -5,12 +5,7 @@ import { useCreateOrderContext } from "@/state/OrderContext";
 import { RoutePath } from "@/lib/models/route-paths";
 import { useNavigate } from "react-router-dom";
 
-function base64UrlDecode(input: string) {
-  const base64 = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
+import {consumeLoginCsrf, verifyState} from "@/lib/auth/loginState";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -20,22 +15,19 @@ function safeReturnTo(value: string | null | undefined) {
   return value;
 }
 
-function validateState(givenState: string | null | undefined): string | null {
-  const expectedCsrf = sessionStorage.getItem("hometest:nhs-login:csr");
-  sessionStorage.removeItem("hometest:nhs-login:csr");
+function getReturnTo(givenState: string | null | undefined): string | null {
+  const expectedCsrf = consumeLoginCsrf();
 
   if (!expectedCsrf || !givenState) {
     throw new Error("Missing state");
   }
 
-  const decoded = base64UrlDecode(givenState);
-  const parsed = JSON.parse(decoded) as { csrf?: string; returnTo?: string };
+  const returnTo = verifyState({
+    csrf: expectedCsrf,
+    encoded: givenState
+  });
 
-  if (parsed.csrf !== expectedCsrf) {
-    throw new Error("Invalid state");
-  }
-
-  return safeReturnTo(parsed.returnTo) ?? null;
+  return safeReturnTo(returnTo) ?? null;
 }
 
 export default function CallbackPage() {
@@ -70,7 +62,7 @@ export default function CallbackPage() {
 
     let returnTo: string | null = null;
     try {
-      returnTo = validateState(stateParam) ?? null;
+      returnTo = getReturnTo(stateParam) ?? null;
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error("State validation failed:", message);

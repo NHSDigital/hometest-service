@@ -17,7 +17,9 @@ import OrderTrackingPage from "./routes/OrderTrackingPage";
 import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
-import { requireAuth } from "./lib/auth/requireAuth";
+
+
+import {requireAuth} from "@/lib/auth/requireAuth";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)

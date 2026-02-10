@@ -2,6 +2,8 @@
 
 import {useEffect} from "react";
 
+import {generateState, persistLoginCsrf} from "@/lib/auth/loginState";
+
 function base64UrlEncode(input: string) {
   const bytes = new TextEncoder().encode(input);
   let binary = "";
@@ -23,11 +25,8 @@ export default function RedirectPage() {
     const params = new URLSearchParams(window.location.search);
     const returnTo = params.get("returnTo") ?? "/";
 
-    const csrf = randomString(16);
-    sessionStorage.setItem("hometest:nhs-login:csr", csrf);
-
-    const stateObj = { csrf, returnTo };
-    const state = base64UrlEncode(JSON.stringify(stateObj));
+    const {csrf, encoded: state} = generateState(returnTo);
+    persistLoginCsrf(csrf)
 
     // ALPHA: Improve this to use proper values and env variables.
     const nonce = Math.floor(1000 + Math.random() * 9000);
