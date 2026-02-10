@@ -37,13 +37,13 @@ export default function NoAddressFoundPage() {
       </p>
 
       <p className="nhsuk-body">
-        <a onClick={() => goToStep(JourneyStepNames.EnterDeliveryAddress)}>
+        <a href="enter-delivery-address" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterDeliveryAddress);}}>
           {content.tryNewSearchLink}
         </a>
       </p>
 
       <p className="nhsuk-body">
-        <a onClick={() => goToStep(JourneyStepNames.EnterAddressManually)}>
+        <a href="enter-address-manually" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterAddressManually);}}>
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>

@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: remove console.logs
+
 import {
   createContext,
   useContext,
