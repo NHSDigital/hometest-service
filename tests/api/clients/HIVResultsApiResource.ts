@@ -9,16 +9,18 @@ export class HIVResultsApiResource extends BaseApiClient {
     super(request);
   }
 
-  async submitTestResults(testData: HIVTestResult, headers: typeof headersTestResults): Promise<HIVTestResult> {
+  async submitTestResults(testData: HIVTestResult, headers: typeof headersTestResults): Promise<APIResponse> {
     const endpoint = API_ENDPOINTS.results.base;
     const response = await this.post(endpoint, {
       headers: headers,
       data: testData,
     });
 
-    this.validateStatus(response, 201);
+    return response;
+  }
 
-    return await this.parseJsonResponse<HIVTestResult>(response);
+  validateResponse(response: APIResponse, expectedStatus: number = 200): void {
+    this.validateStatus(response, expectedStatus);
   }
 
 }

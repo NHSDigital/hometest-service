@@ -6,6 +6,10 @@ test.describe('Submit Test Result API', () => {
   test('should successfully submit HIV test results and return 201', async ({ hivResultsApi }) => {
     const testData = HIVTestResultData.getDefaultResult();
     const headers = headersTestResults;
-    const result = await hivResultsApi.submitTestResults(testData, headers);
+    const response = await hivResultsApi.submitTestResults(testData, headers);
+
+    hivResultsApi.validateResponse(response, 201);
+
+    const result = await response.json();
   });
 });
