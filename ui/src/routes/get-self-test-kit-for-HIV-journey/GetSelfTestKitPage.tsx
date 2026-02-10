@@ -11,23 +11,12 @@ import { useEffect } from "react";
 // TODO: Replace [n] with actual number of working days once confirmed
 
 export default function GetSelfTestKitPage() {
-  const { updateOrderAnswers } = useCreateOrderContext();
+  const { orderAnswers } = useCreateOrderContext();
   const { goToStep } = useJourneyNavigationContext();
 
   useEffect(() => {
-    // TODO: Replace with actual auth data from NHS Login redirect
-    // This mock data simulates what will come from the auth response
-    const authData = {
-      sub: "49f470a1-cc52-49b7-beba-0f9cec937c46",
-      nhsNumber: "9686368973",
-      birthdate: "1968-02-12",
-      identityProofingLevel: "P9",
-      phoneNumber: "+447887510886",
-    };
-
-    updateOrderAnswers({ user: authData });
-    console.log("[GetSelfTestKitPage] Auth data set:", authData);
-  }, [updateOrderAnswers]);
+    console.log("[GetSelfTestKitPage] Auth data set:", orderAnswers.user);
+  }, [orderAnswers.user]);
 
   return (
     <PageLayout>

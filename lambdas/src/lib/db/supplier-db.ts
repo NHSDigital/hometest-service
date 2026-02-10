@@ -1,7 +1,5 @@
 import {Organization, Location} from 'fhir/r4';
 import {DBClient} from "./db-client";
-import {Service} from "../service";
-import {Commons} from "../commons";
 
 export interface SupplierOffering {
   organization: Organization;
@@ -24,10 +22,9 @@ export interface SupplierServiceProperties {
   dbClient: DBClient;
 }
 
-export class SupplierService extends Service{
+export class SupplierService {
   private readonly dbClient: DBClient
-  constructor({dbClient}: SupplierServiceProperties, commons: Commons) {
-    super('SupplierService', commons);
+  constructor({dbClient}: SupplierServiceProperties) {
     this.dbClient = dbClient;
   }
 
@@ -48,8 +45,6 @@ export class SupplierService extends Service{
     `;
 
     try {
-      this.logger.debug('Fetching suppliers from database', {laCode, testCode});
-
       const result = await this.dbClient.query<SupplierRow, GetSupplierParams>(query, [laCode, testCode ?? null]);
 
       if (result.rowCount === 0) {
@@ -82,7 +77,6 @@ export class SupplierService extends Service{
         }
       }));
     } catch (error) {
-      this.logger.error('Failed to fetch suppliers from the database:', {error, postcode: laCode, testCode});
       throw new Error('Failed to fetch suppliers from database');
     }
   }
