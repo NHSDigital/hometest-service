@@ -9,12 +9,15 @@ import cors from '@middy/http-cors';
 import httpErrorHandler from '@middy/http-error-handler';
 import httpSecurityHeaders from '@middy/http-security-headers';
 import { securityHeaders } from '../lib/http/security-headers';
-import { retrieveMandatoryEnvVariable } from '../lib/utils';
+import {retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable} from '../lib/utils';
 
 // ALPHA: This file will need revisiting.
 const authCookieSameSite = retrieveMandatoryEnvVariable(
   'AUTH_COOKIE_SAME_SITE'
 );
+const authCookieSecure =
+  retrieveOptionalEnvVariable('AUTH_COOKIE_SECURE', 'true').toLowerCase() ===
+  'true';
 
 export interface LoginBody {
   code: string; // the auth code from NHS login
@@ -52,13 +55,15 @@ export const lambdaHandler = async (
       refreshToken: loginOutput.nhsLoginRefreshToken || '',
     });
 
+    const secureAttr = authCookieSecure ? ' Secure;' : '';
+
     return {
       statusCode: 200,
       body: JSON.stringify(loginOutput.userInfoResponse),
       multiValueHeaders: {
         'Set-Cookie': [
-          `auth=${signedAuthAccessJwt}; HttpOnly; Path=/; SameSite=${authCookieSameSite}; Secure;`,
-          `auth_refresh=${signedAuthRefreshJwt}; HttpOnly; Path=/refresh-token; SameSite=${authCookieSameSite}; Secure;`
+          `auth=${signedAuthAccessJwt}; HttpOnly; Path=/; SameSite=${authCookieSameSite};${authCookieSecure}`,
+          `auth_refresh=${signedAuthRefreshJwt}; HttpOnly; Path=/refresh-token; SameSite=${authCookieSameSite};${authCookieSecure}`
         ]
       }
     };

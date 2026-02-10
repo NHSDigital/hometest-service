@@ -17,11 +17,48 @@ import OrderTrackingPage from "./routes/OrderTrackingPage";
 import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
+import { requireAuth } from "./lib/auth/requireAuth";
 
 const router = createBrowserRouter([
+  // Public routes (must NOT be guarded)
+  {
+    path: RoutePath.LoginPage,
+    element: (
+      <MainLayout>
+        <LoginPage />
+      </MainLayout>
+    ),
+    errorElement: (
+      <MainLayout>
+        <GlobalErrorPage />
+      </MainLayout>
+    ),
+  },
+  {
+    path: RoutePath.CallbackPage,
+    element: (
+      <MainLayout>
+        <JourneyLayout />
+      </MainLayout>
+    ),
+    errorElement: (
+      <MainLayout>
+        <GlobalErrorPage />
+      </MainLayout>
+    ),
+    children: [
+      {
+        index: true,
+        element: <CallbackPage />,
+      },
+    ],
+  },
+
+  // Guarded app (everything else)
   {
     path: "/",
     element: <MainLayout />,
+    loader: requireAuth,
     errorElement: (
       <MainLayout>
         <GlobalErrorPage />
@@ -31,20 +68,6 @@ const router = createBrowserRouter([
       {
         path: RoutePath.HomePage,
         element: <HomePage />,
-      },
-      {
-        path: RoutePath.LoginPage,
-        element: <LoginPage />,
-      },
-      {
-        path: RoutePath.CallbackPage,
-        element: <JourneyLayout />,
-        children: [
-          {
-            index: true,
-            element: <CallbackPage />,
-          },
-        ],
       },
       {
         path: RoutePath.OrderTrackingPage,

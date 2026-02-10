@@ -5,6 +5,39 @@ import { useCreateOrderContext } from "@/state/OrderContext";
 import { RoutePath } from "@/lib/models/route-paths";
 import { useNavigate } from "react-router-dom";
 
+function base64UrlDecode(input: string) {
+  const base64 = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function safeReturnTo(value: string | null | undefined) {
+  if (!value) return null;
+  // Allow only in-app relative paths to avoid open redirects.
+  if (!value.startsWith("/")) return null;
+  if (value.startsWith("//")) return null;
+  return value;
+}
+
+function validateState(givenState: string | null | undefined): string | null {
+  const expectedCsrf = sessionStorage.getItem("hometest:nhs-login:csr");
+  sessionStorage.removeItem("hometest:nhs-login:csr");
+
+  if (!expectedCsrf || !givenState) {
+    throw new Error("Missing state");
+  }
+
+  const decoded = base64UrlDecode(givenState);
+  const parsed = JSON.parse(decoded) as { csrf?: string; returnTo?: string };
+
+  if (parsed.csrf !== expectedCsrf) {
+    throw new Error("Invalid state");
+  }
+
+  return safeReturnTo(parsed.returnTo) ?? null;
+}
+
 export default function CallbackPage() {
   type Result =
   | null
@@ -21,20 +54,32 @@ export default function CallbackPage() {
     if (didRun.current) return;
     didRun.current = true;
 
-    const loginLambdaUrl = process.env.NEXT_PUBLIC_LOGIN_LAMBDA_ENDPOINT;
-    if (!loginLambdaUrl) {
-      console.error("Missing NEXT_PUBLIC_LOGIN_LAMBDA_ENDPOINT");
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backendUrl) {
+      console.error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;
     }
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
+    const stateParam = params.get("state");
 
     console.log("Params:", params.toString());
     console.log("Authorization code:", code);
 
     if (!code) return;
 
-    fetch(loginLambdaUrl, {
+    let returnTo: string | null = null;
+    try {
+      returnTo = validateState(stateParam) ?? null;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error("State validation failed:", message);
+      setResult({ error: "Login could not be validated. Please try again." });
+      navigate(RoutePath.LoginPage);
+      return;
+    }
+
+    fetch(`${backendUrl}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
@@ -59,7 +104,7 @@ export default function CallbackPage() {
         });
       })
       .then(() => {
-        navigate(RoutePath.GetSelfTestKitPage);
+        navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : String(err);
