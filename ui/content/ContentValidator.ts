@@ -18,6 +18,8 @@ const REQUIRED_COMMON_KEYS: (keyof CommonContent)[] = [
   "validation",
   "links",
   "errorSummary",
+  "orderStatus",
+  "footer",
 ];
 
 const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
@@ -27,6 +29,8 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "no-address-found",
   "select-delivery-address",
   "how-comfortable-pricking-finger",
+  "global-error",
+  "order-tracking",
 ];
 
 const isObject = (value: unknown): value is Record<string, unknown> =>

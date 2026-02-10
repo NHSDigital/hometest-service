@@ -7,6 +7,8 @@ import type {
   NoAddressFoundContent,
   SelectDeliveryAddressContent,
   HowComfortablePrickingFingerContent,
+  GlobalErrorContent,
+  OrderTrackingContent,
 } from "@/content/schema";
 
 export interface UseContentReturn {
@@ -15,10 +17,10 @@ export interface UseContentReturn {
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
   "no-address-found": NoAddressFoundContent;
-  /** Select delivery address page content */
   "select-delivery-address": SelectDeliveryAddressContent;
-  /** How comfortable pricking finger page content */
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "global-error": GlobalErrorContent;
+  "order-tracking": OrderTrackingContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -30,6 +32,8 @@ export const useContent = (): UseContentReturn => {
     "no-address-found": content.pages["no-address-found"],
     "select-delivery-address": content.pages["select-delivery-address"],
     "how-comfortable-pricking-finger": content.pages["how-comfortable-pricking-finger"],
+    "global-error": content.pages["global-error"],
+    "order-tracking": content.pages["order-tracking"],
   };
 };
 
@@ -43,8 +47,10 @@ export function usePageContent(page: "enter-address-manually"): EnterAddressManu
 export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
 export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
 export function usePageContent(page: "how-comfortable-pricking-finger"): HowComfortablePrickingFingerContent;
+export function usePageContent(page: "global-error"): GlobalErrorContent;
+export function usePageContent(page: "order-tracking"): OrderTrackingContent;
 export function usePageContent(
-  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address" | "how-comfortable-pricking-finger"
+  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address" | "how-comfortable-pricking-finger" | "global-error" | "order-tracking"
 ) {
   return content.pages[page];
 }

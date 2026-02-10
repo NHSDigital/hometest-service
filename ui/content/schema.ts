@@ -66,11 +66,82 @@ export interface ErrorSummaryContent {
   title: string;
 }
 
+export interface OrderStatusHeaderContent {
+  orderedPrefix: string;
+  referenceNumberPrefix: string;
+}
+
+export interface ConfirmedStatusContent {
+  tag: string;
+  heading: string;
+  message: string;
+}
+
+export interface DispatchedStatusContent {
+  tag: string;
+  heading: string;
+  sentPrefix: string;
+  message: string;
+}
+
+export interface ReceivedStatusContent {
+  tag: string;
+  heading: string;
+  message: string;
+}
+
+export interface ReadyStatusContent {
+  heading: string;
+  viewResultLink: string;
+}
+
+export interface OrderStatusesContent {
+  confirmed: ConfirmedStatusContent;
+  dispatched: DispatchedStatusContent;
+  received: ReceivedStatusContent;
+  ready: ReadyStatusContent;
+}
+
+export interface HelpLinksContent {
+  heading: string;
+  contactSupplier: string;
+  bloodSampleGuide: string;
+  contactClinic: string;
+  learnMoreHIV: string;
+}
+
+export interface MoreInformationContent {
+  heading: string;
+  learnMoreHIV: string;
+}
+
+export interface AboutServiceContent {
+  heading: string;
+  homeTestPrefix: string;
+  termsOfUse: string;
+  and: string;
+  privacyPolicy: string;
+}
+
+export interface OrderStatusContent {
+  header: OrderStatusHeaderContent;
+  statuses: OrderStatusesContent;
+  helpLinks: HelpLinksContent;
+  moreInformation: MoreInformationContent;
+  aboutService: AboutServiceContent;
+}
+
+export interface FooterContent {
+  copyright: string;
+}
+
 export interface CommonContent {
   navigation: NavigationContent;
   validation: ValidationMessages;
   links: CommonLinks;
   errorSummary: ErrorSummaryContent;
+  orderStatus: OrderStatusContent;
+  footer: FooterContent;
 }
 
 // ============================================================================
@@ -181,6 +252,21 @@ export interface HowComfortablePrickingFingerContent {
   };
 }
 
+export interface GlobalErrorContent {
+  title: string;
+  message: string;
+}
+
+export interface OrderTrackingContent {
+  title: string;
+  error: {
+    title: string;
+    orderNotFound: string;
+    orderIdRequired: string;
+  };
+  loading: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -192,6 +278,8 @@ export interface PagesContent {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "global-error": GlobalErrorContent;
+  "order-tracking": OrderTrackingContent;
 }
 
 // ============================================================================
