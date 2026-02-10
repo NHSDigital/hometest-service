@@ -22,3 +22,8 @@ output "order_router_endpoint" {
   description = "Order Router Lambda endpoint"
   value       = module.order_router_lambda.localstack_endpoint_url
 }
+
+output "login_endpoint" {
+  description = "Login Lambda endpoint"
+  value       = module.login_lambda.localstack_endpoint_url
+}
