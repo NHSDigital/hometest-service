@@ -31,6 +31,9 @@
         "required": "Enter a city or town",
         "maxLength": "City or town must be 100 characters or less",
         "invalid": "Enter a city or town"
+      },
+      "deliveryAddress": {
+        "required": "Select a delivery address"
       }
     },
     "links": {
@@ -112,7 +115,7 @@
       },
       "howItWorks": {
         "heading": "How it works",
-        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within [n] working days. This does not have to be your usual address.",
+        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within 5 working days. This does not have to be your usual address.",
         "stepByStepLink": "Blood sample step-by-step guide",
         "sampleInstructions": "You'll need to prick your finger and fill a tube with blood. Then send it to the address in the pre-paid envelope."
       },
@@ -167,6 +170,12 @@
       "title": "No address found",
       "notFoundMessage": "We could not find an address that matches",
       "tryNewSearchLink": "Try a new search"
+    },
+    "select-delivery-address": {
+      "title": "found",
+      "postcodeLabel": "Postcode:",
+      "editPostcodeLink": "Edit postcode",
+      "formLabel": "Select your delivery address"
     },
     "global-error": {
       "title": "Oops!",

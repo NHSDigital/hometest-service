@@ -1,14 +1,19 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
+import { AddressModel } from '../../models';
 
 test.describe('Accessibility Testing @accessibility', () => {
 
-  test('Find Address Page', async ({ homeTestStartPage, findAddressPage, accessibility }) => {
+  test('Select Delivery Address Page', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.fillPostCodeAndAddressAndContinue('SW1A 1AA', 'Buckingham Palace');
-    await findAddressPage.waitUntilPageLoad();
-    const hasViolations = await accessibility.runAccessibilityCheck(findAddressPage.page, "Find Address Page");
-    expect(hasViolations).toBe(false);
+    const randomAddress = AddressModel.getRandomAddress();
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    // Wait for page to load
+    await selectDeliveryAddressPage.waitUntilPageLoad();
+
+
+    const accessErrors = await accessibility.runAccessibilityCheck(selectDeliveryAddressPage.page, "Select Delivery Address Page");
+    expect(accessErrors).toHaveLength(0);
   });
 });

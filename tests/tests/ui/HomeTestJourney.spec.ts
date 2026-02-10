@@ -1,27 +1,37 @@
 import { test } from '../../fixtures';
 import { expect } from '@playwright/test';
-import data from '../../test-data/address.json';
+import { AddressModel } from '../../models';
 
 test.describe.configure({ mode: 'serial' });
+const randomAddress = AddressModel.getRandomAddress();
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
-  });
-
-
-  test('Order test journey', async ({ homeTestStartPage, findAddressPage }) => {
     const actualResult = await homeTestStartPage.getHeaderText();
     expect(actualResult).toBe("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
-    const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomEntry.postcode, randomEntry.addressline1);
+  });
+
+  test('Order test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.clickEditAddressLink();
+    const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressline1);
+    await selectDeliveryAddressPage.clickContinueButton();
+    await selectDeliveryAddressPage.selectAddressAndContinue();
   });
 
   test('Order test journey by providing address manually', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage }) => {
-    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.clickEnterAddressManuallyLink();
-    const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await enterAddressManuallyPage.fillAddressAndContinue(randomEntry.addressline1, randomEntry.addressline2, randomEntry.addressline3, randomEntry.towncity, randomEntry.postcode)
+    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
   });
+
+  test('Order test journey by providing address manually from select delivery address page', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage, selectDeliveryAddressPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await findAddressPage.clickEnterAddressManuallyLink();
+    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
+  });
+
 });
