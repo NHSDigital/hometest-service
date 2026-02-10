@@ -11,7 +11,7 @@ import { useEffect } from "react";
 // TODO: Replace [n] with actual number of working days once confirmed
 
 export default function GetSelfTestKitPage() {
-  const { orderAnswers } = useCreateOrderContext();
+  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
