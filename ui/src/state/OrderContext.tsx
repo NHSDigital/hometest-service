@@ -39,6 +39,7 @@ export interface OrderAnswers {
 
   // Final delivery address
   deliveryAddress?: Address;
+  comfortableDoingTest?: string;
 }
 
 interface CreateOrderContextType {

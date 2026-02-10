@@ -28,20 +28,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </span>
       }
       <ScrollRestoration />
-      {
-        <Header transactional>
-          <Header.Container>
-            <Header.Logo to={"https://www.nhs.uk/"} asElement={Link} />
-            <Header.ServiceName href={RoutePath.HomePage}>
-              {DEFAULT_PAGE_TITLE}
-            </Header.ServiceName>
-          </Header.Container>
-        </Header>
-      }
       <Container>{children ?? <Outlet />}</Container>
-      <Footer>
-        <Footer.Copyright>{commonContent.footer.copyright}</Footer.Copyright>
-      </Footer>
     </>
   );
 }
