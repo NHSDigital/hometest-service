@@ -8,14 +8,10 @@ import { Link } from "react-router-dom";
 import PageLayout from "@/layouts/PageLayout";
 import { useEffect } from "react";
 
-// TODO: Replace [n] with actual number of working days once confirmed
-
 export default function GetSelfTestKitPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
-
-// TODO: Replace [n] with actual number of working days once confirmed
 
   useEffect(() => {
     console.log("[GetSelfTestKitPage] Auth data set:", orderAnswers.user);

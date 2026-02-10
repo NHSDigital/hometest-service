@@ -77,6 +77,10 @@ export default function SelectDeliveryAddressPage() {
     <PageLayout
       showBackButton
       onBackButtonClick={() => {
+        updateOrderAnswers({
+          postcodeSearch: undefined,
+          buildingNumber: undefined
+        });
         if (stepHistory.length > 1) {
           goBack();
         } else {
