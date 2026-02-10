@@ -51,8 +51,8 @@ export default function EnterDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { commonContent, "enter-delivery-address": content } = useContent();
 
-  const [postcode, setPostcode] = useState("");
-  const [buildingName, setBuildingName] = useState("");
+  const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
+  const [buildingName, setBuildingName] = useState(orderAnswers.buildingNumber || "");
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
   const [buildingNameError, setBuildingNameError] = useState<string | null>(
     null,
@@ -179,7 +179,14 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <a onClick={() => goToStep(JourneyStepNames.EnterAddressManually)}>
+        <a href="enter-address-manually" onClick={(e) => {
+            e.preventDefault();
+            updateOrderAnswers({
+              postcodeSearch: undefined,
+              buildingNumber: undefined
+            });
+            goToStep(JourneyStepNames.EnterAddressManually);
+          }}>
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>

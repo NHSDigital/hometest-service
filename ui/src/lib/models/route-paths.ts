@@ -10,4 +10,5 @@ export enum JourneyStepNames {
   EnterAddressManually = "enter-address-manually",
   EnterDeliveryAddress = "enter-delivery-address",
   NoAddressFound = "no-address-found",
+  SelectDeliveryAddress = "select-delivery-address",
 }

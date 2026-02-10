@@ -40,6 +40,9 @@ export interface ValidationMessages {
     maxLength: string;
     invalid: string;
   };
+  deliveryAddress: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -214,6 +217,12 @@ export interface NoAddressFoundContent {
   tryNewSearchLink: string;
 }
 
+export interface SelectDeliveryAddressContent {
+  title: string;
+  postcodeLabel: string;
+  editPostcodeLink: string;
+  formLabel: string;
+}
 export interface GlobalErrorContent {
   title: string;
   message: string;
@@ -238,6 +247,7 @@ export interface PagesContent {
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
   "no-address-found": NoAddressFoundContent;
+  "select-delivery-address": SelectDeliveryAddressContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
 }
