@@ -84,26 +84,7 @@ export const handler = async (
 
     commons.logInfo('order-result-lambda', 'Result posted to SQS', { orderUid, correlationId });
 
-    const timestamp = new Date().toISOString();
-    const responseResource: Parameters = {
-      resourceType: 'Parameters',
-      parameter: [
-        {
-          name: 'order_uid',
-          valueString: orderUid || '',
-        },
-        {
-          name: 'result_status',
-          valueString: 'RECEIVED',
-        },
-        {
-          name: 'timestamp',
-          valueDateTime: timestamp,
-        },
-      ],
-    };
-
-    return createFhirResponse(201, responseResource);
+    return createFhirResponse(201, observation);
 
   } catch (error) {
     commons.logError('order-result-lambda', 'Error processing result submission', { error });

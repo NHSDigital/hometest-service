@@ -100,23 +100,7 @@ describe('Order Result Lambda Handler', () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(201);
-      expect(JSON.parse(result.body)).toEqual({
-        parameter: [
-          {
-            name: 'order_uid',
-            valueString: '12345',
-          },
-          {
-            name: 'result_status',
-            valueString: 'RECEIVED',
-          },
-          {
-            name: 'timestamp',
-            valueDateTime: expect.any(String),
-          }
-        ],
-        resourceType: 'Parameters',
-      });
+      expect(JSON.parse(result.body)).toEqual(body);
       expect(mockSQSClientSendMessage).toHaveBeenCalledTimes(1);
     });
   });
