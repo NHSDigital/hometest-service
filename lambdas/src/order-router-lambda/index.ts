@@ -58,7 +58,7 @@ const getSupplierServiceConfig = async (
   if (!serviceConfig) {
     throw new HttpError("Supplier not found for supplier_code", 404);
   }
-  
+
   return serviceConfig;
 };
 
