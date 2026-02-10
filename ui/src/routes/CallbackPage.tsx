@@ -74,7 +74,6 @@ export default function CallbackPage() {
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error("State validation failed:", message);
-      setResult({ error: "Login could not be validated. Please try again." });
       navigate(RoutePath.LoginPage);
       return;
     }
