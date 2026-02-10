@@ -1,5 +1,5 @@
 export class BaseTestUser {
-  nhsNumber: string;
+  nhsNumber?: string;
   odsCode?: string;
   patientId?: string;
   age?: number;

@@ -14,7 +14,7 @@ export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
         otp: process.env.OTP as unknown as string,
         password: process.env.GENERIC_PASS as unknown as string,
         description: 'eligible user',
-        patientId: '9bdc7bf9-f4d9-40d8-9e46-1e76317f75d2'
+        patientId: '49f470a1-cc52-49b7-beba-0f9cec937c46'
       },
       {
         email: 'testuserlive+1@demo.signin.nhs.uk',
