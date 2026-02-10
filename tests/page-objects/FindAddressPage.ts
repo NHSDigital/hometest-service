@@ -18,7 +18,7 @@ export class FindAddressPage extends BasePage {
     this.addressResults = page.locator('.nhsuk-heading-l');
     this.postcodeErrorMessage = page.locator('#postcode--error-message');
     this.BuildingNoErrorMessage = page.locator('#building-number-or-name--error-message');
-    this.enterAddressManuallyLink = page.locator("a[href='enter-address-manually']");
+    this.enterAddressManuallyLink = page.getByText('Enter address manually')
   }
 
   async fillPostCodeAndAddressAndContinue(postcode: string, firstLineAddress: string): Promise<void> {

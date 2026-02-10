@@ -27,8 +27,8 @@ export default class NhsLoginHelper {
   }
 
   public async loginNhsUser(page: Page, user: NHSLoginUser): Promise<Page> {
-    console.log(`Logging in the user : ${user.email}`);
-    await this.fillNhsLoginFormsAndWaitForStartPage(user, page);
+    
+  await this.fillNhsLoginFormsAndWaitForStartPage(user, page);
     return page;
   }
 }
