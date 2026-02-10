@@ -77,7 +77,7 @@ export class ConfigFactory {
 
   private static readConfigurationFromEnvFile(): Partial<ConfigInterface> {
     const envFilePath = path.resolve(__dirname, `.env.${this.envName}`);
-    
+
     const result = dotenv.config({ path: envFilePath });
 
     if (result.error) {
@@ -94,8 +94,8 @@ export class ConfigFactory {
       uiBaseUrl: process.env[EnvironmentVariables.UI_BASE_URL],
       apiBaseUrl: process.env[EnvironmentVariables.API_BASE_URL],
       headless: process.env[EnvironmentVariables.HEADLESS] === 'true',
-      timeout: process.env[EnvironmentVariables.TIMEOUT] 
-        ? parseInt(process.env[EnvironmentVariables.TIMEOUT], 10) 
+      timeout: process.env[EnvironmentVariables.TIMEOUT]
+        ? parseInt(process.env[EnvironmentVariables.TIMEOUT], 10)
         : undefined,
       slowMo: process.env[EnvironmentVariables.SLOW_MO]
         ? parseInt(process.env[EnvironmentVariables.SLOW_MO], 10)
@@ -110,12 +110,12 @@ export class ConfigFactory {
 
   private static readConfigurationFromLocalFile(): Partial<ConfigInterface> {
     const localFilePath = path.join(__dirname, `./local.json`);
-    
+
     if (!fs.existsSync(localFilePath)) {
       console.log('No local configuration file found');
       return {};
     }
-    
+
     return this.readConfigurationFromFile(localFilePath);
   }
 
@@ -144,7 +144,7 @@ export class ConfigFactory {
 class ConfigWrapper {
   get(key: EnvironmentVariables): string {
     const config = ConfigFactory.getConfig();
-    
+
     switch (key) {
       case EnvironmentVariables.UI_BASE_URL:
         return config.uiBaseUrl;

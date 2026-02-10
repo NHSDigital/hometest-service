@@ -12,5 +12,5 @@ export class UserManagerFactory {
 
      return new SandboxUserManager(getNumberOfWorkers(this.config.authType));
       }
-  
+
 }

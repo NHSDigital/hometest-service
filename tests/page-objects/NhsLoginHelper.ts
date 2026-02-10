@@ -18,7 +18,7 @@ export default class NhsLoginHelper {
   ): Promise<void> {
     const loginPage = new NHSEmailAndPasswordPage(page);
     const codeSecurityPage = new CodeSecurityPage(page);
-    await page.goto(`${this.config.uiBaseUrl}`);  
+    await page.goto(`${this.config.uiBaseUrl}`);
     await loginPage.fillAuthFormWithCredentialsAndClickContinue(nhsLoginUser);
     await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
       nhsLoginUser.otp
@@ -27,7 +27,7 @@ export default class NhsLoginHelper {
   }
 
   public async loginNhsUser(page: Page, user: NHSLoginUser): Promise<Page> {
-    
+
   await this.fillNhsLoginFormsAndWaitForStartPage(user, page);
     return page;
   }
