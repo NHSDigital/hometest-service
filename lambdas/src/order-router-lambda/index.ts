@@ -7,8 +7,8 @@ import { init } from "./init";
 import { HttpError } from "../lib/http/http-client";
 import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
-import { SupplierConfig } from "src/lib/db/supplier-db";
-import { z } from "zod";
+import { SupplierConfig } from "../lib/db/supplier-db";
+import { ParsedOrderBodySchema } from "../lib/models/fhir/fhir-schemas";
 
 const name = "order-router-lambda";
 
@@ -140,76 +140,3 @@ export const handler = async (
     };
   }
 };
-
-// --- FHIR sub-schemas ---
-const FHIRCodeableConceptSchema = z.object({
-  coding: z.array(
-    z.object({
-      system: z.string().optional(),
-      code: z.string().optional(),
-      display: z.string().optional(),
-    })
-  ).optional(),
-  text: z.string().optional(),
-});
-
-const FHIRReferenceSchema = z.object({
-  reference: z.string(),
-  type: z.string().optional(),
-  display: z.string().optional(),
-});
-
-const FHIRHumanNameSchema = z.object({
-  use: z.string().optional(),
-  family: z.string(),
-  given: z.array(z.string()).optional(),
-  text: z.string().optional(),
-});
-
-const FHIRContactPointSchema = z.object({
-  system: z.enum(["phone", "fax", "email", "pager", "url", "sms", "other"]).optional(),
-  value: z.string(),
-  use: z.enum(["home", "work", "temp", "old", "mobile"]).optional(),
-});
-
-const FHIRAddressSchema = z.object({
-  use: z.enum(["home", "work", "temp", "old", "billing"]).optional(),
-  type: z.enum(["postal", "physical", "both"]).optional(),
-  line: z.array(z.string()),
-  city: z.string().optional(),
-  postalCode: z.string(),
-  country: z.string().optional(),
-});
-
-const FHIRContainedPatientSchema = z.object({
-  resourceType: z.literal("Patient"),
-  id: z.string(),
-  name: z.array(FHIRHumanNameSchema),
-  telecom: z.array(FHIRContactPointSchema).min(2),
-  address: z.array(FHIRAddressSchema),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-});
-
-const FHIRServiceRequestSchema = z.object({
-  resourceType: z.literal("ServiceRequest"),
-  id: z.string().optional(),
-  status: z.enum([
-    "draft", "active", "on-hold", "revoked", "completed", "entered-in-error", "unknown"
-  ]),
-  intent: z.enum([
-    "proposal", "plan", "directive", "order", "original-order", "reflex-order", "filler-order", "instance-order", "option"
-  ]),
-  code: FHIRCodeableConceptSchema,
-  contained: z.array(FHIRContainedPatientSchema).min(1),
-  subject: FHIRReferenceSchema,
-  requester: FHIRReferenceSchema,
-  performer: z.array(FHIRReferenceSchema).optional(),
-});
-
-// --- Main request schema ---
-const ParsedOrderBodySchema = z.object({
-  supplier_code: z.string().refine(isUUID, {
-    message: "supplier_code must be a valid UUID",
-  }),
-  order_body: FHIRServiceRequestSchema,
-});
