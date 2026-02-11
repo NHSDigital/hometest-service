@@ -223,5 +223,5 @@ resource "aws_api_gateway_stage" "api_stage" {
 }
 
 data "external" "supplier_id" {
-  program = ["bash", "${path.module}/get_supplier_id.sh"]
+  program = ["bash", "${path.module}/scripts/localstack/get_supplier_id.sh"]
 }
