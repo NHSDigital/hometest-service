@@ -9,6 +9,7 @@ import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { SupplierConfig } from "../lib/db/supplier-db";
 import { ParsedOrderBodySchema } from "../lib/models/fhir/fhir-schemas";
+import { FHIRServiceRequest } from "src/lib/models/fhir/FHIRServiceRequestType";
 
 const name = "order-router-lambda";
 
@@ -16,7 +17,7 @@ const { httpClient, environmentVariables, supplierDb, secretsClient } = init();
 
 interface ParsedOrderBody {
   supplier_code: string;
-  order_body: any;
+  order_body: FHIRServiceRequest;
 }
 
 const parseAndValidateRequestBody = (
@@ -71,7 +72,7 @@ const getSupplierAccessToken = async (
 
 const sendOrderToSupplier = async (
   serviceConfig: SupplierConfig,
-  orderBody: any,
+  orderBody: FHIRServiceRequest,
   accessToken: string,
   correlationId: string,
 ): Promise<{ status: number; body: string; contentType: string }> => {
