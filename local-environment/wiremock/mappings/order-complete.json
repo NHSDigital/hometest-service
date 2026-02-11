@@ -1,0 +1,92 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/order",
+    "queryParameters": {
+      "nhs_number": {
+        "matches": "^(\\d{3}\\s?\\d{3}\\s?\\d{4})$"
+      },
+      "date_of_birth": {
+        "matches": "^(19|20)\\d\\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+      },
+      "order_id": {
+        "matches": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3e"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/fhir+json",
+      "Access-Control-Allow-Origin": "*"
+    },
+    "jsonBody": {
+      "resourceType": "Bundle",
+      "type": "searchset",
+      "total": 1,
+      "entry": [
+        {
+          "fullUrl": "urn:uuid:018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3e",
+          "resource": {
+            "resourceType": "ServiceRequest",
+            "id": "018f6b6e-8b8e-7c2b-8f3b-8b8e7c2a8f3e",
+            "identifier": [
+              {
+                "system": "https://fhir.hometest.nhs.uk/Id/order-id",
+                "value": "56789"
+              }
+            ],
+            "status": "active",
+            "intent": "order",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "31676001",
+                  "display": "HIV antigen test"
+                }
+              ],
+              "text": "HIV antigen test"
+            },
+            "subject": {
+              "reference": "#patient-1"
+            },
+            "requester": {
+              "reference": "Organization/ORG001"
+            },
+            "performer": [
+              {
+                "reference": "Organization/SUPP001",
+                "type": "Organization",
+                "display": "Test Supplier Ltd"
+              }
+            ],
+            "authoredOn": "2026-02-05",
+            "extension": [
+              {
+                "url": "https://fhir.hometest.nhs.uk/StructureDefinition/business-status",
+                "extension": [
+                  {
+                    "url": "timestamp",
+                    "valueDate": "2026-02-05"
+                  }
+                ],
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
+                      "code": "COMPLETE",
+                      "display": "Result ready"
+                    }
+                  ],
+                  "text": "COMPLETE"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

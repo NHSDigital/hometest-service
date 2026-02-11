@@ -1,17 +1,39 @@
 "use client";
 
-import { Suspense, use } from "react";
-
 import { AboutService } from "@/components/AboutService";
-import { Order } from "@/types/order";
 import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
-import { getOrderDetails } from "@/lib/api/orders";
-import { useParams } from "react-router-dom";
+import { Patient } from "@/lib/models/patient";
+import orderDetailsService from "@/lib/services/order-details-service";
 import { useContent } from "@/hooks";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 
-function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
-  const order = use(orderPromise);
+function getPatient(): Patient {
+  // hardcoded - will be obtained from logged user later
+  return {
+    nhsNumber: "2657119018",
+    dateOfBirth: "1990-08-11",
+  };
+}
+
+function isValidGuid(value: string): boolean {
+  const result = z.uuid().safeParse(value);
+  return result.success;
+}
+
+function OrderContent({
+  orderId,
+  patient,
+}: {
+  orderId: string;
+  patient: Patient;
+}) {
+  const { data: order } = useQuery({
+    queryKey: ["orderStatus", orderId, patient.nhsNumber],
+    queryFn: () => orderDetailsService.get(orderId, patient),
+  });
   const { "order-tracking": content } = useContent();
 
   if (!order) {
@@ -33,9 +55,10 @@ function OrderContent({ orderPromise }: { orderPromise: Promise<Order> }) {
 
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const patient = getPatient();
   const { "order-tracking": content } = useContent();
 
-  if (!orderId) {
+  if (!orderId || !isValidGuid(orderId)) {
     return (
       <PageLayout>
         <div role="alert">
@@ -46,23 +69,9 @@ export default function OrderTrackingPage() {
     );
   }
 
-  const orderPromise = getOrderDetails(orderId);
-
   return (
     <PageLayout>
-      <Suspense
-        fallback={
-          <div
-            className="nhsuk-body nhsuk-u-padding-top-5"
-            role="status"
-            aria-live="polite"
-          >
-            <p>{content.loading}</p>
-          </div>
-        }
-      >
-        <OrderContent orderPromise={orderPromise} />
-      </Suspense>
+      <OrderContent orderId={orderId} patient={patient} />
     </PageLayout>
   );
 }
