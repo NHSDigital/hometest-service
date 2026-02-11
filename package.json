@@ -4,7 +4,8 @@
   "description": "NHS Home Test Service",
   "private": true,
   "scripts": {
-    "start": "npm run local:up:localstack && npm run local:terraform:init && npm run local:deploy && npm run local:terraform:env && npm run local:up",
+    "postinstall": "npm --prefix ui install && npm --prefix lambdas install",
+    "start": "npm ci && npm run local:up:localstack && npm run local:terraform:init && npm run local:deploy && npm run local:terraform:env && npm run local:up",
     "stop": "npm run local:terraform:destroy && npm run local:down",
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
     "local:up": "docker compose -f local-environment/docker-compose.yml up -d --force-recreate",
