@@ -9,11 +9,8 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.clickStartNowButton();
     const randomAddress = AddressModel.getRandomAddress();
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    // Wait for page to load
     await selectDeliveryAddressPage.waitUntilPageLoad();
-
-
-    const accessErrors = await accessibility.runAccessibilityCheck(selectDeliveryAddressPage.page, "Select Delivery Address Page");
-    expect(accessErrors).toHaveLength(0);
+    const hasViolations = await accessibility.runAccessibilityCheck(selectDeliveryAddressPage.page, "Select Delivery Address Page");
+    expect(hasViolations).toBe(false);
   });
 });

@@ -16,6 +16,7 @@ import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAdd
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 
 const router = createBrowserRouter([
   {
@@ -72,6 +73,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.SelectDeliveryAddress,
             element: <SelectDeliveryAddressPage />,
+          },
+          {
+            path: JourneyStepNames.HowComfortablePrickingFinger,
+            element: <HowComfortablePrickingFingerPage />,
           },
         ],
       },

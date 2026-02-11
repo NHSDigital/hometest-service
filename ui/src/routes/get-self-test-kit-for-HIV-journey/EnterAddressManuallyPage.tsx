@@ -181,8 +181,7 @@ export default function EnterAddressManuallyPage() {
       console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
-      // Navigate to next step using NavigationContext
-      // goToStep("how-comfortable");
+      goToStep("how-comfortable-pricking-finger");
     }
   };
 

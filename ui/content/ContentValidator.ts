@@ -27,6 +27,8 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "enter-delivery-address",
   "enter-address-manually",
   "no-address-found",
+  "select-delivery-address",
+  "how-comfortable-pricking-finger",
   "global-error",
   "order-tracking",
 ];
