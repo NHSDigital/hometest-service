@@ -14,7 +14,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 export default defineConfig({
   testDir: './tests',
   /* Output directory for test artifacts */
-  outputDir: './testResults',
+  outputDir: './testResults/artefacts',
   /* Global setup script */
   globalSetup: './global-setup.ts',
   /* Global teardown script */
@@ -30,7 +30,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['json', { outputFile: './testResults/test-results.json' }],
-    ['html', { outputFolder: './results/html', open: 'on-failure' }]
+    ['html', { outputFolder: './testResults/html', open: 'on-failure' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
