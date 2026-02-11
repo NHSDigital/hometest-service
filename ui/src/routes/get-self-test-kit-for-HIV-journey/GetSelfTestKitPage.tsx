@@ -3,7 +3,7 @@
 import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
-import { JourneyStepNames } from "@/lib/models/route-paths";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { Link } from "react-router-dom";
 import PageLayout from "@/layouts/PageLayout";
 import { useEffect } from "react";
@@ -78,7 +78,7 @@ export default function GetSelfTestKitPage() {
       <p>
         {content.aboutService.text}{" "}
         <Link to="terms-and-conditions">{content.aboutService.termsLink}</Link> and{" "}
-        <Link to="privacy-policy">{content.aboutService.privacyLink}</Link>.
+        <Link to={RoutePath.HomeTestPrivacyPolicyPage}>{content.aboutService.privacyLink}</Link>.
       </p>
 
       <h2>{content.otherOptions.heading}</h2>

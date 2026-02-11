@@ -267,6 +267,25 @@ export interface OrderTrackingContent {
   loading: string;
 }
 
+export interface PrivacyPolicySubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface PrivacyPolicySection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: PrivacyPolicySubsection[];
+}
+
+export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -280,6 +299,7 @@ export interface PagesContent {
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
 }
 
 // ============================================================================

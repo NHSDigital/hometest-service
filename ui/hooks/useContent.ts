@@ -3,6 +3,7 @@ import type {
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
   GlobalErrorContent,
+  HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
   NoAddressFoundContent,
   OrderTrackingContent,
@@ -22,6 +23,7 @@ export interface UseContentReturn {
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -36,6 +38,7 @@ export const useContent = (): UseContentReturn => {
       content.pages["how-comfortable-pricking-finger"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
+    "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
   };
 };
 
@@ -61,6 +64,7 @@ export function usePageContent(
 ): HowComfortablePrickingFingerContent;
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
+export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -70,7 +74,8 @@ export function usePageContent(
     | "select-delivery-address"
     | "how-comfortable-pricking-finger"
     | "global-error"
-    | "order-tracking",
+    | "order-tracking"
+    | "home-test-privacy-policy",
 ) {
   return content.pages[page];
 }
