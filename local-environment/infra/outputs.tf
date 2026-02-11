@@ -27,3 +27,8 @@ output "login_endpoint" {
   description = "Login Lambda endpoint"
   value       = module.login_lambda.localstack_endpoint_url
 }
+
+output "seed_supplier_id" {
+  value       = data.external.supplier_id.result["supplier_id"]
+  description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
+}
