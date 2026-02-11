@@ -1,12 +1,12 @@
 import { test as base } from '@playwright/test';
-import { Configuration, config } from '../configuration';
+import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
 
 type ConfigurationFixtures = {
-  config: Configuration;
+  config: ConfigInterface;
 };
 
 export const configurationFixture = base.extend<ConfigurationFixtures>({
   config: async ({}, use) => {
-    await use(config);
-  },
+    await use(ConfigFactory.getConfig());
+  }
 });

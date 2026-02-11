@@ -1,8 +1,9 @@
 import { Locator, Page} from '@playwright/test';
-import { config, EnvironmentVariables } from '../configuration';
+import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
 import { BasePage } from './BasePage';
 
 export class HomeTestStartPage extends BasePage {
+  readonly config: ConfigInterface;
   readonly headerText: Locator;
   readonly findClinicLink: Locator;
   readonly nearestAELink: Locator;
@@ -19,10 +20,11 @@ export class HomeTestStartPage extends BasePage {
     this.nearestSexualHealthClinicLink = page.getByRole('link', { name: /your nearest sexual health/ });
     this.learnMoreHIVAidsLink = page.getByRole('link', { name: 'Learn more about HIV and AIDS' });
     this.startNowBtn = page.getByRole('button', { name: 'Start now' });
+    this.config = ConfigFactory.getConfig();
 
   }
   async navigate(): Promise<void> {
-    await this.page.goto(`${config.get(EnvironmentVariables.UI_BASE_URL)}/get-self-test-kit-for-HIV`);
+    await this.page.goto(`${this.config.uiBaseUrl}/get-self-test-kit-for-HIV`);
 
   }
 
