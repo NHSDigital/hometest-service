@@ -1,29 +1,33 @@
 import { Link } from "react-router-dom";
+import { useCommonContent } from "@/hooks";
 
 interface AboutServiceProps {
   supplier: string;
 }
 
 export function AboutService({ supplier }: AboutServiceProps) {
+  const commonContent = useCommonContent();
+  const content = commonContent.orderStatus.aboutService;
+
   return (
     <div className="nhsuk-u-margin-top-7">
-      <h2 className="nhsuk-heading-m">About this service</h2>
+      <h2 className="nhsuk-heading-m">{content.heading}</h2>
       <p className="nhsuk-body">
-        {`HomeTest `}
+        {`${content.homeTestPrefix} `}
         <Link
           to="/home-test-terms-of-use"
           className="nhsuk-link"
-          aria-label="HomeTest terms of use"
+          aria-label={`${content.homeTestPrefix} ${content.termsOfUse}`}
         >
-          terms of use
+          {content.termsOfUse}
         </Link>
-        {" and "}
+        {` ${content.and} `}
         <Link
           to="/home-test-privacy-policy"
           className="nhsuk-link"
-          aria-label="HomeTest privacy policy"
+          aria-label={`${content.homeTestPrefix} ${content.privacyPolicy}`}
         >
-          privacy policy
+          {content.privacyPolicy}
         </Link>
         .
       </p>
@@ -32,17 +36,17 @@ export function AboutService({ supplier }: AboutServiceProps) {
         <Link
           to="/suppliers-terms-conditions"
           className="nhsuk-link"
-          aria-label={`${supplier} terms of use`}
+          aria-label={`${supplier} ${content.termsOfUse}`}
         >
-          terms of use
+          {content.termsOfUse}
         </Link>
-        {" and "}
+        {` ${content.and} `}
         <Link
           to="/suppliers-privacy-policy"
           className="nhsuk-link"
-          aria-label={`${supplier} privacy policy`}
+          aria-label={`${supplier} ${content.privacyPolicy}`}
         >
-          privacy policy
+          {content.privacyPolicy}
         </Link>
         .
       </p>

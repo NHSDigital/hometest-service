@@ -241,7 +241,7 @@ describe("OrderTrackingPage", () => {
         screen.getByRole("heading", { name: "There is a problem" }),
       ).toBeInTheDocument();
       expect(
-        screen.getByText("The order identifier is not valid."),
+        screen.getByText("Order ID is required."),
       ).toBeInTheDocument();
 
       // Should not call service with invalid ID
@@ -256,7 +256,7 @@ describe("OrderTrackingPage", () => {
       const errorAlert = screen.getByRole("alert");
       expect(errorAlert).toBeInTheDocument();
       expect(
-        screen.getByText("The order identifier is not valid."),
+        screen.getByText("Order ID is required."),
       ).toBeInTheDocument();
       expect(orderDetailsService.get).not.toHaveBeenCalled();
     });

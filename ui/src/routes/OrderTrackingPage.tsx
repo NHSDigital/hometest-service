@@ -5,6 +5,7 @@ import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import orderDetailsService from "@/lib/services/order-details-service";
+import { useContent } from "@/hooks";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -33,12 +34,13 @@ function OrderContent({
     queryKey: ["orderStatus", orderId, patient.nhsNumber],
     queryFn: () => orderDetailsService.get(orderId, patient),
   });
+  const { "order-tracking": content } = useContent();
 
   if (!order) {
     return (
       <div role="alert">
-        <h1 className="nhsuk-heading-l">There is a problem</h1>
-        <p className="nhsuk-body">We could not find this order.</p>
+        <h1 className="nhsuk-heading-l">{content.error.title}</h1>
+        <p className="nhsuk-body">{content.error.orderNotFound}</p>
       </div>
     );
   }
@@ -54,13 +56,14 @@ function OrderContent({
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const patient = getPatient();
+  const { "order-tracking": content } = useContent();
 
   if (!orderId || !isValidGuid(orderId)) {
     return (
       <PageLayout>
         <div role="alert">
-          <h1 className="nhsuk-heading-l">There is a problem</h1>
-          <p className="nhsuk-body">The order identifier is not valid.</p>
+          <h1 className="nhsuk-heading-l">{content.error.title}</h1>
+          <p className="nhsuk-body">{content.error.orderIdRequired}</p>
         </div>
       </PageLayout>
     );

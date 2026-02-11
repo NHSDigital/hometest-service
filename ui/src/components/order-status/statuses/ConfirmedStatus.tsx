@@ -1,5 +1,6 @@
 import { HelpLinks } from "./HelpLinks";
 import { Tag } from "nhsuk-react-components";
+import { useCommonContent } from "@/hooks";
 
 interface ConfirmedStatusProps {
   maxDeliveryDays?: number;
@@ -10,6 +11,8 @@ export function ConfirmedStatus({
   maxDeliveryDays,
   supplier,
 }: ConfirmedStatusProps) {
+  const commonContent = useCommonContent();
+  const content = commonContent.orderStatus.statuses.confirmed;
   const maxDays = maxDeliveryDays || 5;
 
   return (
@@ -17,15 +20,12 @@ export function ConfirmedStatus({
       <Tag
         id="order-status-tag"
         color="purple"
-        aria-label="Order status: Confirmed"
+        aria-label={`Order status: ${content.tag}`}
       >
-        Confirmed
+        {content.tag}
       </Tag>
-      <h2 className="nhsuk-heading-m">Wait for your kit to be dispatched</h2>
-      <p>
-        You should receive it within {maxDays} working days from when you placed
-        the order.
-      </p>
+      <h2 className="nhsuk-heading-m">{content.heading}</h2>
+      <p>{content.message.replace("{maxDays}", String(maxDays))}</p>
       <hr />
       <HelpLinks supplier={supplier} />
     </>

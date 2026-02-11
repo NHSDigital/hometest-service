@@ -18,6 +18,10 @@ const config: Config = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
+    '^@/content/(.*)$': '<rootDir>/content/$1',
+    '^@/content$': '<rootDir>/content/index.ts',
+    '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+    '^@/hooks$': '<rootDir>/hooks/index.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'json', 'node'],

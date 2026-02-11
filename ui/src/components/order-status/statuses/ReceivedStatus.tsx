@@ -1,18 +1,22 @@
 import { MoreInformationLinks } from "./MoreInformationLinks";
 import { Tag } from "nhsuk-react-components";
+import { useCommonContent } from "@/hooks";
 
 export function ReceivedStatus() {
+  const commonContent = useCommonContent();
+  const content = commonContent.orderStatus.statuses.received;
+
   return (
     <>
       <Tag
         id="order-status-tag"
         color="blue"
-        aria-label="Order status: Test received"
+        aria-label={`Order status: ${content.tag}`}
       >
-        Test received
+        {content.tag}
       </Tag>
-      <h2 className="nhsuk-heading-m">Wait for your result</h2>
-      <p>We&rsquo;ll contact you when it&rsquo;s ready.</p>
+      <h2 className="nhsuk-heading-m">{content.heading}</h2>
+      <p>{content.message}</p>
       <hr />
       <MoreInformationLinks />
     </>
