@@ -26,19 +26,31 @@ provider "aws" {
 
 # Secrets from JSON files
 locals {
-  secrets_dir  = "${path.module}/resources/secrets"
-  secret_files = fileset(local.secrets_dir, "*.{json,pem}")
+  secrets_dir       = "${path.module}/resources/secrets"
+  secret_json_files = fileset(local.secrets_dir, "*.json")
+  secret_txt_files  = fileset(local.secrets_dir, "*.txt")
+
+  secret_json_map = {
+    for f in local.secret_json_files :
+    trimsuffix(f, ".json") => f
+  }
+  secret_txt_map = {
+    for f in local.secret_txt_files :
+    trimsuffix(f, ".txt") => f
+  }
+
+  secret_file_map = merge(local.secret_json_map, local.secret_txt_map)
 }
 
 resource "aws_secretsmanager_secret" "secrets" {
-  for_each = local.secret_files
-  name     = trimsuffix(each.key, regex("\\.[^.]+$", each.key))
+  for_each = local.secret_file_map
+  name     = each.key
 }
 
 resource "aws_secretsmanager_secret_version" "secrets" {
-  for_each      = local.secret_files
+  for_each      = local.secret_file_map
   secret_id     = aws_secretsmanager_secret.secrets[each.key].id
-  secret_string = file("${local.secrets_dir}/${each.key}")
+  secret_string = file("${local.secrets_dir}/${each.value}")
 }
 
 # IAM role for Lambda execution
@@ -105,7 +117,7 @@ module "eligibility_test_info_lambda" {
 
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/mydb?currentSchema=hometest"
+    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
   }
 }
 
@@ -180,8 +192,9 @@ module "order_router_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                = "--enable-source-maps"
-    SUPPLIER_BASE_URL           = "http://wiremock:8080"
+    DATABASE_URL                = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
     SUPPLIER_OAUTH_TOKEN_PATH   = "/oauth/token"
+    SUPPLIER_ORDER_PATH         = "/order"
     SUPPLIER_CLIENT_ID          = "supplier-client"
     SUPPLIER_CLIENT_SECRET_NAME = "supplier-oauth-client-secret"
   }
@@ -207,4 +220,8 @@ resource "aws_api_gateway_stage" "api_stage" {
   deployment_id = aws_api_gateway_deployment.api_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = var.environment
+}
+
+data "external" "supplier_id" {
+  program = ["bash", "${path.module}/../scripts/localstack/get_supplier_id.sh"]
 }

@@ -1,4 +1,4 @@
-import {Pool} from "pg";
+import { Pool } from "pg";
 
 /**
  * A library-agnostic representation of a database result.
@@ -11,7 +11,7 @@ export interface DbResult<T> {
 export interface DBClient {
   query<T = any, I extends any[] = any[]>(
     text: string,
-    values?: I
+    values?: I,
   ): Promise<DbResult<T>>;
   close(): Promise<void>;
 }
@@ -33,7 +33,7 @@ export class PostgresDbClient implements DBClient {
 
   async query<T = any, I extends any[] = any[]>(
     text: string,
-    values?: I
+    values?: I,
   ): Promise<DbResult<T>> {
     const result = await this.pool.query(text, values as any[]);
     return {

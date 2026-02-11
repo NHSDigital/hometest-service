@@ -1,12 +1,12 @@
-import dayjs from 'dayjs';
-import toTitleCase from 'titlecase';
+import dayjs from "dayjs";
+import toTitleCase from "titlecase";
 
 // ALPHA: Reimplentation needed with lambdas (nhslogin init.ts)
-const alwaysUppercase = new Set(['UK', 'NHS']);
+const alwaysUppercase = new Set(["UK", "NHS"]);
 
 export function retrieveMandatoryEnvVariable(name: string): string {
   const result = retrieveOptionalEnvVariable(name);
-  if (result === '') {
+  if (result === "") {
     throw new Error(`Missing value for an environment variable ${name}`);
   }
   return result;
@@ -23,31 +23,31 @@ export function retrieveMandatoryJsonEnvVariable<T>(name: string): T {
 
 export function retrieveOptionalEnvVariable(
   name: string,
-  defaultValue: string = ''
+  defaultValue: string = "",
 ): string {
   const envVarValue = process.env[name];
   if (envVarValue === undefined) {
     console.log(
-      `The environment variable ${name} has not been provided for the lambda`
+      `The environment variable ${name} has not been provided for the lambda`,
     );
   }
-  return envVarValue ?? defaultValue ?? '';
+  return envVarValue ?? defaultValue ?? "";
 }
 
 // ALPHA: Do we really need this library for this? Can we not us Date functions?
 export function calculateAge(birthdate: Date): number {
-  return dayjs().diff(birthdate, 'years');
+  return dayjs().diff(birthdate, "years");
 }
 
 export function isNullOrUndefined<T>(
-  value: T | null | undefined
+  value: T | null | undefined,
 ): value is null | undefined {
   return value === null || value === undefined;
 }
 
 export function ensureDefined<T>(
   value: T | undefined,
-  errorMessage: string = 'Value is undefined'
+  errorMessage: string = "Value is undefined",
 ): T {
   if (value === undefined) {
     throw new Error(errorMessage);
@@ -57,8 +57,8 @@ export function ensureDefined<T>(
 
 export function generateRandomString(length): string {
   const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     result += characters[randomIndex];
@@ -78,7 +78,7 @@ export function roundTo1dp(value: number): number {
 export function titleCase(input: string): string {
   // Title case with common exclusions
   const titleCased: string = toTitleCase(input.toLowerCase());
-  const parts = titleCased.split(' ');
+  const parts = titleCased.split(" ");
 
   // Apply our own filtering to handle certain conditions
   return parts
@@ -89,7 +89,7 @@ export function titleCase(input: string): string {
         return part.toUpperCase();
       } else return part;
     })
-    .join(' ');
+    .join(" ");
 }
 
 export function validateUrlSource(urlSource?: string): string | undefined {
@@ -110,3 +110,20 @@ export function validateUrlSource(urlSource?: string): string | undefined {
 
   return trimmed.toUpperCase();
 }
+import { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy";
+
+export function isUUID(str: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    str,
+  );
+}
+
+export const getCorrelationIdFromEventHeaders = (
+  event: APIGatewayProxyEvent,
+): string => {
+  return (
+    event.headers["X-Correlation-ID"] ||
+    event.headers["x-correlation-id"] ||
+    crypto.randomUUID()
+  );
+};
