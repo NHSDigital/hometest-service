@@ -32,3 +32,8 @@ output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
   description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
 }
+
+output "order_placement_queue_url" {
+  description = "SQS Queue URL for order placement"
+  value       = aws_sqs_queue.order_placement.url
+}

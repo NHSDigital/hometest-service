@@ -21,6 +21,7 @@ provider "aws" {
     lambda         = "http://localhost:4566"
     s3             = "http://localhost:4566"
     secretsmanager = "http://localhost:4566"
+    sqs            = "http://localhost:4566"
   }
 }
 
@@ -175,6 +176,10 @@ module "hello_world_lambda" {
   }
 }
 
+resource "aws_sqs_queue" "order_placement" {
+  name = "${var.project_name}-order-placement"
+}
+
 module "order_router_lambda" {
   source = "./modules/lambda"
 
@@ -198,6 +203,13 @@ module "order_router_lambda" {
     SUPPLIER_CLIENT_ID          = "supplier-client"
     SUPPLIER_CLIENT_SECRET_NAME = "supplier-oauth-client-secret"
   }
+}
+
+resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
+  event_source_arn = aws_sqs_queue.order_placement.arn
+  function_name    = module.order_router_lambda.lambda_function.arn
+  enabled          = true
+  batch_size       = 1
 }
 
 # API Gateway deployment
