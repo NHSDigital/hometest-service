@@ -1,6 +1,4 @@
 import {HttpClient} from "../lib/http/http-client";
-import {Service} from "../lib/service";
-import {Commons} from "../lib/commons";
 
 export interface LaLookupResult {
   localAuthorityCode: string;
@@ -12,15 +10,15 @@ export interface LaLookupServiceProperties {
   baseUrl: string;
 }
 
-export class LaLookupService extends Service {
+export class LaLookupService {
   private readonly baseUrl: string;
   private readonly httpClient: HttpClient
 
   constructor(
     {baseUrl, httpClient}: LaLookupServiceProperties,
-    commons: Commons
+    // commons: Commons
   ) {
-    super('LALookupService', commons);
+    // ALPHA: Removed commons use. To be reintroduced for logging later.
     this.baseUrl = baseUrl;
     this.httpClient = httpClient;
   }
@@ -38,7 +36,7 @@ export class LaLookupService extends Service {
         region: data.result.region || data.result.nhs_ha,
       };
     } catch (error) {
-      this.logger.error(`Local Authority lookup failed`, {postcode, error});
+      // this.logger.error(`Local Authority lookup failed`, {postcode, error});
       return null;
     }
   }

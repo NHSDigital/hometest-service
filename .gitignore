@@ -28,6 +28,9 @@ output.json
 node_modules
 dist
 
+# Next.js
+.next
+
 # CDK Stuff
 cdk.out
 cdk.context.json
@@ -158,3 +161,4 @@ mcp.json
 
 /frontend/
 /test-results/
+.next

@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: remove console.logs
+
 import {
   createContext,
   useContext,
@@ -37,6 +39,7 @@ export interface OrderAnswers {
 
   // Final delivery address
   deliveryAddress?: Address;
+  comfortableDoingTest?: string;
 }
 
 interface CreateOrderContextType {

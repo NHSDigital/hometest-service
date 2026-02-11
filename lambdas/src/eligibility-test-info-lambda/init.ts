@@ -1,8 +1,8 @@
-import { Commons, ConsoleCommons } from "../lib/commons";
-import { SupplierService } from "../lib/db/supplier-db";
-import { LaLookupService } from "./la-lookup";
-import { PostgresDbClient } from "../lib/db/db-client";
-import { FetchHttpClient } from "../lib/http/http-client";
+import {Commons, ConsoleCommons} from "../lib/commons";
+import {SupplierService} from "../lib/db/supplier-db";
+import {LaLookupService} from "./la-lookup";
+import {PostgresDbClient} from "../lib/db/db-client";
+
 
 export interface Environment {
   commons: Commons;
@@ -13,7 +13,6 @@ export interface Environment {
 export function init(): Environment {
   const commons = new ConsoleCommons();
   const dbClient = new PostgresDbClient(process.env.DATABASE_URL!);
-  const httpClient = new FetchHttpClient();
   const supplierDb = new SupplierService({ dbClient });
   /*const laLookupService = new LaLookupService({baseUrl: process.env.LA_LOOKUP_URL!, httpClient}, commons);*/
 

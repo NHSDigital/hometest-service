@@ -1,0 +1,292 @@
+/**
+ * TypeScript schema definitions for the JSON CMS content system.
+ * All content loaded from content.json must conform to these types.
+ */
+
+// ============================================================================
+// Common Content Types
+// ============================================================================
+
+export interface NavigationContent {
+  back: string;
+  continue: string;
+  manualEntryLink: string;
+}
+
+export interface ValidationMessages {
+  postcode: {
+    required: string;
+    maxLength: string;
+    invalid: string;
+  };
+  buildingName: {
+    maxLength: string;
+  };
+  addressLine1: {
+    required: string;
+    maxLength: string;
+    invalid: string;
+  };
+  addressLine2: {
+    maxLength: string;
+    invalid: string;
+  };
+  addressLine3: {
+    maxLength: string;
+    invalid: string;
+  };
+  townOrCity: {
+    required: string;
+    maxLength: string;
+    invalid: string;
+  };
+  deliveryAddress: {
+    required: string;
+  };
+  comfortableDoingTest: {
+    required: string;
+  };
+}
+
+export interface CommonLinks {
+  sexualHealthClinic: {
+    text: string;
+    href: string;
+  };
+  nearestAE: {
+    text: string;
+    href: string;
+  };
+  bloodSampleGuide: {
+    text: string;
+  };
+}
+
+export interface ErrorSummaryContent {
+  title: string;
+}
+
+export interface OrderStatusHeaderContent {
+  orderedPrefix: string;
+  referenceNumberPrefix: string;
+}
+
+export interface ConfirmedStatusContent {
+  tag: string;
+  heading: string;
+  message: string;
+}
+
+export interface DispatchedStatusContent {
+  tag: string;
+  heading: string;
+  sentPrefix: string;
+  message: string;
+}
+
+export interface ReceivedStatusContent {
+  tag: string;
+  heading: string;
+  message: string;
+}
+
+export interface ReadyStatusContent {
+  heading: string;
+  viewResultLink: string;
+}
+
+export interface OrderStatusesContent {
+  confirmed: ConfirmedStatusContent;
+  dispatched: DispatchedStatusContent;
+  received: ReceivedStatusContent;
+  ready: ReadyStatusContent;
+}
+
+export interface HelpLinksContent {
+  heading: string;
+  contactSupplier: string;
+  bloodSampleGuide: string;
+  contactClinic: string;
+  learnMoreHIV: string;
+}
+
+export interface MoreInformationContent {
+  heading: string;
+  learnMoreHIV: string;
+}
+
+export interface AboutServiceContent {
+  heading: string;
+  homeTestPrefix: string;
+  termsOfUse: string;
+  and: string;
+  privacyPolicy: string;
+}
+
+export interface OrderStatusContent {
+  header: OrderStatusHeaderContent;
+  statuses: OrderStatusesContent;
+  helpLinks: HelpLinksContent;
+  moreInformation: MoreInformationContent;
+  aboutService: AboutServiceContent;
+}
+
+export interface FooterContent {
+  copyright: string;
+}
+
+export interface CommonContent {
+  navigation: NavigationContent;
+  validation: ValidationMessages;
+  links: CommonLinks;
+  errorSummary: ErrorSummaryContent;
+  orderStatus: OrderStatusContent;
+  footer: FooterContent;
+}
+
+// ============================================================================
+// Page Content Types
+// ============================================================================
+
+export interface StartPageContent {
+  title: string;
+  ageRequirement: string;
+  availabilityNotice: string;
+  urgentCard: {
+    heading: string;
+    exposureWarning: string;
+    clinicAdvice: string;
+    aeAdvice: string;
+  };
+  infoBox: {
+    text: string;
+  };
+  howItWorks: {
+    heading: string;
+    deliveryInfo: string;
+    sampleInstructions: string;
+  };
+  dataSharing: {
+    summary: string;
+    details: string;
+  };
+  startButton: string;
+  aboutService: {
+    heading: string;
+    text: string;
+    termsLink: string;
+    privacyLink: string;
+  };
+  otherOptions: {
+    heading: string;
+    clinicText: string;
+    clinicLinkText: string;
+    clinicTextEnd: string;
+    sexualHealthText: string;
+    sexualHealthLink: {
+      text: string;
+      href: string;
+    };
+    learnMoreLink: {
+      text: string;
+      href: string;
+    };
+  };
+}
+
+export interface EnterDeliveryAddressContent {
+  title: string;
+  form: {
+    postcodeLabel: string;
+    postcodeHint: string;
+    buildingNameLabel: string;
+    buildingNameHint: string;
+  };
+}
+
+export interface EnterAddressManuallyContent {
+  title: string;
+  form: {
+    addressLine1Label: string;
+    addressLine2Label: string;
+    addressLine3Label: string;
+    townOrCityLabel: string;
+    postcodeLabel: string;
+    postcodeHint: string;
+  };
+}
+
+export interface NoAddressFoundContent {
+  title: string;
+  notFoundMessage: string;
+  tryNewSearchLink: string;
+}
+
+export interface SelectDeliveryAddressContent {
+  title: string;
+  postcodeLabel: string;
+  editPostcodeLink: string;
+  formLabel: string;
+}
+
+export interface HowComfortablePrickingFingerContent {
+  title: string;
+  instructions: string;
+  steps: {
+    prickFinger: string;
+    fillTube: string;
+  };
+  image: {
+    alt: string;
+  };
+  formLabel: string;
+  options: {
+    yes: {
+      text: string;
+      hint: string;
+    };
+    no: {
+      text: string;
+      hint: string;
+    };
+  };
+}
+
+export interface GlobalErrorContent {
+  title: string;
+  message: string;
+}
+
+export interface OrderTrackingContent {
+  title: string;
+  error: {
+    title: string;
+    orderNotFound: string;
+    orderIdRequired: string;
+  };
+  loading: string;
+}
+
+// ============================================================================
+// Pages Container
+// ============================================================================
+
+export interface PagesContent {
+  "get-self-test-kit-for-HIV": StartPageContent;
+  "enter-delivery-address": EnterDeliveryAddressContent;
+  "enter-address-manually": EnterAddressManuallyContent;
+  "no-address-found": NoAddressFoundContent;
+  "select-delivery-address": SelectDeliveryAddressContent;
+  "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "global-error": GlobalErrorContent;
+  "order-tracking": OrderTrackingContent;
+}
+
+// ============================================================================
+// Root Content File Type
+// ============================================================================
+
+export interface ContentFile {
+  commonContent: CommonContent;
+  pages: PagesContent;
+}

@@ -1,47 +1,53 @@
+import { useCommonContent } from "@/hooks";
+
 interface HelpLinksProps {
   supplier: string;
 }
 
 export function HelpLinks({ supplier }: HelpLinksProps) {
+  const commonContent = useCommonContent();
+  const content = commonContent.orderStatus.helpLinks;
+  const contactSupplierText = content.contactSupplier.replace("{supplier}", supplier);
+
   return (
     <section aria-labelledby="help-links-heading">
       <h2 id="help-links-heading" className="nhsuk-heading-m">
-        Still need help?
+        {content.heading}
       </h2>
       <p className="nhsuk-body">
         <a
           href="#"
           className="nhsuk-link"
-          aria-label={`Contact ${supplier}, the kit supplier for support`}
+          aria-label={contactSupplierText}
         >
-          Contact {supplier}, the kit supplier
+          {contactSupplierText}
         </a>
       </p>
       <p className="nhsuk-body">
         <a
           href="/blood-sample-guide"
           className="nhsuk-link"
-          aria-label="View blood sample step-by-step guide"
+          aria-label={content.bloodSampleGuide}
         >
-          Blood sample step-by-step guide
+          {content.bloodSampleGuide}
         </a>
       </p>
       <p className="nhsuk-body">
         <a
           href="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/?postcode=<POSTCODE>"
           className="nhsuk-link"
-          aria-label="Find and contact your nearest sexual health clinic"
+          aria-label={content.contactClinic}
         >
-          Contact my nearest sexual health clinic
+          {content.contactClinic}
         </a>
       </p>
       <p className="nhsuk-body">
         <a
           href="https://www.nhs.uk/conditions/hiv-and-aids/"
           className="nhsuk-link"
-          aria-label="Learn more about HIV and AIDS on NHS website"
+          aria-label={content.learnMoreHIV}
         >
-          Learn more about HIV and AIDS
+          {content.learnMoreHIV}
         </a>
       </p>
     </section>

@@ -1,27 +1,47 @@
 import { test } from '../../fixtures';
 import { expect } from '@playwright/test';
-import data from '../../test-data/address.json';
+import { AddressModel } from '../../models';
 
 test.describe.configure({ mode: 'serial' });
+const randomAddress = AddressModel.getRandomAddress();
+let actualHeaderText = "";
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
+    actualHeaderText = await homeTestStartPage.getHeaderText();
+    expect(actualHeaderText).toBe("Get a self-test kit for HIV");
+    await homeTestStartPage.clickStartNowButton();
   });
 
-
-  test('Order test journey', async ({ homeTestStartPage, findAddressPage }) => {
-    const actualResult = await homeTestStartPage.getHeaderText();
-    expect(actualResult).toBe("Get a self-test kit for HIV");
-    await homeTestStartPage.clickStartNowButton();
-    const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomEntry.postcode, randomEntry.addressline1);
+  test('Order test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.clickEditAddressLink();
+    const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressline1);
+    await selectDeliveryAddressPage.clickContinueButton();
+    await selectDeliveryAddressPage.selectAddressAndContinue();
+    actualHeaderText = await homeTestStartPage.getHeaderText();
+    expect(actualHeaderText).toBe("This is what you'll need to do to give a blood sample");
+    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
   test('Order test journey by providing address manually', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage }) => {
-    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.clickEnterAddressManuallyLink();
-    const randomEntry = data[Math.floor(Math.random() * data.length)];
-    await enterAddressManuallyPage.fillAddressAndContinue(randomEntry.addressline1, randomEntry.addressline2, randomEntry.addressline3, randomEntry.towncity, randomEntry.postcode)
+    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
   });
+
+  test('Order test journey by providing address manually from select delivery address page', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage, selectDeliveryAddressPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await findAddressPage.clickEnterAddressManuallyLink();
+    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
+  });
+
+  test('Choose to goto Sexual health clinic instead', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.selectAddressAndContinue();
+    await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
+  });
+
 });

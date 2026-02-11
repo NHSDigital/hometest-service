@@ -8,11 +8,15 @@ import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
+import LoginPage from "./routes/LoginPage";
+import CallbackPage from "./routes/CallbackPage";
 import JourneyLayout from "./layouts/JourneyLayout";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import { setBodyClassName } from "./js/setClassName";
+import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +31,20 @@ const router = createBrowserRouter([
       {
         path: RoutePath.HomePage,
         element: <HomePage />,
+      },
+      {
+        path: RoutePath.LoginPage,
+        element: <LoginPage />,
+      },
+      {
+        path: RoutePath.CallbackPage,
+        element: <JourneyLayout />,
+        children: [
+          {
+            index: true,
+            element: <CallbackPage />,
+          },
+        ],
       },
       {
         path: RoutePath.OrderTrackingPage,
@@ -51,6 +69,14 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.NoAddressFound,
             element: <NoAddressFoundPage />,
+          },
+          {
+            path: JourneyStepNames.SelectDeliveryAddress,
+            element: <SelectDeliveryAddressPage />,
+          },
+          {
+            path: JourneyStepNames.HowComfortablePrickingFinger,
+            element: <HowComfortablePrickingFingerPage />,
           },
         ],
       },

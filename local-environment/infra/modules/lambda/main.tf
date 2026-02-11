@@ -63,3 +63,67 @@ resource "aws_lambda_permission" "this" {
 }
 
 data "aws_region" "current" {}
+
+locals {
+  cors_allow_methods = join(",", var.cors_allow_methods)
+  cors_allow_headers = join(",", var.cors_allow_headers)
+}
+
+resource "aws_api_gateway_method" "cors_options" {
+  count         = var.enable_cors ? 1 : 0
+  rest_api_id   = var.api_gateway_id
+  resource_id   = local.final_resource_id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "cors_options" {
+  count       = var.enable_cors ? 1 : 0
+  rest_api_id = var.api_gateway_id
+  resource_id = local.final_resource_id
+  http_method = aws_api_gateway_method.cors_options[0].http_method
+
+  type = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "cors_options_200" {
+  count       = var.enable_cors ? 1 : 0
+  rest_api_id = var.api_gateway_id
+  resource_id = local.final_resource_id
+  http_method = aws_api_gateway_method.cors_options[0].http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"      = true
+    "method.response.header.Access-Control-Allow-Methods"     = true
+    "method.response.header.Access-Control-Allow-Headers"     = true
+    "method.response.header.Access-Control-Allow-Credentials" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "cors_options_200" {
+  count       = var.enable_cors ? 1 : 0
+  rest_api_id = var.api_gateway_id
+  resource_id = local.final_resource_id
+  http_method = aws_api_gateway_method.cors_options[0].http_method
+  status_code = aws_api_gateway_method_response.cors_options_200[0].status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"      = "'${var.cors_allow_origin}'"
+    "method.response.header.Access-Control-Allow-Methods"     = "'${local.cors_allow_methods}'"
+    "method.response.header.Access-Control-Allow-Headers"     = "'${local.cors_allow_headers}'"
+    "method.response.header.Access-Control-Allow-Credentials" = var.cors_allow_credentials ? "'true'" : "'false'"
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.cors_options
+  ]
+}

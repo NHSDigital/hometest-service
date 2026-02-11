@@ -121,6 +121,76 @@ module "eligibility_test_info_lambda" {
   }
 }
 
+# Login Lambda
+module "login_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "login"
+  zip_path                      = "${path.module}/../../lambdas/dist/login-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "login"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "POST"
+
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["POST", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization"]
+  cors_allow_credentials = true
+
+  environment_variables = {
+    NODE_OPTIONS                               = "--enable-source-maps",
+    NHS_LOGIN_BASE_ENDPOINT_URL                = "https://auth.sandpit.signin.nhs.uk",
+    NHS_LOGIN_CLIENT_ID                        = "hometest",
+    NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
+    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
+    AUTH_SESSION_MAX_DURATION_MINUTES          = "60",
+    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = "60",
+    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = "60",
+    AUTH_COOKIE_SAME_SITE                      = "Lax"
+  }
+}
+
+# Login Lambda
+module "login_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "login"
+  zip_path                      = "${path.module}/../../lambdas/dist/login-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "login"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "POST"
+
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["POST", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization"]
+  cors_allow_credentials = true
+
+  environment_variables = {
+    NODE_OPTIONS                               = "--enable-source-maps",
+    NHS_LOGIN_BASE_ENDPOINT_URL                = "https://auth.sandpit.signin.nhs.uk",
+    NHS_LOGIN_CLIENT_ID                        = "hometest",
+    NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
+    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
+    AUTH_SESSION_MAX_DURATION_MINUTES          = "60",
+    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = "60",
+    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = "60",
+    AUTH_COOKIE_SAME_SITE                      = "Lax"
+  }
+}
+
 module "hello_world_lambda" {
   source = "./modules/lambda"
 
@@ -172,6 +242,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     module.eligibility_test_info_lambda,
     module.order_router_lambda,
+    module.login_lambda,
   ]
 
   lifecycle {
