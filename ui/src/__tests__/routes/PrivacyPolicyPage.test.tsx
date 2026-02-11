@@ -16,7 +16,7 @@ describe("PrivacyPolicyPage", () => {
       render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const heading = screen.getByRole("heading", {
-        name: "Privacy Policy",
+        name: /Hometest Privacy Policy/i,
         level: 1,
       });
       expect(heading).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe("PrivacyPolicyPage", () => {
 
       // h1 for main title
       expect(
-        screen.getByRole("heading", { name: /Privacy Policy/i, level: 1 })
+        screen.getByRole("heading", { name: /Hometest Privacy Policy/i, level: 1 })
       ).toBeInTheDocument();
 
       // h2 for section headings
@@ -152,7 +152,7 @@ describe("PrivacyPolicyPage", () => {
       render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const heading = screen.getByRole("heading", {
-        name: /Privacy Policy/i,
+        name: /Hometest Privacy Policy/i,
         level: 1,
       });
 
