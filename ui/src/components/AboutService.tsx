@@ -1,4 +1,6 @@
 import { useCommonContent } from "@/hooks";
+import { Link } from "react-router-dom";
+import { RoutePath } from "@/lib/models/route-paths";
 
 interface AboutServiceProps {
   supplier: string;
@@ -21,13 +23,13 @@ export function AboutService({ supplier }: AboutServiceProps) {
           {content.termsOfUse}
         </a>
         {` ${content.and} `}
-        <a
-          href="/home-test-privacy-policy"
+        <Link
+          to={RoutePath.HomeTestPrivacyPolicyPage}
           className="nhsuk-link"
           aria-label={`${content.homeTestPrefix} ${content.privacyPolicy}`}
         >
           {content.privacyPolicy}
-        </a>
+        </Link>
         .
       </p>
       <p className="nhsuk-body">

@@ -189,6 +189,356 @@
         "orderIdRequired": "Order ID is required."
       },
       "loading": "Loading..."
+    },
+    "home-test-privacy-policy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "10 February 2026",
+      "introduction": [
+        "[Hometest] is operated by NHS England [and commissioned by the Department of Health and Social Care (DHSC)].",
+        "This privacy policy provides an explanation as to what happens to any personal data that you provide to us, or that we collect from you.",
+        "We update this privacy policy from time to time so please do review this policy regularly, and before consenting to the use of future services.",
+        "Importantly your information may be shared with third parties (such as your local authority, who are responsible for fulfilling health testing services and their trusted third-party suppliers) to deliver the home testing service. This is explained in more detail below and further details will be provided through the Hometest App.",
+        "The Hometest App and associated testing services are not intended for children, and we do not knowingly collect data relating to children. You must be 16 years and over to access and use the services."
+      ],
+      "sections": [
+        {
+          "id": "introduction",
+          "heading": "Introduction",
+          "paragraphs": [
+            "We (NHS England) have developed the [Hometest area of the NHS App (Hometest App)] so that you can access certain NHS home testing services through a mobile app on your phone or tablet. We have also made the same service available via the logged in area of the NHS website, which you can access using a web browser. This Privacy Policy covers both channels.",
+            "Your use of the NHS website and the NHS App (separate to the Hometest App) will continue to be covered by the NHS App and NHS website Privacy Policies, together with any relevant terms and conditions.",
+            "The Hometest App enables you to access the following services:"
+          ],
+          "subsections": [
+            {
+              "paragraphs": [
+                "\"Testing Services\" the Hometest App enables the ordering and delivery of home testing services; these Testing Services are fulfilled by our partners; and",
+                "\"Hometest App Services\" the Hometest App allows you to access certain functionality within the App, such as availability checks, notifications about your test kit status and test results."
+              ]
+            },
+            {
+              "paragraphs": [
+                "Further details are set out in the Hometest Terms of Use [LINK]."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "nhs-england-partners",
+          "heading": "Information About NHS England and its Partners",
+          "paragraphs": [
+            "The Hometest App is operated by NHS England ('us', 'we' 'our'). We act as [the joint data controller with the Department of Health and Social Care (DHSC)]. Within this:"
+          ],
+          "subsections": [
+            {
+              "heading": "Hometest App Services",
+              "paragraphs": [
+                "NHS England [and DHSC] make decisions on what data is processed and how this is done within the Hometest App and related Hometest App Services. These decisions are undertaken in accordance with current data protection legislation and this Privacy Policy.",
+                "For all queries or requests relating to control of your data in connection with the Hometest App Services, please contact our Data Protection Officer: [NHS DPO Details here]."
+              ]
+            },
+            {
+              "heading": "Testing Services",
+              "paragraphs": [
+                "Our trusted partners (such as your Local Authority ('LA') and their third-party suppliers) make decisions on what data is processed and how this is done in order to provide the Testing Services – to fulfil the tests you order and deliver the results to you. These decisions are undertaken in accordance with current data protection legislation and separate privacy policies operated by the relevant partners. More details are provided below. You will also receive further information and links to partner privacy policies within the Hometest App, once you are ready to place an order for a test kit and we have identified the relevant delivery partner.",
+                "For all queries or requests regarding the control of your data relating to Testing Services, you should contact the relevant delivery partner. Their contact details (along with Privacy Policies) will be provided to you through the Hometest App."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "purposes-of-processing",
+          "heading": "The Purposes of Processing",
+          "paragraphs": [
+            "We process your data in order to operate the Hometest App and to provide the Hometest App Services to you. We will only use your personal data for the purposes for which we collected it, as described in section 3 below."
+          ]
+        },
+        {
+          "id": "lawful-basis",
+          "heading": "Lawful Basis for Processing",
+          "paragraphs": [],
+          "subsections": [
+            {
+              "heading": "Consent",
+              "paragraphs": [
+                "You are asked for your consent to process your data so that Testing Services can be fulfilled."
+              ]
+            },
+            {
+              "heading": "Public Task",
+              "paragraphs": [
+                "The processing of personal data is necessary to perform a task carried out in the public interest (such as enabling home healthcare testing through the Hometest App)."
+              ]
+            },
+            {
+              "heading": "Health & Social Care",
+              "paragraphs": [
+                "We process your data in order to provide services for the diagnosis of medical conditions or illnesses, in line with the Health and Social Care Act (2012)."
+              ]
+            },
+            {
+              "heading": "To perform a Contract with You",
+              "paragraphs": [
+                "to enable us to request our partners to provide home testing services ordered by you through the Hometest App."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "data-we-collect",
+          "heading": "What Data We Collect",
+          "paragraphs": [
+            "The information that we collect and store relating to you is primarily used to enable us to provide you with services that you have explicitly ordered or requested. This includes:"
+          ],
+          "subsections": [
+            {
+              "heading": "Personal Data",
+              "paragraphs": [
+                "The information you give, together with information we will access from your NHS App login credentials, will be recorded; this includes details such as your first name, last name, post code, date of birth and mobile number."
+              ]
+            },
+            {
+              "heading": "Health Data",
+              "paragraphs": [
+                "Special category data may also be collected, including test results."
+              ]
+            },
+            {
+              "heading": "Technical Data",
+              "paragraphs": [
+                "This includes your internet protocol (IP) address, browser type and version, time zone setting and location, browser plug-in types and versions, operating system and platform, and other technology on the devices you use to access the Hometest platform."
+              ]
+            },
+            {
+              "heading": "Preference Data",
+              "paragraphs": [
+                "This includes your preferences on receiving communications from us."
+              ]
+            },
+            {
+              "heading": "Usage Data",
+              "paragraphs": [
+                "This includes information about how you use the Hometest App and related services."
+              ]
+            },
+            {
+              "heading": "Anonymous Data",
+              "paragraphs": [
+                "We also use and share anonymous data such as statistical or demographic data for reporting or research purposes. Anonymous data could be derived from your personal data but is not considered personal data in data protection law as this data will not directly reveal your identity. This includes providing mandatory national anonymised or aggregated data to NHS England, to the UK Health Security Agency and Office for Health Improvement and Disparities."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "how-data-collected",
+          "heading": "How Your Personal Data is Collected",
+          "paragraphs": [
+            "We use different methods to collect data from and about you, including information from:"
+          ],
+          "subsections": [
+            {
+              "heading": "Direct Interactions",
+              "paragraphs": [
+                "when you make contact with us through the Hometest App or by telephone, email, post, online or otherwise. This includes personal data you provide when you:"
+              ],
+              "list": [
+                "Use the Hometest App Services",
+                "Request support or further information in connection with the Hometest App",
+                "Give us feedback or contact us"
+              ]
+            },
+            {
+              "heading": "Account Details",
+              "paragraphs": [
+                "when you enter the Hometest App, certain information (personal data described above) will be accessed automatically from your NHS App online account. You may also be asked to create a Hometest account and enter personal data as requested to set up your account."
+              ]
+            },
+            {
+              "heading": "Use of Cookies",
+              "paragraphs": [
+                "a cookie is a small amount of data, which often includes a unique identifier that is sent to your computer or mobile phone (referred to here as a \"device\") browser from a website's computer and is stored on your device's memory. Read more about how we use cookies in our cookie policy [LINK]."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "automated-decision-making",
+          "heading": "Automated Decision-Making",
+          "paragraphs": [
+            "We use automated decision-making to confirm availability of the services you may wish to access. For example, your eligibility for home testing may be based on your geographic postcode of residence and date of birth."
+          ]
+        },
+        {
+          "id": "how-we-use-data",
+          "heading": "How we Use your Personal Data",
+          "paragraphs": [
+            "We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:"
+          ],
+          "subsections": [
+            {
+              "list": [
+                "To conduct home test availability checks (as described above)",
+                "To receive and store your order(s) for home tests",
+                "To receive, [store] and communicate your test results to you via the Hometest App",
+                "To provide you with relevant follow-up information (where appropriate)."
+              ]
+            },
+            {
+              "paragraphs": [
+                "We will share the following personal data (via secure IT systems) with the third party partners for purposes of fulfilling Testing Services (described above): your first name, last name, delivery address, mobile number [anything else?]",
+                "We will anonymise your personal data for service improvement, product or quality improvement and / or research, as relevant. We may share anonymised and/or aggregated data with other organisations such as Local Authorities and the Department of Health (including the UK Health Security Agency and Office for Health Improvement and Disparities (formerly known as Public Health England)).",
+                "We will never reveal your personal information to other parties not described in this Privacy Policy but we may, on occasion, provide them with aggregate or anonymous statistical information about the users of our service and visitors to the Hometest App."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "recipients-personal-data",
+          "heading": "Recipients of your Personal Data and Treatment of Test Results",
+          "paragraphs": [
+            "NHS England will share your personal data with our trusted partners (and their authorised suppliers) who are responsible for providing Testing Services (\"Test Partners\"). As detailed above, Test Partners will treat your personal data strictly in accordance with data protection laws and the terms of their privacy policy (\"Partner Privacy Policy\"), which will be made available to you through the Hometest App at the appropriate stage of the ordering process.",
+            "Test Partners will manage the treatment of test results and will adhere to strict privacy guidelines in order to protect your data; all information will be treated in strict confidence. Please see the Partner Privacy Policy for further information.",
+            "Test results will be transferred back to NHS England solely for the purpose of displaying the result to you via the Hometest App. Test results are not shared or transferred by NHS England to your GP or to any other NHS service."
+          ]
+        },
+        {
+          "id": "laboratory-testing",
+          "heading": "Laboratory Testing",
+          "paragraphs": [
+            "Your home test sample may be tested in a specialist laboratory by the relevant Test Partners, in accordance with the laboratory's quality system and the Partner Privacy Policy.",
+            "[Please note that some test samples may be retained by the laboratory after testing. These samples may be used for internal studies, public health initiatives (such as surveillance work with the UK Health Security Agency (UKHSA) or for verification purposes (such as performing equipment validation). Samples used for these purposes will be anonymised so will always exclude personal data such as your name, date of birth, contact details, address and postcode]."
+          ]
+        },
+        {
+          "id": "keeping-data-secure",
+          "heading": "Keeping Your Data Secure",
+          "paragraphs": [
+            "We apply technical and organisational security measures to safeguard your personal data from accidental or unlawful destruction, loss, alteration or unauthorised disclosure and all personal data is stored in the UK on secure servers.",
+            "The effectiveness of our security controls is assessed and verified at least annually to standards set by the UK National Cyber Security Centre."
+          ]
+        },
+        {
+          "id": "why-when-contact",
+          "heading": "Why and When we Contact You",
+          "paragraphs": [
+            "As part of Hometest App Services, we may display updates to you via the Hometest App regarding your test kit order and delivery, return of your test sample and the results. This information is provided to us by the Test Partners for display in the Hometest App.",
+            "We may also make direct contact with you by SMS, email, or telephone in order to answer any queries raised by you with the Hometest support team or NHE England's Data Protection Officer; for example, to answer any technical queries or data protection requests."
+          ]
+        },
+        {
+          "id": "legal-disclosure",
+          "heading": "Legal Disclosure",
+          "paragraphs": [
+            "Sometimes we have a legal duty to provide personal information to other organisations.",
+            "We may also share your personal information, where allowed under data protection legislation, known as exemptions, and it is more important than protecting your privacy. This doesn't happen often, but in these circumstances, we may share your information:"
+          ],
+          "subsections": [
+            {
+              "list": [
+                "to find and stop crime and fraud; or",
+                "if there are serious risks to the public, our staff or to other professionals; or",
+                "to protect adults who are thought to be at risk, for example if they are frail, confused or cannot understand what is happening to them."
+              ]
+            },
+            {
+              "paragraphs": [
+                "For all these reasons, the risk must be serious before we can override your right to privacy.",
+                "If we are worried about your physical safety or feel we need to take action to protect you from being harmed in other ways, we or our partners will discuss this with you and, if possible, get your permission to tell others about your situation before doing so.",
+                "We may still share your information if we believe the risk to others is serious enough to do so. If this is the case, we will make sure that we record what information we share and our reasons for doing so. We will let you know what we have done and why, if we think it is safe to do so."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "data-retention",
+          "heading": "Data Retention",
+          "paragraphs": [
+            "We will only retain your personal data for as long as reasonably necessary to fulfil the purposes we collected it for, including for the purposes of satisfying any legal, regulatory, tax, accounting or reporting requirements. We may retain your personal data for a longer period in the event of a complaint or if we reasonably believe there is a prospect of litigation in respect to our relationship with you.",
+            "In accordance with the NHS Records Management Code of Practice, your record will be retained for a minimum of 8 years after the last recorded entry. If you are aged 16 or 17 years your record will be retained for a minimum of 10 years after your 18th birthday.",
+            "After that point, we will remove personal information (e.g. name, house number, street name, telephone number and email) to provide an anonymised data set which is retained for statistical and research purposes only."
+          ]
+        },
+        {
+          "id": "your-rights",
+          "heading": "Your Rights",
+          "paragraphs": [
+            "The law gives you a number of rights in relation to what personal information is used by us and how it is used. These rights allow you to ask us to:"
+          ],
+          "subsections": [
+            {
+              "heading": "Request Access",
+              "paragraphs": [
+                "to your personal data (or \"data subject access request\"). This enables you to receive a copy of the personal data we hold about you and to check that we are lawfully processing it."
+              ]
+            },
+            {
+              "heading": "Request Correction",
+              "paragraphs": [
+                "of the personal data that we hold about you. This enables you to have any incomplete or inaccurate data we hold about you corrected, though we may need to verify the accuracy of the new data you provide to us."
+              ]
+            },
+            {
+              "heading": "Request Erasure",
+              "paragraphs": [
+                "of your personal data. This enables you to ask us to delete or remove personal data where there is no good reason for us continuing to process it. You also have the right to ask us to delete or remove your personal data where you have successfully exercised your right to object to processing (see below), where we may have processed your information unlawfully or where we are required to erase your personal data to comply with local law. Note, however, that we may not always be able to comply with your request of erasure for specific legal reasons which will be notified to you, if applicable, at the time of your request. For example, where the information we process is used to assist clinicians at your NHS Trust with your care we are not always able to fulfil deletion (\"Right to be Forgotten\") requests, and it is important you understand this prior to accessing the service. [TO BE AMENDED FOR HOMETEST]"
+              ]
+            },
+            {
+              "heading": "Object to Processing",
+              "paragraphs": [
+                "of your personal data where we are processing it for direct communications purposes."
+              ]
+            },
+            {
+              "heading": "Request Restriction of Processing",
+              "paragraphs": [
+                "of your personal data where you may need us to hold the data even if we no longer require it as you may need to establish, exercise or defend a legal claim."
+              ]
+            },
+            {
+              "heading": "Request the Transfer",
+              "paragraphs": [
+                "of your personal data to you or to a third party. We will provide to you, or a third party you have chosen, your personal data in a structured, commonly used, machine-readable format. Note that this right only applies to automated information which you initially provided consent for us to use or where we used the data to perform a contact with you."
+              ]
+            },
+            {
+              "heading": "Withdraw Consent at any time",
+              "paragraphs": [
+                "where we are relying on consent to process your personal data. However, this will not affect the lawfulness of any processing carried out before you withdraw your consent. If you withdraw your consent, we may not be able to provide certain products or services to you. We will advise you if this is the case at the time you withdraw your consent. The right to withdraw consent and the right to erasure may not apply due to the nature of the services being provided and our basis in law for processing this data. We will consider requests to remove personal identifying information from your record to ensure that the data we do retain is anonymised, while enabling us to meet our statutory requirements."
+              ]
+            },
+            {
+              "paragraphs": [
+                "As outlined above, we are not always able to fulfil erasure (\"Right to be Forgotten\") requests, and it is important you understand this prior to accessing the service. We are usually able to delete an account where there has been no clinical interaction (e.g. where you have not enrolled in a service and completed a consultation).",
+                "If you wish to exercise any of the rights set out above, please contact our data protection officer at [INSERT DETAILS]",
+                "We may need to request specific information from you to help us confirm your identity and ensure your right to access your personal data (or to exercise any of your other rights). This is a security measure to ensure that personal data is not disclosed to any person who has no right to receive it. We may also contact you to ask you for further information in relation to your request to assist us with our response.",
+                "We try to respond to all legitimate requests within one month. Occasionally it could take us longer than a month if your request is particularly complex or you have made a number of requests. In this case, we will notify you and keep you updated.",
+                "If you are not satisfied with how we are processing your personal data or with the response you have received from us, you have the right to lodge a complaint with a supervisory authority for the UK who is the Information Commissioner's Office (ICO).",
+                "The ICO contact details are as follows:",
+                "Telephone: 0303 123 1113",
+                "Website: https://ico.org.uk/make-a-complaint/"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "third-party-links",
+          "heading": "Third Party Links",
+          "paragraphs": [
+            "You may find links to third party websites on our website. These websites should have their own privacy policies which you should check.",
+            "In addition, you will be provided with a link to the Partner Privacy Notice, as described above.",
+            "We do not accept any responsibility or liability for their policies whatsoever as we have no control over them."
+          ]
+        },
+        {
+          "id": "changes-to-policy",
+          "heading": "Changes to this privacy policy",
+          "paragraphs": [
+            "We will keep this privacy policy under review, and we may update it from time to time for example to reflect changes that we might make to our services or to reflect changes in the law or best practice.",
+            "Any changes we make to this Privacy Policy in the future will be posted on this page; we will notify you by posting a new version of the document on this page and updating the date. We will also undertake to report on any significant changes affecting the processing and use of personal data through a notification in the Hometest App."
+          ]
+        }
+      ]
     }
   }
 }

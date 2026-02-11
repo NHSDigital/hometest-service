@@ -238,6 +238,24 @@ export interface OrderTrackingContent {
   loading: string;
 }
 
+export interface HomeTestPrivacyPolicySection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: {
+    heading?: string;
+    paragraphs?: string[];
+    list?: string[];
+  }[];
+}
+
+export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  lastUpdated: string;
+  introduction: string[];
+  sections: HomeTestPrivacyPolicySection[];
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -250,6 +268,7 @@ export interface PagesContent {
   "select-delivery-address": SelectDeliveryAddressContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
 }
 
 // ============================================================================

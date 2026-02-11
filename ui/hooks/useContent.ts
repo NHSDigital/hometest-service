@@ -8,6 +8,7 @@ import type {
   SelectDeliveryAddressContent,
   GlobalErrorContent,
   OrderTrackingContent,
+  HomeTestPrivacyPolicyContent,
 } from "@/content/schema";
 
 export interface UseContentReturn {
@@ -19,6 +20,7 @@ export interface UseContentReturn {
   "select-delivery-address": SelectDeliveryAddressContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -31,6 +33,7 @@ export const useContent = (): UseContentReturn => {
     "select-delivery-address": content.pages["select-delivery-address"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
+    "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
   };
 };
 
@@ -45,8 +48,9 @@ export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
 export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
+export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
 export function usePageContent(
-  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address" | "global-error" | "order-tracking"
+  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address" | "global-error" | "order-tracking" | "home-test-privacy-policy"
 ) {
   return content.pages[page];
 }
