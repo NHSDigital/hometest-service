@@ -17,13 +17,15 @@ export function ConfirmedStatus({
 
   return (
     <>
-      <Tag id="order-status-tag"color="purple" aria-label={`Order status: ${content.tag}`}>
+      <Tag
+        id="order-status-tag"
+        color="purple"
+        aria-label={`Order status: ${content.tag}`}
+      >
         {content.tag}
       </Tag>
       <h2 className="nhsuk-heading-m">{content.heading}</h2>
-      <p>
-        {content.message.replace("{maxDays}", String(maxDays))}
-      </p>
+      <p>{content.message.replace("{maxDays}", String(maxDays))}</p>
       <hr />
       <HelpLinks supplier={supplier} />
     </>

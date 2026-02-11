@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { useCommonContent } from "@/hooks";
 
 interface HelpLinksProps {
@@ -7,7 +9,10 @@ interface HelpLinksProps {
 export function HelpLinks({ supplier }: HelpLinksProps) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.helpLinks;
-  const contactSupplierText = content.contactSupplier.replace("{supplier}", supplier);
+  const contactSupplierText = content.contactSupplier.replace(
+    "{supplier}",
+    supplier,
+  );
 
   return (
     <section aria-labelledby="help-links-heading">
@@ -15,40 +20,24 @@ export function HelpLinks({ supplier }: HelpLinksProps) {
         {content.heading}
       </h2>
       <p className="nhsuk-body">
-        <a
-          href="#"
-          className="nhsuk-link"
-          aria-label={contactSupplierText}
-        >
-          {contactSupplierText}
-        </a>
+        <OpensInNewTabLink linkHref="#" linkText={contactSupplierText} />
       </p>
       <p className="nhsuk-body">
-        <a
-          href="/blood-sample-guide"
-          className="nhsuk-link"
-          aria-label={content.bloodSampleGuide}
-        >
+        <Link to="/blood-sample-guide" className="nhsuk-link">
           {content.bloodSampleGuide}
-        </a>
+        </Link>
       </p>
       <p className="nhsuk-body">
-        <a
-          href="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/?postcode=<POSTCODE>"
-          className="nhsuk-link"
-          aria-label={content.contactClinic}
-        >
-          {content.contactClinic}
-        </a>
+        <OpensInNewTabLink
+          linkHref="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/?postcode=<POSTCODE>"
+          linkText={content.contactClinic}
+        />
       </p>
       <p className="nhsuk-body">
-        <a
-          href="https://www.nhs.uk/conditions/hiv-and-aids/"
-          className="nhsuk-link"
-          aria-label={content.learnMoreHIV}
-        >
-          {content.learnMoreHIV}
-        </a>
+        <OpensInNewTabLink
+          linkHref="https://www.nhs.uk/conditions/hiv-and-aids/"
+          linkText={content.learnMoreHIV}
+        />
       </p>
     </section>
   );

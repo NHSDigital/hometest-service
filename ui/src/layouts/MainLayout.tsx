@@ -1,18 +1,21 @@
 import { Container, Footer, Header } from "nhsuk-react-components";
 import { Link, Outlet, ScrollRestoration } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type React from "react";
 import { RoutePath } from "../lib/models/route-paths";
-import { useCommonContent } from "@/hooks";
+
+// it will be improved in future
+const isNhsApp = true;
 
 interface MainLayoutProps {
   readonly children?: React.ReactNode;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
-  const commonContent = useCommonContent();
+const queryClient = new QueryClient();
 
+export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <>
       {
@@ -28,7 +31,26 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </span>
       }
       <ScrollRestoration />
-      <Container>{children ?? <Outlet />}</Container>
+      {!isNhsApp && (
+        <Header transactional>
+          <Header.Container>
+            <Header.Logo to={"https://www.nhs.uk/"} asElement={Link} />
+            <Header.ServiceName href={RoutePath.HomePage}>
+              {DEFAULT_PAGE_TITLE}
+            </Header.ServiceName>
+          </Header.Container>
+        </Header>
+      )}
+      <Container>
+        <QueryClientProvider client={queryClient}>
+          {children ?? <Outlet />}
+        </QueryClientProvider>
+      </Container>
+      {!isNhsApp && (
+        <Footer>
+          <Footer.Copyright>&copy; Crown Copyright</Footer.Copyright>
+        </Footer>
+      )}
     </>
   );
 }

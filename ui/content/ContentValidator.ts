@@ -6,7 +6,7 @@
  * malformed content during development.
  */
 
-import type { ContentFile, CommonContent, PagesContent } from "./schema";
+import type { CommonContent, ContentFile, PagesContent } from "./schema";
 
 export interface ValidationResult {
   valid: boolean;
@@ -41,7 +41,7 @@ const isNonEmptyString = (value: unknown): value is string =>
 
 const validateCommonContent = (
   content: unknown,
-  errors: string[]
+  errors: string[],
 ): content is CommonContent => {
   if (!isObject(content)) {
     errors.push("commonContent must be an object");
@@ -62,7 +62,7 @@ const validateCommonContent = (
     }
     if (!isNonEmptyString(content.navigation.continue)) {
       errors.push(
-        "commonContent.navigation.continue must be a non-empty string"
+        "commonContent.navigation.continue must be a non-empty string",
       );
     }
   }
@@ -72,7 +72,7 @@ const validateCommonContent = (
 
 const validatePagesContent = (
   content: unknown,
-  errors: string[]
+  errors: string[],
 ): content is PagesContent => {
   if (!isObject(content)) {
     errors.push("pages must be an object");
@@ -125,16 +125,20 @@ export const validateContent = (content: unknown): ValidationResult => {
   };
 };
 
-export const isValidContentFile = (content: unknown): content is ContentFile => {
+export const isValidContentFile = (
+  content: unknown,
+): content is ContentFile => {
   const result = validateContent(content);
   return result.valid;
 };
 
-export const assertValidContent = (content: unknown): asserts content is ContentFile => {
+export const assertValidContent: (
+  content: unknown,
+) => asserts content is ContentFile = (content) => {
   const result = validateContent(content);
   if (!result.valid) {
     throw new Error(
-      `Content validation failed:\n${result.errors.map((e) => `  - ${e}`).join("\n")}`
+      `Content validation failed:\n${result.errors.map((e) => `  - ${e}`).join("\n")}`,
     );
   }
 };

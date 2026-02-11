@@ -214,8 +214,7 @@
         "title": "There is a problem",
         "orderNotFound": "We could not find this order.",
         "orderIdRequired": "Order ID is required."
-      },
-      "loading": "Loading..."
+      }
     }
   }
 }

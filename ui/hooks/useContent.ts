@@ -1,15 +1,16 @@
-import { content } from "@/content/ContentService";
 import type {
   CommonContent,
-  StartPageContent,
-  EnterDeliveryAddressContent,
   EnterAddressManuallyContent,
-  NoAddressFoundContent,
-  SelectDeliveryAddressContent,
-  HowComfortablePrickingFingerContent,
+  EnterDeliveryAddressContent,
   GlobalErrorContent,
+  HowComfortablePrickingFingerContent,
+  NoAddressFoundContent,
   OrderTrackingContent,
+  SelectDeliveryAddressContent,
+  StartPageContent,
 } from "@/content/schema";
+
+import { content } from "@/content/ContentService";
 
 export interface UseContentReturn {
   commonContent: CommonContent;
@@ -31,7 +32,8 @@ export const useContent = (): UseContentReturn => {
     "enter-address-manually": content.pages["enter-address-manually"],
     "no-address-found": content.pages["no-address-found"],
     "select-delivery-address": content.pages["select-delivery-address"],
-    "how-comfortable-pricking-finger": content.pages["how-comfortable-pricking-finger"],
+    "how-comfortable-pricking-finger":
+      content.pages["how-comfortable-pricking-finger"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
   };
@@ -41,16 +43,34 @@ export const useCommonContent = (): CommonContent => {
   return content.commonContent;
 };
 
-export function usePageContent(page: "get-self-test-kit-for-HIV"): StartPageContent;
-export function usePageContent(page: "enter-delivery-address"): EnterDeliveryAddressContent;
-export function usePageContent(page: "enter-address-manually"): EnterAddressManuallyContent;
+export function usePageContent(
+  page: "get-self-test-kit-for-HIV",
+): StartPageContent;
+export function usePageContent(
+  page: "enter-delivery-address",
+): EnterDeliveryAddressContent;
+export function usePageContent(
+  page: "enter-address-manually",
+): EnterAddressManuallyContent;
 export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
-export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
-export function usePageContent(page: "how-comfortable-pricking-finger"): HowComfortablePrickingFingerContent;
+export function usePageContent(
+  page: "select-delivery-address",
+): SelectDeliveryAddressContent;
+export function usePageContent(
+  page: "how-comfortable-pricking-finger",
+): HowComfortablePrickingFingerContent;
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
 export function usePageContent(
-  page: "get-self-test-kit-for-HIV" | "enter-delivery-address" | "enter-address-manually" | "no-address-found" | "select-delivery-address" | "how-comfortable-pricking-finger" | "global-error" | "order-tracking"
+  page:
+    | "get-self-test-kit-for-HIV"
+    | "enter-delivery-address"
+    | "enter-address-manually"
+    | "no-address-found"
+    | "select-delivery-address"
+    | "how-comfortable-pricking-finger"
+    | "global-error"
+    | "order-tracking",
 ) {
   return content.pages[page];
 }
