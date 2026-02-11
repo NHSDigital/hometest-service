@@ -11,7 +11,7 @@ const QUEUE_URL = process.env.RESULT_QUEUE_URL || '';
 
 // Zod schema for validating FHIR Observation fields that we care about
 const observationSchema = z.looseObject({
-  basedOn: z.array(z.strictObject({
+  basedOn: z.array(z.looseObject({
     reference: z.string(),
   })),
   subject: z.strictObject({
