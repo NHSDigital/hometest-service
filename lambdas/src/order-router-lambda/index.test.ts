@@ -104,11 +104,14 @@ describe("order-router-lambda", () => {
       });
 
       const testCorrelationId = "test-correlation-id-123";
-      mockEvent.headers = { ...mockEvent.headers, "X-Correlation-ID": testCorrelationId };
+      mockEvent.headers = {
+        ...mockEvent.headers,
+        "X-Correlation-ID": testCorrelationId,
+      };
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
@@ -117,7 +120,7 @@ describe("order-router-lambda", () => {
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
-        JSON.stringify({ resourceType: "ServiceRequest" }),
+        JSON.stringify(require("../__test__/mocks/valid_order_body.json")),
         expect.objectContaining({
           Authorization: "Bearer test-secret",
           Accept: "application/fhir+json",
@@ -145,7 +148,7 @@ describe("order-router-lambda", () => {
 
     it("should return 400 for missing supplier_code", async () => {
       mockEvent.body = JSON.stringify({
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       const result = await handler(
@@ -155,14 +158,14 @@ describe("order-router-lambda", () => {
 
       expect(result.statusCode).toBe(400);
       expect(JSON.parse(result.body).message).toContain(
-        "event.body must match schema",
+        "Invalid input: expected string, received undefined",
       );
     });
 
     it("should return 400 for non-UUID supplier_code", async () => {
       mockEvent.body = JSON.stringify({
         supplier_code: "not-a-uuid",
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       const result = await handler(
@@ -172,7 +175,7 @@ describe("order-router-lambda", () => {
 
       expect(result.statusCode).toBe(400);
       expect(JSON.parse(result.body).message).toContain(
-        "event.body must match schema",
+        "supplier_code must be a valid UUID",
       );
     });
 
@@ -188,7 +191,7 @@ describe("order-router-lambda", () => {
 
       expect(result.statusCode).toBe(400);
       expect(JSON.parse(result.body).message).toContain(
-        "event.body must match schema",
+        "Invalid input: expected object, received undefined",
       );
     });
 
@@ -205,7 +208,7 @@ describe("order-router-lambda", () => {
 
       expect(result.statusCode).toBe(400);
       expect(JSON.parse(result.body).message).toContain(
-        "event.body must match schema",
+        "Invalid input: expected object, received null",
       );
     });
 
@@ -222,7 +225,7 @@ describe("order-router-lambda", () => {
 
       expect(result.statusCode).toBe(400);
       expect(JSON.parse(result.body).message).toContain(
-        "event.body must match schema",
+        "Invalid input: expected object, received string",
       );
     });
 
@@ -231,7 +234,7 @@ describe("order-router-lambda", () => {
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       const result = await handler(
@@ -253,7 +256,7 @@ describe("order-router-lambda", () => {
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       const result = await handler(
@@ -282,7 +285,7 @@ describe("order-router-lambda", () => {
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       const result = await handler(
@@ -324,7 +327,7 @@ describe("order-router-lambda", () => {
 
       mockEvent.body = JSON.stringify({
         supplier_code: validUUID,
-        order_body: { resourceType: "ServiceRequest" },
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
       const result = await handler(

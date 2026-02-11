@@ -8,6 +8,7 @@ import { HttpError } from "../lib/http/http-client";
 import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { SupplierConfig } from "src/lib/db/supplier-db";
+import { z } from "zod";
 
 const name = "order-router-lambda";
 
@@ -21,27 +22,23 @@ interface ParsedOrderBody {
 const parseAndValidateRequestBody = (
   eventBody: string | null,
 ): ParsedOrderBody => {
-  let parsedBody: ParsedOrderBody;
+  let parsedBody: unknown;
   try {
     parsedBody = JSON.parse(eventBody || "");
   } catch {
     throw new HttpError("Invalid JSON in event.body", 400);
   }
 
-  if (
-    !parsedBody ||
-    typeof parsedBody.supplier_code !== "string" ||
-    !isUUID(parsedBody.supplier_code) ||
-    typeof parsedBody.order_body !== "object" ||
-    parsedBody.order_body === null
-  ) {
+  const result = ParsedOrderBodySchema.safeParse(parsedBody);
+  if (!result.success) {
+    // Format error as compact JSON array string to avoid issues with newlines in logs
     throw new HttpError(
-      "event.body must match schema { supplier_code: UUID, order_body: JSON }",
+      `event.body validation error: ${JSON.stringify(result.error.issues)}`,
       400,
     );
   }
 
-  return parsedBody;
+  return result.data;
 };
 
 const getSupplierServiceConfig = async (
@@ -143,3 +140,76 @@ export const handler = async (
     };
   }
 };
+
+// --- FHIR sub-schemas ---
+const FHIRCodeableConceptSchema = z.object({
+  coding: z.array(
+    z.object({
+      system: z.string().optional(),
+      code: z.string().optional(),
+      display: z.string().optional(),
+    })
+  ).optional(),
+  text: z.string().optional(),
+});
+
+const FHIRReferenceSchema = z.object({
+  reference: z.string(),
+  type: z.string().optional(),
+  display: z.string().optional(),
+});
+
+const FHIRHumanNameSchema = z.object({
+  use: z.string().optional(),
+  family: z.string(),
+  given: z.array(z.string()).optional(),
+  text: z.string().optional(),
+});
+
+const FHIRContactPointSchema = z.object({
+  system: z.enum(["phone", "fax", "email", "pager", "url", "sms", "other"]).optional(),
+  value: z.string(),
+  use: z.enum(["home", "work", "temp", "old", "mobile"]).optional(),
+});
+
+const FHIRAddressSchema = z.object({
+  use: z.enum(["home", "work", "temp", "old", "billing"]).optional(),
+  type: z.enum(["postal", "physical", "both"]).optional(),
+  line: z.array(z.string()),
+  city: z.string().optional(),
+  postalCode: z.string(),
+  country: z.string().optional(),
+});
+
+const FHIRContainedPatientSchema = z.object({
+  resourceType: z.literal("Patient"),
+  id: z.string(),
+  name: z.array(FHIRHumanNameSchema),
+  telecom: z.array(FHIRContactPointSchema).min(2),
+  address: z.array(FHIRAddressSchema),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+const FHIRServiceRequestSchema = z.object({
+  resourceType: z.literal("ServiceRequest"),
+  id: z.string().optional(),
+  status: z.enum([
+    "draft", "active", "on-hold", "revoked", "completed", "entered-in-error", "unknown"
+  ]),
+  intent: z.enum([
+    "proposal", "plan", "directive", "order", "original-order", "reflex-order", "filler-order", "instance-order", "option"
+  ]),
+  code: FHIRCodeableConceptSchema,
+  contained: z.array(FHIRContainedPatientSchema).min(1),
+  subject: FHIRReferenceSchema,
+  requester: FHIRReferenceSchema,
+  performer: z.array(FHIRReferenceSchema).optional(),
+});
+
+// --- Main request schema ---
+const ParsedOrderBodySchema = z.object({
+  supplier_code: z.string().refine(isUUID, {
+    message: "supplier_code must be a valid UUID",
+  }),
+  order_body: FHIRServiceRequestSchema,
+});
