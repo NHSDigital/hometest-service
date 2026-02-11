@@ -50,18 +50,15 @@ describe('Order Result Lambda Handler', () => {
           subject: {
             reference: 'Patient/12345',
           },
-          interpretation: [
-            {
-              coding: [
-                {
-                  system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-                  code: 'POS',
-                  display: 'Positive',
-                },
-              ],
-              text: 'POSITIVE',
-            },
-          ],
+          valueCodeableConcept: {
+            coding: [
+              {
+                system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                code: '260415000',
+                display: 'Not detected',
+              },
+            ],
+          },
         };
 
     mockContext = {
@@ -106,8 +103,8 @@ describe('Order Result Lambda Handler', () => {
   });
 
   describe('Validation scenarios', () => {
-    test('should fail validation when interpretation system is missing', async () => {
-      body.interpretation[0].coding[0].system = undefined;
+    test('should fail validation when valueCodeableConcept system is missing', async () => {
+      body.valueCodeableConcept.coding[0].system = undefined;
       mockEvent.body = JSON.stringify(body);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -118,15 +115,15 @@ describe('Order Result Lambda Handler', () => {
         issue: [
           {
             code: 'invalid',
-            diagnostics: expect.stringContaining('interpretation[0].coding[0].system'),
+            diagnostics: expect.stringContaining('valueCodeableConcept.coding[0].system'),
             severity: 'error',
           },
         ],
       });
     });
 
-    test('should fail validation when interpretation code is missing', async () => {
-      body.interpretation[0].coding[0].code = undefined;
+    test('should fail validation when valueCodeableConcept code is missing', async () => {
+      body.valueCodeableConcept.coding[0].code = undefined;
       mockEvent.body = JSON.stringify(body);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -137,15 +134,15 @@ describe('Order Result Lambda Handler', () => {
         issue: [
           {
             code: 'invalid',
-            diagnostics: expect.stringContaining('interpretation[0].coding[0].code'),
+            diagnostics: expect.stringContaining('valueCodeableConcept.coding[0].code'),
             severity: 'error',
           },
         ],
       });
     });
 
-    test('should fail validation when interpretation display is missing', async () => {
-      body.interpretation[0].coding[0].display = undefined;
+    test('should fail validation when valueCodeableConcept display is missing', async () => {
+      body.valueCodeableConcept.coding[0].display = undefined;
       mockEvent.body = JSON.stringify(body);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -155,15 +152,15 @@ describe('Order Result Lambda Handler', () => {
         issue: [
           {
             code: 'invalid',
-            diagnostics: 'Invalid input: expected string, received undefined → at interpretation[0].coding[0].display',
+            diagnostics: 'Invalid input: expected string, received undefined → at valueCodeableConcept.coding[0].display',
             severity: 'error',
           },
         ],
       });
     });
 
-    test('should fail validation when interpretation coding is missing', async () => {
-      body.interpretation[0].coding = undefined;
+    test('should fail validation when valueCodeableConcept coding is missing', async () => {
+      body.valueCodeableConcept.coding = undefined;
       mockEvent.body = JSON.stringify(body);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -173,15 +170,15 @@ describe('Order Result Lambda Handler', () => {
         issue: [
           {
             code: 'invalid',
-            diagnostics: 'Invalid input: expected array, received undefined → at interpretation[0].coding',
+            diagnostics: 'Invalid input: expected array, received undefined → at valueCodeableConcept.coding',
             severity: 'error',
           },
         ],
       });
     });
 
-    test('should fail validation when interpretation is missing', async () => {
-      body.interpretation = undefined;
+    test('should fail validation when valueCodeableConcept is missing', async () => {
+      body.valueCodeableConcept = undefined;
       mockEvent.body = JSON.stringify(body);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -191,7 +188,7 @@ describe('Order Result Lambda Handler', () => {
         issue: [
           {
             code: 'invalid',
-            diagnostics: 'Invalid input: expected array, received undefined → at interpretation',
+            diagnostics: 'Invalid input: expected object, received undefined → at valueCodeableConcept',
             severity: 'error',
           },
         ],
