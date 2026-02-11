@@ -15,7 +15,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   ui:
-    image: node:24
+    image: node:22
     container_name: ui
     working_dir: /app
     volumes:

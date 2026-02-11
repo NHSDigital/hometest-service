@@ -50,6 +50,8 @@ infrastructure-as-code.
 
    ```shell
    npm install && npm --prefix ./lambdas install
+   npm run build:lambdas
+   npm run package:lambdas
    npm run start
    ```
 
