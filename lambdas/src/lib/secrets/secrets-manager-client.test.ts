@@ -15,7 +15,7 @@ describe("AwsSecretsClient", () => {
   let client: AwsSecretsClient;
 
   beforeEach(() => {
-    client = new AwsSecretsClient("eu-west-1");
+    client = new AwsSecretsClient("eu-west-2");
     mockSend.mockReset();
   });
 

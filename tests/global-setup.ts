@@ -1,14 +1,15 @@
-import { FullConfig } from '@playwright/test';
+import { ConfigFactory } from './configuration/configuration';
+import { CredentialsHelper } from './utils/CredentialsHelper';
+import { UserManagerFactory } from './utils/users/UserManagerFactory';
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup() {
   console.log('🚀 Global setup started');
-  console.log(`Running tests in ${config.projects.length} project(s)`);
-  console.log('Environment:', process.env.NODE_ENV || 'default');
+  const config = ConfigFactory.getConfig();
+  console.log(`Tests will run on environment: ${process.env.ENV ?? 'local'}`);
 
-  // Add any global setup logic here
-  // Example: start a test server, set up database connections, etc.
-
-  console.log('✅ Global setup completed');
+    // Add user credentials to env variable
+  await new CredentialsHelper().addCredentialsToEnvVariable();
+  await new UserManagerFactory().getUserManager().loginWorkerUsers();
 }
 
 export default globalSetup;

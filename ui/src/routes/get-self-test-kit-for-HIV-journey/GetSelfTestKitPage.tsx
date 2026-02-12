@@ -54,7 +54,7 @@ export default function GetSelfTestKitPage() {
       <h2>{content.howItWorks.heading}</h2>
       <p>{content.howItWorks.deliveryInfo}</p>
       <p>
-        <Link to="step-by-step-guide">{content.howItWorks.stepByStepLink}</Link>
+        <Link to="blood-sample-guide">{commonContent.links.bloodSampleGuide.text}</Link>
       </p>
       <p>{content.howItWorks.sampleInstructions}</p>
 

@@ -4,16 +4,17 @@ import { AddressModel } from '../../models';
 
 test.describe.configure({ mode: 'serial' });
 const randomAddress = AddressModel.getRandomAddress();
+let actualHeaderText = "";
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
-    const actualResult = await homeTestStartPage.getHeaderText();
-    expect(actualResult).toBe("Get a self-test kit for HIV");
+    actualHeaderText = await homeTestStartPage.getHeaderText();
+    expect(actualHeaderText).toBe("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
   });
 
-  test('Order test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage }) => {
+  test('Order test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
@@ -21,6 +22,9 @@ test.describe('HIV Test Order journeys', () => {
     expect(firstLineAddress).toBe(randomAddress.addressline1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
+    actualHeaderText = await homeTestStartPage.getHeaderText();
+    expect(actualHeaderText).toBe("This is what you'll need to do to give a blood sample");
+    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
   test('Order test journey by providing address manually', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage }) => {
@@ -32,6 +36,12 @@ test.describe('HIV Test Order journeys', () => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await findAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
+  });
+
+  test('Choose to goto Sexual health clinic instead', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.selectAddressAndContinue();
+    await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
   });
 
 });

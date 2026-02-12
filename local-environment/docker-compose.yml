@@ -10,7 +10,7 @@ services:
       - SERVICES=lambda,iam,logs,s3,cloudformation,sts,apigateway,ssm,sqs
       - DEBUG=1
       - LAMBDA_EXECUTOR=docker
-      - AWS_DEFAULT_REGION=eu-west-1
+      - AWS_DEFAULT_REGION=eu-west-2
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
@@ -35,11 +35,17 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=mydb
+      - POSTGRES_DB=local_hometest_db
     ports:
       - "5432:5432"
     volumes:
       - ./db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d local_hometest_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
   wiremock:
     image: wiremock/wiremock:latest
     container_name: wiremock
@@ -49,6 +55,31 @@ services:
       - ./wiremock/mappings:/home/wiremock/mappings
       - ./wiremock/__files:/home/wiremock/__files
     command: ["--verbose"]
+
+  db-migrate:
+    image: postgres:18.1
+    container_name: db-migrate
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ../database/delete.sql:/docker-entrypoint-initdb.d/00-delete.sql:ro
+      - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ../database/tables.sql:/docker-entrypoint-initdb.d/02-tables.sql:ro
+      - ../database/seed.sql:/docker-entrypoint-initdb.d/03-seed.sql:ro
+    environment:
+      - PGUSER=admin
+      - PGPASSWORD=admin
+      - PGDATABASE=local_hometest_db
+      - PGHOST=postgres-db
+      - PGPORT=5432
+    entrypoint: [
+      "bash", "-c",
+      "psql -v ON_ERROR_STOP=1 -h postgres-db -U admin -d postgres -f /docker-entrypoint-initdb.d/00-delete.sql && \
+       psql -v ON_ERROR_STOP=1 -h postgres-db -U admin -d local_hometest_db -f /docker-entrypoint-initdb.d/01-init.sql && \
+       PGPASSWORD=STRONG_PASSWORD_MIGRATOR psql -v ON_ERROR_STOP=1 -h postgres-db -U app_migrator -d local_hometest_db -f /docker-entrypoint-initdb.d/02-tables.sql && \
+       PGPASSWORD=STRONG_PASSWORD_MIGRATOR psql -v ON_ERROR_STOP=1 -h postgres-db -U app_migrator -d local_hometest_db -f /docker-entrypoint-initdb.d/03-seed.sql"
+    ]
 
 volumes:
   ui_node_modules:

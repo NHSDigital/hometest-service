@@ -4,24 +4,23 @@ import {
   ReadyStatus,
   ReceivedStatus,
 } from "./statuses";
-
-import { Order } from "@/types/order";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 interface OrderStatusContentProps {
-  order: Order;
+  order: OrderDetails;
 }
 
 export function OrderStatusContent({ order }: OrderStatusContentProps) {
   const renderStatus = () => {
     switch (order.status) {
-      case "confirmed":
+      case OrderStatus.ORDER_RECEIVED:
         return (
           <ConfirmedStatus
             maxDeliveryDays={order.maxDeliveryDays}
             supplier={order.supplier}
           />
         );
-      case "dispatched":
+      case OrderStatus.DISPATCHED:
         return (
           <DispatchedStatus
             maxDeliveryDays={order.maxDeliveryDays}
@@ -29,9 +28,9 @@ export function OrderStatusContent({ order }: OrderStatusContentProps) {
             dispatchedDate={order.dispatchedDate}
           />
         );
-      case "received":
+      case OrderStatus.RECEIVED:
         return <ReceivedStatus />;
-      case "ready":
+      case OrderStatus.COMPLETE:
         return <ReadyStatus />;
       default:
         return null;

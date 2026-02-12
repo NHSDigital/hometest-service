@@ -1,21 +1,28 @@
+import {
+  OrderDetails,
+  OrderStatus as OrderStatusEnum,
+} from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
-import { Order } from "@/types/order";
+import { MemoryRouter } from "react-router-dom";
 import { OrderStatus } from "@/components/order-status";
 
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<MemoryRouter>{component}</MemoryRouter>);
+};
+
 describe("OrderStatus", () => {
-  const mockOrder: Order = {
+  const mockOrder: OrderDetails = {
     id: "123",
-    testType: "HIV self-test",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: "confirmed",
+    status: OrderStatusEnum.ORDER_RECEIVED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
 
   it("renders OrderStatusHeader component", () => {
-    render(<OrderStatus order={mockOrder} />);
+    renderWithRouter(<OrderStatus order={mockOrder} />);
     expect(
       screen.getByRole("heading", { name: "HIV self-test" }),
     ).toBeInTheDocument();
@@ -23,19 +30,19 @@ describe("OrderStatus", () => {
   });
 
   it("renders OrderStatusContent component", () => {
-    render(<OrderStatus order={mockOrder} />);
+    renderWithRouter(<OrderStatus order={mockOrder} />);
     expect(
       screen.getByText(/wait for your kit to be dispatched/i),
     ).toBeInTheDocument();
   });
 
   it("renders both header and content for dispatched status", () => {
-    const dispatchedOrder: Order = {
+    const dispatchedOrder: OrderDetails = {
       ...mockOrder,
-      status: "dispatched",
+      status: OrderStatusEnum.DISPATCHED,
       dispatchedDate: "2026-01-20",
     };
-    render(<OrderStatus order={dispatchedOrder} />);
+    renderWithRouter(<OrderStatus order={dispatchedOrder} />);
 
     // Header content
     expect(
@@ -49,11 +56,11 @@ describe("OrderStatus", () => {
   });
 
   it("renders both header and content for received status", () => {
-    const receivedOrder: Order = {
+    const receivedOrder: OrderDetails = {
       ...mockOrder,
-      status: "received",
+      status: OrderStatusEnum.RECEIVED,
     };
-    render(<OrderStatus order={receivedOrder} />);
+    renderWithRouter(<OrderStatus order={receivedOrder} />);
 
     // Header content
     expect(
@@ -64,12 +71,12 @@ describe("OrderStatus", () => {
     expect(screen.getByText(/wait for your result/i)).toBeInTheDocument();
   });
 
-  it("renders both header and content for ready status", () => {
-    const readyOrder: Order = {
+  it("renders both header and content for complete status", () => {
+    const readyOrder: OrderDetails = {
       ...mockOrder,
-      status: "ready",
+      status: OrderStatusEnum.COMPLETE,
     };
-    render(<OrderStatus order={readyOrder} />);
+    renderWithRouter(<OrderStatus order={readyOrder} />);
 
     // Header content
     expect(

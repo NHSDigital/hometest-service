@@ -6,9 +6,10 @@
  *
  * The content is validated on import to ensure structural integrity.
  */
-import contentData from "./content.json";
+
 import type { ContentFile } from "./schema";
 import { assertValidContent } from "./ContentValidator";
+import contentData from "./content.json";
 
 assertValidContent(contentData);
 
@@ -17,7 +18,7 @@ export const content: ContentFile = contentData as ContentFile;
 export const getCommonContent = () => content.commonContent;
 
 export const getPageContent = <K extends keyof ContentFile["pages"]>(
-  pageName: K
+  pageName: K,
 ): ContentFile["pages"][K] => content.pages[pageName];
 
 export default content;
