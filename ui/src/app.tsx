@@ -18,6 +18,7 @@ import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
+import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.BloodSampleGuide,
             element: <BloodSampleGuidePage />,
+          },
+          {
+            path: JourneyStepNames.EnterMobileNumber,
+            element: <EnterMobileNumberPage />,
           },
         ],
       },

@@ -37,6 +37,10 @@
       },
       "comfortableDoingTest": {
         "required": "Select yes if you're comfortable doing the test yourself"
+      },
+      "mobileNumber": {
+        "required": "Enter a UK mobile phone number",
+        "invalid": "Enter a UK mobile phone number"
       }
     },
     "links": {
@@ -202,6 +206,14 @@
           "text": "No, I'd rather go to a sexual health clinic instead",
           "hint": "They will take a blood sample for you"
         }
+      }
+    },
+    "enter-mobile-phone-number": {
+      "title": "What's your mobile phone number?",
+      "description": "You'll get updates to this number.",
+      "form": {
+        "label": "UK mobile phone number",
+        "hint": "For example, 07771 900 900 or +44 7771 900 900"
       }
     },
     "global-error": {
