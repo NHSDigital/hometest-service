@@ -16,7 +16,7 @@
     "local:down:db": "npm run local:compose -- down postgres-db",
     "local:up:localstack": "npm run local:compose -- up -d localstack",
     "local:down:localstack": "npm run local:compose -- down localstack",
-    "local:restart": "npm run local:down && npm run local:up",
+    "local:restart": "npm run local:stop && npm run local:start",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
 
     "local:terraform": "terraform -chdir=local-environment/infra",
