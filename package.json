@@ -18,11 +18,14 @@
     "local:down:localstack": "npm run local:compose -- down localstack",
     "local:restart": "npm run local:down && npm run local:up",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
+
+    "local:terraform": "terraform -chdir=local-environment/infra",
+    "local:terraform:init": "npm run local:terraform -- init",
+    "local:terraform:plan": "npm run local:terraform -- plan",
+    "local:terraform:apply": "npm run local:terraform -- apply -auto-approve",
+    "local:terraform:destroy": "npm run local:terraform -- destroy -auto-approve",
     "local:terraform:env": "bash scripts/terraform/post-apply-env-update.sh",
-    "local:terraform:init": "terraform -chdir=local-environment/infra init",
-    "local:terraform:plan": "terraform -chdir=local-environment/infra plan",
-    "local:terraform:apply": "terraform -chdir=local-environment/infra apply -auto-approve",
-    "local:terraform:destroy": "terraform -chdir=local-environment/infra destroy -auto-approve",
+
     "build:lambdas": "npm --prefix lambdas run build",
     "package:lambdas": "npm --prefix lambdas run package",
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
