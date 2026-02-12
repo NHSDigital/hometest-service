@@ -76,9 +76,9 @@ CREATE TABLE IF NOT EXISTS result_status
 (
   result_id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   order_uid      uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
-  result_code    VARCHAR(50) NOT NULL REFERENCES result_type (result_code),
+  status         VARCHAR(50) NOT NULL REFERENCES result_type (result_code),
   created_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  correlation_id uuid        NOT NULL
+  correlation_id uuid        NOT NULL UNIQUE
 );
 
 -- Indexes
@@ -87,3 +87,4 @@ CREATE INDEX IF NOT EXISTS idx_order_supplier_id ON "order" (supplier_id);
 CREATE INDEX IF NOT EXISTS idx_order_status_order_uid ON order_status (order_uid);
 CREATE INDEX IF NOT EXISTS idx_result_status_order_uid ON result_status (order_uid);
 CREATE INDEX IF NOT EXISTS idx_patient_nhs_number ON patient_mapping (nhs_number);
+CREATE INDEX IF NOT EXISTS idx_result_status_correlation_id ON result_status (correlation_id);
