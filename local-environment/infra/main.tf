@@ -212,6 +212,34 @@ resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
   batch_size       = 1
 }
 
+# SQS Queue for order results
+resource "aws_sqs_queue" "order_results" {
+  name = "${var.project_name}-order-results"
+}
+
+module "order_result_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "order-result"
+  zip_path                      = "${path.module}/../../lambdas/dist/order-result-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "result"
+  http_method                   = "POST"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  environment_variables = {
+    NODE_OPTIONS     = "--enable-source-maps"
+    AWS_REGION       = "eu-west-1"
+    RESULT_QUEUE_URL = aws_sqs_queue.order_results.url
+    SQS_ENDPOINT     = "http://localstack:4566"
+  }
+}
+
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -219,6 +247,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     module.eligibility_test_info_lambda,
     module.order_router_lambda,
+    module.order_result_lambda,
     module.login_lambda,
   ]
 

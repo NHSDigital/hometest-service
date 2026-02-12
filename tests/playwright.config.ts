@@ -29,7 +29,7 @@ export const defaultUserAgent =
 export default defineConfig({
   testDir: './tests',
   /* Output directory for test artifacts */
-  outputDir: './testResults',
+  outputDir: './testResults/artefacts',
   /* Global setup script */
   globalSetup: './global-setup.ts',
   /* Global teardown script */

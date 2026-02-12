@@ -2,7 +2,6 @@ import { type Locator, type Page } from '@playwright/test';
 
 export class CodeSecurityPage {
   readonly page: Page;
-  readonly getStartedBtn: Locator;
   readonly securityCodeField: Locator;
   readonly rememberDeviceCheckbox: Locator;
   readonly continueBtn: Locator;
