@@ -8,7 +8,7 @@
     "start": "npm ci && npm run local:start",
     "stop": "npm run local:stop",
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
-    "local:start": "npm run local:compose:up:force && npm run local:terraform:init && npm run local:terraform:apply && npm run local:terraform:env",
+    "local:start": "npm run local:compose:up:force && npm run local:terraform:init && npm run local:deploy && npm run local:terraform:env",
     "local:stop": "npm run local:terraform:destroy && npm run local:compose:down",
     "local:up:ui": "npm run local:compose -- up -d ui",
     "local:down:ui": "npm run local:compose -- down ui",
