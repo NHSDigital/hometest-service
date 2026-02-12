@@ -117,7 +117,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -131,7 +131,7 @@ describe("order-router-lambda", () => {
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
-        JSON.stringify(require("../__test__/mocks/valid_order_body.json")),
+        JSON.stringify(require("../__mocks__/valid_order_body.json")),
         expect.objectContaining({
           Authorization: "Bearer test-access-token",
           Accept: "application/fhir+json",
@@ -151,13 +151,13 @@ describe("order-router-lambda", () => {
       const messageBody1 = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const messageBody2 = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: "550e8400-e29b-41d4-a716-446655440001",
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -181,7 +181,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -208,7 +208,7 @@ describe("order-router-lambda", () => {
     it("should fail for missing supplier_code", async () => {
       const messageBody = JSON.stringify({
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -224,7 +224,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: "not-a-uuid",
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -239,7 +239,7 @@ describe("order-router-lambda", () => {
     it("should fail for missing correlation_id", async () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -255,7 +255,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: "not-a-uuid",
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -322,7 +322,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -343,7 +343,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -376,7 +376,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -414,7 +414,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -446,7 +446,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -478,7 +478,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -500,7 +500,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
@@ -529,7 +529,7 @@ describe("order-router-lambda", () => {
       const validMessage = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const invalidMessage = "{ invalid json }";
@@ -571,7 +571,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__test__/mocks/valid_order_body.json"),
+        order_body: require("../__mocks__/valid_order_body.json"),
       });
 
       const sqsEvent = createSQSEvent([
