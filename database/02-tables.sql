@@ -67,12 +67,17 @@ CREATE TABLE IF NOT EXISTS order_status
   "timestamp" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS result_type (
+  result_code VARCHAR(50) PRIMARY KEY,
+  description TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS result_status
 (
   result_id   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_uid   uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
   order_reference BIGINT,
-  status_code VARCHAR(50) NOT NULL REFERENCES status_type (status_code),
+  result_code VARCHAR(50) NOT NULL REFERENCES result_type (result_code),
   "timestamp" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
