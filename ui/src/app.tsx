@@ -14,7 +14,7 @@ import JourneyLayout from "./layouts/JourneyLayout";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
-import PrivacyPolicyPage from "./routes/PrivacyPolicyPage";
+import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       },
       {
         path: RoutePath.HomeTestPrivacyPolicyPage,
-        element: <PrivacyPolicyPage />,
+        element: <HomeTestPrivacyPolicyPage />,
       },
       {
         path: RoutePath.GetSelfTestKitPage,

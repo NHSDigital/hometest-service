@@ -5,7 +5,7 @@ import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { BackLink } from "nhsuk-react-components";
 
-export default function PrivacyPolicyPage() {
+export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
   const { "home-test-privacy-policy": content } = useContent();
 

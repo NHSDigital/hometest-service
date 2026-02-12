@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import PrivacyPolicyPage from "@/routes/PrivacyPolicyPage";
+import HomeTestPrivacyPolicyPage from "@/routes/HomeTestPrivacyPolicyPage";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/home-test-privacy-policy"]}>
@@ -10,10 +10,10 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </MemoryRouter>
 );
 
-describe("PrivacyPolicyPage", () => {
+describe("HomeTestPrivacyPolicyPage", () => {
   describe("Component Rendering", () => {
     it("renders the main heading from content config", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const heading = screen.getByRole("heading", {
         name: /Hometest Privacy Policy/i,
@@ -23,14 +23,14 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("renders the Back link", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const backLink = screen.getByRole("link", { name: /back/i });
       expect(backLink).toBeInTheDocument();
     });
 
     it("renders introduction paragraphs from content config", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       expect(
         screen.getByText(/\[Hometest\] is operated by NHS England/i)
@@ -43,7 +43,7 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("renders all main section headings", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       expect(
         screen.getByRole("heading", { name: /Introduction/i })
@@ -70,7 +70,7 @@ describe("PrivacyPolicyPage", () => {
 
   describe("AC3: Links Open in New Tab", () => {
     it("converts URLs in text to clickable links", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const icoLink = screen.getByRole("link", {
         name: /https:\/\/ico.org.uk\/make-a-complaint\//i,
@@ -84,7 +84,7 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("adds target='_blank' to external links", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const icoLink = screen.getByRole("link", {
         name: /https:\/\/ico.org.uk\/make-a-complaint\//i,
@@ -94,7 +94,7 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("adds aria-label with '(opens in new tab)' for accessibility", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const icoLink = screen.getByRole("link", {
         name: /https:\/\/ico.org.uk\/make-a-complaint\/.*opens in new tab/i,
@@ -104,7 +104,7 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("applies correct NHS link styling class", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const icoLink = screen.getByRole("link", {
         name: /https:\/\/ico.org.uk\/make-a-complaint\//i,
@@ -116,7 +116,7 @@ describe("PrivacyPolicyPage", () => {
 
   describe("Accessibility", () => {
     it("applies aria-labelledby to sections", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const sections = screen.getAllByRole("region");
       sections.forEach((section) => {
@@ -125,7 +125,7 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("uses semantic heading hierarchy", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       // h1 for main title
       expect(
@@ -149,7 +149,7 @@ describe("PrivacyPolicyPage", () => {
 
   describe("Styling", () => {
     it("applies correct NHS heading class to main title", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const heading = screen.getByRole("heading", {
         name: /Hometest Privacy Policy/i,
@@ -160,7 +160,7 @@ describe("PrivacyPolicyPage", () => {
     });
 
     it("applies NHS body class to paragraphs", () => {
-      render(<PrivacyPolicyPage />, { wrapper: TestWrapper });
+      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       const paragraphs = screen.getAllByText(/is operated by NHS England/i);
       expect(paragraphs[0].closest("p")).toHaveClass("nhsuk-body");
