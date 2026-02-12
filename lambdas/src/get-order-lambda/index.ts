@@ -3,8 +3,6 @@ import {
   Bundle,
   BundleEntry,
   CodeableConcept,
-  Coding,
-  FhirResource,
   Identifier,
   Reference,
   ServiceRequest,
@@ -103,11 +101,11 @@ const lambdaHandler = async (
             {
               system:
                 "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
-              code: order.status,
-              display: "", //todo
+              code: order.statusCode,
+              display: order.statusDescription,
             },
           ],
-          text: order.status,
+          text: order.statusCode,
         },
       },
     ],
@@ -125,7 +123,7 @@ const lambdaHandler = async (
     entry: [bundleEntry],
   };
 
-  return createFhirResponse(200);
+  return createFhirResponse(200, bundle);
 };
 
 export const handler = middy(lambdaHandler);
