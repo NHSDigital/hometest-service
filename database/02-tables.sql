@@ -74,11 +74,11 @@ CREATE TABLE IF NOT EXISTS result_type (
 
 CREATE TABLE IF NOT EXISTS result_status
 (
-  result_id   BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  order_uid   uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
-  result_code VARCHAR(50) NOT NULL REFERENCES result_type (result_code),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  correlation_id uuid NOT NULL
+  result_id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  order_uid      uuid        NOT NULL REFERENCES "order" (order_uid) ON DELETE CASCADE,
+  result_code    VARCHAR(50) NOT NULL REFERENCES result_type (result_code),
+  created_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  correlation_id uuid        NOT NULL
 );
 
 -- Indexes

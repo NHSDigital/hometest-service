@@ -19,4 +19,3 @@ VALUES (
   'orders results'
 )
 ON CONFLICT DO NOTHING;
-

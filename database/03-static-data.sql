@@ -21,4 +21,3 @@ VALUES
   ('RESULT_AVAILABLE', 'Test results are available from the supplier'),
   ('RESULT_WITHHELD', 'Test result are being withheld by the supplier for any reason')
 ON CONFLICT DO NOTHING;
-
