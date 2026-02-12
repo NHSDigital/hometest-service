@@ -8,7 +8,7 @@ import type { ValidationMessages } from "@/content/schema";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
-const UK_MOBILE_REGEX = /^(?:(?:\+44\s?|0)7(?:[\s\-\(\)]?\d){9})$/;
+const UK_MOBILE_REGEX = /^(?:\+44\s?7|07)[\s\-\(\)\d]{9,}$/;
 
 const validateMobileNumber = (
   mobileNumber: string,
@@ -18,10 +18,11 @@ const validateMobileNumber = (
     return { valid: false, message: validationMessages.mobileNumber.required };
   }
 
+  // Remove all separators to count actual digits
   const cleanedNumber = mobileNumber.replace(/[\s\-\(\)]/g, "");
   const digitCount = cleanedNumber.replace(/\D/g, "").length;
 
-  if (digitCount > 15) {
+  if (digitCount < 10 || digitCount > 15) {
     return { valid: false, message: validationMessages.mobileNumber.invalid };
   }
 
