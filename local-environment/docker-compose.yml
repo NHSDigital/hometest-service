@@ -65,12 +65,6 @@ services:
     volumes:
       - ../database:/docker-entrypoint-initdb.d:ro
       - ./scripts/database/db-migrate.sh:/usr/local/bin/db-migrate.sh:ro
-    environment:
-      - PGUSER=admin
-      - PGPASSWORD=admin
-      - PGDATABASE=local_hometest_db
-      - PGHOST=postgres-db
-      - PGPORT=5432
     entrypoint: [
       "bash", "/usr/local/bin/db-migrate.sh"
     ]
