@@ -65,15 +65,25 @@ export class BaseApiClient {
    * Build full URL with query parameters
    */
   private buildUrl(endpoint: string, params?: Record<string, string | number | boolean>): string {
-    const url = new URL(endpoint, this.baseURL);
+    let fullUrl: string;
+
+    if (endpoint.startsWith('/')) {
+      const cleanBaseURL = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL;
+      fullUrl = cleanBaseURL + endpoint;
+    } else {
+
+      fullUrl = this.baseURL.endsWith('/') ? this.baseURL + endpoint : this.baseURL + '/' + endpoint;
+    }
 
     if (params) {
+      const url = new URL(fullUrl);
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, String(value));
       });
+      return url.toString();
     }
 
-    return url.toString();
+    return fullUrl;
   }
 
   /**
