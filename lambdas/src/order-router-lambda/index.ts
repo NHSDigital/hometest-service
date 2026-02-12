@@ -4,7 +4,7 @@ import { isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { SupplierConfig } from "../lib/db/supplier-db";
 import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
-import { FHIRServiceRequest } from "src/lib/models/fhir/FHIRServiceRequestType";
+import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
 import z from "zod";
 
 const name = "order-router-lambda";
