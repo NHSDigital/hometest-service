@@ -1,0 +1,78 @@
+@startuml
+entity "patient_mapping" as patient {
+  **uid : uuid**
+  nhs_number : varchar(50)
+  birth_date : date
+}
+
+entity "test_type" as test {
+  **test_code : varchar(50)**
+  description : text
+}
+
+entity "supplier" as supplier {
+  **supplier_id : uuid**
+  name : varchar(255)
+  service_url : varchar(255)
+  website_url : varchar(255)
+  client_secret_name : varchar(255)
+  client_id : varchar(255)
+  oauth_token_path : varchar(255)
+  order_path : varchar(255)
+  oauth_scope : varchar(255)
+}
+
+entity "la_supplier_offering" as offering {
+  **offering_id : uuid**
+  la_code : varchar(10)
+  effective_from : timestamp
+  *supplier_id : uuid*
+  *test_code : varchar(50)*
+}
+
+entity "order" as orders {
+  **order_uid : uuid**
+  order_reference : bigint
+  *supplier_id : uuid*
+  *patient_uid : uuid*
+  *test_code : varchar(50)*
+  originator : varchar(255)
+  created_at : timestamp
+}
+
+entity "status_type" as status_type {
+  **status_code : varchar(50)**
+  description : text
+}
+
+entity "order_status" as order_status {
+  **status_id : uuid**
+  *order_uid : uuid*
+  order_reference : bigint
+  *status_code : varchar(50)*
+  timestamp : timestamp
+}
+
+entity "result_status" as result_status {
+  **result_id : uuid**
+  *order_uid : uuid*
+  order_reference : bigint
+  *status_code : varchar(50)*
+  timestamp : timestamp
+}
+
+' Relationships
+patient ||--o{ orders : "patient_uid"
+supplier ||--o{ orders : "supplier_id"
+test ||--o{ orders : "test_code"
+
+supplier ||--o{ offering : "supplier_id"
+test ||--o{ offering : "test_code"
+
+orders ||--o{ order_status : "order_uid"
+orders ||--o{ result_status : "order_uid"
+
+status_type ||--o{ order_status : "status_code"
+status_type ||--o{ result_status : "status_code"
+
+@enduml
