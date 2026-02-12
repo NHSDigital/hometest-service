@@ -1,6 +1,7 @@
 import { test } from '../../fixtures';
 import { expect } from '@playwright/test';
 import { AddressModel } from '../../models';
+import { config, EnvironmentVariables } from '../../configuration';
 
 test.describe.configure({ mode: 'serial' });
 const randomAddress = AddressModel.getRandomAddress();
@@ -43,5 +44,13 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
   });
+
+  test('Verify Privacy Policy page', async ({ homeTestStartPage, privacyPolicyPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+    const makeAComplaintUrl = config.get(EnvironmentVariables.EXTERNAL_LINK_MAKE_COMPLAINT);
+    await homeTestStartPage.clickPrivacyPolicyLink();
+    await privacyPolicyPage.clickMakeAComplaintLink();
+    expect(privacyPolicyPage.page.url()).toBe(makeAComplaintUrl);
+  });
+
 
 });

@@ -11,7 +11,8 @@ export enum EnvironmentVariables {
   EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC = 'EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC',
   EXTERNAL_LINK_NEAREST_AE = 'EXTERNAL_LINK_NEAREST_AE',
   EXTERNAL_LINK_HIV_AIDS_INFO = 'EXTERNAL_LINK_HIV_AIDS_INFO',
+  EXTERNAL_LINK_MAKE_COMPLAINT = 'EXTERNAL_LINK_MAKE_COMPLAINT'
 }
 
-export const availableEnvironments = ['local','dev'] as const;
+export const availableEnvironments = ['local', 'dev'] as const;
 export type Environment = typeof availableEnvironments[number];
