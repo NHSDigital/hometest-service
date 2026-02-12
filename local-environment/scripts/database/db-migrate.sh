@@ -32,5 +32,8 @@ export PGUSER="$MIGRATOR_USER"
 echo "Step 3: Creating tables..."
 psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/02-tables.sql"
 
-echo "Step 4: Loading seed data..."
-psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/03-seed.sql"
+echo "Step 4: Loading static data..."
+psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/03-static-data.sql"
+
+echo "Step 5: Loading seed data..."
+psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/04-seed.sql"
