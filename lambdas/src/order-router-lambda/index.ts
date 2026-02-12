@@ -1,7 +1,6 @@
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import { init } from "./init";
-import { HttpError } from "../lib/http/http-client";
-import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils";
+import { isUUID } from "../lib/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { SupplierConfig } from "../lib/db/supplier-db";
 import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
@@ -34,16 +33,15 @@ const parseAndValidateRequestBody = (
   let parsedBody: unknown;
   try {
     parsedBody = JSON.parse(eventBody || "");
-  } catch {
-    throw new HttpError("Invalid JSON in event.body", 400);
+  } catch (error) {
+    throw new Error("Invalid JSON in event.body", { cause: error });
   }
 
   const result = ParsedOrderBodySchema.safeParse(parsedBody);
   if (!result.success) {
     // Format error as compact JSON array string to avoid issues with newlines in logs
-    throw new HttpError(
+    throw new Error(
       `event.body validation error: ${JSON.stringify(result.error.issues)}`,
-      400,
     );
   }
 
@@ -53,29 +51,42 @@ const parseAndValidateRequestBody = (
 const getSupplierServiceConfig = async (
   supplierCode: string,
 ): Promise<SupplierConfig> => {
-  const serviceConfig =
-    await supplierDb.getSupplierConfigBySupplierId(supplierCode);
-  if (!serviceConfig) {
-    throw new HttpError("Supplier not found for supplier_code", 404);
-  }
+  try {
+    const serviceConfig =
+      await supplierDb.getSupplierConfigBySupplierId(supplierCode);
+    if (!serviceConfig) {
+      throw new Error(`Supplier not found for supplier_code ${supplierCode}`);
+    }
 
-  return serviceConfig;
+    return serviceConfig;
+  } catch (error) {
+    throw new Error(
+      `${name}: Failed to load supplier config for supplier_code ${supplierCode}`,
+      { cause: error },
+    );
+  }
 };
 
 const getSupplierAccessToken = async (
   serviceConfig: SupplierConfig,
 ): Promise<string> => {
-  const supplierAuthClient = new OAuthSupplierAuthClient(
-    httpClient,
-    secretsClient,
-    serviceConfig.serviceUrl,
-    serviceConfig.oauthTokenPath,
-    serviceConfig.clientId,
-    serviceConfig.clientSecretName,
-    serviceConfig.oauthScope,
-  );
+  try {
+    const supplierAuthClient = new OAuthSupplierAuthClient(
+      httpClient,
+      secretsClient,
+      serviceConfig.serviceUrl,
+      serviceConfig.oauthTokenPath,
+      serviceConfig.clientId,
+      serviceConfig.clientSecretName,
+      serviceConfig.oauthScope,
+    );
 
-  return await supplierAuthClient.getAccessToken();
+    return await supplierAuthClient.getAccessToken();
+  } catch (error) {
+    throw new Error(`${name}: Failed to get supplier access token`, {
+      cause: error,
+    });
+  }
 };
 
 const sendOrderToSupplier = async (
@@ -88,26 +99,33 @@ const sendOrderToSupplier = async (
   const orderPath = serviceConfig.orderPath || "/order";
   const orderUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}${orderPath}`;
 
-  const orderResponse = await httpClient.postRaw(
-    orderUrl,
-    JSON.stringify(orderBody),
-    {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/fhir+json",
-      "X-Correlation-ID": correlationId,
-    },
-    "application/fhir+json",
-  );
+  try {
+    const orderResponse = await httpClient.postRaw(
+      orderUrl,
+      JSON.stringify(orderBody),
+      {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/fhir+json",
+        "X-Correlation-ID": correlationId,
+      },
+      "application/fhir+json",
+    );
 
-  const responseText = await orderResponse.text();
-  const contentType =
-    orderResponse.headers.get("content-type") || "application/fhir+json";
+    const responseText = await orderResponse.text();
+    const contentType =
+      orderResponse.headers.get("content-type") || "application/fhir+json";
 
-  return {
-    status: orderResponse.status,
-    body: responseText,
-    contentType,
-  };
+    return {
+      status: orderResponse.status,
+      body: responseText,
+      contentType,
+    };
+  } catch (error) {
+    throw new Error(
+      `${name}: Failed to submit order to supplier at ${orderUrl}`,
+      { cause: error },
+    );
+  }
 };
 
 const processOrderMessage = async (messageBody: string): Promise<void> => {
@@ -129,24 +147,22 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
     // Only treat 200/201 as success, otherwise throw error
     if (orderResult.status !== 200 && orderResult.status !== 201) {
       throw new Error(
-        JSON.stringify({
-          message: `${name}: Order request failed with status: ${orderResult.status}`,
-          details: orderResult.body,
-        }),
+        `${name}: Order request failed with status ${orderResult.status}`,
+        {
+          cause: {
+            status: orderResult.status,
+            body: orderResult.body,
+            contentType: orderResult.contentType,
+          },
+        },
       );
     }
     // Success: do nothing (return void)
   } catch (error) {
     // Always throw for any error, so Lambda can batch fail
-    throw new Error(
-      typeof error === "string"
-        ? error
-        : JSON.stringify({
-            message: `${name}: ${error instanceof Error ? error.message : "Unknown error"}`,
-            details: error instanceof HttpError ? error.body : undefined,
-            stack: error instanceof Error ? error.stack : undefined,
-          }),
-    );
+    throw new Error(`${name}: Failed to process order message`, {
+      cause: error,
+    });
   }
 };
 
@@ -161,8 +177,15 @@ export const handler = async (
       try {
         await processOrderMessage(record.body);
         // Success: do nothing
+        console.info(
+          `${name}: Successfully processed message with ID ${record.messageId}`,
+        );
       } catch (error) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
+        console.error(
+          `${name}: Error processing message with ID ${record.messageId}:`,
+          error,
+        );
       }
     }),
   );
