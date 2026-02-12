@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { AuthType, ConfigFactory } from './configuration/configuration';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
@@ -7,6 +8,20 @@ import * as path from 'path';
  * https://github.com/motdotla/dotenv
  */
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
+const config = ConfigFactory.getConfig();
+
+export const getNumberOfWorkers = (authType: AuthType): number => {
+switch (authType) {
+    case AuthType.SANDBOX:
+      return 2;
+    default:
+      return 1;
+  }
+};
+
+export const defaultUserAgent =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
+
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -14,7 +29,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 export default defineConfig({
   testDir: './tests',
   /* Output directory for test artifacts */
-  outputDir: './testResults',
+  outputDir: './testResults/artefacts',
   /* Global setup script */
   globalSetup: './global-setup.ts',
   /* Global teardown script */
@@ -26,7 +41,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: getNumberOfWorkers(config.authType),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['json', { outputFile: './testResults/test-results.json' }],
