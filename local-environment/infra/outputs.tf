@@ -18,11 +18,6 @@ output "hello_world_endpoint" {
   value       = module.hello_world_lambda.localstack_endpoint_url
 }
 
-output "order_router_endpoint" {
-  description = "Order Router Lambda endpoint"
-  value       = module.order_router_lambda.localstack_endpoint_url
-}
-
 output "order_result_endpoint" {
   description = "Order Result Lambda endpoint"
   value       = module.order_result_lambda.localstack_endpoint_url
