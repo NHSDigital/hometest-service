@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, Context } from "aws-lambda";
+import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import { EnvironmentVariables } from "./init";
 
 // Setup mocks
@@ -36,20 +36,31 @@ jest.mock("../lib/supplier/supplier-auth-client", () => {
 import { handler } from "./index";
 
 describe("order-router-lambda", () => {
-  let mockEvent: Partial<APIGatewayProxyEvent>;
   let mockContext: Partial<Context>;
   const validUUID = "123e4567-e89b-12d3-a456-426614174000";
+  const validCorrelationId = "550e8400-e29b-41d4-a716-446655440000";
   const mockServiceUrl = "http://supplier-service-url.com";
 
-  beforeEach(() => {
-    mockEvent = {
-      httpMethod: "POST",
-      path: "/test-order/order",
-      body: null,
-      headers: {},
-      queryStringParameters: null,
-    };
+  const createSQSEvent = (records: Partial<SQSRecord>[]): SQSEvent => ({
+    Records: records.map((record) => ({
+      messageId: record.messageId || "test-message-id",
+      receiptHandle: record.receiptHandle || "test-receipt-handle",
+      body: record.body || "{}",
+      attributes: {
+        ApproximateReceiveCount: "1",
+        SentTimestamp: "1234567890",
+        SenderId: "test-sender",
+        ApproximateFirstReceiveTimestamp: "1234567890",
+      },
+      messageAttributes: {},
+      md5OfBody: "test-md5",
+      eventSource: "aws:sqs",
+      eventSourceARN: "arn:aws:sqs:eu-west-2:123456789012:test-queue",
+      awsRegion: "eu-west-2",
+    })) as SQSRecord[],
+  });
 
+  beforeEach(() => {
     mockContext = {
       functionName: "order-router",
       functionVersion: "1",
@@ -90,189 +101,269 @@ describe("order-router-lambda", () => {
       oauthScope: "orders results",
     });
 
-  describe("successful order placement", () => {
+  describe("successful order processing", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
+      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
     });
 
-    it("should fetch service_url from supplierDb and call order endpoint", async () => {
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-secret");
+    it("should process a single valid SQS message successfully", async () => {
       mockHttpClientPostRaw.mockResolvedValue({
-        status: 200,
-        text: async () => "{}",
-        headers: { get: () => "application/json" },
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
       });
 
-      const testCorrelationId = "test-correlation-id-123";
-      mockEvent.headers = {
-        ...mockEvent.headers,
-        "X-Correlation-ID": testCorrelationId,
-      };
-
-      mockEvent.body = JSON.stringify({
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      await handler(mockEvent as APIGatewayProxyEvent, mockContext as Context);
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([]);
       expect(mockGetSupplierConfigBySupplierId).toHaveBeenCalledWith(validUUID);
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
         JSON.stringify(require("../__test__/mocks/valid_order_body.json")),
         expect.objectContaining({
-          Authorization: "Bearer test-secret",
+          Authorization: "Bearer test-access-token",
           Accept: "application/fhir+json",
-          "X-Correlation-ID": testCorrelationId,
+          "X-Correlation-ID": validCorrelationId,
         }),
         "application/fhir+json",
       );
     });
+
+    it("should process multiple valid SQS messages successfully", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody1 = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const messageBody2 = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: "550e8400-e29b-41d4-a716-446655440001",
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody1 },
+        { messageId: "msg-2", body: messageBody2 },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([]);
+      expect(mockHttpClientPostRaw).toHaveBeenCalledTimes(2);
+    });
+
+    it("should accept 200 status as successful order processing", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 200,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([]);
+    });
   });
 
-  describe("validation and error handling", () => {
-    it("should return 400 for invalid JSON in event.body", async () => {
-      mockEvent.body = "{ invalid json }";
+  describe("message validation errors", () => {
+    it("should fail for invalid JSON in message body", async () => {
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: "{ invalid json }" },
+      ]);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
 
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body).message).toContain(
-        "Invalid JSON in event.body",
-      );
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
     });
 
-    it("should return 400 for missing supplier_code", async () => {
-      mockEvent.body = JSON.stringify({
+    it("should fail for missing supplier_code", async () => {
+      const messageBody = JSON.stringify({
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body).message).toContain(
-        "Invalid input: expected string, received undefined",
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
     });
 
-    it("should return 400 for non-UUID supplier_code", async () => {
-      mockEvent.body = JSON.stringify({
+    it("should fail for non-UUID supplier_code", async () => {
+      const messageBody = JSON.stringify({
         supplier_code: "not-a-uuid",
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body).message).toContain(
-        "supplier_code must be a valid UUID",
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
     });
 
-    it("should return 400 for missing order_body", async () => {
-      mockEvent.body = JSON.stringify({
+    it("should fail for missing correlation_id", async () => {
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body).message).toContain(
-        "Invalid input: expected object, received undefined",
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
     });
 
-    it("should return 400 for null order_body", async () => {
-      mockEvent.body = JSON.stringify({
+    it("should fail for non-UUID correlation_id", async () => {
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: "not-a-uuid",
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+
+    it("should fail for missing order_body", async () => {
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+
+    it("should fail for null order_body", async () => {
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: null,
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body).message).toContain(
-        "Invalid input: expected object, received null",
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
     });
 
-    it("should return 400 for non-object order_body", async () => {
-      mockEvent.body = JSON.stringify({
+    it("should fail for non-object order_body", async () => {
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: "not-an-object",
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body).message).toContain(
-        "Invalid input: expected object, received string",
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
     });
+  });
 
-    it("should return 404 if supplierDb returns null for supplier config", async () => {
+  describe("supplier configuration errors", () => {
+    it("should fail if supplier not found in database", async () => {
       mockGetSupplierConfigBySupplierId.mockResolvedValue(null);
 
-      mockEvent.body = JSON.stringify({
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
       expect(mockGetSupplierConfigBySupplierId).toHaveBeenCalledWith(validUUID);
-      expect(result.statusCode).toBe(404);
-      expect(JSON.parse(result.body).message).toContain(
-        "Supplier not found for supplier_code",
-      );
     });
 
-    it("should return 500 when supplier config validation fails", async () => {
+    it("should fail when supplier config retrieval throws error", async () => {
       mockGetSupplierConfigBySupplierId.mockRejectedValue(
-        new Error("Supplier configuration missing service URL"),
+        new Error("Database connection failed"),
       );
 
-      mockEvent.body = JSON.stringify({
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body).message).toContain(
-        "Supplier configuration missing service URL",
-      );
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+  });
+
+  describe("authentication errors", () => {
+    beforeEach(() => {
+      mockDefaultSupplierConfig();
     });
 
-    it("should return error when supplierAuthClient token request fails", async () => {
-      const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
+    it("should fail when OAuth token request fails", async () => {
       const { HttpError } = require("../lib/http/http-client");
+      const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
 
       mockSupplierAuthGetAccessToken.mockRejectedValue(
         new HttpError(
@@ -281,65 +372,218 @@ describe("order-router-lambda", () => {
           mockErrorResponse,
         ),
       );
-      mockDefaultSupplierConfig();
 
-      mockEvent.body = JSON.stringify({
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
-      );
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
 
-      expect(result.statusCode).toBe(401);
-      expect(JSON.parse(result.body).message).toEqual(
-        "order-router-lambda: HTTP POST request failed with status: 401",
-      );
-      expect(JSON.parse(result.body).details).toEqual(mockErrorResponse);
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+      expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
+    });
+  });
+
+  describe("supplier order submission errors", () => {
+    beforeEach(() => {
+      mockDefaultSupplierConfig();
+      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
     });
 
-    it("should return error when order request fails", async () => {
-      mockSupplierAuthGetAccessToken.mockResolvedValue("token");
-      mockDefaultSupplierConfig();
-
+    it("should fail when supplier returns 400 Bad Request", async () => {
+      const { HttpError } = require("../lib/http/http-client");
       const mockErrorResponse = JSON.stringify({
         resourceType: "OperationOutcome",
-        issue: [
-          {
-            severity: "error",
-            code: "business-rule",
-            details: { text: "Out of stock" },
-          },
-        ],
+        issue: [{ severity: "error", code: "invalid" }],
       });
-
-      const { HttpError } = require("../lib/http/http-client");
 
       mockHttpClientPostRaw.mockRejectedValue(
         new HttpError(
-          "HTTP POST request failed with status: 409",
-          409,
+          "HTTP POST request failed with status: 400",
+          400,
           mockErrorResponse,
         ),
       );
 
-      mockEvent.body = JSON.stringify({
+      const messageBody = JSON.stringify({
         supplier_code: validUUID,
+        correlation_id: validCorrelationId,
         order_body: require("../__test__/mocks/valid_order_body.json"),
       });
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        mockContext as Context,
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+
+    it("should fail when supplier returns 409 Conflict (business rule)", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 409,
+        text: async () =>
+          JSON.stringify({
+            resourceType: "OperationOutcome",
+            issue: [
+              {
+                severity: "error",
+                code: "business-rule",
+                details: { text: "Out of stock" },
+              },
+            ],
+          }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+
+    it("should fail when supplier returns 422 Unprocessable Entity", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 422,
+        text: async () =>
+          JSON.stringify({
+            resourceType: "OperationOutcome",
+            issue: [
+              {
+                severity: "error",
+                code: "structure",
+                details: { text: "FHIR validation error" },
+              },
+            ],
+          }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+
+    it("should fail when supplier returns 500 Internal Server Error", async () => {
+      const { HttpError } = require("../lib/http/http-client");
+
+      mockHttpClientPostRaw.mockRejectedValue(
+        new HttpError("HTTP POST request failed with status: 500", 500, ""),
       );
 
-      expect(result.statusCode).toBe(409);
-      expect(JSON.parse(result.body).message).toEqual(
-        "order-router-lambda: HTTP POST request failed with status: 409",
-      );
-      expect(JSON.parse(result.body).details).toEqual(mockErrorResponse);
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+  });
+
+  describe("partial batch failures", () => {
+    beforeEach(() => {
+      mockDefaultSupplierConfig();
+      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+    });
+
+    it("should process successful messages and fail only invalid ones", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const validMessage = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const invalidMessage = "{ invalid json }";
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: validMessage },
+        { messageId: "msg-2", body: invalidMessage },
+        { messageId: "msg-3", body: validMessage },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-2" }]);
+      expect(mockHttpClientPostRaw).toHaveBeenCalledTimes(2);
+    });
+
+    it("should handle mixed success and supplier errors", async () => {
+      mockHttpClientPostRaw
+        .mockResolvedValueOnce({
+          status: 201,
+          text: async () => JSON.stringify({ id: "order-1" }),
+          headers: { get: () => "application/fhir+json" },
+        })
+        .mockResolvedValueOnce({
+          status: 409,
+          text: async () =>
+            JSON.stringify({
+              resourceType: "OperationOutcome",
+              issue: [{ severity: "error", code: "business-rule" }],
+            }),
+          headers: { get: () => "application/fhir+json" },
+        })
+        .mockResolvedValueOnce({
+          status: 201,
+          text: async () => JSON.stringify({ id: "order-3" }),
+          headers: { get: () => "application/fhir+json" },
+        });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: require("../__test__/mocks/valid_order_body.json"),
+      });
+
+      const sqsEvent = createSQSEvent([
+        { messageId: "msg-1", body: messageBody },
+        { messageId: "msg-2", body: messageBody },
+        { messageId: "msg-3", body: messageBody },
+      ]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-2" }]);
+      expect(mockHttpClientPostRaw).toHaveBeenCalledTimes(3);
     });
   });
 });

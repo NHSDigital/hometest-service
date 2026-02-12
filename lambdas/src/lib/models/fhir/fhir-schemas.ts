@@ -86,10 +86,3 @@ export const FHIRServiceRequestSchema = z.object({
   requester: FHIRReferenceSchema,
   performer: z.array(FHIRReferenceSchema).optional(),
 });
-
-export const ParsedOrderBodySchema = z.object({
-  supplier_code: z.string().refine(isUUID, {
-    message: "supplier_code must be a valid UUID",
-  }),
-  order_body: FHIRServiceRequestSchema,
-});
