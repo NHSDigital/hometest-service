@@ -29,13 +29,13 @@
 
     "local:service:ui:start": "npm run local:compose -- --profile frontend up -d ui",
     "local:service:ui:stop": "npm run local:compose -- stop ui && npm run local:compose -- rm -f ui",
-    
+
     "local:service:db:start": "npm run local:compose -- --profile backend up -d postgres-db",
     "local:service:db:stop": "npm run local:compose -- stop postgres-db && npm run local:compose -- rm -f postgres-db",
-    
+
     "local:service:localstack:start": "npm run local:compose -- --profile backend up -d localstack",
     "local:service:localstack:stop": "npm run local:compose -- stop localstack && npm run local:compose -- rm -f localstack",
-    
+
     "local:service:db:migrate": "npm run local:compose -- --profile backend up --build db-migrate",
 
     "local:terraform": "terraform -chdir=local-environment/infra",

@@ -91,6 +91,6 @@ DROP TABLE supplier;
 DROP TABLE la_supplier_offering;
 DROP TABLE "order";
 DROP TABLE status_type;
-DROP TABLE order_status;  
+DROP TABLE order_status;
 DROP TABLE result_type;
 DROP TABLE result_status;
