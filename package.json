@@ -25,6 +25,7 @@
     "local:service:db:stop": "npm run local:compose:down -- postgres-db",
     "local:service:localstack:start": "npm run local:compose:up -- localstack",
     "local:service:localstack:stop": "npm run local:compose:down -- localstack",
+    "local:service:db:migrate": "npm run local:compose:up -- db-migrate",
 
     "local:terraform": "terraform -chdir=local-environment/infra",
     "local:terraform:init": "npm run local:terraform -- init",
