@@ -6,4 +6,3 @@ WHERE datname = 'local_hometest_db'
 
 DROP DATABASE IF EXISTS local_hometest_db;
 CREATE DATABASE local_hometest_db;
-

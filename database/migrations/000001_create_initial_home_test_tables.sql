@@ -94,4 +94,3 @@ DROP TABLE status_type;
 DROP TABLE order_status;  
 DROP TABLE result_type;
 DROP TABLE result_status;
-

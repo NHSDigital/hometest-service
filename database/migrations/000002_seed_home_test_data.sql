@@ -194,4 +194,3 @@ DELETE FROM supplier WHERE supplier_id = '77777777-7777-7777-7777-777777777777';
 DELETE FROM result_type WHERE result_code IN ('PENDING', 'NEGATIVE', 'POSITIVE');
 DELETE FROM status_type WHERE status_code IN ('CREATED', 'DISPATCHED', 'COMPLETED');
 DELETE FROM test_type WHERE test_code IN ('FIT', 'PCR');
-
