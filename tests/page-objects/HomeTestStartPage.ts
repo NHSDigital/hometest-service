@@ -23,10 +23,9 @@ export class HomeTestStartPage extends BasePage {
   }
   async navigate(): Promise<void> {
     await this.page.goto(`${this.config.uiBaseUrl}/get-self-test-kit-for-HIV`);
-
   }
 
-   async clickFindClinicLink(expectedUrl: string): Promise<void> {
+  async clickFindClinicLink(expectedUrl: string): Promise<void> {
     await this.findClinicLink.click();
     await this.page.waitForURL(expectedUrl);
   }
