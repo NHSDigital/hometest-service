@@ -30,6 +30,7 @@ locals {
   secrets_dir       = "${path.module}/resources/secrets"
   secret_json_files = fileset(local.secrets_dir, "*.json")
   secret_txt_files  = fileset(local.secrets_dir, "*.txt")
+  secret_key_files  = fileset(local.secrets_dir, "*.pem")
 
   secret_json_map = {
     for f in local.secret_json_files :
@@ -39,8 +40,12 @@ locals {
     for f in local.secret_txt_files :
     trimsuffix(f, ".txt") => f
   }
+  secret_key_map = {
+    for f in local.secret_key_files :
+    trimsuffix(f, ".pem") => f
+  }
 
-  secret_file_map = merge(local.secret_json_map, local.secret_txt_map)
+  secret_file_map = merge(local.secret_json_map, local.secret_txt_map, local.secret_key_map)
 }
 
 resource "aws_secretsmanager_secret" "secrets" {
