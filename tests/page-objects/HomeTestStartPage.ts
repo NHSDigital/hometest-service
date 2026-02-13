@@ -4,7 +4,6 @@ import { BasePage } from './BasePage';
 
 export class HomeTestStartPage extends BasePage {
   readonly config: ConfigInterface;
-  readonly headerText: Locator;
   readonly findClinicLink: Locator;
   readonly nearestAELink: Locator;
   readonly nearestSexualHealthClinicLink: Locator;
@@ -14,7 +13,6 @@ export class HomeTestStartPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.headerText = page.locator('h1');
     this.findClinicLink = page.getByRole('link', { name: 'Find a sexual health clinic' });
     this.nearestAELink = page.getByRole('link', { name: 'your nearest A&E' });
     this.nearestSexualHealthClinicLink = page.getByRole('link', { name: /your nearest sexual health/ });
@@ -28,11 +26,7 @@ export class HomeTestStartPage extends BasePage {
 
   }
 
-  async getHeaderText(): Promise<string> {
-    return await this.headerText.textContent() ?? "";
-  }
-
-  async clickFindClinicLink(expectedUrl: string): Promise<void> {
+   async clickFindClinicLink(expectedUrl: string): Promise<void> {
     await this.findClinicLink.click();
     await this.page.waitForURL(expectedUrl);
   }

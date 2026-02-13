@@ -20,6 +20,7 @@ export interface ConfigInterface {
   externalLinkSexualHealthClinic: string;
   externalLinkNearestAE: string;
   externalLinkHivAidsInfo: string;
+  externallinkmakeAComplaint: string;
   enableTracingOnGlobalSetup: boolean;
 }
 
@@ -105,6 +106,7 @@ export class ConfigFactory {
       externalLinkSexualHealthClinic: process.env[EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC],
       externalLinkNearestAE: process.env[EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE],
       externalLinkHivAidsInfo: process.env[EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO],
+      externallinkmakeAComplaint: process.env[EnvironmentVariables.EXTERNAL_LINK_MAKE_COMPLAINT],
     };
   }
 
@@ -166,6 +168,8 @@ class ConfigWrapper {
         return config.externalLinkNearestAE;
       case EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO:
         return config.externalLinkHivAidsInfo;
+      case EnvironmentVariables.EXTERNAL_LINK_MAKE_COMPLAINT:
+        return config.externallinkmakeAComplaint;
       default:
         throw new Error(`Unknown configuration key: ${key}`);
     }

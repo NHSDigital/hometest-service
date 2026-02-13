@@ -1,10 +1,12 @@
-import { Page } from '@playwright/test';
-
+import { Page, Locator } from '@playwright/test';
 export abstract class BasePage {
   readonly page: Page;
+  readonly headerText: Locator;
 
   constructor(page: Page) {
     this.page = page;
+    this.headerText = page.locator('h1');
+
   }
 
   async waitUntilPageLoad(): Promise<void> {
@@ -17,5 +19,9 @@ export abstract class BasePage {
 
   async getCurrentUrl(): Promise<string> {
     return this.page.url();
+  }
+
+  async getHeaderText(): Promise<string> {
+    return await this.headerText.textContent() ?? "";
   }
 }

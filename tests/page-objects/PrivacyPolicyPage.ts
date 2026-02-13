@@ -8,7 +8,7 @@ export class PrivacyPolicyPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.makeAComplaintLink = page.getByRole('link', { name: 'make a complainthttps://ico.org.uk/make-a-complaint/' });
+    this.makeAComplaintLink = page.getByRole('link', { name: 'https://ico.org.uk/make-a-complaint/' });
   }
 
   async clickMakeAComplaintLink(): Promise<void> {
