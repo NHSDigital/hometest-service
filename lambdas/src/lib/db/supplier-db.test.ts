@@ -150,7 +150,7 @@ describe("SupplierService", () => {
 
       await expect(
         supplierService.getSuppliersByLocalAuthorityAndTest("LA001", "TEST001"),
-      ).rejects.toThrow("Failed to fetch suppliers from database");
+      ).rejects.toThrow(/Failed to fetch suppliers from database/);
     });
   });
 
@@ -202,7 +202,7 @@ describe("SupplierService", () => {
 
       await expect(
         supplierService.getSupplierConfigBySupplierId("SUP001"),
-      ).rejects.toThrow("Failed to fetch supplier config from database");
+      ).rejects.toThrow(/Failed to fetch supplier config from database/);
     });
 
     it("should throw error if service_url is missing", async () => {
@@ -222,7 +222,9 @@ describe("SupplierService", () => {
 
       await expect(
         supplierService.getSupplierConfigBySupplierId("SUP001"),
-      ).rejects.toThrow("Supplier configuration missing service URL");
+      ).rejects.toThrow(
+        "Supplier configuration missing service URL for supplierId SUP001",
+      );
     });
 
     it("should throw error if client_id is missing", async () => {
@@ -242,7 +244,9 @@ describe("SupplierService", () => {
 
       await expect(
         supplierService.getSupplierConfigBySupplierId("SUP001"),
-      ).rejects.toThrow("Supplier configuration missing client ID");
+      ).rejects.toThrow(
+        "Supplier configuration missing client ID for supplierId SUP001",
+      );
     });
 
     it("should throw error if client_secret_name is missing", async () => {
@@ -262,7 +266,9 @@ describe("SupplierService", () => {
 
       await expect(
         supplierService.getSupplierConfigBySupplierId("SUP001"),
-      ).rejects.toThrow("Supplier configuration missing client secret name");
+      ).rejects.toThrow(
+        "Supplier configuration missing client secret name for supplierId SUP001",
+      );
     });
   });
 });
