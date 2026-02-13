@@ -305,7 +305,7 @@
             {
               "heading": "To perform a Contract with You",
               "paragraphs": [
-                "to enable us to request our partners to provide home testing services ordered by you through the Hometest App."
+                "To enable us to request our partners to provide home testing services ordered by you through the Hometest App."
               ]
             }
           ]
@@ -365,24 +365,22 @@
             {
               "heading": "Direct Interactions",
               "paragraphs": [
-                "when you make contact with us through the Hometest App or by telephone, email, post, online or otherwise. This includes personal data you provide when you:"
-              ],
-              "list": [
-                "Use the Hometest App Services",
-                "Request support or further information in connection with the Hometest App",
-                "Give us feedback or contact us"
+                "when you make contact with us through the Hometest App or by telephone, email, post, online or otherwise. This includes personal data you provide when you:",
+                "- Use the Hometest App Services",
+                "- Request support or further information in connection with the Hometest App",
+                "- Give us feedback or contact us"
               ]
             },
             {
               "heading": "Account Details",
               "paragraphs": [
-                "when you enter the Hometest App, certain information (personal data described above) will be accessed automatically from your NHS App online account. You may also be asked to create a Hometest account and enter personal data as requested to set up your account."
+                "When you enter the Hometest App, certain information (personal data described above) will be accessed automatically from your NHS App online account. You may also be asked to create a Hometest account and enter personal data as requested to set up your account."
               ]
             },
             {
               "heading": "Use of Cookies",
               "paragraphs": [
-                "a cookie is a small amount of data, which often includes a unique identifier that is sent to your computer or mobile phone (referred to here as a \"device\") browser from a website's computer and is stored on your device's memory. Read more about how we use cookies in our cookie policy [LINK]."
+                "A cookie is a small amount of data, which often includes a unique identifier that is sent to your computer or mobile phone (referred to here as a \"device\") browser from a website's computer and is stored on your device's memory. Read more about how we use cookies in our cookie policy [LINK]."
               ]
             }
           ]
@@ -396,17 +394,17 @@
         },
         {
           "id": "how-we-use-data",
-          "heading": "How we Use your Personal Data",
+          "heading": "How We Use Your Personal Data",
           "paragraphs": [
             "We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:"
           ],
           "subsections": [
             {
-              "list": [
-                "To conduct home test availability checks (as described above)",
-                "To receive and store your order(s) for home tests",
-                "To receive, [store] and communicate your test results to you via the Hometest App",
-                "To provide you with relevant follow-up information (where appropriate)."
+              "paragraphs": [
+                "- To conduct home test availability checks (as described above)",
+                "- To receive and store your order(s) for home tests",
+                "- To receive, [store] and communicate your test results to you via the Hometest App",
+                "- To provide you with relevant follow-up information (where appropriate)."
               ]
             },
             {
@@ -460,10 +458,10 @@
           ],
           "subsections": [
             {
-              "list": [
-                "to find and stop crime and fraud; or",
-                "if there are serious risks to the public, our staff or to other professionals; or",
-                "to protect adults who are thought to be at risk, for example if they are frail, confused or cannot understand what is happening to them."
+              "paragraphs": [
+                "- To find and stop crime and fraud; or",
+                "- If there are serious risks to the public, our staff or to other professionals; or",
+                "- To protect adults who are thought to be at risk, for example if they are frail, confused or cannot understand what is happening to them."
               ]
             },
             {
@@ -494,43 +492,43 @@
             {
               "heading": "Request Access",
               "paragraphs": [
-                "to your personal data (or \"data subject access request\"). This enables you to receive a copy of the personal data we hold about you and to check that we are lawfully processing it."
+                "To your personal data (or \"data subject access request\"). This enables you to receive a copy of the personal data we hold about you and to check that we are lawfully processing it."
               ]
             },
             {
               "heading": "Request Correction",
               "paragraphs": [
-                "of the personal data that we hold about you. This enables you to have any incomplete or inaccurate data we hold about you corrected, though we may need to verify the accuracy of the new data you provide to us."
+                "Of the personal data that we hold about you. This enables you to have any incomplete or inaccurate data we hold about you corrected, though we may need to verify the accuracy of the new data you provide to us."
               ]
             },
             {
               "heading": "Request Erasure",
               "paragraphs": [
-                "of your personal data. This enables you to ask us to delete or remove personal data where there is no good reason for us continuing to process it. You also have the right to ask us to delete or remove your personal data where you have successfully exercised your right to object to processing (see below), where we may have processed your information unlawfully or where we are required to erase your personal data to comply with local law. Note, however, that we may not always be able to comply with your request of erasure for specific legal reasons which will be notified to you, if applicable, at the time of your request. For example, where the information we process is used to assist clinicians at your NHS Trust with your care we are not always able to fulfil deletion (\"Right to be Forgotten\") requests, and it is important you understand this prior to accessing the service. [TO BE AMENDED FOR HOMETEST]"
+                "Of your personal data. This enables you to ask us to delete or remove personal data where there is no good reason for us continuing to process it. You also have the right to ask us to delete or remove your personal data where you have successfully exercised your right to object to processing (see below), where we may have processed your information unlawfully or where we are required to erase your personal data to comply with local law. Note, however, that we may not always be able to comply with your request of erasure for specific legal reasons which will be notified to you, if applicable, at the time of your request. For example, where the information we process is used to assist clinicians at your NHS Trust with your care we are not always able to fulfil deletion (\"Right to be Forgotten\") requests, and it is important you understand this prior to accessing the service. [TO BE AMENDED FOR HOMETEST]"
               ]
             },
             {
               "heading": "Object to Processing",
               "paragraphs": [
-                "of your personal data where we are processing it for direct communications purposes."
+                "Of your personal data where we are processing it for direct communications purposes."
               ]
             },
             {
               "heading": "Request Restriction of Processing",
               "paragraphs": [
-                "of your personal data where you may need us to hold the data even if we no longer require it as you may need to establish, exercise or defend a legal claim."
+                "Of your personal data where you may need us to hold the data even if we no longer require it as you may need to establish, exercise or defend a legal claim."
               ]
             },
             {
               "heading": "Request the Transfer",
               "paragraphs": [
-                "of your personal data to you or to a third party. We will provide to you, or a third party you have chosen, your personal data in a structured, commonly used, machine-readable format. Note that this right only applies to automated information which you initially provided consent for us to use or where we used the data to perform a contact with you."
+                "Of your personal data to you or to a third party. We will provide to you, or a third party you have chosen, your personal data in a structured, commonly used, machine-readable format. Note that this right only applies to automated information which you initially provided consent for us to use or where we used the data to perform a contract with you."
               ]
             },
             {
               "heading": "Withdraw Consent at any time",
               "paragraphs": [
-                "where we are relying on consent to process your personal data. However, this will not affect the lawfulness of any processing carried out before you withdraw your consent. If you withdraw your consent, we may not be able to provide certain products or services to you. We will advise you if this is the case at the time you withdraw your consent. The right to withdraw consent and the right to erasure may not apply due to the nature of the services being provided and our basis in law for processing this data. We will consider requests to remove personal identifying information from your record to ensure that the data we do retain is anonymised, while enabling us to meet our statutory requirements."
+                "Where we are relying on consent to process your personal data. However, this will not affect the lawfulness of any processing carried out before you withdraw your consent. If you withdraw your consent, we may not be able to provide certain products or services to you. We will advise you if this is the case at the time you withdraw your consent. The right to withdraw consent and the right to erasure may not apply due to the nature of the services being provided and our basis in law for processing this data. We will consider requests to remove personal identifying information from your record to ensure that the data we do retain is anonymised, while enabling us to meet our statutory requirements."
               ]
             },
             {
