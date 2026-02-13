@@ -14,17 +14,29 @@
     "start": "npm ci && npm run local:start",
     "stop": "npm run local:stop",
 
-    "local:start": "npm run local:compose:up:force && npm run local:terraform:init && npm run local:deploy && npm run local:terraform:env",
-    "local:stop": "npm run local:terraform:destroy && npm run local:compose:down",
+    "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:terraform:env && npm run local:frontend:start",
+    "local:stop": "npm run local:terraform:destroy && npm run local:frontend:stop && npm run local:backend:stop",
     "local:restart": "npm run local:stop && npm run local:start",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
 
-    "local:service:ui:start": "npm run local:compose:up -- ui",
-    "local:service:ui:stop": "npm run local:compose:down -- ui",
-    "local:service:db:start": "npm run local:compose:up -- postgres-db",
-    "local:service:db:stop": "npm run local:compose:down -- postgres-db",
-    "local:service:localstack:start": "npm run local:compose:up -- localstack",
-    "local:service:localstack:stop": "npm run local:compose:down -- localstack",
+    "local:backend:start": "npm run local:compose:up:backend && npm run local:service:db:migrate",
+    "local:backend:stop": "npm run local:compose -- stop postgres-db localstack wiremock db-migrate && npm run local:compose -- rm -f postgres-db localstack wiremock db-migrate",
+    "local:backend:restart": "npm run local:backend:stop && npm run local:backend:start",
+
+    "local:frontend:start": "npm run local:compose:up:frontend",
+    "local:frontend:stop": "npm run local:compose -- stop ui && npm run local:compose -- rm -f ui",
+    "local:frontend:restart": "npm run local:frontend:stop && npm run local:frontend:start",
+
+    "local:service:ui:start": "npm run local:compose -- --profile frontend up -d ui",
+    "local:service:ui:stop": "npm run local:compose -- stop ui && npm run local:compose -- rm -f ui",
+    
+    "local:service:db:start": "npm run local:compose -- --profile backend up -d postgres-db",
+    "local:service:db:stop": "npm run local:compose -- stop postgres-db && npm run local:compose -- rm -f postgres-db",
+    
+    "local:service:localstack:start": "npm run local:compose -- --profile backend up -d localstack",
+    "local:service:localstack:stop": "npm run local:compose -- stop localstack && npm run local:compose -- rm -f localstack",
+    
+    "local:service:db:migrate": "npm run local:compose -- --profile backend up --build db-migrate",
 
     "local:terraform": "terraform -chdir=local-environment/infra",
     "local:terraform:init": "npm run local:terraform -- init",
@@ -35,7 +47,8 @@
 
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
     "local:compose:up": "npm run local:compose -- up -d",
-    "local:compose:up:force": "npm run local:compose -- up -d --force-recreate",
+    "local:compose:up:backend": "npm run local:compose -- --profile backend up -d postgres-db localstack wiremock",
+    "local:compose:up:frontend": "npm run local:compose -- --profile frontend up -d ui",
     "local:compose:down": "npm run local:compose -- down"
   },
   "devDependencies": {
