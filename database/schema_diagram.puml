@@ -53,12 +53,18 @@ entity "order_status" as order_status {
   timestamp : timestamp
 }
 
+entity "result_type" as result_type {
+  **result_code: varchar(50)**
+  description : text
+}
+
 entity "result_status" as result_status {
   **result_id : uuid**
   *order_uid : uuid*
   order_reference : bigint
-  *status_code : varchar(50)*
-  timestamp : timestamp
+  *status : varchar(50)*
+  created_at : timestamp
+  correlation_id : uuid
 }
 
 ' Relationships
@@ -73,6 +79,6 @@ orders ||--o{ order_status : "order_uid"
 orders ||--o{ result_status : "order_uid"
 
 status_type ||--o{ order_status : "status_code"
-status_type ||--o{ result_status : "status_code"
+result_type ||--o{ result_status : "status"
 
 @enduml
