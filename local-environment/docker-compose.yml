@@ -3,6 +3,8 @@ services:
   localstack:
     image: localstack/localstack:latest
     container_name: localstack-main
+    profiles:
+      - backend
     ports:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway
       - "127.0.0.1:4510-4559:4510-4559"  # external services port range
@@ -17,6 +19,8 @@ services:
   ui:
     image: node:24
     container_name: ui
+    profiles:
+      - frontend
     working_dir: /app
     volumes:
       - ../ui:/app
@@ -27,11 +31,12 @@ services:
       - "3000:3000"
     environment:
       - REACT_APP_API_URL=http://localstack:4566
-    depends_on:
-      - localstack
+
   postgres-db:
     image: postgres:18.1
     container_name: postgres-db
+    profiles:
+      - backend
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
@@ -49,6 +54,8 @@ services:
   wiremock:
     image: wiremock/wiremock:latest
     container_name: wiremock
+    profiles:
+      - backend
     ports:
       - "8080:8080"
     volumes:
@@ -62,6 +69,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+    profiles:
+      - backend
     volumes:
       - ../database:/docker-entrypoint-initdb.d:ro
       - ./scripts/database/db-migrate.sh:/usr/local/bin/db-migrate.sh:ro

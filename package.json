@@ -14,10 +14,13 @@
     "start": "npm ci && npm run local:start",
     "stop": "npm run local:stop",
 
-    "local:start": "npm run local:compose:up:force && npm run local:terraform:init && npm run local:deploy && npm run local:terraform:env",
-    "local:stop": "npm run local:terraform:destroy && npm run local:compose:down",
+    "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:start",
+    "local:stop": "npm run local:terraform:destroy && COMPOSE_PROFILES=* npm run local:compose:down",
     "local:restart": "npm run local:stop && npm run local:start",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
+
+    "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up:force",
+    "local:frontend:start": "npm run local:terraform:env && COMPOSE_PROFILES=frontend npm run local:compose:up:force",
 
     "local:service:ui:start": "npm run local:compose:up -- ui",
     "local:service:ui:stop": "npm run local:compose:down -- ui",
@@ -40,7 +43,7 @@
     "local:compose:down": "npm run local:compose -- down"
   },
   "devDependencies": {
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.2.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
