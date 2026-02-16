@@ -51,7 +51,7 @@ jobs:
           npm ci && npm --prefix ui ci && npm --prefix lambdas ci
       - name: "Run UI unit test suite"
         run: |
-          JEST_JUNIT_OUTPUT_DIR=ui/test-results npm --prefix ui run test -- --ci --coverage --reporters=default --reporters=jest-junit
+          npm --prefix ui run test -- --ci --coverage --reporters=default --reporters=jest-junit
         env:
           JEST_JUNIT_OUTPUT_DIR: ui/test-results
           JEST_JUNIT_OUTPUT_NAME: junit.xml
@@ -60,9 +60,14 @@ jobs:
         if: always()
         with:
           name: unit-test-results
-          path: |
-            ui/test-results/
-            ui/coverage/
+          path: ui/test-results/
+          retention-days: 30
+      - name: "Upload coverage report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: ui/coverage/lcov-report/
           retention-days: 30
       - name: "Test Report"
         uses: dorny/test-reporter@v1
@@ -74,14 +79,21 @@ jobs:
       - name: "Coverage Summary"
         if: always()
         run: |
-          echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          LINES=$(jq '.total.lines.pct' ui/coverage/coverage-summary.json)
+          STATEMENTS=$(jq '.total.statements.pct' ui/coverage/coverage-summary.json)
+          FUNCTIONS=$(jq '.total.functions.pct' ui/coverage/coverage-summary.json)
+          BRANCHES=$(jq '.total.branches.pct' ui/coverage/coverage-summary.json)
+          
+          echo "### 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lines | $(jq '.total.lines.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
-          echo "| Statements | $(jq '.total.statements.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
-          echo "| Functions | $(jq '.total.functions.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
-          echo "| Branches | $(jq '.total.branches.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lines | ${LINES}% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Statements | ${STATEMENTS}% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Functions | ${FUNCTIONS}% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branches | ${BRANCHES}% |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Download the **coverage-report** artifact for detailed HTML report" >> $GITHUB_STEP_SUMMARY
       - name: "Check coverage threshold"
         run: |
           COVERAGE=$(jq '.total.lines.pct' ui/coverage/coverage-summary.json)
