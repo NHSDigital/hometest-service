@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { Observation, Parameters } from 'fhir/r4';
+import { Observation, Parameters as _Parameters } from 'fhir/r4';
 import { z } from 'zod';
 import { AWSSQSClient } from '../lib/sqs/sqs-client';
 import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';

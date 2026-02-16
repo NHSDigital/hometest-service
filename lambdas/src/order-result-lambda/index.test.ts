@@ -27,7 +27,7 @@ import { handler } from './index';
 
 describe('Order Result Lambda Handler', () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
-  let mockContext: Partial<Context>;
+  let _mockContext: Partial<Context>;
   let body;
 
   beforeEach(() => {

@@ -31,15 +31,11 @@ export class AuthTokenVerifier implements IAuthTokenVerifier {
       algorithms: ['RS512'],
       ...verifyOptions
     };
-    try {
-      const decodedToken = jwt.decode(encodedToken, { complete: true });
-      const kid: string = decodedToken?.header.kid ?? this.keyId;
-      const publicKey: string = cleanupKey(this.publicKeys[kid]) ?? '';
+    const decodedToken = jwt.decode(encodedToken, { complete: true });
+    const kid: string = decodedToken?.header.kid ?? this.keyId;
+    const publicKey: string = cleanupKey(this.publicKeys[kid]) ?? '';
 
-      const verifiedToken = jwt.verify(encodedToken, publicKey, jwtOptions);
-      return verifiedToken as JwtPayload;
-    } catch (error) {
-      throw error;
-    }
+    const verifiedToken = jwt.verify(encodedToken, publicKey, jwtOptions);
+    return verifiedToken as JwtPayload;
   }
 }

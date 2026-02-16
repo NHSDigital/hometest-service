@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import { EnvironmentVariables } from "./init";
 
