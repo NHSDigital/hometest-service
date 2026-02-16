@@ -20,7 +20,7 @@ INSERT INTO supplier (
   oauth_scope
 )
 VALUES (
-  '11111111-1111-1111-1111-111111111111',
+  'c1a2b3c4-1234-4def-8abc-123456789abc',
   'Preventx',
   'http://wiremock:8080',
   'https://www.preventx.com/',
@@ -44,7 +44,7 @@ INSERT INTO supplier (
   oauth_scope
 )
 VALUES (
-  '77777777-7777-7777-7777-777777777777',
+  'd2b3c4d5-2345-4abc-8def-23456789abcd',
   'SH:24',
   'http://wiremock:8080',
   'https://sh24.org.uk/',
@@ -64,7 +64,7 @@ ON CONFLICT (test_code) DO NOTHING;
 
 INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
 VALUES (
-  '22222222-2222-2222-2222-222222222222',
+  'e3c4d5e6-3456-4bcd-8efa-3456789abcde',
   '9999999999',
   DATE '1988-03-15'
 )
@@ -72,7 +72,7 @@ ON CONFLICT (nhs_number) DO NOTHING;
 
 INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
 VALUES (
-  '88888888-8888-8888-8888-888888888888',
+  'f4d5e6f7-4567-4cde-8fab-456789abcdef',
   '8888888888',
   DATE '1992-11-07'
 )
@@ -81,26 +81,26 @@ ON CONFLICT (nhs_number) DO NOTHING;
 INSERT INTO la_supplier_offering (offering_id, supplier_id, test_code, la_code)
 VALUES
   (
-    '33333333-3333-3333-3333-333333333333',
-    '11111111-1111-1111-1111-111111111111',
+    'a5e6f7a8-5678-4def-8abc-56789abcdefa',
+    'c1a2b3c4-1234-4def-8abc-123456789abc',
     'FIT',
     'E09000001'
   ),
   (
-    '33333333-3333-3333-3333-333333333334',
-    '11111111-1111-1111-1111-111111111111',
+    'b6f7a8b9-6789-4efa-8bcd-6789abcdefab',
+    'c1a2b3c4-1234-4def-8abc-123456789abc',
     'PCR',
     'E09000001'
   ),
   (
-    '33333333-3333-3333-3333-333333333335',
-    '77777777-7777-7777-7777-777777777777',
+    'c7a8b9c0-7890-4fab-8cde-789abcdefabc',
+    'd2b3c4d5-2345-4abc-8def-23456789abcd',
     'FIT',
     'E09000001'
   ),
   (
-    '33333333-3333-3333-3333-333333333336',
-    '77777777-7777-7777-7777-777777777777',
+    'd8b9c0d1-8901-4abc-8def-89abcdefabcd',
+    'd2b3c4d5-2345-4abc-8def-23456789abcd',
     'PCR',
     'E09000001'
   )
@@ -108,9 +108,9 @@ ON CONFLICT (la_code, supplier_id, test_code) DO NOTHING;
 
 INSERT INTO test_order (order_uid, supplier_id, patient_uid, test_code, originator)
 VALUES (
-  '44444444-4444-4444-4444-444444444444',
-  '11111111-1111-1111-1111-111111111111',
-  '22222222-2222-2222-2222-222222222222',
+  'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
+  'c1a2b3c4-1234-4def-8abc-123456789abc',
+  'e3c4d5e6-3456-4bcd-8efa-3456789abcde',
   'FIT',
   'seed-migration'
 )
@@ -118,9 +118,9 @@ ON CONFLICT (order_uid) DO NOTHING;
 
 INSERT INTO test_order (order_uid, supplier_id, patient_uid, test_code, originator)
 VALUES (
-  '99999999-9999-9999-9999-999999999999',
-  '77777777-7777-7777-7777-777777777777',
-  '88888888-8888-8888-8888-888888888888',
+  'fab1c2d3-0123-4cde-8fab-01abcdefabcd',
+  'd2b3c4d5-2345-4abc-8def-23456789abcd',
+  'f4d5e6f7-4567-4cde-8fab-456789abcdef',
   'PCR',
   'seed-migration'
 )
@@ -128,8 +128,8 @@ ON CONFLICT (order_uid) DO NOTHING;
 
 INSERT INTO order_status (status_id, order_uid, order_reference, status_code)
 VALUES (
-  '55555555-5555-5555-5555-555555555555',
-  '44444444-4444-4444-4444-444444444444',
+  'abc2d3e4-1234-4def-8abc-12abcdefabcd',
+  'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
   NULL,
   'ORDER_RECEIVED'
 )
@@ -137,8 +137,8 @@ ON CONFLICT (status_id) DO NOTHING;
 
 INSERT INTO order_status (status_id, order_uid, order_reference, status_code)
 VALUES (
-  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  '99999999-9999-9999-9999-999999999999',
+  'bcd3e4f5-2345-4abc-8def-23abcdefabcd',
+  'fab1c2d3-0123-4cde-8fab-01abcdefabcd',
   NULL,
   'ORDER_RECEIVED'
 )
@@ -146,16 +146,16 @@ ON CONFLICT (status_id) DO NOTHING;
 
 INSERT INTO result_status (order_uid, status, correlation_id)
 VALUES (
-  '44444444-4444-4444-4444-444444444444',
+  'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
   'RESULT_AVAILABLE',
-  '66666666-6666-6666-6666-666666666666'
+  'cde4f5a6-3456-4bcd-8efa-34abcdefabcd'
 )
 ON CONFLICT (correlation_id) DO NOTHING;
 
 INSERT INTO result_status (order_uid, status, correlation_id)
 VALUES (
-  '99999999-9999-9999-9999-999999999999',
+  'fab1c2d3-0123-4cde-8fab-01abcdefabcd',
   'RESULT_AVAILABLE',
-  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+  'def5a6b7-4567-4cde-8fab-45abcdefabcd'
 )
 ON CONFLICT (correlation_id) DO NOTHING;
