@@ -83,7 +83,7 @@ jobs:
           STATEMENTS=$(jq '.total.statements.pct' ui/coverage/coverage-summary.json)
           FUNCTIONS=$(jq '.total.functions.pct' ui/coverage/coverage-summary.json)
           BRANCHES=$(jq '.total.branches.pct' ui/coverage/coverage-summary.json)
-          
+
           echo "### 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
