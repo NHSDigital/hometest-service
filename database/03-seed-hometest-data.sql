@@ -60,7 +60,7 @@ INSERT INTO test_type (test_code, description)
 VALUES
   ('FIT', 'Immunochemical Test'),
   ('PCR', 'Polymerase Chain Reaction')
-ON CONFLICT (test_code) DO NOTHING;stat
+ON CONFLICT (test_code) DO NOTHING;
 
 INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
 VALUES (
