@@ -27,7 +27,6 @@ import { handler } from './index';
 
 describe('Order Result Lambda Handler', () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
-  let mockContext: Partial<Context>;
   let body;
 
   beforeEach(() => {
@@ -55,29 +54,15 @@ describe('Order Result Lambda Handler', () => {
               coding: [
                 {
                   system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-                  code: 'POS',
-                  display: 'Positive',
+                  code: '260415000',
+                  display: 'Abnormal',
                 },
               ],
-              text: 'POSITIVE',
+              text: 'ABNORMAL',
             },
           ],
         };
 
-    mockContext = {
-      callbackWaitsForEmptyEventLoop: false,
-      functionName: 'order-result-lambda',
-      functionVersion: '1',
-      invokedFunctionArn: 'arn:aws:lambda:eu-west-1:123456789:function:order-result-lambda',
-      memoryLimitInMB: '128',
-      awsRequestId: 'test-request-id',
-      logGroupName: '/aws/lambda/order-result-lambda',
-      logStreamName: '2024/01/15/[$LATEST]test',
-      getRemainingTimeInMillis: () => 30000,
-      done: jest.fn(),
-      fail: jest.fn(),
-      succeed: jest.fn(),
-    };
 
     mockSQSClientSendMessage.mockReset();
     mockCommonsLoggerError.mockReset();
