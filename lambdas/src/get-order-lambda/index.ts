@@ -5,14 +5,17 @@ import {
 } from "../lib/fhir-response";
 
 import { OrderBundleBuilder } from "./order-bundle-builder";
+import cors from "@middy/http-cors";
+import { defaultCorsOptions } from "./cors-configuration";
 import { getOrderQueryParamsSchema } from "./schemas";
 import { init } from "./init";
+import middy from "@middy/core";
 
-const { orderDbClient } = init();
-
-export const handler = async (
+export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  const { orderDbClient } = init();
+
   const validationResult = getOrderQueryParamsSchema.safeParse(
     event.queryStringParameters,
   );
@@ -45,3 +48,5 @@ export const handler = async (
 
   return createFhirResponse(200, bundle);
 };
+
+export const handler = middy(lambdaHandler).use(cors(defaultCorsOptions));

@@ -13,8 +13,8 @@ import { z } from "zod";
 function getPatient(): Patient {
   // hardcoded - will be obtained from logged user later
   return {
-    nhsNumber: "2657119018",
-    dateOfBirth: "1990-08-11",
+    nhsNumber: "8888888888",
+    dateOfBirth: "1992-11-07",
   };
 }
 

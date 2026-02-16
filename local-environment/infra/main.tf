@@ -260,9 +260,14 @@ module "get_order_lambda" {
   http_method                   = "GET"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["GET", "OPTIONS"]
+
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"
     DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    ALLOW_ORIGIN = "http://localhost:3000"
   }
 }
 
