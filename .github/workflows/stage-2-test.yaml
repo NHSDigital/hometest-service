@@ -51,7 +51,26 @@ jobs:
           npm ci && npm --prefix ui ci && npm --prefix lambdas ci
       - name: "Run UI unit test suite"
         run: |
-          npm --prefix ui run test
+          npm --prefix ui run test -- --ci --coverage --reporters=default --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ui/test-results
+          JEST_JUNIT_OUTPUT_NAME: junit.xml
+      - name: "Upload test results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: |
+            ui/test-results/
+            ui/coverage/
+          retention-days: 30
+      - name: "Test Report"
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: "Jest Unit Tests"
+          path: ui/test-results/junit.xml
+          reporter: jest-junit
   test-lint:
     name: "Linting"
     runs-on: ubuntu-latest
