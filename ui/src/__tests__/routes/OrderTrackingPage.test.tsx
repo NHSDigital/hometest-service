@@ -53,8 +53,8 @@ describe("OrderTrackingPage", () => {
   };
 
   const mockPatient: Patient = {
-    nhsNumber: "2657119018",
-    dateOfBirth: "1990-08-11",
+    nhsNumber: "8888888888",
+    dateOfBirth: "1992-11-07",
   };
 
   // Helper function to render with router and query client
@@ -240,9 +240,7 @@ describe("OrderTrackingPage", () => {
       expect(
         screen.getByRole("heading", { name: "There is a problem" }),
       ).toBeInTheDocument();
-      expect(
-        screen.getByText("Order ID is required."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
 
       // Should not call service with invalid ID
       expect(orderDetailsService.get).not.toHaveBeenCalled();
@@ -255,9 +253,7 @@ describe("OrderTrackingPage", () => {
 
       const errorAlert = screen.getByRole("alert");
       expect(errorAlert).toBeInTheDocument();
-      expect(
-        screen.getByText("Order ID is required."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
       expect(orderDetailsService.get).not.toHaveBeenCalled();
     });
 
