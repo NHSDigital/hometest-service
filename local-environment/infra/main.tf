@@ -30,6 +30,7 @@ locals {
   secrets_dir       = "${path.module}/resources/secrets"
   secret_json_files = fileset(local.secrets_dir, "*.json")
   secret_txt_files  = fileset(local.secrets_dir, "*.txt")
+  secret_key_files  = fileset(local.secrets_dir, "*.pem")
 
   secret_json_map = {
     for f in local.secret_json_files :
@@ -39,8 +40,12 @@ locals {
     for f in local.secret_txt_files :
     trimsuffix(f, ".txt") => f
   }
+  secret_key_map = {
+    for f in local.secret_key_files :
+    trimsuffix(f, ".pem") => f
+  }
 
-  secret_file_map = merge(local.secret_json_map, local.secret_txt_map)
+  secret_file_map = merge(local.secret_json_map, local.secret_txt_map, local.secret_key_map)
 }
 
 resource "aws_secretsmanager_secret" "secrets" {
@@ -176,6 +181,10 @@ module "hello_world_lambda" {
   }
 }
 
+resource "aws_sqs_queue" "order_placement" {
+  name = "${var.project_name}-order-placement"
+}
+
 module "order_router_lambda" {
   source = "./modules/lambda"
 
@@ -199,6 +208,13 @@ module "order_router_lambda" {
     SUPPLIER_CLIENT_ID          = "supplier-client"
     SUPPLIER_CLIENT_SECRET_NAME = "supplier-oauth-client-secret"
   }
+}
+
+resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
+  event_source_arn = aws_sqs_queue.order_placement.arn
+  function_name    = module.order_router_lambda.lambda_function.arn
+  enabled          = true
+  batch_size       = 1
 }
 
 # SQS Queue for order results
@@ -235,7 +251,6 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 
   depends_on = [
     module.eligibility_test_info_lambda,
-    module.order_router_lambda,
     module.order_result_lambda,
     module.login_lambda,
   ]

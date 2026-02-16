@@ -18,11 +18,6 @@ output "hello_world_endpoint" {
   value       = module.hello_world_lambda.localstack_endpoint_url
 }
 
-output "order_router_endpoint" {
-  description = "Order Router Lambda endpoint"
-  value       = module.order_router_lambda.localstack_endpoint_url
-}
-
 output "order_result_endpoint" {
   description = "Order Result Lambda endpoint"
   value       = module.order_result_lambda.localstack_endpoint_url
@@ -41,4 +36,9 @@ output "login_endpoint" {
 output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
   description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
+}
+
+output "order_placement_queue_url" {
+  description = "SQS Queue URL for order placement"
+  value       = aws_sqs_queue.order_placement.url
 }
