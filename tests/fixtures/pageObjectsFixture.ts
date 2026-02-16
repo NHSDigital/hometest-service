@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage,PrivacyPolicyPage } from '../page-objects';
+import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, PrivacyPolicyPage } from '../page-objects';
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
