@@ -10,7 +10,7 @@ export type TestCode = string;
 
 interface SupplierRow {
   supplier_id: string;
-  name: string;
+  supplier_name: string;
   service_url: string;
   website_url: string;
   region: string;
@@ -118,7 +118,7 @@ export class SupplierService {
   ): Promise<SupplierOffering[]> {
     const query = `
       SELECT s.supplier_id,
-            s.name,
+            s.supplier_name,
             s.service_url,
             s.website_url
       FROM hometest.supplier s
@@ -142,7 +142,7 @@ export class SupplierService {
         organization: {
           resourceType: "Organization",
           id: supplier.supplier_id,
-          name: supplier.name,
+          name: supplier.supplier_name,
           extension: [
             {
               url: "http://hometest.nhs.uk/fhir/StructureDefinition/service-url",
