@@ -51,10 +51,7 @@ jobs:
           npm ci && npm --prefix ui ci && npm --prefix lambdas ci
       - name: "Run UI unit test suite"
         run: |
-          npm --prefix ui run test -- --ci --coverage --reporters=default --reporters=jest-junit
-        env:
-          JEST_JUNIT_OUTPUT_DIR: test-results
-          JEST_JUNIT_OUTPUT_NAME: junit.xml
+          npm --prefix ui run test -- --ci
       - name: "Upload test results"
         uses: actions/upload-artifact@v4
         if: always()
@@ -112,10 +109,7 @@ jobs:
           hide-comment: false
       - name: "Run Lambdas unit test suite"
         run: |
-          npm --prefix lambdas run test -- --ci --coverage --reporters=default --reporters=jest-junit
-        env:
-          JEST_JUNIT_OUTPUT_DIR: test-results
-          JEST_JUNIT_OUTPUT_NAME: junit.xml
+          npm --prefix lambdas run test -- --ci
       - name: "Upload Lambdas test results"
         uses: actions/upload-artifact@v4
         if: always()

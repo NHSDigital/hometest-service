@@ -16,6 +16,18 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   coverageReporters: ['text', 'lcov', 'json', 'json-summary'],
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        outputDirectory: 'test-results',
+        outputName: 'junit.xml',
+        addFileAttribute: true,
+        reportTestSuiteErrors: true,
+      },
+    ],
+  ],
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
