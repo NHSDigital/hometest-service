@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {HttpClient} from "../lib/http/http-client";
 
 export interface LaLookupResult {

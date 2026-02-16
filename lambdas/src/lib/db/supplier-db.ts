@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Organization, Location } from "fhir/r4";
 import { DBClient } from "./db-client";
 

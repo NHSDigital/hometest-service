@@ -20,44 +20,36 @@ export class TokenService implements ITokenService {
   }
 
   public async verifyToken(encodedToken: string): Promise<Jwt> {
-    try {
-      const decodedToken = this.decodeToken(encodedToken);
-      const tokenKid = decodedToken.header.kid;
-      if (tokenKid === undefined) {
-        throw new Error('kid is not present in the decoded token');
-      }
-      const publicSigningKey =
-        await this.nhsLoginClient.fetchPublicKeyById(tokenKid);
-
-      if (publicSigningKey === undefined) {
-        throw new Error('public key not found');
-      }
-
-      const verifiedToken = jwt.verify(encodedToken, publicSigningKey, {
-        algorithms: ['RS512'],
-        issuer: this.nhsLoginConfig.baseUri,
-        complete: true
-      });
-
-      if (verifiedToken !== null) {
-        return verifiedToken;
-      }
-      throw new Error('token could not be verified');
-    } catch (error) {
-      throw error;
+    const decodedToken = this.decodeToken(encodedToken);
+    const tokenKid = decodedToken.header.kid;
+    if (tokenKid === undefined) {
+      throw new Error('kid is not present in the decoded token');
     }
+    const publicSigningKey =
+      await this.nhsLoginClient.fetchPublicKeyById(tokenKid);
+
+    if (publicSigningKey === undefined) {
+      throw new Error('public key not found');
+    }
+
+    const verifiedToken = jwt.verify(encodedToken, publicSigningKey, {
+      algorithms: ['RS512'],
+      issuer: this.nhsLoginConfig.baseUri,
+      complete: true
+    });
+
+    if (verifiedToken !== null) {
+      return verifiedToken;
+    }
+    throw new Error('token could not be verified');
   }
 
   private decodeToken(encodedToken: string): Jwt {
-    try {
-      const decodedToken = jwt.decode(encodedToken, { complete: true });
-      if (decodedToken === null) {
-        throw new Error('token could not be decoded');
-      } else {
-        return decodedToken;
-      }
-    } catch (error) {
-      throw error;
+    const decodedToken = jwt.decode(encodedToken, { complete: true });
+    if (decodedToken === null) {
+      throw new Error('token could not be decoded');
+    } else {
+      return decodedToken;
     }
   }
 }
