@@ -27,21 +27,31 @@ test.describe('HIV Test Order journeys', () => {
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
-  test('Order test journey by providing address manually', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage }) => {
+  test('Order test journey by providing address manually', async ({ findAddressPage, enterAddressManuallyPage }) => {
     await findAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
   });
 
-  test('Order test journey by providing address manually from select delivery address page', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage, selectDeliveryAddressPage }) => {
+  test('Order test journey by providing address manually from select delivery address page', async ({ findAddressPage, enterAddressManuallyPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await findAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
   });
 
-  test('Choose to goto Sexual health clinic instead', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+  test('Choose to goto Sexual health clinic instead', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
   });
 
+  test('Check the guide to giving blood samples', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, bloodSampleGuidePage}) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.clickEditAddressLink();
+    const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressline1);
+    await selectDeliveryAddressPage.clickContinueButton();
+    await selectDeliveryAddressPage.selectAddressAndContinue();
+    await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();
+  });
 });
