@@ -131,7 +131,7 @@ VALUES (
   '55555555-5555-5555-5555-555555555555',
   '44444444-4444-4444-4444-444444444444',
   NULL,
-  'CREATED'
+  'ORDER_RECEIVED'
 )
 ON CONFLICT (status_id) DO NOTHING;
 
@@ -140,14 +140,14 @@ VALUES (
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
   '99999999-9999-9999-9999-999999999999',
   NULL,
-  'CREATED'
+  'ORDER_RECEIVED'
 )
 ON CONFLICT (status_id) DO NOTHING;
 
 INSERT INTO result_status (order_uid, status, correlation_id)
 VALUES (
   '44444444-4444-4444-4444-444444444444',
-  'PENDING',
+  'RESULT_AVAILABLE',
   '66666666-6666-6666-6666-666666666666'
 )
 ON CONFLICT (correlation_id) DO NOTHING;
@@ -155,7 +155,7 @@ ON CONFLICT (correlation_id) DO NOTHING;
 INSERT INTO result_status (order_uid, status, correlation_id)
 VALUES (
   '99999999-9999-9999-9999-999999999999',
-  'PENDING',
+  'RESULT_AVAILABLE',
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
 )
 ON CONFLICT (correlation_id) DO NOTHING;
