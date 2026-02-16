@@ -9,8 +9,8 @@ jest.mock('../lib/sqs/sqs-client', () => ({
   })),
 }));
 // Silence validation errors from appearing on console output during tests
-let mockCommonsLoggerError = jest.fn();
-let mockCommonsLoggerInfo = jest.fn();
+const mockCommonsLoggerError = jest.fn();
+const mockCommonsLoggerInfo = jest.fn();
 
 jest.mock('../lib/commons', () => ({
   ConsoleCommons: jest.fn().mockImplementation(() => ({
