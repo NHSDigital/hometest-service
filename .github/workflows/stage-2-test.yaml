@@ -110,6 +110,33 @@ jobs:
           title: "UI Coverage Report"
           badge-title: Coverage
           hide-comment: false
+      - name: "Run Lambdas unit test suite"
+        run: |
+          npm --prefix lambdas run test -- --ci --coverage --reporters=default --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ./test-results
+          JEST_JUNIT_OUTPUT_NAME: junit.xml
+      - name: "Upload Lambdas test results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lambdas-test-results
+          path: lambdas/test-results/
+          retention-days: 30
+      - name: "Upload Lambdas coverage report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lambdas-coverage-report
+          path: lambdas/coverage/lcov-report/
+          retention-days: 30
+      - name: "Lambdas Test Report"
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: "Jest Lambdas Tests"
+          path: lambdas/test-results/junit.xml
+          reporter: jest-junit
   test-lint:
     name: "Linting"
     runs-on: ubuntu-latest
