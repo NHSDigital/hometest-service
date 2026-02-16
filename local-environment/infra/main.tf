@@ -260,9 +260,9 @@ module "get_order_lambda" {
   http_method                   = "GET"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
-  enable_cors            = true
-  cors_allow_origin      = "http://localhost:3000"
-  cors_allow_methods     = ["GET", "OPTIONS"]
+  enable_cors        = true
+  cors_allow_origin  = "http://localhost:3000"
+  cors_allow_methods = ["GET", "OPTIONS"]
 
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"
