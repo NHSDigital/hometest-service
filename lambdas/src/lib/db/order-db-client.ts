@@ -1,4 +1,4 @@
-import { type DBClient } from "../db-client";
+import { type DBClient } from "./db-client";
 
 export interface Order {
   id: string;
@@ -6,7 +6,7 @@ export interface Order {
   createdAt: string;
   statusCode: string;
   statusDescription: string;
-  statusDate: string;
+  statusCreatedAt: string;
   supplierId: string;
   supplierName: string;
   nhsNumber: string;
@@ -27,9 +27,9 @@ export class OrderDbClient {
           o.created_at AS createdAt,
           os.status_code AS statusCode,
           st.description AS statusDescription,
-          os."timestamp" AS statusDate,
-          s.supplier_id AS supplierId
-          s.name AS supplierName,
+          os.created_at AS statusCreatedAt,
+          s.supplier_id AS supplierId,
+          s.supplier_name AS supplierName,
           p.nhs_number AS nhsNumber,
           p.birth_date AS birthDate
       FROM hometest.test_order o
@@ -38,7 +38,7 @@ export class OrderDbClient {
       INNER JOIN hometest.patient_mapping p ON p.uid = o.patient_uid
       INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
       WHERE o.order_uid = $1 AND p.nhs_number = $2 AND p.birth_date = $3::date
-      ORDER BY os."timestamp" DESC
+      ORDER BY os.created_at DESC
       LIMIT 1;
     `;
 

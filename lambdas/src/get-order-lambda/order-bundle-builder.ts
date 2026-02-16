@@ -9,7 +9,7 @@ import {
   ServiceRequest,
 } from "fhir/r4";
 
-import { Order } from "../lib/db/db-clients/order-db-client";
+import { Order } from "../lib/db/order-db-client";
 
 const requesterId = "ORG001";
 
@@ -66,7 +66,9 @@ export class OrderBundleBuilder {
       extension: [
         {
           url: "timestamp",
-          valueDate: new Date(order.statusDate).toISOString().split("T")[0],
+          valueDate: new Date(order.statusCreatedAt)
+            .toISOString()
+            .split("T")[0],
         },
       ],
       valueCodeableConcept: {

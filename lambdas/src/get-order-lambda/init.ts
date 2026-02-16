@@ -1,4 +1,4 @@
-import { OrderDbClient } from "../lib/db/db-clients/order-db-client";
+import { OrderDbClient } from "../lib/db/order-db-client";
 import { PostgresDbClient } from "../lib/db/db-client";
 
 export interface Environment {

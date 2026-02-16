@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Order } from "../lib/db/db-clients/order-db-client";
+import { Order } from "../lib/db/order-db-client";
 import { lambdaHandler } from "./index";
 
 var mockOrderDbClient!: { getOrder: jest.Mock };
@@ -37,7 +37,7 @@ describe("Get Order Lambda Handler", () => {
       createdAt: "2024-01-15T10:30:00Z",
       statusCode: "DISPATCHED",
       statusDescription: "Order dispatched",
-      statusDate: "2024-01-16T08:00:00Z",
+      statusCreatedAt: "2024-01-16T08:00:00Z",
       supplierId: "SUP001",
       supplierName: "Test Supplier Ltd",
       nhsNumber: "1234567890",
