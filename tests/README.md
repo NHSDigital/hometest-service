@@ -18,6 +18,21 @@ This directory contains the Playwright test framework for the hometest-service p
    npx playwright install chromium firefox webkit
    ```
 
+3. Set up local user credentials (for local testing only):
+
+   ```bash
+   cp users.ts.example users.ts
+   ```
+
+   Then edit `users.ts` and replace the placeholder values with your actual test user credentials:
+   - `email`: Your test email address
+   - `nhsNumber`: Your test NHS number
+   - `odsCode`: Your ODS code
+   - `age`: User age
+   - `patientId`: Your patient ID
+
+   **Note**: The `users.ts` file is gitignored, so your credentials remain private. This configuration is only used when `ENV=local`.
+
 ## Running Tests
 
 - Run all tests:

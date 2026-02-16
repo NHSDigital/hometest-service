@@ -2,9 +2,26 @@ import type { Page } from '@playwright/test';
 import { BaseUserManager } from './BaseUserManager';
 import type { NHSLoginUser } from './BaseUser';
 import NhsLoginHelper from '../../page-objects/NhsLoginHelper';
+import { ConfigFactory } from '../../configuration/configuration';
 
 export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
   public getWorkerUsers(): NHSLoginUser[] {
+    const env = ConfigFactory.getEnvironment();
+    
+    // Use local user from users.ts for local environment (gitignored file)
+    if (env === 'local') {
+      try {
+        const { localUser } = require('../../users');
+        console.log('Using local environment user from users.ts');
+        return [localUser];
+      } catch (error) {
+        console.error('Error loading users.ts. Please create users.ts file with your local user details.');
+        throw new Error('users.ts file not found. Please create it based on users.ts.example');
+      }
+    }
+    
+    // Use hardcoded users for dev/staging environments
+    console.log('Using dev/staging environment user configuration');
     return [
       {
         email: 'testuserlive@demo.signin.nhs.uk',
