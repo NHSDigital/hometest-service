@@ -54,3 +54,59 @@ repos:
         files: ^local-environment/infra
         args:
           - --args=-recursive
+
+  - repo: local
+    hooks:
+      - id: eslint-ui
+        name: ESLint (UI)
+        entry: npm --prefix ui run lint -- --fix
+        language: system
+        files: ^ui/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: eslint-lambdas
+        name: ESLint (Lambdas)
+        entry: bash -c 'cd lambdas && npx eslint --fix'
+        language: system
+        files: ^lambdas/.*\.(ts|js)$
+        pass_filenames: false
+
+      # - id: typescript-check-ui
+      #   name: TypeScript (UI)
+      #   entry: npm --prefix ui run build -- --noEmit
+      #   language: system
+      #   files: ^ui/.*\.tsx?$
+      #   pass_filenames: false
+      #   # stages: [pre-push]  # Slow, run on push
+
+      # - id: typescript-check-lambdas
+      #   name: TypeScript (Lambdas)
+      #   entry: bash -c 'cd lambdas && npx tsc --noEmit'
+      #   language: system
+      #   files: ^lambdas/.*\.ts$
+      #   pass_filenames: false
+      #   # stages: [pre-push]
+
+      # - id: jest-unit-ui
+      #   name: Jest Unit Tests (UI - affected only)
+      #   entry: npm --prefix ui run test -- --bail --findRelatedTests --passWithNoTests
+      #   language: system
+      #   files: ^ui/.*\.(ts|tsx)$
+      #   # stages: [pre-push]
+
+      # - id: jest-unit-lambdas
+      #   name: Jest Unit Tests (Lambdas - affected only)
+      #   entry: bash -c 'cd lambdas && npx jest --bail --findRelatedTests --passWithNoTests'
+      #   language: system
+      #   files: ^lambdas/.*\.ts$
+      #   # stages: [pre-push]
+
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.3.1
+    hooks:
+      - id: sqlfluff-lint
+        args: [--dialect, postgres]
+        files: ^database/.*\.sql$
+      - id: sqlfluff-fix
+        args: [--dialect, postgres]
+        files: ^database/.*\.sql$
