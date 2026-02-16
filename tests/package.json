@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@axe-core/playwright": "^4.11.0",
-    "axe-html-reporter": "^2.2.11"
+    "axe-html-reporter": "^2.2.11",
+    "playwright": "^1.58.2"
   }
 }

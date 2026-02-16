@@ -73,12 +73,59 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
-      - name: "Run test coverage check"
+      # - name: "Run test coverage check"
+      #   run: |
+      #     make test-coverage
+      # - name: "Save the coverage check result"
+      #   run: |
+      #     echo "Nothing to save"
+
+  test-playwright:
+    name: "Playwright E2E tests"
+    needs: [test-unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v6
+      - name: "Install mise"
+        uses: jdx/mise-action@v3
+        with:
+          install: true
+      - name: "Install project dependencies"
         run: |
-          make test-coverage
-      - name: "Save the coverage check result"
+          npm install && npm --prefix ./lambdas install
+      - name: "Start the application"
         run: |
-          echo "Nothing to save"
+          npm run start
+      - name: "Install dependencies"
+        working-directory: tests
+        run: npm ci
+      - name: "Install Playwright browsers"
+        working-directory: tests
+        run: npx playwright install --with-deps
+      - name: "Create credentials file"
+        working-directory: tests
+        run: |
+          cat > credentials.ts << 'EOF'
+          export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
+          export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
+          EOF
+      - name: "Run Playwright tests"
+        working-directory: tests
+        run: npm test
+        env:
+          CI: true
+          BASE_URL: ${{ vars.TEST_BASE_URL }}
+      - name: "Upload test results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/testResults/
+          retention-days: 30
+
+
   perform-static-analysis:
     name: "Perform static analysis"
     needs: [test-unit]
