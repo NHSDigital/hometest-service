@@ -11,7 +11,7 @@ import middy from "middy";
 
 const { orderDbClient } = init();
 
-const lambdaHandler = async (
+export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   const validationResult = getOrderQueryParamsSchema.safeParse(
