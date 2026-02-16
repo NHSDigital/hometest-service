@@ -64,7 +64,10 @@ services:
     command: ["--verbose"]
 
   db-migrate:
-    image: postgres:18.1
+    build:
+      context: ./scripts/database
+      dockerfile: Dockerfile
+    image: hometest-db-migrate:local
     container_name: db-migrate
     depends_on:
       postgres-db:
@@ -73,10 +76,6 @@ services:
       - backend
     volumes:
       - ../database:/docker-entrypoint-initdb.d:ro
-      - ./scripts/database/db-migrate.sh:/usr/local/bin/db-migrate.sh:ro
-    entrypoint: [
-      "bash", "/usr/local/bin/db-migrate.sh"
-    ]
 
 volumes:
   ui_node_modules:
