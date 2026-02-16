@@ -1,5 +1,3 @@
--- +goose Up
-
 /*
  =================================================================
  Test data
@@ -7,6 +5,9 @@
  This is for data used for testing locally
  =================================================================
  */
+
+SET search_path TO hometest;
+
 INSERT INTO supplier (
   supplier_id,
   supplier_name,
@@ -158,25 +159,3 @@ VALUES (
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
 )
 ON CONFLICT (correlation_id) DO NOTHING;
-
--- +goose Down
-DELETE FROM result_status WHERE correlation_id = '66666666-6666-6666-6666-666666666666';
-DELETE FROM result_status WHERE correlation_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
-DELETE FROM order_status WHERE status_id = '55555555-5555-5555-5555-555555555555';
-DELETE FROM order_status WHERE status_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
-DELETE FROM test_order WHERE order_uid = '44444444-4444-4444-4444-444444444444';
-DELETE FROM test_order WHERE order_uid = '99999999-9999-9999-9999-999999999999';
-DELETE FROM la_supplier_offering
-WHERE offering_id IN (
-  '33333333-3333-3333-3333-333333333333',
-  '33333333-3333-3333-3333-333333333334',
-  '33333333-3333-3333-3333-333333333335',
-  '33333333-3333-3333-3333-333333333336'
-);
-DELETE FROM patient_mapping WHERE patient_uid = '22222222-2222-2222-2222-222222222222';
-DELETE FROM patient_mapping WHERE patient_uid = '88888888-8888-8888-8888-888888888888';
-DELETE FROM supplier WHERE supplier_id = '11111111-1111-1111-1111-111111111111';
-DELETE FROM supplier WHERE supplier_id = '77777777-7777-7777-7777-777777777777';
-DELETE FROM result_type WHERE result_code IN ('PENDING', 'NEGATIVE', 'POSITIVE');
-DELETE FROM status_type WHERE status_code IN ('CREATED', 'DISPATCHED', 'COMPLETED');
-DELETE FROM test_type WHERE test_code IN ('FIT', 'PCR');
