@@ -26,4 +26,3 @@ ON CONFLICT DO NOTHING;
 -- +goose Down
 DELETE * from status_type;
 DELETE * from result_type;
-
