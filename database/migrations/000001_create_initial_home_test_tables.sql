@@ -41,7 +41,7 @@ CREATE TABLE test_order
   order_uid   uuid PRIMARY KEY         DEFAULT gen_random_uuid(),
   order_reference BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 100000) UNIQUE,
   supplier_id uuid        NOT NULL REFERENCES supplier (supplier_id),
-  patient_uid uuid        NOT NULL REFERENCES patient_mapping (uid),
+  patient_uid uuid        NOT NULL REFERENCES patient_mapping (patient_uid),
   test_code   VARCHAR(50) NOT NULL REFERENCES test_type (test_code),
   originator  VARCHAR(255),
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

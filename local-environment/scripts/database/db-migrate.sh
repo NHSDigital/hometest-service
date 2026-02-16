@@ -33,5 +33,5 @@ export PGUSER="$MIGRATOR_USER"
 echo "Step 2: Running goose migrations..."
 goose -dir "$SQL_DIR/migrations" postgres "$DB_URL" up
 
-echo "Step 3: Loading static data..."
-psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/03-static-data.sql"
+echo "Step 3: Loading seed data..."
+psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/03-seed-hometest-data.sql"
