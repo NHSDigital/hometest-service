@@ -4,13 +4,11 @@ import { AddressModel } from '../../models';
 
 test.describe.configure({ mode: 'serial' });
 const randomAddress = AddressModel.getRandomAddress();
-let actualHeaderText = "";
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
-    actualHeaderText = await homeTestStartPage.getHeaderText();
-    expect(actualHeaderText).toBe("Get a self-test kit for HIV");
+    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
   });
 
@@ -22,8 +20,7 @@ test.describe('HIV Test Order journeys', () => {
     expect(firstLineAddress).toBe(randomAddress.addressline1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    actualHeaderText = await homeTestStartPage.getHeaderText();
-    expect(actualHeaderText).toBe("This is what you'll need to do to give a blood sample");
+    await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
@@ -53,5 +50,6 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();
+    await expect(bloodSampleGuidePage.headerText).toHaveText("Blood sample step-by-step guide");
   });
 });
