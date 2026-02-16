@@ -103,6 +103,13 @@ jobs:
             echo "::error::Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
             exit 1
           fi
+      - name: "Coverage Report Comment"
+        uses: MishaKav/jest-coverage-comment@v1
+        with:
+          coverage-summary-path: ui/coverage/coverage-summary.json
+          title: "UI Coverage Report"
+          badge-title: Coverage
+          hide-comment: false
   test-lint:
     name: "Linting"
     runs-on: ubuntu-latest
