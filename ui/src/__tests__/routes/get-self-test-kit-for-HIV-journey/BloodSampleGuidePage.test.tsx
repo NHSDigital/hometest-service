@@ -121,14 +121,35 @@ describe("BloodSampleGuidePage", () => {
       "/images/self-sample-steps/self-sample-step2.jpg"
     );
 
-    const step6Image = screen.getByAltText("Blood sample tube filled with blood");
+    const step3Image = screen.getByAltText("Person pricking finger");
+    expect(step3Image).toBeInTheDocument();
+    expect(step3Image).toHaveAttribute(
+      "src",
+      "/images/self-sample-steps/self-sample-step3.jpg"
+    );
+
+    const step4Image = screen.getByAltText("Person dripping blood into a sample tube");
+    expect(step4Image).toBeInTheDocument();
+    expect(step4Image).toHaveAttribute(
+      "src",
+      "/images/self-sample-steps/self-sample-step4.jpg"
+    );
+
+    const step5Image = screen.getByAltText("Blood sample tube filled with blood");
+    expect(step5Image).toBeInTheDocument();
+    expect(step5Image).toHaveAttribute(
+      "src",
+      "/images/self-sample-steps/self-sample-step5.jpg"
+    );
+
+    const step6Image = screen.getByAltText("Person turning tube upside down 5 times");
     expect(step6Image).toBeInTheDocument();
     expect(step6Image).toHaveAttribute(
       "src",
       "/images/self-sample-steps/self-sample-step6.jpg"
     );
 
-    const step7Image = screen.getByAltText("Person turning tube upside down 5 times");
+    const step7Image = screen.getByAltText("Person sealing sample in box");
     expect(step7Image).toBeInTheDocument();
     expect(step7Image).toHaveAttribute(
       "src",
@@ -145,7 +166,9 @@ describe("BloodSampleGuidePage", () => {
     expect(
       screen.getByText(/Choose a finger from the hand you don't write with/)
     ).toBeInTheDocument();
+    expect(screen.getByText(/Remove the cap from the lancet/)).toBeInTheDocument();
     expect(screen.getByText(/Keep your hand hanging down below waist level/)).toBeInTheDocument();
+    expect(screen.getByText(/Aim to fill the tube to the top line marked 600/)).toBeInTheDocument();
     expect(
       screen.getByText(/Hold a clean tissue or cotton pad against your fingertip/)
     ).toBeInTheDocument();
