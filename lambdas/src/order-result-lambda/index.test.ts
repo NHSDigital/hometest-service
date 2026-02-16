@@ -32,37 +32,45 @@ describe('Order Result Lambda Handler', () => {
   beforeEach(() => {
     mockEvent = {
       httpMethod: 'POST',
-      path: "/result",
+      path: '/result',
       body: null,
       headers: {},
-    }
+    };
 
     body = {
-          resourceType: 'Observation',
-          identifier: '12345',
-          status: 'final',
-          basedOn: [
+      resourceType: 'Observation',
+      identifier: '12345',
+      status: 'final',
+      basedOn: [
+        {
+          reference: 'ServiceRequest/12345',
+        },
+      ],
+      subject: {
+        reference: 'Patient/12345',
+      },
+      interpretation: [
+        {
+          coding: [
             {
-              reference: 'ServiceRequest/12345',
+              system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+              code: 'N',
+              display: 'Normal',
             },
           ],
-          subject: {
-            reference: 'Patient/12345',
+          text: 'Normal',
+        },
+      ],
+      valueCodeableConcept: {
+        coding: [
+          {
+            system: 'http://snomed.info/sct',
+            code: '260415000',
+            display: 'Not detected',
           },
-          interpretation: [
-            {
-              coding: [
-                {
-                  system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-                  code: '260415000',
-                  display: 'Abnormal',
-                },
-              ],
-              text: 'ABNORMAL',
-            },
-          ],
-        };
-
+        ],
+      },
+    };
 
     mockSQSClientSendMessage.mockReset();
     mockCommonsLoggerError.mockReset();
@@ -310,7 +318,6 @@ describe('Order Result Lambda Handler', () => {
   });
 
   describe('SQS Client error scenarios', () => {
-
     beforeEach(() => {
       mockEvent.body = JSON.stringify(body);
     });
