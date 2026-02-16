@@ -9,7 +9,7 @@
  */
 INSERT INTO supplier (
   supplier_id,
-  name,
+  supplier_name,
   service_url,
   website_url,
   client_secret_name,
@@ -33,7 +33,7 @@ ON CONFLICT (supplier_id) DO NOTHING;
 
 INSERT INTO supplier (
   supplier_id,
-  name,
+  supplier_name,
   service_url,
   website_url,
   client_secret_name,
@@ -59,23 +59,9 @@ INSERT INTO test_type (test_code, description)
 VALUES
   ('FIT', 'Immunochemical Test'),
   ('PCR', 'Polymerase Chain Reaction')
-ON CONFLICT (test_code) DO NOTHING;
+ON CONFLICT (test_code) DO NOTHING;stat
 
-INSERT INTO status_type (status_code, description)
-VALUES
-  ('CREATED', 'Order created'),
-  ('DISPATCHED', 'Test kit dispatched'),
-  ('COMPLETED', 'Order completed')
-ON CONFLICT (status_code) DO NOTHING;
-
-INSERT INTO result_type (result_code, description)
-VALUES
-  ('PENDING', 'Awaiting result'),
-  ('NEGATIVE', 'No condition detected'),
-  ('POSITIVE', 'Condition detected')
-ON CONFLICT (result_code) DO NOTHING;
-
-INSERT INTO patient_mapping (uid, nhs_number, birth_date)
+INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
 VALUES (
   '22222222-2222-2222-2222-222222222222',
   '9999999999',
@@ -83,7 +69,7 @@ VALUES (
 )
 ON CONFLICT (nhs_number) DO NOTHING;
 
-INSERT INTO patient_mapping (uid, nhs_number, birth_date)
+INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
 VALUES (
   '88888888-8888-8888-8888-888888888888',
   '8888888888',
@@ -119,7 +105,7 @@ VALUES
   )
 ON CONFLICT (la_code, supplier_id, test_code) DO NOTHING;
 
-INSERT INTO "order" (order_uid, supplier_id, patient_uid, test_code, originator)
+INSERT INTO test_order (order_uid, supplier_id, patient_uid, test_code, originator)
 VALUES (
   '44444444-4444-4444-4444-444444444444',
   '11111111-1111-1111-1111-111111111111',
@@ -129,7 +115,7 @@ VALUES (
 )
 ON CONFLICT (order_uid) DO NOTHING;
 
-INSERT INTO "order" (order_uid, supplier_id, patient_uid, test_code, originator)
+INSERT INTO test_order (order_uid, supplier_id, patient_uid, test_code, originator)
 VALUES (
   '99999999-9999-9999-9999-999999999999',
   '77777777-7777-7777-7777-777777777777',
@@ -178,8 +164,8 @@ DELETE FROM result_status WHERE correlation_id = '66666666-6666-6666-6666-666666
 DELETE FROM result_status WHERE correlation_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 DELETE FROM order_status WHERE status_id = '55555555-5555-5555-5555-555555555555';
 DELETE FROM order_status WHERE status_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
-DELETE FROM "order" WHERE order_uid = '44444444-4444-4444-4444-444444444444';
-DELETE FROM "order" WHERE order_uid = '99999999-9999-9999-9999-999999999999';
+DELETE FROM test_order WHERE order_uid = '44444444-4444-4444-4444-444444444444';
+DELETE FROM test_order WHERE order_uid = '99999999-9999-9999-9999-999999999999';
 DELETE FROM la_supplier_offering
 WHERE offering_id IN (
   '33333333-3333-3333-3333-333333333333',
@@ -187,8 +173,8 @@ WHERE offering_id IN (
   '33333333-3333-3333-3333-333333333335',
   '33333333-3333-3333-3333-333333333336'
 );
-DELETE FROM patient_mapping WHERE uid = '22222222-2222-2222-2222-222222222222';
-DELETE FROM patient_mapping WHERE uid = '88888888-8888-8888-8888-888888888888';
+DELETE FROM patient_mapping WHERE patient_uid = '22222222-2222-2222-2222-222222222222';
+DELETE FROM patient_mapping WHERE patient_uid = '88888888-8888-8888-8888-888888888888';
 DELETE FROM supplier WHERE supplier_id = '11111111-1111-1111-1111-111111111111';
 DELETE FROM supplier WHERE supplier_id = '77777777-7777-7777-7777-777777777777';
 DELETE FROM result_type WHERE result_code IN ('PENDING', 'NEGATIVE', 'POSITIVE');
