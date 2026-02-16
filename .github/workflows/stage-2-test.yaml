@@ -51,9 +51,9 @@ jobs:
           npm ci && npm --prefix ui ci && npm --prefix lambdas ci
       - name: "Run UI unit test suite"
         run: |
-          npm --prefix ui run test -- --ci --coverage --reporters=default --reporters=jest-junit
+          JEST_JUNIT_OUTPUT_DIR=ui/test-results npm --prefix ui run test -- --ci --coverage --reporters=default --reporters=jest-junit
         env:
-          JEST_JUNIT_OUTPUT_DIR: ./test-results
+          JEST_JUNIT_OUTPUT_DIR: ui/test-results
           JEST_JUNIT_OUTPUT_NAME: junit.xml
       - name: "Upload test results"
         uses: actions/upload-artifact@v4
@@ -71,6 +71,26 @@ jobs:
           name: "Jest Unit Tests"
           path: ui/test-results/junit.xml
           reporter: jest-junit
+      - name: "Coverage Summary"
+        if: always()
+        run: |
+          echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lines | $(jq '.total.lines.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Statements | $(jq '.total.statements.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Functions | $(jq '.total.functions.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branches | $(jq '.total.branches.pct' ui/coverage/coverage-summary.json)% |" >> $GITHUB_STEP_SUMMARY
+      - name: "Check coverage threshold"
+        run: |
+          COVERAGE=$(jq '.total.lines.pct' ui/coverage/coverage-summary.json)
+          THRESHOLD=70
+          echo "Line coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "::error::Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi
   test-lint:
     name: "Linting"
     runs-on: ubuntu-latest
@@ -111,6 +131,15 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           install: true
+          cache: true
+    - name: Cache pre-commit hooks
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+        restore-keys: |
+          pre-commit-${{ runner.os }}-
+
       - name: "Install project dependencies"
         run: |
           npm install && npm --prefix ./lambdas install
