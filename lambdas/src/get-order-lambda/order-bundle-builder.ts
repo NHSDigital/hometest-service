@@ -29,15 +29,15 @@ export class OrderBundleBuilder {
   private static buildIdentifier(order: Order): Identifier {
     return {
       system: "https://fhir.hometest.nhs.uk/Id/order-id",
-      value: `${order.referenceNumber}`,
+      value: `${order.reference_number}`,
     };
   }
 
   private static buildPerformer(order: Order): Reference {
     return {
-      reference: `Organization/${order.supplierId}`,
+      reference: `Organization/${order.supplier_id}`,
       type: "Organization",
-      display: order.supplierName,
+      display: order.supplier_name,
     };
   }
 
@@ -66,9 +66,7 @@ export class OrderBundleBuilder {
       extension: [
         {
           url: "timestamp",
-          valueDate: new Date(order.statusCreatedAt)
-            .toISOString()
-            .split("T")[0],
+          valueDate: order.status_created_at.toISOString().split("T")[0],
         },
       ],
       valueCodeableConcept: {
@@ -76,11 +74,11 @@ export class OrderBundleBuilder {
           {
             system:
               "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
-            code: order.statusCode,
-            display: order.statusDescription,
+            code: order.status_code,
+            display: order.status_description,
           },
         ],
-        text: order.statusCode,
+        text: order.status_code,
       },
     };
   }
@@ -92,11 +90,11 @@ export class OrderBundleBuilder {
       identifier: [
         {
           system: "https://fhir.nhs.uk/Id/nhs-number",
-          value: order.nhsNumber,
+          value: order.patient_nhs_number,
           use: "official",
         },
       ],
-      birthDate: order.birthDate.toISOString().split("T")[0],
+      birthDate: order.patient_birth_date.toISOString().split("T")[0],
     };
   }
 
@@ -105,7 +103,7 @@ export class OrderBundleBuilder {
       resourceType: "ServiceRequest",
       id: order.id,
       identifier: [this.buildIdentifier(order)],
-      status: order.statusCode === "COMPLETE" ? "completed" : "active",
+      status: order.status_code === "COMPLETE" ? "completed" : "active",
       intent: "order",
       code: this.buildCode(),
       subject: {
@@ -113,7 +111,7 @@ export class OrderBundleBuilder {
       },
       requester: this.buildRequester(),
       performer: [this.buildPerformer(order)],
-      authoredOn: new Date(order.createdAt).toISOString(),
+      authoredOn: order.created_at.toISOString(),
       extension: [this.buildBusinessStatusExtension(order)],
       contained: [this.buildPatient(order)],
     };

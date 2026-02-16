@@ -7,11 +7,10 @@ import {
 import { OrderBundleBuilder } from "./order-bundle-builder";
 import { getOrderQueryParamsSchema } from "./schemas";
 import { init } from "./init";
-import middy from "middy";
 
 const { orderDbClient } = init();
 
-export const lambdaHandler = async (
+export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   const validationResult = getOrderQueryParamsSchema.safeParse(
@@ -22,6 +21,7 @@ export const lambdaHandler = async (
     const errorDetails = validationResult.error.issues
       .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
       .join("; ");
+
     return createFhirErrorResponse(400, "invalid", errorDetails);
   }
 
@@ -31,11 +31,7 @@ export const lambdaHandler = async (
     date_of_birth: dateOfBirth,
   } = validationResult.data;
 
-  const order = await orderDbClient.getOrder(
-    orderId,
-    nhsNumber,
-    dateOfBirth,
-  );
+  const order = await orderDbClient.getOrder(orderId, nhsNumber, dateOfBirth);
 
   if (!order) {
     return createFhirErrorResponse(
@@ -49,5 +45,3 @@ export const lambdaHandler = async (
 
   return createFhirResponse(200, bundle);
 };
-
-export const handler = middy(lambdaHandler);

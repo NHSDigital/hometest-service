@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Order } from "../lib/db/order-db-client";
-import { lambdaHandler } from "./index";
+import { handler } from "./index";
 
 var mockOrderDbClient!: { getOrder: jest.Mock };
 
@@ -33,15 +33,15 @@ describe("Get Order Lambda Handler", () => {
 
     mockOrder = {
       id: "123e4567-e89b-12d3-a456-426614174000",
-      referenceNumber: 12345,
-      createdAt: "2024-01-15T10:30:00Z",
-      statusCode: "DISPATCHED",
-      statusDescription: "Order dispatched",
-      statusCreatedAt: "2024-01-16T08:00:00Z",
-      supplierId: "SUP001",
-      supplierName: "Test Supplier Ltd",
-      nhsNumber: "1234567890",
-      birthDate: new Date("1990-01-15"),
+      reference_number: 12345,
+      created_at: new Date("2024-01-15T10:30:00Z"),
+      status_code: "DISPATCHED",
+      status_description: "Order dispatched",
+      status_created_at: new Date("2024-01-16T08:00:00Z"),
+      supplier_id: "SUP001",
+      supplier_name: "Test Supplier Ltd",
+      patient_nhs_number: "1234567890",
+      patient_birth_date: new Date("1990-01-15"),
     };
 
     mockGetOrder.mockReset();
@@ -55,7 +55,7 @@ describe("Get Order Lambda Handler", () => {
     test("should return order bundle when valid query parameters are provided", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
       expect(result.headers).toEqual({
@@ -85,7 +85,7 @@ describe("Get Order Lambda Handler", () => {
 
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
       expect(mockGetOrder).toHaveBeenCalledWith(
@@ -104,7 +104,7 @@ describe("Get Order Lambda Handler", () => {
 
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
       expect(mockGetOrder).toHaveBeenCalledWith(
@@ -115,10 +115,10 @@ describe("Get Order Lambda Handler", () => {
     });
 
     test("should return bundle with completed status when order status is COMPLETE", async () => {
-      mockOrder.statusCode = "COMPLETE";
+      mockOrder.status_code = "COMPLETE";
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
 
@@ -128,10 +128,10 @@ describe("Get Order Lambda Handler", () => {
     });
 
     test("should return bundle with active status when order status is not COMPLETE", async () => {
-      mockOrder.statusCode = "DISPATCHED";
+      mockOrder.status_code = "DISPATCHED";
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
 
@@ -145,7 +145,7 @@ describe("Get Order Lambda Handler", () => {
     test("should return 404 when order does not exist", async () => {
       mockGetOrder.mockResolvedValue(null);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(404);
       expect(result.headers).toEqual({
@@ -170,7 +170,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -190,7 +190,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -213,7 +213,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -229,7 +229,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -248,7 +248,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -264,7 +264,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -280,7 +280,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -296,7 +296,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-01-15",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -312,7 +312,7 @@ describe("Get Order Lambda Handler", () => {
         nhs_number: "1234567890",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -331,7 +331,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "15/01/1990",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -347,7 +347,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "1990-13-45",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -363,7 +363,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -380,7 +380,7 @@ describe("Get Order Lambda Handler", () => {
         date_of_birth: "invalid-date",
       };
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -393,7 +393,7 @@ describe("Get Order Lambda Handler", () => {
     test("should return 400 when queryStringParameters is null", async () => {
       mockEvent.queryStringParameters = null;
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -408,7 +408,7 @@ describe("Get Order Lambda Handler", () => {
     test("should return 400 when queryStringParameters is undefined", async () => {
       mockEvent.queryStringParameters = undefined;
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
 
@@ -425,7 +425,7 @@ describe("Get Order Lambda Handler", () => {
     test("should return correctly structured FHIR Bundle", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
 
@@ -442,7 +442,7 @@ describe("Get Order Lambda Handler", () => {
     test("should include ServiceRequest with correct identifier", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       const bundle = JSON.parse(result.body);
       const serviceRequest = bundle.entry[0].resource;
@@ -457,7 +457,7 @@ describe("Get Order Lambda Handler", () => {
     test("should include ServiceRequest with correct performer information", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       const bundle = JSON.parse(result.body);
       const serviceRequest = bundle.entry[0].resource;
@@ -473,7 +473,7 @@ describe("Get Order Lambda Handler", () => {
     test("should include ServiceRequest with business status extension", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       const bundle = JSON.parse(result.body);
       const serviceRequest = bundle.entry[0].resource;
@@ -497,7 +497,7 @@ describe("Get Order Lambda Handler", () => {
     test("should include contained Patient resource with NHS number", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       const bundle = JSON.parse(result.body);
       const serviceRequest = bundle.entry[0].resource;
@@ -517,7 +517,7 @@ describe("Get Order Lambda Handler", () => {
     test("should include ServiceRequest with HIV antigen test code", async () => {
       mockGetOrder.mockResolvedValue(mockOrder);
 
-      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       const bundle = JSON.parse(result.body);
       const serviceRequest = bundle.entry[0].resource;

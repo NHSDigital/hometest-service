@@ -26,15 +26,15 @@ describe("OrderDbClient", () => {
     it("should return order when found", async () => {
       const mockOrder: Order = {
         id: orderId,
-        referenceNumber: 12345,
-        createdAt: "2026-02-15T10:30:00Z",
-        statusCode: "DELIVERED",
-        statusDescription: "Delivered to patient",
-        statusCreatedAt: "2026-02-16T08:00:00Z",
-        supplierId: "SUP001",
-        supplierName: "Test Supplier Ltd",
-        nhsNumber: nhsNumber,
-        birthDate: dateOfBirth,
+        reference_number: 12345,
+        created_at: new Date("2026-02-15T10:30:00Z"),
+        status_code: "DISPATCHED",
+        status_description: "DISPATCHED",
+        status_created_at: new Date("2026-02-16T08:00:00Z"),
+        supplier_id: "SUP001",
+        supplier_name: "Test Supplier Ltd",
+        patient_nhs_number: nhsNumber,
+        patient_birth_date: dateOfBirth,
       };
 
       mockDbClient.query.mockResolvedValue({
@@ -150,15 +150,15 @@ describe("OrderDbClient", () => {
 
       const queryCall = mockDbClient.query.mock.calls[0][0];
       expect(queryCall).toContain("o.order_uid AS id");
-      expect(queryCall).toContain("o.order_reference AS referenceNumber");
-      expect(queryCall).toContain("o.created_at AS createdAt");
-      expect(queryCall).toContain("os.status_code AS statusCode");
-      expect(queryCall).toContain("st.description AS statusDescription");
-      expect(queryCall).toContain("os.created_at AS statusCreatedAt");
-      expect(queryCall).toContain("s.supplier_id AS supplierId");
-      expect(queryCall).toContain("s.supplier_name AS supplierName");
-      expect(queryCall).toContain("p.nhs_number AS nhsNumber");
-      expect(queryCall).toContain("p.birth_date AS birthDate");
+      expect(queryCall).toContain("o.order_reference AS reference_number");
+      expect(queryCall).toContain("o.created_at AS created_at");
+      expect(queryCall).toContain("os.status_code AS status_code");
+      expect(queryCall).toContain("st.description AS status_description");
+      expect(queryCall).toContain("os.created_at AS status_created_at");
+      expect(queryCall).toContain("s.supplier_id AS supplier_id");
+      expect(queryCall).toContain("s.supplier_name AS supplier_name");
+      expect(queryCall).toContain("p.nhs_number AS patient_nhs_number");
+      expect(queryCall).toContain("p.birth_date AS patient_birth_date");
     });
 
     it("should include WHERE clause with all conditions", async () => {
@@ -187,15 +187,15 @@ describe("OrderDbClient", () => {
     it("should return most recent order status", async () => {
       const mockOrder: Order = {
         id: orderId,
-        referenceNumber: 12345,
-        createdAt: "2026-02-15T10:30:00Z",
-        statusCode: "IN_TRANSIT",
-        statusDescription: "In transit",
-        statusCreatedAt: "2026-02-16T14:30:00Z",
-        supplierId: "SUP002",
-        supplierName: "Another Supplier",
-        nhsNumber: nhsNumber,
-        birthDate: dateOfBirth,
+        reference_number: 12345,
+        created_at: new Date("2026-02-15T10:30:00Z"),
+        status_code: "RECEIVED",
+        status_description: "RECEIVED in lab",
+        status_created_at: new Date("2026-02-16T14:30:00Z"),
+        supplier_id: "SUP002",
+        supplier_name: "Another Supplier",
+        patient_nhs_number: nhsNumber,
+        patient_birth_date: dateOfBirth,
       };
 
       mockDbClient.query.mockResolvedValue({
@@ -210,8 +210,8 @@ describe("OrderDbClient", () => {
       );
 
       expect(result).toEqual(mockOrder);
-      expect(result?.statusCode).toBe("IN_TRANSIT");
-      expect(result?.statusDescription).toBe("In transit");
+      expect(result?.status_code).toBe("RECEIVED");
+      expect(result?.status_description).toBe("RECEIVED in lab");
     });
   });
 });

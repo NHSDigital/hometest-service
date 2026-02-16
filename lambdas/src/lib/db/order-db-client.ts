@@ -2,15 +2,15 @@ import { type DBClient } from "./db-client";
 
 export interface Order {
   id: string;
-  referenceNumber: number;
-  createdAt: string;
-  statusCode: string;
-  statusDescription: string;
-  statusCreatedAt: string;
-  supplierId: string;
-  supplierName: string;
-  nhsNumber: string;
-  birthDate: Date;
+  reference_number: number;
+  created_at: Date;
+  status_code: string;
+  status_description: string;
+  status_created_at: Date;
+  supplier_id: string;
+  supplier_name: string;
+  patient_nhs_number: string;
+  patient_birth_date: Date;
 }
 
 export class OrderDbClient {
@@ -23,19 +23,19 @@ export class OrderDbClient {
     const query = `
       SELECT
           o.order_uid AS id,
-          o.order_reference AS referenceNumber,
-          o.created_at AS createdAt,
-          os.status_code AS statusCode,
-          st.description AS statusDescription,
-          os.created_at AS statusCreatedAt,
-          s.supplier_id AS supplierId,
-          s.supplier_name AS supplierName,
-          p.nhs_number AS nhsNumber,
-          p.birth_date AS birthDate
+          o.order_reference AS reference_number,
+          o.created_at AS created_at,
+          os.status_code AS status_code,
+          st.description AS status_description,
+          os.created_at AS status_created_at,
+          s.supplier_id AS supplier_id,
+          s.supplier_name AS supplier_name,
+          p.nhs_number AS patient_nhs_number,
+          p.birth_date AS patient_birth_date
       FROM hometest.test_order o
       INNER JOIN hometest.order_status os ON os.order_uid = o.order_uid
       INNER JOIN hometest.status_type st ON st.status_code = os.status_code
-      INNER JOIN hometest.patient_mapping p ON p.uid = o.patient_uid
+      INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
       INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
       WHERE o.order_uid = $1 AND p.nhs_number = $2 AND p.birth_date = $3::date
       ORDER BY os.created_at DESC
