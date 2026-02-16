@@ -7,7 +7,7 @@ import { ConfigFactory } from '../../configuration/configuration';
 export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
   public getWorkerUsers(): NHSLoginUser[] {
     const env = ConfigFactory.getEnvironment();
-    
+
     // Use local user from users.ts for local environment (gitignored file)
     if (env === 'local') {
       try {
@@ -19,7 +19,7 @@ export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
         throw new Error('users.ts file not found. Please create it based on users.ts.example');
       }
     }
-    
+
     // Use hardcoded users for dev/staging environments
     console.log('Using dev/staging environment user configuration');
     return [

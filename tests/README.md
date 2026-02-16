@@ -31,7 +31,7 @@ This directory contains the Playwright test framework for the hometest-service p
    - `age`: User age
    - `patientId`: Your patient ID
 
-   **Note**: The `users.ts` file is gitignored, so your credentials remain private. This configuration is only used when `ENV=local`.
+   **Note**: The `users.ts` file is ignored by Git, so your credentials remain private. This configuration is only used when `ENV=local`.
 
 ## Running Tests
 
