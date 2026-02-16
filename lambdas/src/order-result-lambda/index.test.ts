@@ -27,7 +27,8 @@ import { handler } from './index';
 
 describe('Order Result Lambda Handler', () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
-  let _mockContext: Partial<Context>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let mockContext: Partial<Context>;
   let body;
 
   beforeEach(() => {
