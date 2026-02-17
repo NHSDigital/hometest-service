@@ -6,7 +6,11 @@ export interface SessionData {
   user: AuthUser;
 }
 
-export async function requireAuth({ request }: { request: Request }): Promise<SessionData> {
+export async function requireAuth({
+  request,
+}: {
+  request: Request;
+}): Promise<SessionData> {
   if (!backendUrl) {
     throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
   }
@@ -28,7 +32,7 @@ export async function requireAuth({ request }: { request: Request }): Promise<Se
   }
 
   const data = await res.json();
-  
+
   const userData: AuthUser = {
     sub: data.sub,
     nhsNumber: data.nhs_number,

@@ -56,7 +56,7 @@ The application requires the following environment variables:
 
 ### Local Development
 
-For local development terraform will create a `.env.local` file in the `ui` with the expected API gateway value.
+For local development Terraform will create a `.env.local` file in the `ui` with the expected API gateway value.
 
 ## Routing
 
