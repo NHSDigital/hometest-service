@@ -10,11 +10,13 @@ runs:
         echo "::group::Configure git"
         git config --global --add safe.directory '*'
         echo "::endgroup::"
+
     - name: Install mise
       uses: jdx/mise-action@v3
       with:
         cache: true
         install: true
+
     - name: Cache pre-commit hooks
       uses: actions/cache@v5
       with:
@@ -22,11 +24,16 @@ runs:
         key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
         restore-keys: |
           pre-commit-${{ runner.os }}-
+
     - name: Install pre-commit
       shell: bash
       run: |
         echo "::group::Install pre-commit hooks"
         mise exec -- pre-commit install --install-hooks
+        echo "::endgroup::"
+
+        echo "::group::Install npm dependencies"
+        mise run install-npm
         echo "::endgroup::"
 
     - name: Run pre-commit
