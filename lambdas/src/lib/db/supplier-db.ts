@@ -1,6 +1,5 @@
 import { Organization, Location } from "fhir/r4";
 import { DBClient } from "./db-client";
-import { HttpError } from "../http/http-client";
 
 export interface SupplierOffering {
   organization: Organization;
@@ -11,7 +10,7 @@ export type TestCode = string;
 
 interface SupplierRow {
   supplier_id: string;
-  name: string;
+  supplier_name: string;
   service_url: string;
   website_url: string;
   region: string;
@@ -80,17 +79,17 @@ export class SupplierService {
       const row = result.rows[0];
       if (!row.service_url) {
         throw new SupplierConfigError(
-          "Supplier configuration missing service URL",
+          `Supplier configuration missing service URL for supplierId ${supplierId}`,
         );
       }
       if (!row.client_id) {
         throw new SupplierConfigError(
-          "Supplier configuration missing client ID",
+          `Supplier configuration missing client ID for supplierId ${supplierId}`,
         );
       }
       if (!row.client_secret_name) {
         throw new SupplierConfigError(
-          "Supplier configuration missing client secret name",
+          `Supplier configuration missing client secret name for supplierId ${supplierId}`,
         );
       }
 
@@ -106,7 +105,10 @@ export class SupplierService {
       if (error instanceof SupplierConfigError) {
         throw error;
       }
-      throw new Error("Failed to fetch supplier config from database");
+      throw new Error(
+        `Failed to fetch supplier config from database for supplierId ${supplierId}`,
+        { cause: error },
+      );
     }
   }
 
@@ -116,7 +118,7 @@ export class SupplierService {
   ): Promise<SupplierOffering[]> {
     const query = `
       SELECT s.supplier_id,
-            s.name,
+            s.supplier_name,
             s.service_url,
             s.website_url
       FROM hometest.supplier s
@@ -140,7 +142,7 @@ export class SupplierService {
         organization: {
           resourceType: "Organization",
           id: supplier.supplier_id,
-          name: supplier.name,
+          name: supplier.supplier_name,
           extension: [
             {
               url: "http://hometest.nhs.uk/fhir/StructureDefinition/service-url",
@@ -162,7 +164,11 @@ export class SupplierService {
         },
       }));
     } catch (error) {
-      throw new Error("Failed to fetch suppliers from database");
+      const testCodeInfo = testCode ? ` and testCode ${testCode}` : "";
+      throw new Error(
+        `Failed to fetch suppliers from database for laCode ${laCode}${testCodeInfo}`,
+        { cause: error },
+      );
     }
   }
 }

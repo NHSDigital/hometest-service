@@ -13,6 +13,7 @@ test.describe('HIV Test Order journeys', () => {
     await homeTestStartPage.navigate();
     actualHeaderText = await homeTestStartPage.getHeaderText();
     expect(actualHeaderText).toBe("Get a self-test kit for HIV");
+    await homeTestStartPage.clickStartNowButton();
   });
 
   test('Order test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
@@ -24,8 +25,7 @@ test.describe('HIV Test Order journeys', () => {
     expect(firstLineAddress).toBe(randomAddress.addressline1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    actualHeaderText = await homeTestStartPage.getHeaderText();
-    expect(actualHeaderText).toBe("This is what you'll need to do to give a blood sample");
+    await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
@@ -61,4 +61,15 @@ test.describe('HIV Test Order journeys', () => {
     expect(newTab.url()).toBe(makeAComplaintUrl);
   });
 
+  test('Check the guide to giving blood samples', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, bloodSampleGuidePage}) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.clickEditAddressLink();
+    const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressline1);
+    await selectDeliveryAddressPage.clickContinueButton();
+    await selectDeliveryAddressPage.selectAddressAndContinue();
+    await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();
+    await expect(bloodSampleGuidePage.headerText).toHaveText("Blood sample step-by-step guide");
+  });
 });

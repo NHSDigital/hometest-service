@@ -1,6 +1,6 @@
 @startuml
 entity "patient_mapping" as patient {
-  **uid : uuid**
+  **patient_uid : uuid**
   nhs_number : varchar(50)
   birth_date : date
 }
@@ -12,7 +12,7 @@ entity "test_type" as test {
 
 entity "supplier" as supplier {
   **supplier_id : uuid**
-  name : varchar(255)
+  supplier_name : varchar(255)
   service_url : varchar(255)
   website_url : varchar(255)
   client_secret_name : varchar(255)
@@ -30,7 +30,7 @@ entity "la_supplier_offering" as offering {
   *test_code : varchar(50)*
 }
 
-entity "order" as orders {
+entity "test_order" as orders {
   **order_uid : uuid**
   order_reference : bigint
   *supplier_id : uuid*
@@ -50,15 +50,21 @@ entity "order_status" as order_status {
   *order_uid : uuid*
   order_reference : bigint
   *status_code : varchar(50)*
-  timestamp : timestamp
+  created_at : timestamp
+}
+
+entity "result_type" as result_type {
+  **result_code: varchar(50)**
+  description : text
 }
 
 entity "result_status" as result_status {
   **result_id : uuid**
   *order_uid : uuid*
   order_reference : bigint
-  *status_code : varchar(50)*
-  timestamp : timestamp
+  *status : varchar(50)*
+  created_at : timestamp
+  correlation_id : uuid
 }
 
 ' Relationships
@@ -73,6 +79,6 @@ orders ||--o{ order_status : "order_uid"
 orders ||--o{ result_status : "order_uid"
 
 status_type ||--o{ order_status : "status_code"
-status_type ||--o{ result_status : "status_code"
+result_type ||--o{ result_status : "status"
 
 @enduml

@@ -1,4 +1,5 @@
 import type {
+  BloodSampleGuideContent,
   CommonContent,
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
@@ -21,6 +22,7 @@ export interface UseContentReturn {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
@@ -39,6 +41,7 @@ export const useContent = (): UseContentReturn => {
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
+    "blood-sample-guide": content.pages["blood-sample-guide"],
   };
 };
 
@@ -65,6 +68,7 @@ export function usePageContent(
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
 export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
+export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -75,7 +79,8 @@ export function usePageContent(
     | "how-comfortable-pricking-finger"
     | "global-error"
     | "order-tracking"
-    | "home-test-privacy-policy",
+    | "home-test-privacy-policy"
+    | "blood-sample-guide"
 ) {
   return content.pages[page];
 }

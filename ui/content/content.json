@@ -562,6 +562,96 @@
             "Any changes we make to this Privacy Policy in the future will be posted on this page; we will notify you by posting a new version of the document on this page and updating the date. We will also undertake to report on any significant changes affecting the processing and use of personal data through a notification in the Hometest App.",
             "This Privacy Notice was last updated: [DATE] 2026"
           ]
+        },
+      ]
+    },
+    "blood-sample-guide": {
+      "title": "Blood sample step-by-step guide",
+      "whatsInKit": {
+        "summary": "What's in the kit",
+        "intro": "The test kit normally includes:",
+        "items": [
+          "Instructions",
+          "Blood sample tube",
+          "Alcohol wipe",
+          "Lancets",
+          "Plaster",
+          "Transport bag",
+          "Security seal sticker",
+          "Box with pre-paid return postage"
+        ],
+        "image": {
+          "alt": "Image showing the contents of the kit",
+          "caption": "Kit contents."
+        }
+      },
+      "tipsBeforeStart": {
+        "summary": "Tips before you start",
+        "intro": "These tips can help you collect your blood sample:",
+        "tips": [
+          "Drink a big glass of water at least 30 minutes before you do the test",
+          "Do the test after a shower or bath",
+          "Put your hand into a bowl of warm water a few minutes before doing the test",
+          "Swing your arms in a circular motion. Or clench your hands into a fist a few times",
+          "Read the instructions in full before starting"
+        ]
+      },
+      "steps": [
+        {
+          "heading": "Step 1: Get ready",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step1.jpg",
+            "alt": "Person opening blood sample tube"
+          },
+          "caption": "Wash your hands using warm water and soap. Dry your hands. Set out everything from your test kit on a clean, flat surface. Take the lid off the blood sample tube. Stand the tube upright so it's ready."
+        },
+        {
+          "heading": "Step 2: Prepare your finger",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step2.jpg",
+            "alt": "Person wiping finger"
+          },
+          "caption": "Choose a finger from the hand you don't write with (your ring finger or little finger is best). Open the alcohol wipe. Rub your chosen fingertip with the wipe. Wait for your finger to air dry."
+        },
+        {
+          "heading": "Step 3: Prick your finger",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step3.jpg",
+            "alt": "Person pricking finger"
+          },
+          "caption": "Remove the cap from the lancet. Push the lancet firmly onto the side of your fingertip. You'll hear a small click. Use a tissue to dab off the first drop of blood."
+        },
+        {
+          "heading": "Step 4: Collect the blood",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step4.jpg",
+            "alt": "Person dripping blood into a sample tube"
+          },
+          "caption": "Keep your hand hanging down below waist level. Gently massage your finger starting from the bottom and moving toward the tip. Blood drops will fall into the sample tube."
+        },
+        {
+          "heading": "Step 5: Fill the tube",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step5.jpg",
+            "alt": "Blood sample tube filled with blood"
+          },
+          "caption": "Aim to fill the tube to the top line marked 600. If you can only get to 400, send it back anyway. There are more lancets in your kit if you need to prick another finger."
+        },
+        {
+          "heading": "Step 6: Seal and mix the tube",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step6.jpg",
+            "alt": "Person turning tube upside down 5 times"
+          },
+          "caption": "Hold a clean tissue or cotton pad against your fingertip. Place the plaster over the spot. Put the yellow lid back on the tube and push it firmly until it clicks. Turn the tube upside down and back up 5 times to mix the blood well."
+        },
+        {
+          "heading": "Step 7: Pack and post",
+          "image": {
+            "src": "/images/self-sample-steps/self-sample-step7.jpg",
+            "alt": "Person sealing sample in box"
+          },
+          "caption": "Place your blood sample tube into the protective packaging following the kit instructions. Write today's date and the time on the form. Put the form and the sealed bag into the pre-paid postage box. Seal it with the security sticker. Put your sample in a post box as soon as you can."
         }
       ]
     }

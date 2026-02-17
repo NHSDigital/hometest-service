@@ -13,4 +13,5 @@ export enum JourneyStepNames {
   NoAddressFound = "no-address-found",
   SelectDeliveryAddress = "select-delivery-address",
   HowComfortablePrickingFinger = "how-comfortable-pricking-finger",
+  BloodSampleGuide = "blood-sample-guide",
 }

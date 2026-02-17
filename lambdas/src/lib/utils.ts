@@ -121,9 +121,20 @@ export function isUUID(str: string): boolean {
 export const getCorrelationIdFromEventHeaders = (
   event: APIGatewayProxyEvent,
 ): string => {
-  return (
-    event.headers["X-Correlation-ID"] ||
-    event.headers["x-correlation-id"] ||
-    crypto.randomUUID()
+  if (
+    event.headers["X-Correlation-ID"] &&
+    isUUID(event.headers["X-Correlation-ID"])
+  ) {
+    return event.headers["X-Correlation-ID"];
+  }
+  if (
+    event.headers["x-correlation-id"] &&
+    isUUID(event.headers["x-correlation-id"])
+  ) {
+    return event.headers["x-correlation-id"];
+  }
+
+  throw new Error(
+    "Correlation ID is missing or invalid in the event headers. Expected a valid UUID in 'X-Correlation-ID' or 'x-correlation-id'.",
   );
 };

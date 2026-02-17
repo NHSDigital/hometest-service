@@ -4,6 +4,7 @@ export abstract class BasePage {
   readonly headerText: Locator;
 
   constructor(page: Page) {
+    this.headerText = page.locator('h1');
     this.page = page;
     this.headerText = page.locator('h1');
 
@@ -23,5 +24,9 @@ export abstract class BasePage {
 
   async getHeaderText(): Promise<string> {
     return await this.headerText.textContent() ?? "";
+  }
+  
+  async clickBackLink(): Promise<void> {
+    await this.page.getByRole('link', { name: 'Back' }).click();
   }
 }

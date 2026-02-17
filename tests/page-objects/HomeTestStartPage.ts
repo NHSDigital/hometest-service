@@ -10,6 +10,8 @@ export class HomeTestStartPage extends BasePage {
   readonly learnMoreHIVAidsLink: Locator;
   readonly startNowBtn: Locator;
   readonly privacyPolicyLink: Locator;
+  readonly bloodSampleGuideLink: Locator;
+
 
   constructor(page: Page) {
     super(page);
@@ -18,9 +20,11 @@ export class HomeTestStartPage extends BasePage {
     this.nearestSexualHealthClinicLink = page.getByRole('link', { name: /your nearest sexual health/ });
     this.learnMoreHIVAidsLink = page.getByRole('link', { name: 'Learn more about HIV and AIDS' });
     this.startNowBtn = page.getByRole('button', { name: 'Start now' });
+    this.bloodSampleGuideLink = page.getByRole('link', { name: 'Blood sample step-by-step guide' });
     this.config = ConfigFactory.getConfig();
     this.privacyPolicyLink = page.getByRole('link', { name: 'privacy policy' });
   }
+
   async navigate(): Promise<void> {
     await this.page.goto(`${this.config.uiBaseUrl}/get-self-test-kit-for-HIV`);
   }
@@ -53,4 +57,7 @@ export class HomeTestStartPage extends BasePage {
     await this.privacyPolicyLink.click();
   }
 
+  async clickBloodSampleGuideLink(): Promise<void> {
+    await this.bloodSampleGuideLink.click();
+  }
 }
