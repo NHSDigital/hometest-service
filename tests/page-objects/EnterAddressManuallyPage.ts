@@ -28,6 +28,4 @@ export class EnterAddressManuallyPage extends BasePage {
     await this.postcodeInput.fill(address.postcode);
     await this.continueButton.click();
   }
-
-
 }
