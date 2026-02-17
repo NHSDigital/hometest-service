@@ -1,0 +1,57 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { z } from "zod";
+import { OrderServiceRequestSchema } from "./order-service-request-schema";
+import { OrderServiceRequest } from "./order-service-request-type";
+import { createJsonResponse } from "../lib/utils";
+
+const name = "order-service-lambda";
+
+const parseAndValidateRequest = (
+  eventBody: string | null,
+): OrderServiceRequest => {
+  let parsedBody: unknown;
+
+  try {
+    parsedBody = JSON.parse(eventBody || "");
+  } catch (error) {
+    throw new Error("Invalid JSON in request body", { cause: error });
+  }
+
+  const validationResult = OrderServiceRequestSchema.safeParse(parsedBody);
+  if (!validationResult.success) {
+    let errorDetails = z.prettifyError(validationResult.error);
+    errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, "");
+    throw new Error(`Validation failed: ${errorDetails}`);
+  }
+
+  return validationResult.data;
+};
+
+export const handler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
+  console.info(name, "Received order request", {
+    path: event.path,
+    method: event.httpMethod,
+  });
+
+  try {
+    if (event.body === null || event.body === "{}") {
+      return createJsonResponse(400, { message: "Empty body" });
+    }
+
+    const orderRequest = parseAndValidateRequest(event.body);
+
+    console.info(name, "Order request validated", {
+      supplierId: orderRequest.supplierId,
+      testCode: orderRequest.testCode,
+    });
+
+    return createJsonResponse(201, { orderRequest });
+  } catch (error) {
+    console.error(name, "Order request failed", { error });
+    return createJsonResponse(400, {
+      message: error instanceof Error ? error.message : "Invalid request",
+    });
+  }
+};
