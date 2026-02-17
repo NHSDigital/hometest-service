@@ -3,6 +3,8 @@ services:
   localstack:
     image: localstack/localstack:latest
     container_name: localstack-main
+    profiles:
+      - backend
     ports:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway
       - "127.0.0.1:4510-4559:4510-4559"  # external services port range
@@ -17,6 +19,8 @@ services:
   ui:
     image: node:24
     container_name: ui
+    profiles:
+      - frontend
     working_dir: /app
     volumes:
       - ../ui:/app
@@ -27,11 +31,12 @@ services:
       - "3000:3000"
     environment:
       - REACT_APP_API_URL=http://localstack:4566
-    depends_on:
-      - localstack
+
   postgres-db:
     image: postgres:18.1
     container_name: postgres-db
+    profiles:
+      - backend
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
@@ -49,6 +54,8 @@ services:
   wiremock:
     image: wiremock/wiremock:latest
     container_name: wiremock
+    profiles:
+      - backend
     ports:
       - "8080:8080"
     volumes:
@@ -57,29 +64,18 @@ services:
     command: ["--verbose"]
 
   db-migrate:
-    image: postgres:18.1
+    build:
+      context: ./scripts/database
+      dockerfile: Dockerfile
+    image: hometest-db-migrate:local
     container_name: db-migrate
     depends_on:
       postgres-db:
         condition: service_healthy
+    profiles:
+      - backend
     volumes:
-      - ../database/delete.sql:/docker-entrypoint-initdb.d/00-delete.sql:ro
-      - ../database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
-      - ../database/tables.sql:/docker-entrypoint-initdb.d/02-tables.sql:ro
-      - ../database/seed.sql:/docker-entrypoint-initdb.d/03-seed.sql:ro
-    environment:
-      - PGUSER=admin
-      - PGPASSWORD=admin
-      - PGDATABASE=local_hometest_db
-      - PGHOST=postgres-db
-      - PGPORT=5432
-    entrypoint: [
-      "bash", "-c",
-      "psql -v ON_ERROR_STOP=1 -h postgres-db -U admin -d postgres -f /docker-entrypoint-initdb.d/00-delete.sql && \
-       psql -v ON_ERROR_STOP=1 -h postgres-db -U admin -d local_hometest_db -f /docker-entrypoint-initdb.d/01-init.sql && \
-       PGPASSWORD=STRONG_PASSWORD_MIGRATOR psql -v ON_ERROR_STOP=1 -h postgres-db -U app_migrator -d local_hometest_db -f /docker-entrypoint-initdb.d/02-tables.sql && \
-       PGPASSWORD=STRONG_PASSWORD_MIGRATOR psql -v ON_ERROR_STOP=1 -h postgres-db -U app_migrator -d local_hometest_db -f /docker-entrypoint-initdb.d/03-seed.sql"
-    ]
+      - ../database:/docker-entrypoint-initdb.d:ro
 
 volumes:
   ui_node_modules:
