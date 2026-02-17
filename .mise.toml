@@ -56,4 +56,4 @@ run = "pre-commit run --all-files --show-diff-on-failure --color=always"
 
 [tasks.install-npm]
 description = "Install npm dependencies"
-run = "npm install && npm --prefix ./lambdas install"
+run = "npm install"
