@@ -54,8 +54,8 @@ export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
         patientId: 'f385a33a-eb3c-47f3-af37-b3e099c7ef91'
       },
       {
-        email: 'testuserlive+4@demo.signin.nhs.uk',
-        nhsNumber: '9658218881',
+        email: 'testuserlive+6@demo.signin.nhs.uk',
+        nhsNumber: '9658218989',
         odsCode: 'A20047',
         age: 45,
         otp: process.env.OTP as unknown as string,
