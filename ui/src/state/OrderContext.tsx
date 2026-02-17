@@ -40,7 +40,7 @@ export interface OrderAnswers {
   // Final delivery address
   deliveryAddress?: Address;
   comfortableDoingTest?: string;
-  
+
   // Mobile number
   mobileNumber?: string;
 }

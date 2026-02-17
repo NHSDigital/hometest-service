@@ -476,10 +476,8 @@ describe("EnterMobileNumberPage", () => {
     it("should update input value as user types", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      const mobileInput = screen.getByLabelText(
-        /uk mobile phone number/i,
-      ) as HTMLInputElement;
-      
+      const mobileInput = screen.getByLabelText(/uk mobile phone number/i,) as HTMLInputElement;
+
       fireEvent.change(mobileInput, { target: { value: "077" } });
       expect(mobileInput.value).toBe("077");
 
