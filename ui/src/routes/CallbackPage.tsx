@@ -1,7 +1,8 @@
 "use client";
 
-import {consumeLoginCsrf, verifyState} from "@/lib/auth/loginState";
-import { useEffect, useRef, useState } from "react";
+import { AuthUser, useAuth } from "@/state/AuthContext";
+import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
+import { useEffect, useRef } from "react";
 
 import { RoutePath } from "@/lib/models/route-paths";
 import { backendUrl } from "@/settings";
@@ -25,20 +26,15 @@ function getReturnTo(givenState: string | null | undefined): string | null {
 
   const returnTo = verifyState({
     csrf: expectedCsrf,
-    encoded: givenState
+    encoded: givenState,
   });
 
   return safeReturnTo(returnTo) ?? null;
 }
 
 export default function CallbackPage() {
-  type Result =
-  | null
-  | { data: unknown }
-  | { error: string };
-
+  const { setUser } = useAuth();
   const { updateOrderAnswers } = useCreateOrderContext();
-  const [result, setResult] = useState<Result>(null);
   const navigate = useNavigate();
   const didRun = useRef(false);
 
@@ -84,14 +80,19 @@ export default function CallbackPage() {
         return res.json();
       })
       .then((data) => {
+        const userData: AuthUser = {
+          sub: data.sub,
+          nhsNumber: data.nhs_number,
+          birthdate: data.birthdate,
+          identityProofingLevel: data.identity_proofing_level,
+          phoneNumber: data.phone_number,
+        };
+
+        setUser(userData);
+
+        // TODO: Remove after refactoring - kept for backward compatibility
         updateOrderAnswers({
-          user: {
-            sub: data.sub,
-            nhsNumber: data.nhs_number,
-            birthdate: data.birthdate,
-            identityProofingLevel: data.identity_proofing_level,
-            phoneNumber: data.phone_number,
-          },
+          user: userData,
         });
       })
       .then(() => {
@@ -100,8 +101,7 @@ export default function CallbackPage() {
       .catch((err) => {
         const message = err instanceof Error ? err.message : String(err);
         console.error("Fetch error:", message);
-        setResult({ error: message });
       });
-  }, [updateOrderAnswers, navigate]);
+  }, [setUser, updateOrderAnswers, navigate]);
   return null;
 }
