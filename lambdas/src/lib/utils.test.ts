@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isUUID, getCorrelationIdFromEventHeaders } from "./utils";
 import { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy";
 

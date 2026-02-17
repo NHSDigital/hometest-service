@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 export interface SqsResult {

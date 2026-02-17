@@ -1,6 +1,6 @@
 import {Commons, ConsoleCommons} from "../lib/commons";
 import {SupplierService} from "../lib/db/supplier-db";
-import {LaLookupService as _LaLookupService} from "./la-lookup";
+import {LaLookupService} from "./la-lookup";
 import {PostgresDbClient} from "../lib/db/db-client";
 
 

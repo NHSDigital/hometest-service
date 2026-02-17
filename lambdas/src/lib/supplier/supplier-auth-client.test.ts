@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { OAuthSupplierAuthClient } from "./supplier-auth-client";
 
 describe("OAuthSupplierAuthClient", () => {

@@ -267,6 +267,32 @@ export interface OrderTrackingContent {
   loading: string;
 }
 
+export interface BloodSampleGuideContent {
+  title: string;
+  whatsInKit: {
+    summary: string;
+    intro: string;
+    items: string[];
+    image: {
+      alt: string;
+      caption: string;
+    };
+  };
+  tipsBeforeStart: {
+    summary: string;
+    intro: string;
+    tips: string[];
+  };
+  steps: Array<{
+    heading: string;
+    image: {
+      src: string;
+      alt: string;
+    };
+    caption: string;
+  }>;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -280,6 +306,7 @@ export interface PagesContent {
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "blood-sample-guide": BloodSampleGuideContent;
 }
 
 // ============================================================================
