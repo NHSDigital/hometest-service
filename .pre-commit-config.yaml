@@ -55,7 +55,6 @@ repos:
         args:
           - --args=-recursive
 
-
   - repo: local
     hooks:
       - id: eslint-ui
