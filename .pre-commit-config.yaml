@@ -55,22 +55,29 @@ repos:
         args:
           - --args=-recursive
 
-<<<<<<< HEAD
-  # - repo: local
-  #   hooks:
-  #     - id: eslint-ui
-  #       name: ESLint (UI)
-  #       entry: npm --prefix ui run lint -- --fix
-  #       language: system
-  #       files: ^ui/.*\.(ts|tsx|js|jsx)$
-  #       pass_filenames: false
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 4.0.4        # pin to a specific version
+    hooks:
+      - id: sqlfluff-lint
+        args: ["--config", ".sqlfluff"]   # optional, if you keep config elsewhere
+      - id: sqlfluff-fix
+        args: ["--config", ".sqlfluff"]   # auto-fix style issues
 
-  #     - id: eslint-lambdas
-  #       name: ESLint (Lambdas)
-  #       entry: npm --prefix lambdas run lint:fix -- --max-warnings=100
-  #       language: system
-  #       files: ^lambdas/.*\.(ts|js)$
-  #       pass_filenames: false
+  - repo: local
+    hooks:
+      - id: eslint-ui
+        name: ESLint (UI)
+        entry: npm --prefix ui run lint -- --fix
+        language: system
+        files: ^ui/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: eslint-lambdas
+        name: ESLint (Lambdas)
+        entry: npm --prefix lambdas run lint -- --fix
+        language: system
+        files: ^lambdas/.*\.(ts|js)$
+        pass_filenames: false
 
       # - id: typescript-check-ui
       #   name: TypeScript (UI)
@@ -101,28 +108,3 @@ repos:
       #   language: system
       #   files: ^lambdas/.*\.ts$
       #   # stages: [pre-push]
-
-  # - repo: https://github.com/sqlfluff/sqlfluff
-  #   rev: 4.0.4        # pin to a specific version
-  #   hooks:
-  #     - id: sqlfluff-lint
-  #       args: ["--config", ".sqlfluff"]   # optional, if you keep config elsewhere
-  #     - id: sqlfluff-fix
-  #       args: ["--config", ".sqlfluff"]   # auto-fix style issues
-=======
-  - repo: local
-    hooks:
-      - id: eslint-ui
-        name: ESLint (UI)
-        entry: npm --prefix ui run lint -- --fix
-        language: system
-        files: ^ui/.*\.(ts|tsx|js|jsx)$
-        pass_filenames: false
-
-      - id: eslint-lambdas
-        name: ESLint (Lambdas)
-        entry: npm --prefix lambdas run lint -- --fix
-        language: system
-        files: ^lambdas/.*\.(ts|js)$
-        pass_filenames: false
->>>>>>> ce65148bed548460c2533df802b034e4efa8c8d0
