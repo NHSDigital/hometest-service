@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useCreateOrderContext } from "@/state/OrderContext";
-import { RoutePath } from "@/lib/models/route-paths";
-import { useNavigate } from "react-router-dom";
-
 import {consumeLoginCsrf, verifyState} from "@/lib/auth/loginState";
+import { useEffect, useRef, useState } from "react";
+
+import { RoutePath } from "@/lib/models/route-paths";
+import { backendUrl } from "@/settings";
+import { useCreateOrderContext } from "@/state/OrderContext";
+import { useNavigate } from "react-router-dom";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -46,7 +47,6 @@ export default function CallbackPage() {
     if (didRun.current) return;
     didRun.current = true;
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (!backendUrl) {
       console.error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;

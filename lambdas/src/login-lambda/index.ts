@@ -62,8 +62,8 @@ export const lambdaHandler = async (
       body: JSON.stringify(loginOutput.userInfoResponse),
       multiValueHeaders: {
         'Set-Cookie': [
-          `auth=${signedAuthAccessJwt}; HttpOnly; Path=/; SameSite=${authCookieSameSite};${authCookieSecure}`,
-          `auth_refresh=${signedAuthRefreshJwt}; HttpOnly; Path=/refresh-token; SameSite=${authCookieSameSite};${authCookieSecure}`
+          `auth=${signedAuthAccessJwt}; HttpOnly; Path=/; SameSite=${authCookieSameSite};${secureAttr}`,
+          `auth_refresh=${signedAuthRefreshJwt}; HttpOnly; Path=/refresh-token; SameSite=${authCookieSameSite};${secureAttr}`
         ]
       }
     };

@@ -56,13 +56,7 @@ The application requires the following environment variables:
 
 ### Local Development
 
-For local development with the mock server, create a `.env.local` file in the `ui` directory:
-
-```env
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
-```
-
-This allows the application to communicate with the local WireMock server for API mocking during development.
+For local development terraform will create a `.env.local` file in the `ui` with the expected API gateway value.
 
 ## Routing
 
