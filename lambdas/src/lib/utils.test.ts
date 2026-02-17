@@ -1,4 +1,8 @@
-import { isUUID, getCorrelationIdFromEventHeaders } from "./utils";
+import {
+  isUUID,
+  getCorrelationIdFromEventHeaders,
+  createJsonResponse,
+} from "./utils";
 import { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy";
 
 describe("isUUID", () => {
@@ -85,5 +89,28 @@ describe("getCorrelationIdFromEventHeaders", () => {
     expect(() => getCorrelationIdFromEventHeaders(event)).toThrow(
       "Correlation ID is missing or invalid in the event headers. Expected a valid UUID in 'X-Correlation-ID' or 'x-correlation-id'.",
     );
+  });
+});
+
+describe("createJsonResponse", () => {
+  it("should return a valid APIGatewayProxyResult with correct status, headers, and body", () => {
+    const statusCode = 201;
+    const body = { message: "Success", data: { foo: "bar" } };
+    const result = createJsonResponse(statusCode, body);
+
+    expect(result.statusCode).toBe(statusCode);
+    expect(result.headers).toEqual({ "Content-Type": "application/json" });
+    expect(result.body).toBe(JSON.stringify(body));
+  });
+
+  it("should serialize empty object correctly", () => {
+    const result = createJsonResponse(200, {});
+    expect(result.body).toBe("{}");
+  });
+
+  it("should handle nested objects and arrays", () => {
+    const body = { arr: [1, 2, 3], nested: { a: 1 } };
+    const result = createJsonResponse(200, body);
+    expect(result.body).toBe(JSON.stringify(body));
   });
 });

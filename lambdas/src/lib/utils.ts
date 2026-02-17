@@ -1,5 +1,9 @@
 import dayjs from "dayjs";
 import toTitleCase from "titlecase";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+} from "aws-lambda/trigger/api-gateway-proxy";
 
 // ALPHA: Reimplentation needed with lambdas (nhslogin init.ts)
 const alwaysUppercase = new Set(["UK", "NHS"]);
@@ -110,7 +114,6 @@ export function validateUrlSource(urlSource?: string): string | undefined {
 
   return trimmed.toUpperCase();
 }
-import { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy";
 
 export function isUUID(str: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -138,3 +141,12 @@ export const getCorrelationIdFromEventHeaders = (
     "Correlation ID is missing or invalid in the event headers. Expected a valid UUID in 'X-Correlation-ID' or 'x-correlation-id'.",
   );
 };
+
+export const createJsonResponse = (
+  statusCode: number,
+  body: Record<string, unknown>,
+): APIGatewayProxyResult => ({
+  statusCode,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
