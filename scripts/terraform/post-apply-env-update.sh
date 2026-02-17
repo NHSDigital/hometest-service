@@ -3,8 +3,6 @@
 set -euo pipefail
 
 BACKEND_BASE_URL=$(terraform -chdir=local-environment/infra output -raw backend_base_url)
-ORDER_RESULT_ENDPOINT=$(terraform -chdir=local-environment/infra output -raw order_result_endpoint)
-API_BASE_URL="${ORDER_RESULT_ENDPOINT%/result}"
 
 printf 'NEXT_PUBLIC_BACKEND_URL=%s\n' "$BACKEND_BASE_URL" > ./ui/.env.local
 
@@ -13,10 +11,10 @@ mkdir -p "$(dirname "$TESTS_ENV_FILE")"
 touch "$TESTS_ENV_FILE"
 
 if grep -q '^API_BASE_URL=' "$TESTS_ENV_FILE"; then
-	sed -E "s|^API_BASE_URL=.*$|API_BASE_URL=$API_BASE_URL|" "$TESTS_ENV_FILE" > "${TESTS_ENV_FILE}.tmp"
+	sed -E "s|^API_BASE_URL=.*$|API_BASE_URL=$BACKEND_BASE_URL|" "$TESTS_ENV_FILE" > "${TESTS_ENV_FILE}.tmp"
 	mv "${TESTS_ENV_FILE}.tmp" "$TESTS_ENV_FILE"
 else
-	printf '\nAPI_BASE_URL=%s\n' "$API_BASE_URL" >> "$TESTS_ENV_FILE"
+	printf '\nAPI_BASE_URL=%s\n' "$BACKEND_BASE_URL" >> "$TESTS_ENV_FILE"
 fi
 
 echo "Updated ui and tests local env files from terraform outputs"
