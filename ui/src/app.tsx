@@ -3,6 +3,7 @@ import * as React from "react";
 import { JourneyStepNames, RoutePath } from "./lib/models/route-paths";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
+import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import CallbackPage from "./routes/CallbackPage";
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.HowComfortablePrickingFinger,
             element: <HowComfortablePrickingFingerPage />,
+          },
+          {
+            path: JourneyStepNames.BloodSampleGuide,
+            element: <BloodSampleGuidePage />,
           },
         ],
       },

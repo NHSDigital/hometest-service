@@ -15,6 +15,7 @@ infrastructure-as-code.
       - [mise](#mise)
   - [Usage](#usage)
     - [Local Development](#local-development)
+    - [Common local workflows](#common-local-workflows)
     - [Frontend](#frontend)
     - [Local Infrastructure](#local-infrastructure)
   - [Testing](#testing)
@@ -90,6 +91,55 @@ To stop the environment:
 ```shell
 npm run stop
 ```
+
+### Common local workflows
+
+After running `npm start`, use targeted commands instead of restarting everything:
+
+- **Lambda code changes** (build/package/deploy lambdas to LocalStack):
+
+  ```shell
+  npm run local:deploy
+  ```
+
+- **Database schema or seed changes** (rerun DB migration container, including goose migrations):
+
+  ```shell
+  npm run local:service:db:migrate
+  ```
+
+- **Terraform infrastructure changes** (apply infra updates to LocalStack without restarting containers):
+
+  ```shell
+  npm run local:terraform:apply
+  npm run local:terraform:env
+  ```
+
+- **Restart backend containers only** (Postgres, LocalStack, WireMock, db-migrate):
+
+  ```shell
+  npm run local:backend:restart
+  ```
+
+- **Restart frontend only**:
+
+  ```shell
+  npm run local:frontend:restart
+  ```
+
+- **Start/stop backend only**:
+
+  ```shell
+  npm run local:backend:start
+  npm run local:backend:stop
+  ```
+
+- **Start/stop frontend only**:
+
+  ```shell
+  npm run local:frontend:start
+  npm run local:frontend:stop
+  ```
 
 ### Frontend
 

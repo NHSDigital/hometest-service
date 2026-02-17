@@ -17,14 +17,14 @@ const observationSchema = z.looseObject({
   subject: z.strictObject({
     reference: z.string(),
   }),
-  valueCodeableConcept: z.strictObject({
+  interpretation: z.array(z.strictObject({
     coding: z.array(z.strictObject({
       system: z.string(),
       code: z.string(),
       display: z.string(),
     })),
     text: z.optional(z.string()),
-  }),
+  })),
 });
 
 /**
