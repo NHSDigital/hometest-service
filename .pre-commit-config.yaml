@@ -55,6 +55,7 @@ repos:
         args:
           - --args=-recursive
 
+<<<<<<< HEAD
   # - repo: local
   #   hooks:
   #     - id: eslint-ui
@@ -108,3 +109,20 @@ repos:
   #       args: ["--config", ".sqlfluff"]   # optional, if you keep config elsewhere
   #     - id: sqlfluff-fix
   #       args: ["--config", ".sqlfluff"]   # auto-fix style issues
+=======
+  - repo: local
+    hooks:
+      - id: eslint-ui
+        name: ESLint (UI)
+        entry: npm --prefix ui run lint -- --fix
+        language: system
+        files: ^ui/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: eslint-lambdas
+        name: ESLint (Lambdas)
+        entry: npm --prefix lambdas run lint -- --fix
+        language: system
+        files: ^lambdas/.*\.(ts|js)$
+        pass_filenames: false
+>>>>>>> ce65148bed548460c2533df802b034e4efa8c8d0

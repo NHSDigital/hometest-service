@@ -9,7 +9,7 @@ import z from "zod";
 
 const name = "order-router-lambda";
 
-const { httpClient, environmentVariables: _environmentVariables, supplierDb, secretsClient } = init();
+const { httpClient, environmentVariables, supplierDb, secretsClient } = init();
 
 interface ParsedOrderBody {
   supplier_code: string;

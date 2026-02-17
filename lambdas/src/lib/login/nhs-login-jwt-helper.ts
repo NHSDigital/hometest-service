@@ -24,11 +24,15 @@ export class NhsLoginJwtHelper implements INhsLoginJwtHelper {
       expiresIn: this.nhsLoginConfig.expiresIn
     };
 
-    const signedToken = jwt.sign(
-      {},
-      this.nhsLoginConfig.privateKey,
-      clientTokenSignOptions
-    );
-    return signedToken;
+    try {
+      const signedToken = jwt.sign(
+        {},
+        this.nhsLoginConfig.privateKey,
+        clientTokenSignOptions
+      );
+      return signedToken;
+    } catch (error) {
+      throw error;
+    }
   }
 }

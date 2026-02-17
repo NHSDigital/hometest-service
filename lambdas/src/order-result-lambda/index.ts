@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { Observation, Parameters as _Parameters } from 'fhir/r4';
+import { Observation, Parameters } from 'fhir/r4';
 import { z } from 'zod';
 import { AWSSQSClient } from '../lib/sqs/sqs-client';
 import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
@@ -17,14 +17,14 @@ const observationSchema = z.looseObject({
   subject: z.strictObject({
     reference: z.string(),
   }),
-  valueCodeableConcept: z.strictObject({
+  interpretation: z.array(z.strictObject({
     coding: z.array(z.strictObject({
       system: z.string(),
       code: z.string(),
       display: z.string(),
     })),
     text: z.optional(z.string()),
-  }),
+  })),
 });
 
 /**

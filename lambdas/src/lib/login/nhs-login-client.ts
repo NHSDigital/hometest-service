@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type HttpClient } from '../http/login-http-client';
 import { type INhsLoginConfig } from '../models/nhs-login/nhs-login-config';
 import { type INhsTokenResponseModel } from '../models/nhs-login/nhs-login-token-response-model';
@@ -36,46 +35,58 @@ export class NhsLoginClient implements INhsLoginClient {
   }
 
   public async getUserTokens(code: string): Promise<INhsTokenResponseModel> {
-    const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
+    try {
+      const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
 
-    const formData = new URLSearchParams({
-      code,
-      client_id: this.nhsLoginConfig.clientId,
-      redirect_uri: this.nhsLoginConfig.redirectUri,
-      grant_type: 'authorization_code',
-      client_assertion_type:
-        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-      client_assertion: signedToken
-    });
+      const formData = new URLSearchParams({
+        code,
+        client_id: this.nhsLoginConfig.clientId,
+        redirect_uri: this.nhsLoginConfig.redirectUri,
+        grant_type: 'authorization_code',
+        client_assertion_type:
+          'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        client_assertion: signedToken
+      });
 
-    console.log(formData.toString());
+      console.log(formData.toString());
 
-    const response: INhsTokenResponseModel =
-      await this.httpClient.postRequest<URLSearchParams, any>(
-        this.nhsLoginTokenUri,
-        formData,
-        {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      );
-    return response;
+      const response: INhsTokenResponseModel =
+        await this.httpClient.postRequest<URLSearchParams, any>(
+          this.nhsLoginTokenUri,
+          formData,
+          {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        );
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 
   public async getUserInfo(
     userAccessToken: string
   ): Promise<INhsUserInfoResponseModel> {
-    const userInfoResponse =
-      await this.httpClient.getRequest<INhsUserInfoResponseModel>(
-        this.nhsLoginUserInfoUri,
-        {
-          Authorization: `Bearer ${userAccessToken}`
-        }
-      );
-    return userInfoResponse;
+    try {
+      const userInfoResponse =
+        await this.httpClient.getRequest<INhsUserInfoResponseModel>(
+          this.nhsLoginUserInfoUri,
+          {
+            Authorization: `Bearer ${userAccessToken}`
+          }
+        );
+      return userInfoResponse;
+    } catch (error) {
+      throw error;
+    }
   }
 
   public async fetchPublicKeyById(kid: string): Promise<string> {
-    const response = await this.jwksClient.getSigningKey(kid);
-    return response.getPublicKey();
+    try {
+      const response = await this.jwksClient.getSigningKey(kid);
+      return response.getPublicKey();
+    } catch (error) {
+      throw error;
+    }
   }
 }

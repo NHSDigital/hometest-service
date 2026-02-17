@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, {
   type RawAxiosResponseHeaders,
   type AddressFamily,
@@ -171,7 +170,7 @@ export class HttpClient {
       return response.data;
     } catch (error: any) {
       const errDetails = HttpClient.getHttpErrorDetails(error);
-      const _errJson = HttpClient.isHttpError(error) ? error.toJSON() : error;
+      const errJson = HttpClient.isHttpError(error) ? error.toJSON() : error;
 
       throw new Error('Get API call failure', {
         cause: {

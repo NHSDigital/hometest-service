@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Commons {
   logInfo(module: string, msg: string, details?: Record<string, any>): void
   logDebug(module: string, msg: string, details?: Record<string, any>): void

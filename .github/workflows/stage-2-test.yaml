@@ -34,16 +34,17 @@ on:
         type: string
 
 jobs:
-  test-unit:
-    name: "Unit tests"
+  test-unit-ui:
+    name: "UI unit tests"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v6
+      - name: "Run UI tests"
+        uses: ./.github/actions/run-npm-tests
         with:
+<<<<<<< HEAD
           node-version: "${{ inputs.nodejs_version }}"
           cache: npm
       - name: "Install dependencies"
@@ -149,24 +150,33 @@ jobs:
           echo "| Branches | ${BRANCHES}% |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📁 Download the **lambdas-coverage-report** artifact for detailed HTML report" >> $GITHUB_STEP_SUMMARY
-  test-lint:
-    name: "Linting"
+=======
+          working-directory: ui
+          nodejs-version: "${{ inputs.nodejs_version }}"
+          artifact-prefix: ui
+          test-name: "Jest UI Tests"
+          coverage-threshold: "70"
+          report-title: "UI Coverage Report"
+
+  test-unit-lambda:
+    name: "Lambda unit tests"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
-      - name: "Run linting"
-        run: |
-          make test-lint
-      - name: "Save the linting result"
-        run: |
-          echo "Nothing to save"
-  test-coverage:
-    name: "Test coverage"
-    needs: [test-unit]
+      - name: "Run Lambda tests"
+        uses: ./.github/actions/run-npm-tests
+        with:
+          working-directory: lambdas
+          nodejs-version: "${{ inputs.nodejs_version }}"
+          artifact-prefix: lambdas
+          test-name: "Jest Lambda Tests"
+          report-title: "Lambdas Coverage Report"
+>>>>>>> ce65148bed548460c2533df802b034e4efa8c8d0
+  test-lint:
+    name: "Linting"
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
@@ -235,7 +245,7 @@ jobs:
 
   perform-static-analysis:
     name: "Perform static analysis"
-    needs: [test-unit]
+    needs: [test-unit-ui, test-unit-lambda]
     runs-on: ubuntu-latest
     permissions:
       id-token: write

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PostgresDbClient } from "./db-client";
 import { Pool } from "pg";
 

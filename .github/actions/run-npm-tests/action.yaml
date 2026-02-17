@@ -1,0 +1,106 @@
+---
+name: "Run NPM Tests"
+description: "Run Jest tests with coverage reporting"
+inputs:
+  working-directory:
+    description: "Directory containing the npm project (e.g., ui, lambdas)"
+    required: true
+  nodejs-version:
+    description: "Node.js version to use"
+    required: true
+  artifact-prefix:
+    description: "Prefix for artifact names"
+    required: true
+  test-name:
+    description: "Name for the test report"
+    required: true
+  coverage-threshold:
+    description: "Minimum line coverage percentage"
+    required: false
+    default: "0"
+  report-title:
+    description: "Title for coverage report comment"
+    required: false
+    default: "Coverage Report"
+runs:
+  using: "composite"
+  steps:
+    - name: "Setup Node.js"
+      uses: actions/setup-node@v6
+      with:
+        node-version: "${{ inputs.nodejs-version }}"
+        cache: npm
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+    - name: "Install dependencies"
+      shell: bash
+      run: npm --prefix ${{ inputs.working-directory }} ci
+
+    - name: "Run test suite"
+      shell: bash
+      run: npm --prefix ${{ inputs.working-directory }} run test -- --ci
+
+    - name: "Upload test results"
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ${{ inputs.artifact-prefix }}-test-results
+        path: ${{ inputs.working-directory }}/test-results/
+        retention-days: 30
+
+    - name: "Upload coverage report"
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ${{ inputs.artifact-prefix }}-coverage-report
+        path: ${{ inputs.working-directory }}/coverage/lcov-report/
+        retention-days: 30
+
+    - name: "Test Report"
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: "${{ inputs.test-name }}"
+        path: ${{ inputs.working-directory }}/test-results/junit.xml
+        reporter: jest-junit
+
+    - name: "Coverage Summary"
+      if: always()
+      shell: bash
+      run: |
+        COVERAGE_FILE="${{ inputs.working-directory }}/coverage/coverage-summary.json"
+        LINES=$(jq '.total.lines.pct' "$COVERAGE_FILE")
+        STATEMENTS=$(jq '.total.statements.pct' "$COVERAGE_FILE")
+        FUNCTIONS=$(jq '.total.functions.pct' "$COVERAGE_FILE")
+        BRANCHES=$(jq '.total.branches.pct' "$COVERAGE_FILE")
+
+        echo "### 📊 ${{ inputs.report-title }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Lines | ${LINES}% |" >> $GITHUB_STEP_SUMMARY
+        echo "| Statements | ${STATEMENTS}% |" >> $GITHUB_STEP_SUMMARY
+        echo "| Functions | ${FUNCTIONS}% |" >> $GITHUB_STEP_SUMMARY
+        echo "| Branches | ${BRANCHES}% |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📁 Download the **${{ inputs.artifact-prefix }}-coverage-report** artifact for detailed HTML report" >> $GITHUB_STEP_SUMMARY
+
+    - name: "Check coverage threshold"
+      if: inputs.coverage-threshold != '0'
+      shell: bash
+      run: |
+        COVERAGE=$(jq '.total.lines.pct' ${{ inputs.working-directory }}/coverage/coverage-summary.json)
+        THRESHOLD=${{ inputs.coverage-threshold }}
+        echo "Line coverage: ${COVERAGE}%"
+        if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+          echo "::error::Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
+          exit 1
+        fi
+
+    - name: "Coverage Report Comment"
+      uses: MishaKav/jest-coverage-comment@v1
+      with:
+        coverage-summary-path: ${{ inputs.working-directory }}/coverage/coverage-summary.json
+        title: "${{ inputs.report-title }}"
+        badge-title: Coverage
+        hide-comment: false
