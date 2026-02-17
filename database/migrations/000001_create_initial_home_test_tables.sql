@@ -1,79 +1,79 @@
 -- +goose Up
 CREATE TABLE patient_mapping
 (
-  patient_uid uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  nhs_number varchar(50) UNIQUE,
-  birth_date date NOT NULL
+  patient_uid  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  nhs_number   VARCHAR(50) UNIQUE,
+  birth_date   DATE NOT NULL
 );
 
 CREATE TABLE test_type
 (
-  test_code varchar(50) PRIMARY KEY,
-  description text NOT NULL
+  test_code   VARCHAR(50) PRIMARY KEY,
+  description TEXT NOT NULL
 );
 
 CREATE TABLE supplier
 (
   supplier_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  supplier_name varchar(255) NOT NULL,
-  service_url varchar(255) NOT NULL,
-  website_url varchar(255),
-  client_secret_name varchar(255) NOT NULL,
-  client_id varchar(255) NOT NULL,
-  oauth_token_path varchar(255),
-  order_path varchar(255),
-  oauth_scope varchar(255)
+  supplier_name    VARCHAR(255) NOT NULL,
+  service_url VARCHAR(255) NOT NULL,
+  website_url VARCHAR(255),
+  client_secret_name VARCHAR(255) NOT NULL,
+  client_id    VARCHAR(255) NOT NULL,
+  oauth_token_path VARCHAR(255),
+  order_path VARCHAR(255),
+  oauth_scope VARCHAR(255)
 );
 
 CREATE TABLE la_supplier_offering
 (
-  offering_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  supplier_id uuid REFERENCES supplier (supplier_id),
-  test_code varchar(50) REFERENCES test_type (test_code),
-  la_code varchar(10) NOT NULL,
-  effective_from timestamp with time zone DEFAULT current_timestamp,
+  offering_id    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  supplier_id    uuid REFERENCES supplier (supplier_id),
+  test_code      VARCHAR(50) REFERENCES test_type (test_code),
+  la_code        VARCHAR(10) NOT NULL,
+  effective_from TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT unique_la_offering UNIQUE (la_code, supplier_id, test_code)
 );
 
 CREATE TABLE test_order
 (
-  order_uid uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_reference bigint GENERATED ALWAYS AS IDENTITY (START WITH 100000) UNIQUE,
-  supplier_id uuid NOT NULL REFERENCES supplier (supplier_id),
-  patient_uid uuid NOT NULL REFERENCES patient_mapping (patient_uid),
-  test_code varchar(50) NOT NULL REFERENCES test_type (test_code),
-  originator varchar(255),
-  created_at timestamp with time zone DEFAULT current_timestamp
+  order_uid   uuid PRIMARY KEY         DEFAULT gen_random_uuid(),
+  order_reference BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 100000) UNIQUE,
+  supplier_id uuid        NOT NULL REFERENCES supplier (supplier_id),
+  patient_uid uuid        NOT NULL REFERENCES patient_mapping (patient_uid),
+  test_code   VARCHAR(50) NOT NULL REFERENCES test_type (test_code),
+  originator  VARCHAR(255),
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE status_type
 (
-  status_code varchar(50) PRIMARY KEY,
-  description text NOT NULL
+  status_code VARCHAR(50) PRIMARY KEY,
+  description TEXT NOT NULL
 );
 
 CREATE TABLE order_status
 (
-  status_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_uid uuid NOT NULL REFERENCES test_order (order_uid) ON DELETE CASCADE,
-  order_reference bigint,
-  status_code varchar(50) NOT NULL REFERENCES status_type (status_code),
-  created_at timestamp with time zone DEFAULT current_timestamp
+  status_id   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_uid   uuid        NOT NULL REFERENCES test_order (order_uid) ON DELETE CASCADE,
+  order_reference BIGINT,
+  status_code VARCHAR(50) NOT NULL REFERENCES status_type (status_code),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE result_type (
-  result_code varchar(50) PRIMARY KEY,
-  description text NOT NULL
+  result_code VARCHAR(50) PRIMARY KEY,
+  description TEXT NOT NULL
 );
 
 CREATE TABLE result_status
 (
-  result_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  order_uid uuid NOT NULL REFERENCES test_order (order_uid) ON DELETE CASCADE,
-  status varchar(50) NOT NULL REFERENCES result_type (result_code),
-  created_at timestamp with time zone DEFAULT current_timestamp,
-  correlation_id uuid NOT NULL UNIQUE
+  result_id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  order_uid      uuid        NOT NULL REFERENCES test_order (order_uid) ON DELETE CASCADE,
+  status         VARCHAR(50) NOT NULL REFERENCES result_type (result_code),
+  created_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  correlation_id uuid        NOT NULL UNIQUE
 );
 
 CREATE INDEX idx_order_patient_uid ON test_order (patient_uid);
