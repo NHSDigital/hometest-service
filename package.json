@@ -19,13 +19,16 @@
     "local:restart": "npm run local:stop && npm run local:start",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
 
-    "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up:force",
-    "local:frontend:start": "npm run local:terraform:env && COMPOSE_PROFILES=frontend npm run local:compose:up:force",
+    "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up && npm run local:service:db:migrate",
+    "local:frontend:start": "npm run local:terraform:env && COMPOSE_PROFILES=frontend npm run local:compose:up",
 
     "local:service:ui:start": "npm run local:compose:up -- ui",
     "local:service:ui:stop": "npm run local:compose:down -- ui",
+
     "local:service:db:start": "npm run local:compose:up -- postgres-db",
     "local:service:db:stop": "npm run local:compose:down -- postgres-db",
+    "local:service:db:migrate": "npm run local:compose -- --profile backend up --build db-migrate",
+
     "local:service:localstack:start": "npm run local:compose:up -- localstack",
     "local:service:localstack:stop": "npm run local:compose:down -- localstack",
 
@@ -38,7 +41,6 @@
 
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
     "local:compose:up": "npm run local:compose -- up -d",
-    "local:compose:up:force": "npm run local:compose -- up -d --force-recreate",
     "local:compose:down": "npm run local:compose -- down"
   },
   "devDependencies": {
