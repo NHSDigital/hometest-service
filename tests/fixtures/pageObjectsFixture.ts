@@ -36,7 +36,7 @@ export const pageObjectFixture = base.extend<MyFixtures>({
   howComfortablePrickingFingerPage: async ({ page }, use) => {
     await use(new HowComfortablePrickingFingerPage(page));
   },
-  
+
   privacyPolicyPage: async ({ page }, use) => {
     await use(new PrivacyPolicyPage(page));
   },

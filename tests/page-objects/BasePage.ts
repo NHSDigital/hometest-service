@@ -25,7 +25,7 @@ export abstract class BasePage {
   async getHeaderText(): Promise<string> {
     return await this.headerText.textContent() ?? "";
   }
-  
+
   async clickBackLink(): Promise<void> {
     await this.page.getByRole('link', { name: 'Back' }).click();
   }
