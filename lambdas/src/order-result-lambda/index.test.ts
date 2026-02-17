@@ -184,7 +184,7 @@ describe('Order Result Lambda Handler', () => {
         issue: [
           {
             code: 'invalid',
-            diagnostics: 'Invalid input: expected object, received undefined → at interpretation',
+            diagnostics: 'Invalid input: expected array, received undefined → at interpretation',
             severity: 'error',
           },
         ],
