@@ -42,3 +42,8 @@ output "order_placement_queue_url" {
   description = "SQS Queue URL for order placement"
   value       = aws_sqs_queue.order_placement.url
 }
+
+output "order_service_endpoint" {
+  description = "Order Service Lambda endpoint"
+  value       = module.order_service_lambda.localstack_endpoint_url
+}
