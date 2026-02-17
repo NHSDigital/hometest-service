@@ -20,10 +20,10 @@ This directory contains the Playwright test framework for the hometest-service p
 
 3. Set up local user credentials (for local testing only):
 
-   The `users.ts` file should already exist in the tests directory with your local test user configuration. 
-   
+   The `users.ts` file should already exist in the tests directory with your local test user configuration.
+
    **Note**: The `users.ts` file is ignored by Git, so your credentials remain private. This configuration is only used when `ENV=local`.
-   
+
    For detailed information about user management, see the [User Management for Local Environment](#user-management-for-local-environment) section.
 
 ## Running Tests
@@ -236,11 +236,12 @@ if (env === 'local') {
 ```
 
 When running tests with `ENV=local`, the framework:
+
 1. Checks the environment variable
 2. Loads the `localUser` from `users.ts`
 3. Uses this user for all test authentication
 
-**Note**: The `users.ts` file is gitignored to protect your credentials. Never commit this file to version control.
+**Note**: The `users.ts` file is ignored to protect your credentials. Never commit this file to version control.
 
 #### Troubleshooting Local User Setup
 
