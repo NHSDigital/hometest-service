@@ -2,7 +2,9 @@ import { redirect } from "react-router-dom";
 
 export async function requireAuth({ request }: { request: Request }) {
   const sessionUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  if (!sessionUrl) throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
+  if (!sessionUrl) {
+    throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
+  }
 
   const res = await fetch(`${sessionUrl}/session`, {
     method: "GET",

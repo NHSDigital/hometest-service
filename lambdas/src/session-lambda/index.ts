@@ -19,9 +19,12 @@ const unauthenticated = {
   body: JSON.stringify({ authenticated: false }),
 };
 
-function authenticated({sessionId, sessionStartTime}: {
+function authenticated({
+  sessionId,
+  sessionStartTime,
+}: {
   sessionId: string;
-  sessionStartTime: number
+  sessionStartTime: number;
 }) {
   return {
     statusCode: 200,
@@ -51,7 +54,10 @@ export const lambdaHandler = async (
   try {
     const payload = await authTokenVerifier.verifyToken(authCookie);
 
-    return authenticated({ sessionId: payload.sessionId, sessionStartTime: payload.sessionStartTime });
+    return authenticated({
+      sessionId: payload.sessionId,
+      sessionStartTime: payload.sessionStartTime,
+    });
   } catch (e) {
     console.warn(`${className} - Invalid auth cookie`);
     return unauthenticated;
@@ -59,6 +65,6 @@ export const lambdaHandler = async (
 };
 
 export const handler = middy(lambdaHandler)
-.use(httpSecurityHeaders(securityHeaders))
-.use(cors(defaultCorsOptions))
-.use(httpErrorHandler());
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(defaultCorsOptions))
+  .use(httpErrorHandler());

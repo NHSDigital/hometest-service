@@ -1,6 +1,10 @@
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import {
+  retrieveMandatoryEnvVariable,
+  retrieveOptionalEnvVariable,
+} from "../lib/utils";
+
 import { AuthTokenVerifier } from "../lib/auth/auth-token-verifier";
-import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 
 interface SessionEnvVariables {
   authCookieKeyId: string;

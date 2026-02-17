@@ -52,14 +52,14 @@ This builds the application and serves it at [http://localhost:8085](http://loca
 
 The application requires the following environment variables:
 
-- `NEXT_PUBLIC_BACKEND_API_ENDPOINT` - The backend API endpoint URL
+- `NEXT_PUBLIC_BACKEND_URL` - The backend API  URL
 
 ### Local Development
 
 For local development with the mock server, create a `.env.local` file in the `ui` directory:
 
 ```env
-NEXT_PUBLIC_BACKEND_API_ENDPOINT=http://localhost:8080
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
 ```
 
 This allows the application to communicate with the local WireMock server for API mocking during development.

@@ -192,7 +192,6 @@ module "session_lambda" {
   }
 }
 
-
 module "hello_world_lambda" {
   source = "./modules/lambda"
 
@@ -284,6 +283,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.eligibility_test_info_lambda,
     module.order_result_lambda,
     module.login_lambda,
+    module.session_lambda
   ]
 
   lifecycle {

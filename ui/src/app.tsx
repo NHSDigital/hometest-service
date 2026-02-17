@@ -3,23 +3,21 @@ import * as React from "react";
 import { JourneyStepNames, RoutePath } from "./lib/models/route-paths";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
+import CallbackPage from "./routes/CallbackPage";
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
-import LoginPage from "./routes/LoginPage";
-import CallbackPage from "./routes/CallbackPage";
+import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import JourneyLayout from "./layouts/JourneyLayout";
+import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
-import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
-import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
-
-
-import {requireAuth} from "@/lib/auth/requireAuth";
+import { requireAuth } from "@/lib/auth/requireAuth";
+import { setBodyClassName } from "./js/setClassName";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
