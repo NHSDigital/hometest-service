@@ -25,6 +25,4 @@ export class SelectDeliveryAddressPage extends BasePage {
     await this.address1.first().check();
     await this.continueButton.click();
   }
-
-
 }

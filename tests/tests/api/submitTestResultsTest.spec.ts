@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures';
+import { test } from '../../fixtures';
 import { HIVTestResultData } from '../../test-data/HIVTestResultData';
 import { headersTestResults } from '../../test-data/HeadersTestResults';
 
