@@ -171,7 +171,7 @@ The framework uses different user management strategies depending on the environ
 #### Environment-Based User Selection
 
 - **Local Environment (`ENV=local`)**: Uses the user configuration from `users.ts` (ignored file)
-- **Dev/Staging Environments**: Uses preconfigured NHS Login sandbox users
+- **dev/Staging Environments**: Uses preconfigured NHS Login sandbox users
 
 #### Setting Up Local Users
 
@@ -252,7 +252,7 @@ If you encounter the error: `"users.ts file not found. Please create it based on
 3. Check that all required fields are present
 4. Ensure `ENV=local` is set before running tests
 
-#### Dev/Staging User Management
+#### dev/Staging User Management
 
 For dev and staging environments, the framework uses preconfigured NHS Login sandbox users. These are managed internally and don't require local configuration.
 
