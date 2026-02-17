@@ -3,8 +3,10 @@ import { z } from "zod";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
 import { createJsonResponse } from "../lib/utils";
+import { init } from "./init";
 
 const name = "order-service-lambda";
+const { supplierService } = init();
 
 const parseAndValidateRequest = (
   eventBody: string | null,
@@ -47,7 +49,26 @@ export const handler = async (
       testCode: orderRequest.testCode,
     });
 
-    return createJsonResponse(201, { orderRequest });
+    // Create patient and order in database
+    // ALPHA: no real idempotency check, so repeated requests will create multiple orders
+    const orderResult = await supplierService.createPatientAndOrder(
+      orderRequest.patient.nhsNumber,
+      orderRequest.patient.birthDate,
+      orderRequest.supplierId,
+      orderRequest.testCode,
+    );
+
+    console.info(name, "Order created successfully", {
+      orderUid: orderResult.orderUid,
+      orderReference: orderResult.orderReference,
+      patientUid: orderResult.patientUid,
+    });
+
+    return createJsonResponse(201, {
+      orderUid: orderResult.orderUid,
+      orderReference: orderResult.orderReference,
+      message: "Order created successfully",
+    });
   } catch (error) {
     console.error(name, "Order request failed", { error });
     return createJsonResponse(400, {
