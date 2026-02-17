@@ -54,3 +54,19 @@ repos:
         files: ^local-environment/infra
         args:
           - --args=-recursive
+
+  - repo: local
+    hooks:
+      - id: eslint-ui
+        name: ESLint (UI)
+        entry: npm --prefix ui run lint -- --fix
+        language: system
+        files: ^ui/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: eslint-lambdas
+        name: ESLint (Lambdas)
+        entry: npm --prefix lambdas run lint -- --fix
+        language: system
+        files: ^lambdas/.*\.(ts|js)$
+        pass_filenames: false
