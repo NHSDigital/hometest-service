@@ -163,3 +163,6 @@ mcp.json
 /test-results/
 .next
 WorkerUser*
+
+# Test configuration with personal credentials
+tests/users.ts

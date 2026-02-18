@@ -41,16 +41,16 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v6
+      - name: "Run UI tests"
+        uses: ./.github/actions/run-npm-tests
         with:
-          node-version: "${{ inputs.nodejs_version }}"
-          cache: npm
-          cache-dependency-path: ui/package-lock.json
-      - name: "Install UI dependencies"
-        run: npm --prefix ui ci
-      - name: "Run UI unit tests"
-        run: npm --prefix ui run test
+          working-directory: ui
+          nodejs-version: "${{ inputs.nodejs_version }}"
+          artifact-prefix: ui
+          test-name: "Jest UI Tests"
+          coverage-threshold: "70"
+          report-title: "UI Coverage Report"
+
   test-unit-lambda:
     name: "Lambda unit tests"
     runs-on: ubuntu-latest
@@ -58,34 +58,17 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v6
+      - name: "Run Lambda tests"
+        uses: ./.github/actions/run-npm-tests
         with:
-          node-version: "${{ inputs.nodejs_version }}"
-          cache: npm
-          cache-dependency-path: lambdas/package-lock.json
-      - name: "Install Lambda dependencies"
-        run: npm --prefix lambdas ci
-      - name: "Run Lambda unit tests"
-        run: npm --prefix lambdas run test
+          working-directory: lambdas
+          nodejs-version: "${{ inputs.nodejs_version }}"
+          artifact-prefix: lambdas
+          test-name: "Jest Lambda Tests"
+          report-title: "Lambdas Coverage Report"
   test-lint:
     name: "Linting"
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v6
-      - name: "Run linting"
-        run: |
-          make test-lint
-      - name: "Save the linting result"
-        run: |
-          echo "Nothing to save"
-  test-coverage:
-    name: "Test coverage"
-    needs: [test-unit-ui, test-unit-lambda]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
