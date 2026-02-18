@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
       - name: "Run UI tests"
         uses: ./.github/actions/run-npm-tests
         with:
@@ -58,6 +60,8 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
       - name: "Run Lambda tests"
         uses: ./.github/actions/run-npm-tests
         with:
@@ -78,6 +82,7 @@ jobs:
       - name: "Save the coverage check result"
         run: |
           echo "Nothing to save"
+
   perform-static-analysis:
     name: "Perform static analysis"
     needs: [test-unit-ui, test-unit-lambda]

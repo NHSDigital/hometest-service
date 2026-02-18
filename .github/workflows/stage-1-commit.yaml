@@ -99,5 +99,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
       - name: Run pre-commit checks
         uses: ./.github/actions/perform-pre-commit
