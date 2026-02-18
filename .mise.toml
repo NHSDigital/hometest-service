@@ -50,6 +50,28 @@ vale = "latest"
 # https://nodejs.org/en/download/releases
 node = "24"
 
+# https://www.python.org/downloads/
+python = "3.12"
+
+[tasks.setup]
+description = "Setup local development environment"
+run = """
+  echo "Installing pre-commit hooks with local config..."
+  if [ -f .pre-commit-config-local.yaml ]; then
+    pre-commit install --config .pre-commit-config-local.yaml
+  else
+    pre-commit install
+  fi
+  echo "Setup complete!"
+"""
+
 [tasks.pre-commit]
 description = "Run pre-commit checks on all files"
-run = "pre-commit run --all-files --show-diff-on-failure --color=always"
+run = """
+  if [ -f .pre-commit-config-local.yaml ]; then
+    echo "Using local pre-commit config..."
+    pre-commit run --config .pre-commit-config-local.yaml --all-files --show-diff-on-failure --color=always
+  else
+    pre-commit run --all-files --show-diff-on-failure --color=always
+  fi
+"""

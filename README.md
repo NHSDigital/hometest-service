@@ -70,6 +70,13 @@ The following software packages, or their equivalents, are expected to be instal
 
 Mise can read the `.nvmrc` file by following the [instructions](https://mise.jdx.dev/configuration.html#idiomatic-version-files).
 
+Important commands:
+
+```shell
+mise run setup        # Install pre-commit hooks (prefers local config if present)
+mise run pre-commit   # Run the pre-commit task defined in .mise.toml
+```
+
 ## Usage
 
 ### Local Development
