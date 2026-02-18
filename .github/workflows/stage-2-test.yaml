@@ -96,24 +96,6 @@ jobs:
         with:
           install: true
           cache: true
-
-      # - name: Cache npm
-      #   uses: actions/cache@v5
-      #   with:
-      #     path: ~/.cache/pre-commit
-      #     key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
-      #     restore-keys: |
-      #       pre-commit-${{ runner.os }}-
-
-      - name: "Install project dependencies"
-        run: |
-          npm install
-      - name: "Start the application"
-        run: |
-          npm run start
-      - name: "Install dependencies"
-        working-directory: tests
-        run: npm ci
       - name: "Install Playwright browsers"
         working-directory: tests
         run: npx playwright install --with-deps
@@ -130,6 +112,9 @@ jobs:
           export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
           export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
           EOF
+      - name: "Start the application"
+        run: |
+          npm run start
       - name: "Run Playwright tests"
         # working-directory: tests
         run: npm run test:playwright
