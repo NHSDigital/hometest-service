@@ -52,3 +52,8 @@ output "ui_url" {
   description = "URL of the UI application"
   value       = "http://localhost:3000"
 }
+
+output "order_service_endpoint" {
+  description = "Order Service Lambda endpoint"
+  value       = module.order_service_lambda.localstack_endpoint_url
+}
