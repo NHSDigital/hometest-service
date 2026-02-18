@@ -52,7 +52,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     return this.workerUsers[index];
   }
 
-  private static readonly SESSION_CACHE_DIR = './testResults/.session-cache';
+  private static readonly SESSION_CACHE_DIR = './.session-cache';
 
   getWorkerUserSessionFilePath(index: number): string {
     const cacheDir = BaseUserManager.SESSION_CACHE_DIR;
