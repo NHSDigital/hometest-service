@@ -67,7 +67,7 @@ interface LoginLambdaDependencies {
   authTokenService: AuthTokenService;
 }
 
-const className = 'init';
+const _className = 'init';
 
 // ALPHA: Removed commons temporarily.
 export async function init(): Promise<LoginLambdaDependencies> {

@@ -34,7 +34,7 @@ describe("getCorrelationIdFromEventHeaders", () => {
     multiValueHeaders: {},
     multiValueQueryStringParameters: null,
     stageVariables: null,
-    requestContext: {} as any,
+    requestContext: {} as APIGatewayProxyEvent["requestContext"],
     resource: "",
   });
 

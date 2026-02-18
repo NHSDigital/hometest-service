@@ -5,7 +5,7 @@ import { EnvironmentVariables } from '../../configuration';
 export interface ApiRequestOptions {
   headers?: Record<string, string>;
   params?: Record<string, string | number | boolean>;
-  data?: any;
+  data?: unknown;
 }
 
 export class BaseApiClient {
@@ -104,7 +104,7 @@ export class BaseApiClient {
   /**
    * Parse JSON response
    */
-  protected async parseJsonResponse<T = any>(response: APIResponse): Promise<T> {
+  protected async parseJsonResponse<T = unknown>(response: APIResponse): Promise<T> {
     return await response.json();
   }
 

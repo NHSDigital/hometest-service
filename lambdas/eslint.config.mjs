@@ -26,6 +26,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ["**/*.test.ts"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off", // Jest module mocking requires dynamic imports
+    },
+  },
+  {
     ignores: ["dist/**", "node_modules/**", "jest/**", "*.config.*"],
   }
 );

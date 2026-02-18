@@ -12,7 +12,7 @@ export default function CallbackPage() {
   | { error: string };
 
   const { updateOrderAnswers } = useCreateOrderContext();
-  const [result, setResult] = useState<Result>(null);
+  const [_result, setResult] = useState<Result>(null);
   const navigate = useNavigate();
   const didRun = useRef(false);
 

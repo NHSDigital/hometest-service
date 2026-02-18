@@ -8,7 +8,7 @@ import { config } from '../configuration';
 import { EnvironmentVariables } from '../configuration';
 
 // Accessibility standards to test against
-const ACCESSIBILITY_STANDARDS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
+const _ACCESSIBILITY_STANDARDS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
 
 export class AccessibilityModule {
   private readonly standards: string[];
@@ -120,7 +120,7 @@ export class AccessibilityModule {
   /**
    * Log violations to console for debugging
    */
-  private logViolations(violations: Result[], pageName: string): void {
+  private logViolations(violations: Result[], _pageName: string): void {
     violations.forEach((violation, index) => {
       console.log(`\n${index + 1}. ${violation.id}: ${violation.description}`);
       console.log(`   Impact: ${violation.impact}`);
