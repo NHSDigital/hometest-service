@@ -118,11 +118,11 @@ jobs:
         working-directory: tests
         run: npx playwright install --with-deps
       - name: "Create nhs login private key file"
-        env:
-          NHS_LOGIN_PRIVATE_KEY: ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
         run: |
           mkdir -p local-environment/infra/resources/secrets
-          printf '%s\n' "$NHS_LOGIN_PRIVATE_KEY" > local-environment/infra/resources/secrets/nhs-login-private-key.pem
+          cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
+          ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
+          EOF
       - name: "Create credentials file"
         working-directory: tests
         run: |
