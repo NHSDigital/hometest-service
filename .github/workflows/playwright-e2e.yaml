@@ -4,6 +4,9 @@ name: "Playwright E2E Tests"
 on:
   schedule:
     - cron: '0 2 * * *'  # Every day at 2am UTC
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       browser:
