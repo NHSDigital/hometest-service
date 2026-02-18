@@ -25,20 +25,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: "Setup Node.js"
-      uses: actions/setup-node@v6
-      with:
-        node-version: "${{ inputs.nodejs-version }}"
-        cache: npm
-        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
-
-    - name: "Install dependencies"
-      shell: bash
-      run: npm --prefix ${{ inputs.working-directory }} ci
-
     - name: "Run test suite"
       shell: bash
-      run: npm --prefix ${{ inputs.working-directory }} run test -- --ci
+      run: mise exec -- npm --prefix ${{ inputs.working-directory }} run test -- --ci
+      env:
+        FORCE_COLOR: true
 
     - name: "Upload test results"
       uses: actions/upload-artifact@v4
