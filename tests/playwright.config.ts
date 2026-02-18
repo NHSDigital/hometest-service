@@ -55,6 +55,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     /* Screenshot on failure */
     screenshot: { mode: 'only-on-failure', fullPage: true },
+    /* Video recording on failure */
+    video: 'on-first-retry',
   },
 
   /* Configure projects for major browsers */

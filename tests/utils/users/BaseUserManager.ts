@@ -9,6 +9,16 @@ import { defaultUserAgent } from '../../playwright.config';
 
 import { ConfigFactory } from '../../configuration/configuration';
 import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs';
+import * as path from 'path';
+
+interface NetworkError {
+  url: string;
+  status: number;
+  statusText: string;
+  method: string;
+  timestamp: string;
+}
 
 export abstract class BaseUserManager<TUser extends BaseTestUser> {
   protected readonly workerUsers: TUser[];
@@ -62,6 +72,85 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     return { page, browser, context };
   }
 
+  private setupNetworkErrorCapture(page: Page): NetworkError[] {
+    const networkErrors: NetworkError[] = [];
+
+    page.on('response', (response) => {
+      const status = response.status();
+      if (status >= 400) {
+        networkErrors.push({
+          url: response.url(),
+          status,
+          statusText: response.statusText(),
+          method: response.request().method(),
+          timestamp: new Date().toISOString(),
+        });
+        console.error(`❌ HTTP ${status} ${response.statusText()}: ${response.request().method()} ${response.url()}`);
+      }
+    });
+
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        console.error(`❌ Console error: ${msg.text()}`);
+      }
+    });
+
+    return networkErrors;
+  }
+
+  private async captureFailureArtifacts(
+    page: Page,
+    context: BrowserContext,
+    user: BaseTestUser,
+    error: Error,
+    networkErrors: NetworkError[]
+  ): Promise<void> {
+    const outputDir = 'testResults/global-setup-failures';
+    fs.mkdirSync(outputDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const prefix = `${outputDir}/global-setup-${user.nhsNumber}-${timestamp}`;
+
+    try {
+      // Take screenshot
+      await page.screenshot({
+        path: `${prefix}-screenshot.png`,
+        fullPage: true
+      });
+      console.log(`📸 Screenshot saved: ${prefix}-screenshot.png`);
+    } catch (screenshotError) {
+      console.error('Failed to capture screenshot:', screenshotError);
+    }
+
+    // Save network errors
+    if (networkErrors.length > 0) {
+      fs.writeFileSync(
+        `${prefix}-network-errors.json`,
+        JSON.stringify(networkErrors, null, 2)
+      );
+      console.log(`🌐 Network errors saved: ${prefix}-network-errors.json`);
+    }
+
+    // Save error details
+    fs.writeFileSync(
+      `${prefix}-error.txt`,
+      `Error: ${error.message}\n\nStack trace:\n${error.stack}\n\nNetwork errors:\n${JSON.stringify(networkErrors, null, 2)}`
+    );
+    console.log(`📝 Error details saved: ${prefix}-error.txt`);
+
+    // Save trace if tracing was enabled
+    if (this.config.enableTracingOnGlobalSetup) {
+      try {
+        await context.tracing.stop({
+          path: `${prefix}-trace.zip`
+        });
+        console.log(`🔍 Trace saved: ${prefix}-trace.zip`);
+      } catch (traceError) {
+        console.error('Failed to save trace:', traceError);
+      }
+    }
+  }
+
   async loginWorkerUsers(): Promise<void> {
     process.env.GLOBAL_START_TIME = new Date().toISOString();
     console.log(
@@ -81,6 +170,10 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       const user = this.workerUsers[i];
       const { browser, page, context } =
         await this.initializeBrowserForInitialLogin();
+
+      // Setup network error capture
+      const networkErrors = this.setupNetworkErrorCapture(page);
+
       if (this.config.enableTracingOnGlobalSetup) {
         await context.tracing.start({
           name: `global-setup-${uuidv4()}`,
@@ -88,17 +181,35 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
           snapshots: true
         });
       }
-      await this.loginWorkerUser(user, page);
 
-      await page.context().storageState({
-        path: this.getWorkerUserSessionFilePath(i)
-      });
+      try {
+        await this.loginWorkerUser(user, page);
 
-      if (this.config.enableTracingOnGlobalSetup) {
-        await context.tracing.stop({
-          path: `testResults/global-setup-trace/global-setup-trace-${user.nhsNumber}.zip`
+        await page.context().storageState({
+          path: this.getWorkerUserSessionFilePath(i)
         });
+
+        if (this.config.enableTracingOnGlobalSetup) {
+          await context.tracing.stop({
+            path: `testResults/global-setup-trace/global-setup-trace-${user.nhsNumber}.zip`
+          });
+        }
+      } catch (error) {
+        console.error(`\n❌ Global setup failed for user ${user.nhsNumber}:`);
+        console.error(`   Error: ${(error as Error).message}`);
+
+        if (networkErrors.length > 0) {
+          console.error(`\n🌐 Network errors detected during setup:`);
+          networkErrors.forEach((err, idx) => {
+            console.error(`   ${idx + 1}. ${err.method} ${err.url} => ${err.status} ${err.statusText}`);
+          });
+        }
+
+        await this.captureFailureArtifacts(page, context, user, error as Error, networkErrors);
+        await browser.close();
+        throw error;
       }
+
       await browser.close();
     }
   }
