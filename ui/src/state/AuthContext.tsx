@@ -19,8 +19,6 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   setUser: (user: AuthUser | null) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,19 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserState(user);
   }, []);
 
-  const logout = useCallback(() => {
-    setUserState(null);
-  }, []);
-
-  const isAuthenticated = user !== null;
-
   return (
     <AuthContext.Provider
       value={{
         user,
         setUser,
-        logout,
-        isAuthenticated,
       }}
     >
       {children}
