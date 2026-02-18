@@ -58,8 +58,8 @@ ON CONFLICT (supplier_id) DO NOTHING;
 
 INSERT INTO test_type (test_code, description)
 VALUES
-  ('FIT', 'Immunochemical Test'),
-  ('PCR', 'Polymerase Chain Reaction')
+('FIT', 'Immunochemical Test'),
+('PCR', 'Polymerase Chain Reaction')
 ON CONFLICT (test_code) DO NOTHING;
 
 INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
@@ -80,30 +80,30 @@ ON CONFLICT (nhs_number) DO NOTHING;
 
 INSERT INTO la_supplier_offering (offering_id, supplier_id, test_code, la_code)
 VALUES
-  (
-    'a5e6f7a8-5678-4def-8abc-56789abcdefa',
-    'c1a2b3c4-1234-4def-8abc-123456789abc',
-    'FIT',
-    'E09000001'
-  ),
-  (
-    'b6f7a8b9-6789-4efa-8bcd-6789abcdefab',
-    'c1a2b3c4-1234-4def-8abc-123456789abc',
-    'PCR',
-    'E09000001'
-  ),
-  (
-    'c7a8b9c0-7890-4fab-8cde-789abcdefabc',
-    'd2b3c4d5-2345-4abc-8def-23456789abcd',
-    'FIT',
-    'E09000001'
-  ),
-  (
-    'd8b9c0d1-8901-4abc-8def-89abcdefabcd',
-    'd2b3c4d5-2345-4abc-8def-23456789abcd',
-    'PCR',
-    'E09000001'
-  )
+(
+  'a5e6f7a8-5678-4def-8abc-56789abcdefa',
+  'c1a2b3c4-1234-4def-8abc-123456789abc',
+  'FIT',
+  'E09000001'
+),
+(
+  'b6f7a8b9-6789-4efa-8bcd-6789abcdefab',
+  'c1a2b3c4-1234-4def-8abc-123456789abc',
+  'PCR',
+  'E09000001'
+),
+(
+  'c7a8b9c0-7890-4fab-8cde-789abcdefabc',
+  'd2b3c4d5-2345-4abc-8def-23456789abcd',
+  'FIT',
+  'E09000001'
+),
+(
+  'd8b9c0d1-8901-4abc-8def-89abcdefabcd',
+  'd2b3c4d5-2345-4abc-8def-23456789abcd',
+  'PCR',
+  'E09000001'
+)
 ON CONFLICT (la_code, supplier_id, test_code) DO NOTHING;
 
 INSERT INTO test_order (order_uid, supplier_id, patient_uid, test_code, originator)
