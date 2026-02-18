@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import { EnvironmentVariables } from "./init";
 import { HttpError } from "../lib/http/http-client";
@@ -11,7 +12,7 @@ const mockEnvironmentVariables: EnvironmentVariables =
   {} as EnvironmentVariables;
 const supplierOrderBody = JSON.parse(
   readFileSync(
-    new URL("../__mocks__/supplier_order_placement_body_valid.json", import.meta.url),
+    join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"),
     "utf-8",
   ),
 ) as Record<string, unknown>;
