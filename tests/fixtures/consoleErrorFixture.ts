@@ -39,11 +39,15 @@ const defaultOptions: ErrorCaptureOptions = {
     // Network transient errors
     /net::ERR_NETWORK_CHANGED/,
     /net::ERR_CONNECTION_RESET/,
+    /net::ERR_CONNECTION_REFUSED/,
     /net::ERR_INTERNET_DISCONNECTED/,
     // External NHS resources not available in test environment
     /NHSCookieConsent is not defined/,
     /nhsapp is not defined/,
     /"undefined" is not valid JSON/,
+    // CSP font violations from external NHS assets
+    /Content Security Policy directive.*font-src/,
+    /assets\.nhs\.uk.*font/i,
   ],
   ignoreStatusCodes: [],
 };
