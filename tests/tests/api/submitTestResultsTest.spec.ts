@@ -10,6 +10,6 @@ test.describe('Submit Test Result API', () => {
 
     hivResultsApi.validateResponse(response, 201);
 
-    const result = await response.json();
+    const _result = await response.json();
   });
 });

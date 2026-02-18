@@ -3,7 +3,7 @@ export class Logger {
    * Log data with timestamp prefix in square brackets
    * @param data - Data to log
    */
-  static log(...data: any[]): void {
+  static log(...data: unknown[]): void {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}]`, ...data);
   }

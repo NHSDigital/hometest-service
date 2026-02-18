@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Page as _Page } from '@playwright/test';
 import { test } from '../../fixtures';
 
 test.describe('Accessibility Testing @accessibility', () => {

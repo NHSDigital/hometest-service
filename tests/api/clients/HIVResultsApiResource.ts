@@ -1,7 +1,7 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
 import { BaseApiClient } from './BaseApiClient';
 import { API_ENDPOINTS } from '../endpoints';
-import { HIVTestResult, HIVTestResultData } from '../../test-data/HIVTestResultData';
+import { HIVTestResult, HIVTestResultData as _HIVTestResultData } from '../../test-data/HIVTestResultData';
 import { headersTestResults } from '../../test-data/HeadersTestResults';
 
 export class HIVResultsApiResource extends BaseApiClient {

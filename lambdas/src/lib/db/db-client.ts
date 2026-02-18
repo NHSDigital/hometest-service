@@ -9,7 +9,7 @@ export interface DbResult<T> {
 }
 
 export interface DBClient {
-  query<T = any, I extends any[] = any[]>(
+  query<T = unknown, I extends unknown[] = unknown[]>(
     text: string,
     values?: I,
   ): Promise<DbResult<T>>;
@@ -31,11 +31,11 @@ export class PostgresDbClient implements DBClient {
     });
   }
 
-  async query<T = any, I extends any[] = any[]>(
+  async query<T = unknown, I extends unknown[] = unknown[]>(
     text: string,
     values?: I,
   ): Promise<DbResult<T>> {
-    const result = await this.pool.query(text, values as any[]);
+    const result = await this.pool.query(text, values as unknown[]);
     return {
       rows: result.rows as T[],
       rowCount: result.rowCount,

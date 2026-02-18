@@ -101,7 +101,7 @@ export class SupplierService {
         orderPath: row.order_path,
         oauthScope: row.oauth_scope,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof SupplierConfigError) {
         throw error;
       }
