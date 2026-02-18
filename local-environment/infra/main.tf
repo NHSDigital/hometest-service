@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -32,6 +36,17 @@ locals {
   secret_txt_files  = fileset(local.secrets_dir, "*.txt")
   secret_key_files  = fileset(local.secrets_dir, "*.pem")
 
+  # Required secrets that must exist
+  required_secrets = [
+    "nhs-login-private-key.pem"
+  ]
+
+  # Validate required secrets exist
+  missing_secrets = [
+    for secret in local.required_secrets :
+    secret if !fileexists("${local.secrets_dir}/${secret}")
+  ]
+
   secret_json_map = {
     for f in local.secret_json_files :
     trimsuffix(f, ".json") => f
@@ -46,6 +61,22 @@ locals {
   }
 
   secret_file_map = merge(local.secret_json_map, local.secret_txt_map, local.secret_key_map)
+}
+
+# Fail early if required secrets are missing
+resource "null_resource" "validate_secrets" {
+  lifecycle {
+    precondition {
+      condition     = length(local.missing_secrets) == 0
+      error_message = <<-EOT
+        Missing required secret files in ${local.secrets_dir}:
+        ${join("\n  - ", local.missing_secrets)}
+
+        To generate the NHS Login private key, run:
+          openssl genrsa -out ${local.secrets_dir}/nhs-login-private-key.pem 2048
+      EOT
+    }
+  }
 }
 
 resource "aws_secretsmanager_secret" "secrets" {

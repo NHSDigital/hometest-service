@@ -7,6 +7,7 @@
     "postinstall": "npm --prefix ui install && npm --prefix lambdas install && npm --prefix tests install",
 
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
+    "test:playwright": "API_BASE_URL=$(npm run local:terraform -- output -raw order_result_endpoint) npm --prefix tests run test",
 
     "build:lambdas": "npm --prefix lambdas run build",
     "package:lambdas": "npm --prefix lambdas run package",
