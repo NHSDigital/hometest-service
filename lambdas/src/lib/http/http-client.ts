@@ -5,13 +5,13 @@ export interface HttpClient {
   ): Promise<T>;
   post<T>(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType?: string,
   ): Promise<T>;
   postRaw(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType?: string,
   ): Promise<Response>;
@@ -52,7 +52,7 @@ export class FetchHttpClient implements HttpClient {
 
   async post<T>(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType: string = "application/json",
   ): Promise<T> {
@@ -80,7 +80,7 @@ export class FetchHttpClient implements HttpClient {
 
   async postRaw(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType: string = "application/json",
   ): Promise<Response> {

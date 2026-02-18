@@ -1,0 +1,5 @@
+# fast-xml-parser CVE - transitive dependency from AWS SDK
+# DoS via entity expansion in DOCTYPE - low risk for backend Lambda usage
+# Monitor: https://avd.aquasec.com/nvd/cve-2026-26278
+# https://github.com/aws/aws-sdk-js-v3/pull/7742/changes
+CVE-2026-26278

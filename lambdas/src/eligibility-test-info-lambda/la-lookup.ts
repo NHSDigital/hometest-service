@@ -10,6 +10,16 @@ export interface LaLookupServiceProperties {
   baseUrl: string;
 }
 
+export interface LaLookupResponse {
+  result?: {
+    codes: {
+      admin_district: string;
+    };
+    region?: string;
+    nhs_ha?: string;
+  };
+}
+
 export class LaLookupService {
   private readonly baseUrl: string;
   private readonly httpClient: HttpClient
@@ -26,7 +36,7 @@ export class LaLookupService {
   async lookupByPostcode(postcode: string): Promise<LaLookupResult | null> {
     try {
       // define something correct here
-      const data = await this.httpClient.get<any>(`${this.baseUrl}/la?postcode=${postcode}`);
+      const data = await this.httpClient.get<LaLookupResponse>(`${this.baseUrl}/la?postcode=${postcode}`);
 
       if (!data || !data.result) return null;
 

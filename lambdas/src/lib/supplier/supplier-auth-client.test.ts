@@ -4,11 +4,11 @@ describe("OAuthSupplierAuthClient", () => {
   it("returns access token when successful", async () => {
     const httpClient = {
       post: jest.fn().mockResolvedValue({ access_token: "token-123" }),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[0];
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[1];
 
     const client = new OAuthSupplierAuthClient(
       httpClient,
@@ -34,11 +34,11 @@ describe("OAuthSupplierAuthClient", () => {
   it("uses custom token path when provided", async () => {
     const httpClient = {
       post: jest.fn().mockResolvedValue({ access_token: "token-789" }),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[0];
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[1];
 
     const client = new OAuthSupplierAuthClient(
       httpClient,
@@ -63,11 +63,11 @@ describe("OAuthSupplierAuthClient", () => {
   it("uses custom scope when provided", async () => {
     const httpClient = {
       post: jest.fn().mockResolvedValue({ access_token: "token-456" }),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[0];
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[1];
 
     const client = new OAuthSupplierAuthClient(
       httpClient,
@@ -91,10 +91,10 @@ describe("OAuthSupplierAuthClient", () => {
   });
 
   it("propagates errors from secrets client", async () => {
-    const httpClient = { post: jest.fn() } as any;
+    const httpClient = { post: jest.fn() } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[0];
     const secretsClient = {
       getSecretValue: jest.fn().mockRejectedValue(new Error("secret error")),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[1];
 
     const client = new OAuthSupplierAuthClient(
       httpClient,
@@ -111,11 +111,11 @@ describe("OAuthSupplierAuthClient", () => {
   it("propagates errors from http client", async () => {
     const httpClient = {
       post: jest.fn().mockRejectedValue(new Error("http error")),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[0];
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[1];
 
     const client = new OAuthSupplierAuthClient(
       httpClient,
@@ -132,11 +132,11 @@ describe("OAuthSupplierAuthClient", () => {
   it("removes trailing slash from baseUrl before appending tokenPath", async () => {
     const httpClient = {
       post: jest.fn().mockResolvedValue({ access_token: "token-abc" }),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[0];
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
+    } as unknown as ConstructorParameters<typeof OAuthSupplierAuthClient>[1];
 
     const client = new OAuthSupplierAuthClient(
       httpClient,

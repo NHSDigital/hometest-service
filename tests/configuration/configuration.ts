@@ -130,7 +130,7 @@ export class ConfigFactory {
     }
   }
 
-  public static get(key: keyof ConfigInterface): any {
+  public static get(key: keyof ConfigInterface): unknown {
     const config = this.getConfig();
     return config[key];
   }

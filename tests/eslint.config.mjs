@@ -23,15 +23,10 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-require-imports": "warn",
       "no-useless-catch": "warn",
+      "no-empty-pattern": "off", // Common in Playwright fixtures
     },
   },
   {
-    files: ["**/*.test.ts"],
-    rules: {
-      "@typescript-eslint/no-require-imports": "off", // Jest module mocking requires dynamic imports
-    },
-  },
-  {
-    ignores: ["dist/**", "node_modules/**", "jest/**", "*.config.*"],
+    ignores: ["testResults/**", "node_modules/**", "*.config.*"],
   }
 );

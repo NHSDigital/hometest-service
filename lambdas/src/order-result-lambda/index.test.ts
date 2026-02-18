@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, Context as _Context } from 'aws-lambda';
 
 const mockSQSClientSendMessage = jest.fn();
 

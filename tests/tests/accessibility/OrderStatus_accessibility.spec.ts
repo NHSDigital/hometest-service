@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Page as _Page } from '@playwright/test';
 import { test } from '../../fixtures';
 import { type Result } from 'axe-core';
 import { OrderStatus } from '../../test-data/orderStatus';

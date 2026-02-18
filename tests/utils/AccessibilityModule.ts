@@ -8,7 +8,7 @@ import { config } from '../configuration';
 import { EnvironmentVariables } from '../configuration';
 
 // Accessibility standards to test against
-const ACCESSIBILITY_STANDARDS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
+const _ACCESSIBILITY_STANDARDS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
 
 export class AccessibilityModule {
   private readonly standards: string[];
@@ -17,7 +17,7 @@ export class AccessibilityModule {
   constructor() {
     // Get standards from configuration or use default
     const standardsConfig = config.get(EnvironmentVariables.ACCESSIBILITY_STANDARDS);
-    this.standards = standardsConfig.split(',').map(s => s.trim());
+    this.standards = standardsConfig.split(',').map((s: string) => s.trim());
 
     // Get absolute path to tests/testResults/accessibility
     // __dirname is tests/utils, so go up one level to tests, then into testResults/accessibility
@@ -120,7 +120,7 @@ export class AccessibilityModule {
   /**
    * Log violations to console for debugging
    */
-  private logViolations(violations: Result[], pageName: string): void {
+  private logViolations(violations: Result[], _pageName: string): void {
     violations.forEach((violation, index) => {
       console.log(`\n${index + 1}. ${violation.id}: ${violation.description}`);
       console.log(`   Impact: ${violation.impact}`);

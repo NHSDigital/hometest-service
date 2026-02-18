@@ -8,8 +8,8 @@ import { Resolver } from 'node:dns';
 
 export interface HttpErrorDetails {
   httpCode?: number;
-  responseData?: any;
-  cause?: any;
+  responseData?: unknown;
+  cause?: unknown;
 }
 
 export interface HttpClientOptions {
@@ -17,9 +17,15 @@ export interface HttpClientOptions {
   additionalDnsServers?: string[];
 }
 
+export interface CustomLookupOptions {
+  family?: AddressFamily;
+  hints?: number;
+  all?: boolean;
+}
+
 export type CustomLookupType = (
   hostname: string,
-  options: any,
+  options: CustomLookupOptions,
   callback: (
     err: Error | null,
     address: LookupAddress | LookupAddress[],
@@ -55,7 +61,7 @@ export class HttpClient {
         lookup: this.customLookup
       });
       return { httpCode: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorDetails = this.createErrorDetailsObject(error);
       throw this.createErrorWithDetails('Post', errorDetails);
     }
@@ -100,7 +106,7 @@ export class HttpClient {
       });
 
       return { httpCode: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorDetails = this.createErrorDetailsObject(error);
       throw this.createErrorWithDetails('Put', errorDetails);
     }
@@ -136,7 +142,7 @@ export class HttpClient {
       });
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorDetails = this.createErrorDetailsObject(error);
       throw this.createErrorWithDetails('Delete', errorDetails);
     }
@@ -168,9 +174,9 @@ export class HttpClient {
       );
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errDetails = HttpClient.getHttpErrorDetails(error);
-      const errJson = HttpClient.isHttpError(error) ? error.toJSON() : error;
+      const _errJson = HttpClient.isHttpError(error) ? (error as { toJSON: () => unknown }).toJSON() : error;
 
       throw new Error('Get API call failure', {
         cause: {
@@ -223,20 +229,21 @@ export class HttpClient {
     return url.origin.concat(url.pathname);
   }
 
-  private createErrorDetailsObject(error: any): Record<string, any> {
+  private createErrorDetailsObject(error: unknown): Record<string, unknown> {
+    const err = error as { message?: string; code?: string; response?: { status?: number; data?: unknown }; cause?: unknown };
     return {
-      errorMessage: error.message,
-      errorCode: error.code,
-      responseStatus: error.response?.status,
-      responseData: error.response?.data,
-      errorCause: error.cause,
+      errorMessage: err.message,
+      errorCode: err.code,
+      responseStatus: err.response?.status,
+      responseData: err.response?.data,
+      errorCause: err.cause,
       isHttpError: true
     };
   }
 
   private createErrorWithDetails(
     apiMethod: string,
-    errorDetails: Record<string, any>
+    errorDetails: Record<string, unknown>
   ): Error {
     return new Error(`${apiMethod} API call failure`, {
       cause: {
@@ -245,17 +252,19 @@ export class HttpClient {
     });
   }
 
-  static isHttpError(error: any): boolean {
+  static isHttpError(error: unknown): boolean {
+    const err = error as { cause?: { details?: { isHttpError?: boolean } } };
     return (
-      axios.isAxiosError(error) || error.cause?.details?.isHttpError === true
+      axios.isAxiosError(error) || err.cause?.details?.isHttpError === true
     );
   }
 
-  static getHttpErrorDetails(error: any): HttpErrorDetails {
+  static getHttpErrorDetails(error: unknown): HttpErrorDetails {
+    const err = error as { cause?: { details?: { responseStatus?: number; responseData?: unknown; errorCause?: unknown } } };
     return {
-      httpCode: error.cause?.details?.responseStatus,
-      responseData: error.cause?.details?.responseData,
-      cause: error.cause?.details?.errorCause
+      httpCode: err.cause?.details?.responseStatus,
+      responseData: err.cause?.details?.responseData,
+      cause: err.cause?.details?.errorCause
     };
   }
 }

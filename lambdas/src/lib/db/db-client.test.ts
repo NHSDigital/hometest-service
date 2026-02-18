@@ -17,7 +17,7 @@ describe("PostgresDbClient", () => {
     client = new PostgresDbClient(
       "postgresql://test:test@localhost:5432/testdb",
     );
-    mockPool = (client as any).pool;
+    mockPool = (client as unknown as { pool: jest.Mocked<Pool> }).pool;
   });
 
   afterEach(() => {
@@ -59,7 +59,7 @@ describe("PostgresDbClient", () => {
       expect(result.rows).toEqual([{ count: 5 }]);
       expect(mockPool.query).toHaveBeenCalledWith(
         "SELECT COUNT(*) FROM users",
-        undefined as any,
+        undefined,
       );
     });
 
