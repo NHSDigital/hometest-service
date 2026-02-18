@@ -115,13 +115,19 @@ jobs:
       - name: "Start the application"
         run: |
           npm run start
+
+      - name: "Show application status"
+        run: |
+          docker compose -f local-environment/docker-compose.yml ps
+          docker compose -f local-environment/docker-compose.yml logs
+
       - name: "Run Playwright tests"
         # working-directory: tests
         run: npm run test:playwright
         env:
           CI: true
           # BASE_URL: ${{ vars.TEST_BASE_URL }}
-      - name: "Grab docker-compose logs"
+      - name: "Grab docker compose logs"
         run: |
           docker compose -f local-environment/docker-compose.yml logs > tests/testResults/docker-compose.logs
         if: always()
