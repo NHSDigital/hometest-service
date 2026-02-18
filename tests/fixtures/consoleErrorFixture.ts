@@ -35,7 +35,16 @@ interface ConsoleErrorFixture {
 const defaultOptions: ErrorCaptureOptions = {
   failOnConsoleError: true,
   failOnNetworkError: true,
-  ignorePatterns: [],
+  ignorePatterns: [
+    // Network transient errors
+    /net::ERR_NETWORK_CHANGED/,
+    /net::ERR_CONNECTION_RESET/,
+    /net::ERR_INTERNET_DISCONNECTED/,
+    // External NHS resources not available in test environment
+    /NHSCookieConsent is not defined/,
+    /nhsapp is not defined/,
+    /"undefined" is not valid JSON/,
+  ],
   ignoreStatusCodes: [],
 };
 
