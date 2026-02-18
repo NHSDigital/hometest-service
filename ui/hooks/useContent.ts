@@ -14,34 +14,48 @@ import type {
 
 import { content } from "@/content/ContentService";
 
+export const PageKeys = {
+  GetSelfTest: "get-self-test-kit-for-HIV",
+  EnterDeliveryAddress: "enter-delivery-address",
+  EnterAddressManually: "enter-address-manually",
+  NoAddressFound: "no-address-found",
+  SelectDeliveryAddress: "select-delivery-address",
+  ComfortablePricking: "how-comfortable-pricking-finger",
+  BloodSampleGuide: "blood-sample-guide",
+  GlobalError: "global-error",
+  OrderTracking: "order-tracking",
+  HomeTestPolicy: "home-test-privacy-policy",
+} as const;
+
+export type PageKey = (typeof PageKeys)[keyof typeof PageKeys];
+
 export interface UseContentReturn {
   commonContent: CommonContent;
-  "get-self-test-kit-for-HIV": StartPageContent;
-  "enter-delivery-address": EnterDeliveryAddressContent;
-  "enter-address-manually": EnterAddressManuallyContent;
-  "no-address-found": NoAddressFoundContent;
-  "select-delivery-address": SelectDeliveryAddressContent;
-  "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
-  "blood-sample-guide": BloodSampleGuideContent;
-  "global-error": GlobalErrorContent;
-  "order-tracking": OrderTrackingContent;
-  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  [PageKeys.GetSelfTest]: StartPageContent;
+  [PageKeys.EnterDeliveryAddress]: EnterDeliveryAddressContent;
+  [PageKeys.EnterAddressManually]: EnterAddressManuallyContent;
+  [PageKeys.NoAddressFound]: NoAddressFoundContent;
+  [PageKeys.SelectDeliveryAddress]: SelectDeliveryAddressContent;
+  [PageKeys.ComfortablePricking]: HowComfortablePrickingFingerContent;
+  [PageKeys.BloodSampleGuide]: BloodSampleGuideContent;
+  [PageKeys.GlobalError]: GlobalErrorContent;
+  [PageKeys.OrderTracking]: OrderTrackingContent;
+  [PageKeys.HomeTestPolicy]: HomeTestPrivacyPolicyContent;
 }
 
 export const useContent = (): UseContentReturn => {
   return {
     commonContent: content.commonContent,
-    "get-self-test-kit-for-HIV": content.pages["get-self-test-kit-for-HIV"],
-    "enter-delivery-address": content.pages["enter-delivery-address"],
-    "enter-address-manually": content.pages["enter-address-manually"],
-    "no-address-found": content.pages["no-address-found"],
-    "select-delivery-address": content.pages["select-delivery-address"],
-    "how-comfortable-pricking-finger":
-      content.pages["how-comfortable-pricking-finger"],
-    "global-error": content.pages["global-error"],
-    "order-tracking": content.pages["order-tracking"],
-    "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
-    "blood-sample-guide": content.pages["blood-sample-guide"],
+    [PageKeys.GetSelfTest]: content.pages[PageKeys.GetSelfTest],
+    [PageKeys.EnterDeliveryAddress]: content.pages[PageKeys.EnterDeliveryAddress],
+    [PageKeys.EnterAddressManually]: content.pages[PageKeys.EnterAddressManually],
+    [PageKeys.NoAddressFound]: content.pages[PageKeys.NoAddressFound],
+    [PageKeys.SelectDeliveryAddress]: content.pages[PageKeys.SelectDeliveryAddress],
+    [PageKeys.ComfortablePricking]: content.pages[PageKeys.ComfortablePricking],
+    [PageKeys.GlobalError]: content.pages[PageKeys.GlobalError],
+    [PageKeys.OrderTracking]: content.pages[PageKeys.OrderTracking],
+    [PageKeys.HomeTestPolicy]: content.pages[PageKeys.HomeTestPolicy],
+    [PageKeys.BloodSampleGuide]: content.pages[PageKeys.BloodSampleGuide],
   };
 };
 
@@ -49,39 +63,17 @@ export const useCommonContent = (): CommonContent => {
   return content.commonContent;
 };
 
-export function usePageContent(
-  page: "get-self-test-kit-for-HIV",
-): StartPageContent;
-export function usePageContent(
-  page: "enter-delivery-address",
-): EnterDeliveryAddressContent;
-export function usePageContent(
-  page: "enter-address-manually",
-): EnterAddressManuallyContent;
-export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
-export function usePageContent(
-  page: "select-delivery-address",
-): SelectDeliveryAddressContent;
-export function usePageContent(
-  page: "how-comfortable-pricking-finger",
-): HowComfortablePrickingFingerContent;
-export function usePageContent(page: "global-error"): GlobalErrorContent;
-export function usePageContent(page: "order-tracking"): OrderTrackingContent;
-export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
-export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
-export function usePageContent(
-  page:
-    | "get-self-test-kit-for-HIV"
-    | "enter-delivery-address"
-    | "enter-address-manually"
-    | "no-address-found"
-    | "select-delivery-address"
-    | "how-comfortable-pricking-finger"
-    | "global-error"
-    | "order-tracking"
-    | "home-test-privacy-policy"
-    | "blood-sample-guide"
-) {
+export function usePageContent(page: typeof PageKeys.GetSelfTest): StartPageContent;
+export function usePageContent(page: typeof PageKeys.EnterDeliveryAddress): EnterDeliveryAddressContent;
+export function usePageContent(page: typeof PageKeys.EnterAddressManually): EnterAddressManuallyContent;
+export function usePageContent(page: typeof PageKeys.NoAddressFound): NoAddressFoundContent;
+export function usePageContent(page: typeof PageKeys.SelectDeliveryAddress): SelectDeliveryAddressContent;
+export function usePageContent(page: typeof PageKeys.ComfortablePricking): HowComfortablePrickingFingerContent;
+export function usePageContent(page: typeof PageKeys.GlobalError): GlobalErrorContent;
+export function usePageContent(page: typeof PageKeys.OrderTracking): OrderTrackingContent;
+export function usePageContent(page: typeof PageKeys.HomeTestPolicy): HomeTestPrivacyPolicyContent;
+export function usePageContent(page: typeof PageKeys.BloodSampleGuide): BloodSampleGuideContent;
+export function usePageContent(page: PageKey) {
   return content.pages[page];
 }
 
