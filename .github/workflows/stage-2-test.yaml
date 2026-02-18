@@ -144,9 +144,12 @@ jobs:
         env:
           CI: true
           # BASE_URL: ${{ vars.TEST_BASE_URL }}
+          FORCE_COLOR: true
       - name: "Grab docker compose logs"
         run: |
-          docker compose -f local-environment/docker-compose.yml logs > tests/testResults/docker-compose.logs
+          for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
+            docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
+          done
         if: always()
 
       - name: "Upload test results"
