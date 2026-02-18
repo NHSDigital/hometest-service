@@ -71,6 +71,13 @@ repos:
         files: ^lambdas/.*\.(ts|js)$
         pass_filenames: false
 
+      - id: eslint-tests
+        name: ESLint (Tests)
+        entry: npm --prefix tests run lint -- --fix
+        language: system
+        files: ^tests/.*\.(ts|js)$
+        pass_filenames: false
+
       # - id: typescript-check-ui
       #   name: TypeScript (UI)
       #   entry: npm --prefix ui run build -- --noEmit
