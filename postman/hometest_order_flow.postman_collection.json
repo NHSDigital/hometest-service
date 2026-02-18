@@ -8,7 +8,7 @@
   },
   "item": [
     {
-      "name": "order-router",
+      "name": "order-service",
       "item": [
         {
           "name": "201: success",
