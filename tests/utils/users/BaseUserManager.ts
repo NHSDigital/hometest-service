@@ -52,8 +52,12 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     return this.workerUsers[index];
   }
 
+  private static readonly SESSION_CACHE_DIR = './testResults/.session-cache';
+
   getWorkerUserSessionFilePath(index: number): string {
-    return `./WorkerUserSession${index}.json`;
+    const cacheDir = BaseUserManager.SESSION_CACHE_DIR;
+    fs.mkdirSync(cacheDir, { recursive: true });
+    return path.join(cacheDir, `WorkerUserSession${index}.json`);
   }
 
   async initializeBrowserForInitialLogin(): Promise<{
