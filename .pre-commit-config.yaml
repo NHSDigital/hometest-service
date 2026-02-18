@@ -8,13 +8,20 @@ repos:
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: check-yaml
+        args: [--allow-multiple-documents]
       - id: check-json
+      - id: check-toml
       - id: check-added-large-files
+        args: ["--maxkb=500"]
       - id: check-case-conflict
       - id: check-merge-conflict
+      - id: check-symlinks
       - id: detect-private-key
       - id: check-executables-have-shebangs
-      - id: forbid-submodules
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master, --branch, develop]
 
   - repo: local
     hooks:
@@ -44,7 +51,6 @@ repos:
     rev: v0.47.0
     hooks:
       - id: markdownlint
-        # exclude: ^infrastructure/src
         args: [--fix]
 
   - repo: https://github.com/antonbabenko/pre-commit-terraform
@@ -77,3 +83,15 @@ repos:
         language: system
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.11
+    hooks:
+      - id: actionlint
+        files: ^\.github/workflows/
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
