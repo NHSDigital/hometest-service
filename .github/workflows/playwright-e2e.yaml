@@ -81,8 +81,8 @@ jobs:
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
           API_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url)
-          echo "ui_url=$UI_URL" >> $GITHUB_OUTPUT
-          echo "api_base_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "ui_url=$UI_URL" >> "$GITHUB_OUTPUT"
+          echo "api_base_url=$API_URL" >> "$GITHUB_OUTPUT"
           echo "UI URL: $UI_URL"
           echo "API URL: $API_URL"
 
@@ -90,11 +90,11 @@ jobs:
         id: urls
         run: |
           if [ "$TARGET_ENV" == "dev" ]; then
-            echo "ui_url=https://dev.hometest.service.nhs.uk" >> $GITHUB_OUTPUT
-            echo "api_url=https://dev.hometest.service.nhs.uk/" >> $GITHUB_OUTPUT
+            echo "ui_url=https://dev.hometest.service.nhs.uk" >> "$GITHUB_OUTPUT"
+            echo "api_url=https://dev.hometest.service.nhs.uk/" >> "$GITHUB_OUTPUT"
           else
-            echo "ui_url=${{ steps.terraform.outputs.ui_url }}" >> $GITHUB_OUTPUT
-            echo "api_url=${{ steps.terraform.outputs.api_base_url }}" >> $GITHUB_OUTPUT
+            echo "ui_url=${{ steps.terraform.outputs.ui_url }}" >> "$GITHUB_OUTPUT"
+            echo "api_url=${{ steps.terraform.outputs.api_base_url }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: "Wait for UI to be reachable"
@@ -138,7 +138,7 @@ jobs:
           fi
 
           echo "Running: $CMD"
-          eval $CMD
+          eval "$CMD"
         env:
           CI: true
           FORCE_COLOR: true
@@ -164,24 +164,26 @@ jobs:
       - name: "Generate Job Summary"
         if: always()
         run: |
-          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f tests/testResults/junit-results.xml ]; then
-            TESTS=$(grep -oP 'tests="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
-            FAILURES=$(grep -oP 'failures="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
-            ERRORS=$(grep -oP 'errors="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
-            TIME=$(grep -oP 'time="\K[0-9.]+' tests/testResults/junit-results.xml | head -1)
-            PASSED=$((TESTS - FAILURES - ERRORS))
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Total Tests | $TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| :white_check_mark: Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
-            echo "| :x: Failed | $FAILURES |" >> $GITHUB_STEP_SUMMARY
-            echo "| :warning: Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
-            echo "| :stopwatch: Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo ":warning: No test results found" >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            echo "## Playwright Test Results"
+            echo ""
+            if [ -f tests/testResults/junit-results.xml ]; then
+              TESTS=$(grep -oP 'tests="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+              FAILURES=$(grep -oP 'failures="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+              ERRORS=$(grep -oP 'errors="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+              TIME=$(grep -oP 'time="\K[0-9.]+' tests/testResults/junit-results.xml | head -1)
+              PASSED=$((TESTS - FAILURES - ERRORS))
+              echo "| Metric | Value |"
+              echo "|--------|-------|"
+              echo "| Total Tests | $TESTS |"
+              echo "| :white_check_mark: Passed | $PASSED |"
+              echo "| :x: Failed | $FAILURES |"
+              echo "| :warning: Errors | $ERRORS |"
+              echo "| :stopwatch: Duration | ${TIME}s |"
+            else
+              echo ":warning: No test results found"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: "Upload test results"
         uses: actions/upload-artifact@v4
