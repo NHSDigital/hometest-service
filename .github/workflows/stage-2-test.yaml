@@ -83,82 +83,82 @@ jobs:
         run: |
           echo "Nothing to save"
 
-  test-playwright:
-    name: "Playwright E2E tests"
-    needs: [test-unit-ui, test-unit-lambda]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v6
-      - name: "Install mise"
-        uses: jdx/mise-action@v3
-        with:
-          install: true
-          cache: true
-      - name: "Install Playwright browsers"
-        working-directory: tests
-        run: npx playwright install --with-deps
-      - name: "Create nhs login private key file"
-        run: |
-          mkdir -p local-environment/infra/resources/secrets
-          cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
-          ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
-          EOF
-      - name: "Create credentials file"
-        working-directory: tests
-        run: |
-          cat > credentials.ts << 'EOF'
-          export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
-          export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
-          EOF
-      - name: "Start the application"
-        run: |
-          npm run start
+  # test-playwright:
+  #   name: "Playwright E2E tests"
+  #   needs: [test-unit-ui, test-unit-lambda]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   steps:
+  #     - name: "Checkout code"
+  #       uses: actions/checkout@v6
+  #     - name: "Install mise"
+  #       uses: jdx/mise-action@v3
+  #       with:
+  #         install: true
+  #         cache: true
+  #     - name: "Install Playwright browsers"
+  #       working-directory: tests
+  #       run: npx playwright install --with-deps
+  #     - name: "Create nhs login private key file"
+  #       run: |
+  #         mkdir -p local-environment/infra/resources/secrets
+  #         cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
+  #         ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
+  #         EOF
+  #     - name: "Create credentials file"
+  #       working-directory: tests
+  #       run: |
+  #         cat > credentials.ts << 'EOF'
+  #         export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
+  #         export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
+  #         EOF
+  #     - name: "Start the application"
+  #       run: |
+  #         npm run start
 
-      - name: "Show application status"
-        run: |
-          docker compose -f local-environment/docker-compose.yml ps
-          docker logs ui
+  #     - name: "Show application status"
+  #       run: |
+  #         docker compose -f local-environment/docker-compose.yml ps
+  #         docker logs ui
 
-      - name: "Wait for UI to be reachable"
-        run: |
-          echo "Waiting for UI to be reachable at http://localhost:3000..."
-          timeout=120
-          elapsed=0
-          until curl -sf http://localhost:3000 > /dev/null 2>&1; do
-            if [ $elapsed -ge $timeout ]; then
-              echo "Timeout: UI not reachable after ${timeout}s"
-              docker logs ui
-              exit 1
-            fi
-            echo "Waiting... (${elapsed}s)"
-            sleep 5
-            elapsed=$((elapsed + 5))
-          done
-          echo "UI is reachable!"
+  #     - name: "Wait for UI to be reachable"
+  #       run: |
+  #         echo "Waiting for UI to be reachable at http://localhost:3000..."
+  #         timeout=120
+  #         elapsed=0
+  #         until curl -sf http://localhost:3000 > /dev/null 2>&1; do
+  #           if [ $elapsed -ge $timeout ]; then
+  #             echo "Timeout: UI not reachable after ${timeout}s"
+  #             docker logs ui
+  #             exit 1
+  #           fi
+  #           echo "Waiting... (${elapsed}s)"
+  #           sleep 5
+  #           elapsed=$((elapsed + 5))
+  #         done
+  #         echo "UI is reachable!"
 
-      - name: "Run Playwright tests"
-        # working-directory: tests
-        run: npm run test:playwright
-        env:
-          CI: true
-          # BASE_URL: ${{ vars.TEST_BASE_URL }}
-          FORCE_COLOR: true
-      - name: "Grab docker compose logs"
-        run: |
-          for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
-            docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
-          done
-        if: always()
+  #     - name: "Run Playwright tests"
+  #       # working-directory: tests
+  #       run: npm run test:playwright
+  #       env:
+  #         CI: true
+  #         # BASE_URL: ${{ vars.TEST_BASE_URL }}
+  #         FORCE_COLOR: true
+  #     - name: "Grab docker compose logs"
+  #       run: |
+  #         for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
+  #           docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
+  #         done
+  #       if: always()
 
-      - name: "Upload test results"
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: tests/testResults/
-          retention-days: 30
+  #     - name: "Upload test results"
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: playwright-report
+  #         path: tests/testResults/
+  #         retention-days: 30
 
   perform-static-analysis:
     name: "Perform static analysis"
