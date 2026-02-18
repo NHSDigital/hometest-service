@@ -34,9 +34,9 @@ on:
         type: string
 
 permissions:
-  contents: read
   actions: read
   checks: write
+  contents: write
   pull-requests: write
 
 jobs:
