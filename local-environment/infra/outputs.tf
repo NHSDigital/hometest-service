@@ -3,6 +3,11 @@ output "api_gateway_url" {
   value       = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}"
 }
 
+output "api_base_url" {
+  description = "LocalStack API base URL for tests"
+  value       = "http://localhost:4566/restapis/${aws_api_gateway_rest_api.api.id}/${var.environment}/_user_request_"
+}
+
 output "api_gateway_id" {
   description = "API Gateway ID"
   value       = aws_api_gateway_rest_api.api.id
