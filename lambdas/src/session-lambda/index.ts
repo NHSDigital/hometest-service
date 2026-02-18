@@ -11,27 +11,19 @@ import { securityHeaders } from "../lib/http/security-headers";
 import { defaultCorsOptions } from "../login-lambda/cors-configuration";
 import { getAuthCookieFromRequest } from "../lib/auth/auth-utils";
 import { init } from "./init";
+import { INhsUserInfoResponseModel } from "src/lib/models/nhs-login/nhs-login-user-info-response-model";
 
 const className = "session-handler";
 
 const unauthenticated = {
   statusCode: 401,
-  body: JSON.stringify({ authenticated: false }),
+  body: "",
 };
 
-function authenticated({sessionId, sessionStartTime}: {
-  sessionId: string;
-  sessionStartTime: number
-}) {
+function authenticated(userInfo: INhsUserInfoResponseModel) {
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      authenticated: true,
-      session: {
-        sessionId: sessionId,
-        sessionStartTime: sessionStartTime,
-      },
-    }),
+    body: JSON.stringify(userInfo),
   };
 }
 
@@ -46,19 +38,32 @@ export const lambdaHandler = async (
     return unauthenticated;
   }
 
-  const { authTokenVerifier } = await init();
+  const { authTokenVerifier, nhsLoginClient } = await init();
 
   try {
     const payload = await authTokenVerifier.verifyToken(authCookie);
 
-    return authenticated({ sessionId: payload.sessionId, sessionStartTime: payload.sessionStartTime });
+    const userInfoResponse = await nhsLoginClient.getUserInfo(
+      payload.sessionId,
+    );
+
+    return authenticated(userInfoResponse);
   } catch (e) {
-    console.warn(`${className} - Invalid auth cookie`);
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    const errorStack = e instanceof Error ? e.stack : undefined;
+    const errorCause = (e as any)?.cause;
+
+    console.error(`${className} - Authentication failed:`, {
+      message: errorMessage,
+      stack: errorStack,
+      cause: errorCause ? JSON.stringify(errorCause, null, 2) : undefined,
+    });
+
     return unauthenticated;
   }
 };
 
 export const handler = middy(lambdaHandler)
-.use(httpSecurityHeaders(securityHeaders))
-.use(cors(defaultCorsOptions))
-.use(httpErrorHandler());
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(defaultCorsOptions))
+  .use(httpErrorHandler());

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useCreateOrderContext } from "@/state/OrderContext";
-import { RoutePath } from "@/lib/models/route-paths";
-import { useNavigate } from "react-router-dom";
+import { AuthUser, useAuth } from "@/state/AuthContext";
+import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
+import { useEffect, useRef } from "react";
 
-import {consumeLoginCsrf, verifyState} from "@/lib/auth/loginState";
+import { RoutePath } from "@/lib/models/route-paths";
+import { backendUrl } from "@/settings";
+import { useCreateOrderContext } from "@/state/OrderContext";
+import { useNavigate } from "react-router-dom";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -24,20 +26,15 @@ function getReturnTo(givenState: string | null | undefined): string | null {
 
   const returnTo = verifyState({
     csrf: expectedCsrf,
-    encoded: givenState
+    encoded: givenState,
   });
 
   return safeReturnTo(returnTo) ?? null;
 }
 
 export default function CallbackPage() {
-  type Result =
-  | null
-  | { data: unknown }
-  | { error: string };
-
+  const { setUser } = useAuth();
   const { updateOrderAnswers } = useCreateOrderContext();
-  const [result, setResult] = useState<Result>(null);
   const navigate = useNavigate();
   const didRun = useRef(false);
 
@@ -46,7 +43,6 @@ export default function CallbackPage() {
     if (didRun.current) return;
     didRun.current = true;
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (!backendUrl) {
       console.error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;
@@ -84,14 +80,19 @@ export default function CallbackPage() {
         return res.json();
       })
       .then((data) => {
+        const userData: AuthUser = {
+          sub: data.sub,
+          nhsNumber: data.nhs_number,
+          birthdate: data.birthdate,
+          identityProofingLevel: data.identity_proofing_level,
+          phoneNumber: data.phone_number,
+        };
+
+        setUser(userData);
+
+        // TODO: Remove after refactoring - kept for backward compatibility
         updateOrderAnswers({
-          user: {
-            sub: data.sub,
-            nhsNumber: data.nhs_number,
-            birthdate: data.birthdate,
-            identityProofingLevel: data.identity_proofing_level,
-            phoneNumber: data.phone_number,
-          },
+          user: userData,
         });
       })
       .then(() => {
@@ -100,8 +101,7 @@ export default function CallbackPage() {
       .catch((err) => {
         const message = err instanceof Error ? err.message : String(err);
         console.error("Fetch error:", message);
-        setResult({ error: message });
       });
-  }, [updateOrderAnswers, navigate]);
+  }, [setUser, updateOrderAnswers, navigate]);
   return null;
 }

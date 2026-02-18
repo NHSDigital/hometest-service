@@ -33,9 +33,14 @@ output "login_endpoint" {
   value       = module.login_lambda.localstack_endpoint_url
 }
 
+output "session_endpoint" {
+  description = "Session Lambda endpoint"
+  value       = module.session_lambda.localstack_endpoint_url
+}
+
 output "backend_base_url" {
   description = "Base URL for calling backend routes in LocalStack (append /login, /session, etc.)"
-  value       = "http://localhost:4566/restapis/${aws_api_gateway_rest_api.api.id}/${var.environment}/_user_request_"
+  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
 output "seed_supplier_id" {

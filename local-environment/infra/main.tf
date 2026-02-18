@@ -189,9 +189,9 @@ module "session_lambda" {
 
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
+    NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
   }
 }
-
 
 module "hello_world_lambda" {
   source = "./modules/lambda"
@@ -284,6 +284,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.eligibility_test_info_lambda,
     module.order_result_lambda,
     module.login_lambda,
+    module.session_lambda
   ]
 
   lifecycle {

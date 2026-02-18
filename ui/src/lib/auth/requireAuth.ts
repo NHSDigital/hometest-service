@@ -1,10 +1,21 @@
+import { AuthUser } from "@/state/AuthContext";
+import { backendUrl } from "@/settings";
 import { redirect } from "react-router-dom";
 
-export async function requireAuth({ request }: { request: Request }) {
-  const sessionUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  if (!sessionUrl) throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
+export interface SessionData {
+  user: AuthUser;
+}
 
-  const res = await fetch(`${sessionUrl}/session`, {
+export async function requireAuth({
+  request,
+}: {
+  request: Request;
+}): Promise<SessionData> {
+  if (!backendUrl) {
+    throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
+  }
+
+  const res = await fetch(`${backendUrl}/session`, {
     method: "GET",
     credentials: "include",
   });
@@ -20,5 +31,15 @@ export async function requireAuth({ request }: { request: Request }) {
     throw new Error(`Session check failed: HTTP ${res.status}`);
   }
 
-  return null;
+  const data = await res.json();
+
+  const userData: AuthUser = {
+    sub: data.sub,
+    nhsNumber: data.nhs_number,
+    birthdate: data.birthdate,
+    identityProofingLevel: data.identity_proofing_level,
+    phoneNumber: data.phone_number,
+  };
+
+  return { user: userData };
 }

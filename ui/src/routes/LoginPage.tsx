@@ -1,23 +1,8 @@
 "use client";
 
-import {useEffect} from "react";
+import { generateState, persistLoginCsrf } from "@/lib/auth/loginState";
 
-import {generateState, persistLoginCsrf} from "@/lib/auth/loginState";
-
-function base64UrlEncode(input: string) {
-  const bytes = new TextEncoder().encode(input);
-  let binary = "";
-  bytes.forEach((b) => (binary += String.fromCharCode(b)));
-  const base64 = btoa(binary);
-  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function randomString(length = 32) {
-  const bytes = new Uint8Array(length);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
+import { useEffect } from "react";
 
 export default function RedirectPage() {
   useEffect(() => {
@@ -25,19 +10,20 @@ export default function RedirectPage() {
     const params = new URLSearchParams(window.location.search);
     const returnTo = params.get("returnTo") ?? "/";
 
-    const {csrf, encoded: state} = generateState(returnTo);
-    persistLoginCsrf(csrf)
+    const { csrf, encoded: state } = generateState(returnTo);
+    persistLoginCsrf(csrf);
 
     // ALPHA: Improve this to use proper values and env variables.
     const nonce = Math.floor(1000 + Math.random() * 9000);
     const callbackUrl = encodeURIComponent(
-      `${window.location.origin}/callback`
+      `${window.location.origin}/callback`,
     );
-    window.location.href = `https://auth.sandpit.signin.nhs.uk/authorize` +
+    window.location.href =
+      `https://auth.sandpit.signin.nhs.uk/authorize` +
       `?response_type=code` +
       `&client_id=hometest` +
       `&redirect_uri=${callbackUrl}` +
-      `&scope=${(encodeURIComponent("openid profile email phone"))}` +
+      `&scope=${encodeURIComponent("openid profile email phone")}` +
       `&state=${encodeURIComponent(state)}` +
       `&nonce=${nonce}`;
   }, []);
