@@ -42,3 +42,8 @@ output "order_placement_queue_url" {
   description = "SQS Queue URL for order placement"
   value       = aws_sqs_queue.order_placement.url
 }
+
+output "ui_url" {
+  description = "URL of the UI application"
+  value       = "http://localhost:3000"
+}
