@@ -25,7 +25,8 @@ export class CodeSecurityPage {
   async fillAuthOneTimePasswordAndClickContinue(
     oneTimePassword: string
   ): Promise<void> {
-    await this.waitForOtpTrigger();
+    // Wait for OTP input field to be visible (indicates OTP page loaded)
+    await this.securityCodeField.waitFor({ timeout: 30000 });
     await this.fillAuthOneTimePassword(oneTimePassword);
     await this.continueBtn.click();
   }
@@ -34,6 +35,9 @@ export class CodeSecurityPage {
     await this.rememberDeviceCheckbox.click();
   }
 
+  /**
+   * @deprecated Use waitFor on securityCodeField instead - network wait is unreliable
+   */
   async waitForOtpTrigger(): Promise<void> {
     await this.page.waitForResponse(
       (response) =>

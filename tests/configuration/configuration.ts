@@ -48,14 +48,50 @@ export class ConfigFactory {
     const defaultConfig = this.loadDefaultConfiguration(); // start with default configuration
     const envConfig = this.readConfigurationFromEnvFile(); // override with values from .env file
     const localConfig = this.readConfigurationFromLocalFile(); // override with local JSON file
+    const cliEnvConfig = this.readConfigurationFromProcessEnv(); // highest priority: CLI env vars
 
     const cachedConfig = {
       ...defaultConfig,
       ...envConfig,
-      ...localConfig
+      ...localConfig,
+      ...cliEnvConfig
     };
 
     return cachedConfig;
+  }
+
+  /**
+   * Read configuration directly from process.env (CLI environment variables)
+   * This has the highest priority and overrides all other configuration sources
+   */
+  private static readConfigurationFromProcessEnv(): Partial<ConfigInterface> {
+    const config: Partial<ConfigInterface> = {};
+
+    // Only include values that are explicitly set in environment
+    if (process.env[EnvironmentVariables.UI_BASE_URL]) {
+      config.uiBaseUrl = process.env[EnvironmentVariables.UI_BASE_URL];
+    }
+    if (process.env[EnvironmentVariables.API_BASE_URL]) {
+      config.apiBaseUrl = process.env[EnvironmentVariables.API_BASE_URL];
+    }
+    if (process.env[EnvironmentVariables.HEADLESS] !== undefined) {
+      config.headless = process.env[EnvironmentVariables.HEADLESS] === 'true';
+    }
+    if (process.env[EnvironmentVariables.TIMEOUT]) {
+      config.timeout = parseInt(process.env[EnvironmentVariables.TIMEOUT], 10);
+    }
+    if (process.env[EnvironmentVariables.SLOW_MO]) {
+      config.slowMo = parseInt(process.env[EnvironmentVariables.SLOW_MO], 10);
+    }
+    if (process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS]) {
+      config.accessibilityStandards = process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS];
+    }
+
+    if (Object.keys(config).length > 0) {
+      console.log('✅ Applied CLI environment variable overrides:', Object.keys(config).join(', '));
+    }
+
+    return config;
   }
 
   private static loadDefaultConfiguration(): ConfigInterface {
