@@ -8,7 +8,7 @@ import type { ValidationMessages } from "@/content/schema";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
-const UK_MOBILE_REGEX = /^(?:\+44\s?7|07)[\s\-\(\)\d]{9,}$/;
+const UK_MOBILE_REGEX = /^(?:(?:\+44|0044|44)7\d{9}|07\d{9})$/;
 
 const validateMobileNumber = (
   mobileNumber: string,
@@ -18,19 +18,23 @@ const validateMobileNumber = (
     return { valid: false, message: validationMessages.mobileNumber.required };
   }
 
-  // Remove all separators to count actual digits
-  const cleanedNumber = mobileNumber.replace(/[\s\-\(\)]/g, "");
-  const digitCount = cleanedNumber.replace(/\D/g, "").length;
+  const trimmedNumber = mobileNumber.trim();
+  const normalisedNumber = trimmedNumber.replace(/[()\s-]/g, "");
 
-  if (digitCount < 10 || digitCount > 15) {
+  if (!/^\+?\d+$/.test(normalisedNumber)) {
     return { valid: false, message: validationMessages.mobileNumber.invalid };
   }
 
-  if (!UK_MOBILE_REGEX.test(mobileNumber)) {
+  const digitCount = normalisedNumber.replace(/\D/g, "").length;
+  if (digitCount > 15) {
     return { valid: false, message: validationMessages.mobileNumber.invalid };
   }
 
-  return { valid: true, value: mobileNumber.trim() };
+  if (!UK_MOBILE_REGEX.test(normalisedNumber)) {
+    return { valid: false, message: validationMessages.mobileNumber.invalid };
+  }
+
+  return { valid: true, value: normalisedNumber };
 };
 
 export default function EnterMobileNumberPage() {
