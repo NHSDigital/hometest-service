@@ -1,6 +1,6 @@
 ---
 name: "Playwright E2E Tests"
-run-name: "E2E Tests [${{ inputs.environment || 'local' }}] ${{ inputs.browser || 'chromium' }}${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
+run-name: "E2E Tests: env: [${{ inputs.environment || 'local' }}], browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 on:
   schedule:
