@@ -73,7 +73,6 @@ Mise can read the `.nvmrc` file by following the [instructions](https://mise.jdx
 Important commands:
 
 ```shell
-mise run setup        # Install pre-commit hooks (prefers local config if present)
 mise run pre-commit   # Run the pre-commit task defined in .mise.toml
 ```
 
