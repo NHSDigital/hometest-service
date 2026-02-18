@@ -4,6 +4,21 @@ export default {
   testEnvironment: "node",
   setupFiles: ["<rootDir>/jest/jest.setup.js"],
   testRegex: ".*\\.test\\.ts$",
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov", "json", "json-summary"],
+  reporters: [
+    "default",
+    [
+      "jest-junit",
+      {
+        outputDirectory: "test-results",
+        outputName: "junit.xml",
+        addFileAttribute: true,
+        reportTestSuiteErrors: true,
+      },
+    ],
+  ],
   moduleNameMapper: {
     "^@hometest-service/shared/(.*)$": "<rootDir>/../shared/$1",
   },
