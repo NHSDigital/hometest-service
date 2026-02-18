@@ -75,3 +75,7 @@ run = """
     pre-commit run --all-files --show-diff-on-failure --color=always
   fi
 """
+
+[tasks.install-npm]
+description = "Install npm dependencies"
+run = "npm install"
