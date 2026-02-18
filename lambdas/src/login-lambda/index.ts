@@ -48,13 +48,13 @@ export const lambdaHandler = async (
     const loginOutput = await loginService.performLogin(body);
 
     const signedAuthAccessJwt = authTokenService.generateAuthAccessToken({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       sessionId: loginOutput.nhsLoginAccessToken!,
       sessionStartTime: Date.now(),
     });
 
     const signedAuthRefreshJwt = authTokenService.generateAuthRefreshToken({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       refreshToken: loginOutput.nhsLoginRefreshToken || "",
     });
 
