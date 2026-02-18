@@ -99,7 +99,8 @@ jobs:
       - name: "Run Playwright tests"
         working-directory: tests
         run: |
-          BROWSER="${{ inputs.browser || 'chromium' }}"
+          BROWSER="${{ inputs.browser }}"
+          BROWSER="${BROWSER:-chromium}"
           FILTER="${{ inputs.test_filter }}"
 
           # Build the command
