@@ -119,7 +119,24 @@ jobs:
       - name: "Show application status"
         run: |
           docker compose -f local-environment/docker-compose.yml ps
-          docker compose -f local-environment/docker-compose.yml logs
+          docker logs ui
+
+      - name: "Wait for UI to be reachable"
+        run: |
+          echo "Waiting for UI to be reachable at http://localhost:3000..."
+          timeout=120
+          elapsed=0
+          until curl -sf http://localhost:3000 > /dev/null 2>&1; do
+            if [ $elapsed -ge $timeout ]; then
+              echo "Timeout: UI not reachable after ${timeout}s"
+              docker logs ui
+              exit 1
+            fi
+            echo "Waiting... (${elapsed}s)"
+            sleep 5
+            elapsed=$((elapsed + 5))
+          done
+          echo "UI is reachable!"
 
       - name: "Run Playwright tests"
         # working-directory: tests
