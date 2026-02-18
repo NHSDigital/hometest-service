@@ -71,9 +71,6 @@ resource "null_resource" "validate_secrets" {
       error_message = <<-EOT
         Missing required secret files in ${local.secrets_dir}:
         ${join("\n  - ", local.missing_secrets)}
-
-        To generate the NHS Login private key, run:
-          openssl genrsa -out ${local.secrets_dir}/nhs-login-private-key.pem 2048
       EOT
     }
   }
