@@ -58,7 +58,7 @@ ON CONFLICT (supplier_id) DO NOTHING;
 
 INSERT INTO test_type (test_code, description)
 VALUES
-('FIT', 'Immunochemical Test'),
+('31676001', 'HIV antigen test'),
 ('PCR', 'Polymerase Chain Reaction')
 ON CONFLICT (test_code) DO NOTHING;
 
@@ -83,7 +83,7 @@ VALUES
 (
   'a5e6f7a8-5678-4def-8abc-56789abcdefa',
   'c1a2b3c4-1234-4def-8abc-123456789abc',
-  'FIT',
+  '31676001',
   'E09000001'
 ),
 (
@@ -95,7 +95,7 @@ VALUES
 (
   'c7a8b9c0-7890-4fab-8cde-789abcdefabc',
   'd2b3c4d5-2345-4abc-8def-23456789abcd',
-  'FIT',
+  '31676001',
   'E09000001'
 ),
 (
@@ -111,7 +111,7 @@ VALUES (
   'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
   'c1a2b3c4-1234-4def-8abc-123456789abc',
   'e3c4d5e6-3456-4bcd-8efa-3456789abcde',
-  'FIT',
+  '31676001',
   'seed-migration'
 )
 ON CONFLICT (order_uid) DO NOTHING;
