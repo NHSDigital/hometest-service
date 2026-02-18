@@ -34,9 +34,9 @@ on:
         type: string
 
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
+  actions: read
+  checks: write
 
 jobs:
   test-unit-ui:
