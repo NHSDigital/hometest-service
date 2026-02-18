@@ -58,8 +58,8 @@ ON CONFLICT (supplier_id) DO NOTHING;
 
 INSERT INTO test_type (test_code, description)
 VALUES
-  ('31676001', 'HIV antigen test'),
-  ('PCR', 'Polymerase Chain Reaction')
+('31676001', 'HIV antigen test'),
+('PCR', 'Polymerase Chain Reaction')
 ON CONFLICT (test_code) DO NOTHING;
 
 INSERT INTO patient_mapping (patient_uid, nhs_number, birth_date)
