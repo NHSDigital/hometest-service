@@ -163,3 +163,4 @@ mcp.json
 /test-results/
 .next
 WorkerUser*
+junit.xml
