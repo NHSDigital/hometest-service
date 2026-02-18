@@ -3,6 +3,11 @@ output "api_gateway_url" {
   value       = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${var.aws_region}.amazonaws.com/${var.environment}"
 }
 
+output "api_base_url" {
+  description = "LocalStack API base URL for tests"
+  value       = "http://localhost:4566/restapis/${aws_api_gateway_rest_api.api.id}/${var.environment}/_user_request_"
+}
+
 output "api_gateway_id" {
   description = "API Gateway ID"
   value       = aws_api_gateway_rest_api.api.id
@@ -41,6 +46,11 @@ output "seed_supplier_id" {
 output "order_placement_queue_url" {
   description = "SQS Queue URL for order placement"
   value       = aws_sqs_queue.order_placement.url
+}
+
+output "ui_url" {
+  description = "URL of the UI application"
+  value       = "http://localhost:3000"
 }
 
 output "order_service_endpoint" {
