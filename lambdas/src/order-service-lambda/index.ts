@@ -2,7 +2,10 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { z } from "zod";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
-import { createJsonResponse } from "../lib/utils";
+import {
+  createJsonResponse,
+  getCorrelationIdFromEventHeaders,
+} from "../lib/utils";
 import { init } from "./init";
 
 const name = "order-service-lambda";
@@ -32,7 +35,20 @@ const parseAndValidateRequest = (
 export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  let correlationId: string;
+
+  try {
+    correlationId = getCorrelationIdFromEventHeaders(event);
+  } catch (error) {
+    console.error(name, "Failed to retrieve correlation ID", { error });
+    return createJsonResponse(400, {
+      message:
+        error instanceof Error ? error.message : "Invalid correlation ID",
+    });
+  }
+
   console.info(name, "Received order request", {
+    correlationId,
     path: event.path,
     method: event.httpMethod,
   });
@@ -45,6 +61,7 @@ export const handler = async (
     const orderRequest = parseAndValidateRequest(event.body);
 
     console.info(name, "Order request validated", {
+      correlationId,
       supplierId: orderRequest.supplierId,
       testCode: orderRequest.testCode,
     });
@@ -59,6 +76,7 @@ export const handler = async (
     );
 
     console.info(name, "Order created successfully", {
+      correlationId,
       orderUid: orderResult.orderUid,
       orderReference: orderResult.orderReference,
       patientUid: orderResult.patientUid,
@@ -70,7 +88,7 @@ export const handler = async (
       message: "Order created successfully",
     });
   } catch (error) {
-    console.error(name, "Order request failed", { error });
+    console.error(name, "Order request failed", { correlationId, error });
     return createJsonResponse(400, {
       message: error instanceof Error ? error.message : "Invalid request",
     });
