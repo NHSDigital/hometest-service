@@ -1,11 +1,20 @@
 ---
 name: "Playwright E2E Tests"
+run-name: "E2E Tests [${{ inputs.environment || 'local' }}] ${{ inputs.browser || 'chromium' }}${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 on:
   schedule:
     - cron: '0 2 * * *'  # Every day at 2am UTC
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Target environment"
+        required: false
+        default: "local"
+        type: choice
+        options:
+          - local
+          - dev
       browser:
         description: "Browser to run tests on"
         required: false
@@ -27,6 +36,8 @@ jobs:
     name: "Playwright E2E tests"
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      TARGET_ENV: ${{ inputs.environment || 'local' }}
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
@@ -42,6 +53,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: "Create nhs login private key file"
+        if: env.TARGET_ENV == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
@@ -57,15 +69,18 @@ jobs:
           EOF
 
       - name: "Start the application"
+        if: env.TARGET_ENV == 'local'
         run: |
           npm run start
 
       - name: "Show application status"
+        if: env.TARGET_ENV == 'local'
         run: |
           docker compose -f local-environment/docker-compose.yml ps
           docker logs ui
 
       - name: "Get terraform outputs"
+        if: env.TARGET_ENV == 'local'
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
@@ -75,16 +90,29 @@ jobs:
           echo "UI URL: $UI_URL"
           echo "API URL: $API_URL"
 
+      - name: "Set environment URLs"
+        id: urls
+        run: |
+          if [ "$TARGET_ENV" == "dev" ]; then
+            echo "ui_url=https://dev.hometest.service.nhs.uk" >> $GITHUB_OUTPUT
+            echo "api_url=https://dev.hometest.service.nhs.uk/" >> $GITHUB_OUTPUT
+          else
+            echo "ui_url=${{ steps.terraform.outputs.ui_url }}" >> $GITHUB_OUTPUT
+            echo "api_url=${{ steps.terraform.outputs.api_base_url }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: "Wait for UI to be reachable"
         run: |
-          UI_URL="${{ steps.terraform.outputs.ui_url }}"
+          UI_URL="${{ steps.urls.outputs.ui_url }}"
           echo "Waiting for UI to be reachable at $UI_URL..."
           timeout=120
           elapsed=0
           until curl -sf "$UI_URL" > /dev/null 2>&1; do
             if [ $elapsed -ge $timeout ]; then
               echo "Timeout: UI not reachable after ${timeout}s"
-              docker logs ui
+              if [ "$TARGET_ENV" == "local" ]; then
+                docker logs ui
+              fi
               exit 1
             fi
             echo "Waiting... (${elapsed}s)"
@@ -118,15 +146,15 @@ jobs:
         env:
           CI: true
           FORCE_COLOR: true
-          UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
-          API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
+          UI_BASE_URL: ${{ steps.urls.outputs.ui_url }}
+          API_BASE_URL: ${{ steps.urls.outputs.api_url }}
 
       - name: "Grab docker compose logs"
+        if: always() && env.TARGET_ENV == 'local'
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
           done
-        if: always()
 
       - name: "Publish Test Results"
         uses: dorny/test-reporter@v2
