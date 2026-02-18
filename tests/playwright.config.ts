@@ -44,7 +44,9 @@ export default defineConfig({
   workers: getNumberOfWorkers(config.authType),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
+    ['list'],
     ['json', { outputFile: './testResults/test-results.json' }],
+    ['junit', { outputFile: './testResults/junit-results.xml' }],
     ['html', { outputFolder: './testResults/html', open: 'on-failure' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -55,6 +57,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     /* Screenshot on failure */
     screenshot: { mode: 'only-on-failure', fullPage: true },
+    /* Video recording on failure */
+    video: 'on-first-retry',
   },
 
   /* Configure projects for major browsers */
