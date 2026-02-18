@@ -163,4 +163,6 @@ mcp.json
 /test-results/
 .next
 WorkerUser*
-junit.xml
+
+# Test configuration with personal credentials
+tests/users.ts
