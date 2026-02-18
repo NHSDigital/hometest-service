@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "build": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
@@ -21,11 +23,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.2.3",
     "dotenv": "^17.2.3",
     "eslint": "^9.39.2",
-    "typescript": "^5.9.3"
+    "globals": "^17.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
   },
   "dependencies": {
     "@axe-core/playwright": "^4.11.1",
