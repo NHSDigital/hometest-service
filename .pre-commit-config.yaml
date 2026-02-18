@@ -77,38 +77,3 @@ repos:
         language: system
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false
-
-      # - id: typescript-check-ui
-      #   name: TypeScript (UI)
-      #   entry: npm --prefix ui run build -- --noEmit
-      #   language: system
-      #   files: ^ui/.*\.tsx?$
-      #   pass_filenames: false
-      #   # stages: [pre-push]  # Slow, run on push
-
-      # - id: typescript-check-lambdas
-      #   name: TypeScript (Lambdas)
-      #   entry: bash -c 'cd lambdas && npx tsc --noEmit'
-      #   language: system
-      #   files: ^lambdas/.*\.ts$
-      #   pass_filenames: false
-      #   # stages: [pre-push]
-
-      # - id: jest-unit-ui
-      #   name: Jest Unit Tests (UI - affected only)
-      #   entry: npm --prefix ui run test -- --bail --findRelatedTests --passWithNoTests
-      #   language: system
-      #   files: ^ui/.*\.(ts|tsx)$
-      #   # stages: [pre-push]
-
-      # - id: jest-unit-lambdas
-      #   name: Jest Unit Tests (Lambdas - affected only)
-      #   entry: bash -c 'cd lambdas && npx jest --bail --findRelatedTests --passWithNoTests'
-      #   language: system
-      #   files: ^lambdas/.*\.ts$
-      #   # stages: [pre-push]
-
-  # - repo: https://github.com/rhysd/actionlint
-  #   rev: v1.7.11
-  #   hooks:
-  #     - id: actionlint
