@@ -52,7 +52,7 @@ const buildValidRequestBody = (): string =>
 describe("order-service-lambda handler", () => {
   let handler: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.resetModules();
     mockInit.mockReset();
     mockCreatePatientAndOrder = jest.fn();
@@ -66,8 +66,8 @@ describe("order-service-lambda handler", () => {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    handler = require("./index").handler;
+    const module = await import("./index");
+    handler = module.handler;
   });
 
   afterEach(() => {
