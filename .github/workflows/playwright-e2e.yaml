@@ -42,18 +42,14 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v6
 
-      - name: "Install mise"
-        uses: jdx/mise-action@v3
-        with:
-          install: true
-          cache: true
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
 
       - name: "Install Playwright browsers"
         working-directory: tests
         run: npx playwright install --with-deps
 
       - name: "Create nhs login private key file"
-        if: env.TARGET_ENV == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
@@ -129,7 +125,7 @@ jobs:
           FILTER="${{ inputs.test_filter }}"
 
           # Build the command
-          CMD="npx playwright test"
+          CMD="ENV=dev npx playwright test"
 
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
