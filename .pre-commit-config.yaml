@@ -70,3 +70,10 @@ repos:
         language: system
         files: ^lambdas/.*\.(ts|js)$
         pass_filenames: false
+
+      - id: eslint-tests
+        name: ESLint (Tests)
+        entry: npm --prefix tests run lint -- --fix
+        language: system
+        files: ^tests/.*\.(ts|js)$
+        pass_filenames: false
