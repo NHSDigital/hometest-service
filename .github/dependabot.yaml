@@ -22,7 +22,7 @@ updates:
       default-days: 7
 
   - package-ecosystem: "npm"
-    directory: "/lambda"
+    directory: "/lambdas"
     schedule:
       interval: "daily"
     cooldown:
