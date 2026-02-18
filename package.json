@@ -7,7 +7,7 @@
     "postinstall": "npm --prefix ui install && npm --prefix lambdas install && npm --prefix tests install",
 
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
-    "test:playwright": "UI_BASE_URL=$(terraform -chdir=local-environment/infra output -raw ui_url) API_BASE_URL=$(terraform -chdir=local-environment/infra output order_result_endpoint) npm --prefix tests run test",
+    "test:playwright": "UI_BASE_URL=$(terraform -chdir=local-environment/infra output -raw ui_url) API_BASE_URL=$(terraform -chdir=local-environment/infra output order_result_endpoint) npm --prefix tests run test --project=chromium",
 
     "build:lambdas": "npm --prefix lambdas run build",
     "package:lambdas": "npm --prefix lambdas run package",
