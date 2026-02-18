@@ -39,6 +39,8 @@ runs:
     - name: "Run test suite"
       shell: bash
       run: npm --prefix ${{ inputs.working-directory }} run test -- --ci
+      env:
+        FORCE_COLOR: true
 
     - name: "Upload test results"
       uses: actions/upload-artifact@v4
