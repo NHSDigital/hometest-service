@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { isUUID } from "../../utils";
 
 // FHIR sub-schemas
 export const FHIRCodeableConceptSchema = z.object({

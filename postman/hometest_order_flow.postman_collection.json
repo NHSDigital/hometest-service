@@ -8,7 +8,7 @@
   },
   "item": [
     {
-      "name": "order-router",
+      "name": "order-service",
       "item": [
         {
           "name": "201: success",
@@ -17,7 +17,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/fhir+json",
+                "value": "application/json",
                 "type": "text"
               },
               {
@@ -28,7 +28,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"{{supplier_code}}\",\n    \"order_body\": {\n        \"resourceType\": \"ServiceRequest\",\n        \"id\": \"7cb0623e-9cd7-4495-aa66-715c04a81835\",\n        \"status\": \"active\",\n        \"intent\": \"order\",\n        \"code\": {\n            \"coding\": [\n                {\n                    \"system\": \"http://snomed.info/sct\",\n                    \"code\": \"31676001\",\n                    \"display\": \"HIV antigen test\"\n                }\n            ],\n            \"text\": \"HIV antigen test\"\n        },\n        \"contained\": [\n            {\n                \"resourceType\": \"Patient\",\n                \"id\": \"1d6efc98-78e7-4049-9d4f-e651a95d9727\",\n                \"name\": [\n                    {\n                        \"use\": \"official\",\n                        \"family\": \"Doe\",\n                        \"given\": [\n                            \"Alex\"\n                        ],\n                        \"text\": \"Alex Doe\"\n                    }\n                ],\n                \"telecom\": [\n                    {\n                        \"system\": \"phone\",\n                        \"value\": \"+447700900000\",\n                        \"use\": \"mobile\"\n                    },\n                    {\n                        \"system\": \"email\",\n                        \"value\": \"alex.doe@example.com\",\n                        \"use\": \"home\"\n                    }\n                ],\n                \"address\": [\n                    {\n                        \"use\": \"home\",\n                        \"type\": \"both\",\n                        \"line\": [\n                            \"123 Main Street\",\n                            \"Flat 4B\"\n                        ],\n                        \"city\": \"London\",\n                        \"postalCode\": \"SW1A 1AA\",\n                        \"country\": \"United Kingdom\"\n                    }\n                ],\n                \"birthDate\": \"1990-01-01\"\n            }\n        ],\n        \"subject\": {\n            \"reference\": \"#1d6efc98-78e7-4049-9d4f-e651a95d9727\"\n        },\n        \"requester\": {\n            \"reference\": \"Organization/ORG001\"\n        },\n        \"performer\": [\n            {\n                \"reference\": \"Organization/SUP001\"\n            }\n        ]\n    }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -36,8 +36,10 @@
               }
             },
             "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
+              "raw": "{{order_service_endpoint_localstack}}",
+              "host": [
+                "{{order_service_endpoint_localstack}}"
+              ]
             }
           },
           "response": []
@@ -49,7 +51,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/fhir+json",
+                "value": "application/json",
                 "type": "text"
               },
               {
@@ -58,9 +60,20 @@
                 "type": "text"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"supplierId\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
+              "raw": "{{order_service_endpoint_localstack}}",
+              "host": [
+                "{{order_service_endpoint_localstack}}"
+              ]
             }
           },
           "response": []
@@ -83,7 +96,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"{{supplier_code}}\"\n}",
+              "raw": "{\n    \"supplierId\": \"{{supplier_id}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -91,20 +104,51 @@
               }
             },
             "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
+              "raw": "{{order_service_endpoint_localstack}}",
+              "host": [
+                "{{order_service_endpoint_localstack}}"
+              ]
             }
           },
           "response": []
         },
         {
-          "name": "404: supplier not found",
+          "name": "400: missing correlation-id",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/fhir+json",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{order_service_endpoint_localstack}}",
+              "host": [
+                "{{order_service_endpoint_localstack}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "400: supplier not found - db error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
                 "type": "text"
               },
               {
@@ -115,7 +159,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"97a4a612-6de0-4abe-b883-2a1411447316\",\n    \"order_body\": {\n        \"resourceType\": \"ServiceRequest\",\n        \"id\": \"7cb0623e-9cd7-4495-aa66-715c04a81835\",\n        \"status\": \"active\",\n        \"intent\": \"order\",\n        \"code\": {\n            \"coding\": [\n                {\n                    \"system\": \"http://snomed.info/sct\",\n                    \"code\": \"31676001\",\n                    \"display\": \"HIV antigen test\"\n                }\n            ],\n            \"text\": \"HIV antigen test\"\n        },\n        \"contained\": [\n            {\n                \"resourceType\": \"Patient\",\n                \"id\": \"1d6efc98-78e7-4049-9d4f-e651a95d9727\",\n                \"name\": [\n                    {\n                        \"use\": \"official\",\n                        \"family\": \"Doe\",\n                        \"given\": [\n                            \"Alex\"\n                        ],\n                        \"text\": \"Alex Doe\"\n                    }\n                ],\n                \"telecom\": [\n                    {\n                        \"system\": \"phone\",\n                        \"value\": \"+447700900000\",\n                        \"use\": \"mobile\"\n                    },\n                    {\n                        \"system\": \"email\",\n                        \"value\": \"alex.doe@example.com\",\n                        \"use\": \"home\"\n                    }\n                ],\n                \"address\": [\n                    {\n                        \"use\": \"home\",\n                        \"type\": \"both\",\n                        \"line\": [\n                            \"123 Main Street\",\n                            \"Flat 4B\"\n                        ],\n                        \"city\": \"London\",\n                        \"postalCode\": \"SW1A 1AA\",\n                        \"country\": \"United Kingdom\"\n                    }\n                ],\n                \"birthDate\": \"1990-01-01\"\n            }\n        ],\n        \"subject\": {\n            \"reference\": \"#1d6efc98-78e7-4049-9d4f-e651a95d9727\"\n        },\n        \"requester\": {\n            \"reference\": \"Organization/ORG001\"\n        },\n        \"performer\": [\n            {\n                \"reference\": \"Organization/SUP001\"\n            }\n        ]\n    }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"a1a2b3c4-1234-4def-8abc-123456789abc\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -123,116 +167,22 @@
               }
             },
             "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
+              "raw": "{{order_service_endpoint_localstack}}",
+              "host": [
+                "{{order_service_endpoint_localstack}}"
+              ]
             }
           },
           "response": []
         },
         {
-          "name": "422: unprocessable",
+          "name": "400: missing telecom",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/fhir+json",
-                "type": "text"
-              },
-              {
-                "key": "X-Correlation-ID",
-                "value": "550e8400-e29b-41d4-a716-446655440001",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"{{supplier_code}}\",\n    \"order_body\": {\n        \"not\": \"valid\"\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "400: missing-email",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/fhir+json",
-                "type": "text"
-              },
-              {
-                "key": "X-Correlation-ID",
-                "value": "550e8400-e29b-41d4-a716-446655440002",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"{{supplier_code}}\",\n    \"order_body\": {\n        \"resourceType\": \"ServiceRequest\",\n        \"id\": \"7cb0623e-9cd7-4495-aa66-715c04a81835\",\n        \"status\": \"active\",\n        \"intent\": \"order\",\n        \"code\": {\n            \"coding\": [\n                {\n                    \"system\": \"http://snomed.info/sct\",\n                    \"code\": \"31676001\",\n                    \"display\": \"HIV antigen test\"\n                }\n            ],\n            \"text\": \"HIV antigen test\"\n        },\n        \"contained\": [\n            {\n                \"resourceType\": \"Patient\",\n                \"id\": \"1d6efc98-78e7-4049-9d4f-e651a95d9727\",\n                \"name\": [\n                    {\n                        \"use\": \"official\",\n                        \"family\": \"Doe\",\n                        \"given\": [\n                            \"Alex\"\n                        ],\n                        \"text\": \"Alex Doe\"\n                    }\n                ],\n                \"telecom\": [\n                    {\n                        \"system\": \"phone\",\n                        \"value\": \"+447700900000\",\n                        \"use\": \"mobile\"\n                    }\n                ],\n                \"address\": [\n                    {\n                        \"use\": \"home\",\n                        \"type\": \"both\",\n                        \"line\": [\n                            \"123 Main Street\",\n                            \"Flat 4B\"\n                        ],\n                        \"city\": \"London\",\n                        \"postalCode\": \"SW1A 1AA\",\n                        \"country\": \"United Kingdom\"\n                    }\n                ],\n                \"birthDate\": \"1990-01-01\"\n            }\n        ],\n        \"subject\": {\n            \"reference\": \"#1d6efc98-78e7-4049-9d4f-e651a95d9727\"\n        },\n        \"requester\": {\n            \"reference\": \"Organization/ORG001\"\n        },\n        \"performer\": [\n            {\n                \"reference\": \"Organization/SUP001\"\n            }\n        ]\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "400: missing-phone",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/fhir+json",
-                "type": "text"
-              },
-              {
-                "key": "X-Correlation-ID",
-                "value": "550e8400-e29b-41d4-a716-446655440003",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"{{supplier_code}}\",\n    \"order_body\": {\n        \"resourceType\": \"ServiceRequest\",\n        \"id\": \"7cb0623e-9cd7-4495-aa66-715c04a81835\",\n        \"status\": \"active\",\n        \"intent\": \"order\",\n        \"code\": {\n            \"coding\": [\n                {\n                    \"system\": \"http://snomed.info/sct\",\n                    \"code\": \"31676001\",\n                    \"display\": \"HIV antigen test\"\n                }\n            ],\n            \"text\": \"HIV antigen test\"\n        },\n        \"contained\": [\n            {\n                \"resourceType\": \"Patient\",\n                \"id\": \"1d6efc98-78e7-4049-9d4f-e651a95d9727\",\n                \"name\": [\n                    {\n                        \"use\": \"official\",\n                        \"family\": \"Doe\",\n                        \"given\": [\n                            \"Alex\"\n                        ],\n                        \"text\": \"Alex Doe\"\n                    }\n                ],\n                \"telecom\": [\n                    {\n                        \"system\": \"email\",\n                        \"value\": \"alex.doe@example.com\",\n                        \"use\": \"home\"\n                    }\n                ],\n                \"address\": [\n                    {\n                        \"use\": \"home\",\n                        \"type\": \"both\",\n                        \"line\": [\n                            \"123 Main Street\",\n                            \"Flat 4B\"\n                        ],\n                        \"city\": \"London\",\n                        \"postalCode\": \"SW1A 1AA\",\n                        \"country\": \"United Kingdom\"\n                    }\n                ],\n                \"birthDate\": \"1990-01-01\"\n            }\n        ],\n        \"subject\": {\n            \"reference\": \"#1d6efc98-78e7-4049-9d4f-e651a95d9727\"\n        },\n        \"requester\": {\n            \"reference\": \"Organization/ORG001\"\n        },\n        \"performer\": [\n            {\n                \"reference\": \"Organization/SUP001\"\n            }\n        ]\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "400: missing-telecom",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/fhir+json",
+                "value": "application/json",
                 "type": "text"
               },
               {
@@ -243,7 +193,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"supplier_code\": \"{{supplier_code}}\",\n    \"order_body\": {\n        \"resourceType\": \"ServiceRequest\",\n        \"id\": \"7cb0623e-9cd7-4495-aa66-715c04a81835\",\n        \"status\": \"active\",\n        \"intent\": \"order\",\n        \"code\": {\n            \"coding\": [\n                {\n                    \"system\": \"http://snomed.info/sct\",\n                    \"code\": \"31676001\",\n                    \"display\": \"HIV antigen test\"\n                }\n            ],\n            \"text\": \"HIV antigen test\"\n        },\n        \"contained\": [\n            {\n                \"resourceType\": \"Patient\",\n                \"id\": \"1d6efc98-78e7-4049-9d4f-e651a95d9727\",\n                \"name\": [\n                    {\n                        \"use\": \"official\",\n                        \"family\": \"Doe\",\n                        \"given\": [\n                            \"Alex\"\n                        ],\n                        \"text\": \"Alex Doe\"\n                    }\n                ],\n                \"telecom\": [\n                ],\n                \"address\": [\n                    {\n                        \"use\": \"home\",\n                        \"type\": \"both\",\n                        \"line\": [\n                            \"123 Main Street\",\n                            \"Flat 4B\"\n                        ],\n                        \"city\": \"London\",\n                        \"postalCode\": \"SW1A 1AA\",\n                        \"country\": \"United Kingdom\"\n                    }\n                ],\n                \"birthDate\": \"1990-01-01\"\n            }\n        ],\n        \"subject\": {\n            \"reference\": \"#1d6efc98-78e7-4049-9d4f-e651a95d9727\"\n        },\n        \"requester\": {\n            \"reference\": \"Organization/ORG001\"\n        },\n        \"performer\": [\n            {\n                \"reference\": \"Organization/SUP001\"\n            }\n        ]\n    }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -251,8 +201,10 @@
               }
             },
             "url": {
-              "raw": "{{order_router_endpoint_localstack}}",
-              "host": ["{{order_router_endpoint_localstack}}"]
+              "raw": "{{order_service_endpoint_localstack}}",
+              "host": [
+                "{{order_service_endpoint_localstack}}"
+              ]
             }
           },
           "response": []
@@ -267,7 +219,9 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     },
     {
@@ -276,17 +230,19 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     }
   ],
   "variable": [
     {
-      "key": "order_router_endpoint_localstack",
+      "key": "order_service_endpoint_localstack",
       "value": ""
     },
     {
-      "key": "supplier_code",
+      "key": "supplier_id",
       "value": ""
     }
   ]

@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import { EnvironmentVariables } from "./init";
+import { HttpError } from "../lib/http/http-client";
 
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
@@ -7,6 +10,12 @@ const mockSupplierAuthGetAccessToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
 const mockEnvironmentVariables: EnvironmentVariables =
   {} as EnvironmentVariables;
+const supplierOrderBody = JSON.parse(
+  readFileSync(
+    join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"),
+    "utf-8",
+  ),
+) as Record<string, unknown>;
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
@@ -117,7 +126,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -131,7 +140,7 @@ describe("order-router-lambda", () => {
       expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
-        JSON.stringify(require("../__mocks__/valid_order_body.json")),
+        JSON.stringify(supplierOrderBody),
         expect.objectContaining({
           Authorization: "Bearer test-access-token",
           Accept: "application/fhir+json",
@@ -151,13 +160,13 @@ describe("order-router-lambda", () => {
       const messageBody1 = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const messageBody2 = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: "550e8400-e29b-41d4-a716-446655440001",
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -181,7 +190,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -208,7 +217,7 @@ describe("order-router-lambda", () => {
     it("should fail for missing supplier_code", async () => {
       const messageBody = JSON.stringify({
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -224,7 +233,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: "not-a-uuid",
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -239,7 +248,7 @@ describe("order-router-lambda", () => {
     it("should fail for missing correlation_id", async () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -255,7 +264,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: "not-a-uuid",
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -322,7 +331,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -343,7 +352,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -362,7 +371,6 @@ describe("order-router-lambda", () => {
     });
 
     it("should fail when OAuth token request fails", async () => {
-      const { HttpError } = require("../lib/http/http-client");
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
 
       mockSupplierAuthGetAccessToken.mockRejectedValue(
@@ -376,7 +384,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -397,7 +405,6 @@ describe("order-router-lambda", () => {
     });
 
     it("should fail when supplier returns 400 Bad Request", async () => {
-      const { HttpError } = require("../lib/http/http-client");
       const mockErrorResponse = JSON.stringify({
         resourceType: "OperationOutcome",
         issue: [{ severity: "error", code: "invalid" }],
@@ -414,7 +421,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -446,7 +453,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -478,7 +485,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -491,8 +498,6 @@ describe("order-router-lambda", () => {
     });
 
     it("should fail when supplier returns 500 Internal Server Error", async () => {
-      const { HttpError } = require("../lib/http/http-client");
-
       mockHttpClientPostRaw.mockRejectedValue(
         new HttpError("HTTP POST request failed with status: 500", 500, ""),
       );
@@ -500,7 +505,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
@@ -529,7 +534,7 @@ describe("order-router-lambda", () => {
       const validMessage = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const invalidMessage = "{ invalid json }";
@@ -571,7 +576,7 @@ describe("order-router-lambda", () => {
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
         correlation_id: validCorrelationId,
-        order_body: require("../__mocks__/valid_order_body.json"),
+        order_body: supplierOrderBody,
       });
 
       const sqsEvent = createSQSEvent([
