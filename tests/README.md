@@ -18,6 +18,14 @@ This directory contains the Playwright test framework for the hometest-service p
    npx playwright install chromium firefox webkit
    ```
 
+3. Set up local user credentials (for local testing only):
+
+   The `users.ts` file should already exist in the tests directory with your local test user configuration.
+
+   **Note**: The `users.ts` file is ignored by Git, so your credentials remain private. This configuration is only used when `ENV=local`.
+
+   For detailed information about user management, see the [User Management for Local Environment](#user-management-for-local-environment) section.
+
 ## Running Tests
 
 - Run all tests:
@@ -155,6 +163,98 @@ test('example test', async ({ config }) => {
 2. Add the variable to all `.env.*` files in `configuration/` directory
 3. Optionally add a default value in the `Configuration` class constructor
 4. Access the value using `config.get(EnvironmentVariables.YOUR_KEY)`
+
+### User Management for Local Environment
+
+The framework uses different user management strategies depending on the environment:
+
+#### Environment-Based User Selection
+
+- **Local Environment (`ENV=local`)**: Uses the user configuration from `users.ts` (ignored file)
+- **dev/Staging Environments**: Uses preconfigured NHS Login sandbox users
+
+#### Setting Up Local Users
+
+When running tests locally (`ENV=local`), you need to configure your test user credentials:
+
+1. **Create the users.ts file**:
+
+   The `users.ts` file should already exist in the tests directory. If not, create it with the following structure:
+
+   ```typescript
+   import type { NHSLoginUser } from './utils/users/BaseUser';
+
+   export const localUser: NHSLoginUser = {
+     email: 'your-email@example.com',
+     nhsNumber: '9999999999',
+     odsCode: 'YOUR_ODS_CODE',
+     age: 49,
+     otp: process.env.OTP as unknown as string,
+     password: process.env.GENERIC_PASS as unknown as string,
+     description: 'eligible user - local environment',
+     patientId: 'your-patient-id-here'
+   };
+   ```
+
+2. **Configure your local user**:
+
+   Replace the placeholder values with your actual test user credentials:
+   - `email`: Your NHS Login test email address
+   - `nhsNumber`: Your NHS number (10 digits)
+   - `odsCode`: Your ODS (Organisation Data Service) code
+   - `age`: User age (must match eligibility criteria)
+   - `patientId`: Your patient ID in the system
+   - `otp` and `password`: These are read from environment variables `OTP` and `GENERIC_PASS`
+
+3. **Set environment variables**:
+
+   Set the required authentication environment variables:
+
+   ```bash
+   # Linux/macOS
+   export OTP="your-otp-secret"
+   export GENERIC_PASS="your-password"
+   export ENV=local
+
+   # Windows (PowerShell)
+   $env:OTP="your-otp-secret"
+   $env:GENERIC_PASS="your-password"
+   $env:ENV="local"
+   ```
+
+#### How It Works
+
+The `SandBoxUserManager` class automatically detects the environment:
+
+```typescript
+// From SandBoxUserManager.ts
+if (env === 'local') {
+  const { localUser } = require('../../users');
+  console.log('Using local environment user from users.ts');
+  return [localUser];
+}
+```
+
+When running tests with `ENV=local`, the framework:
+
+1. Checks the environment variable
+2. Loads the `localUser` from `users.ts`
+3. Uses this user for all test authentication
+
+**Note**: The `users.ts` file is ignored to protect your credentials. Never commit this file to version control.
+
+#### Troubleshooting Local User Setup
+
+If you encounter the error: `"users.ts file not found. Please create it based on users.ts.example"`:
+
+1. Ensure `users.ts` exists in the `tests/` directory
+2. Verify the file exports a `localUser` object with the correct structure
+3. Check that all required fields are present
+4. Ensure `ENV=local` is set before running tests
+
+#### dev/Staging User Management
+
+For dev and staging environments, the framework uses preconfigured NHS Login sandbox users. These are managed internally and don't require local configuration.
 
 ### Playwright Configuration
 
