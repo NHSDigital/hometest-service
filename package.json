@@ -4,7 +4,7 @@
   "description": "NHS Home Test Service",
   "private": true,
   "scripts": {
-    "postinstall": "npm --prefix ui install && npm --prefix lambdas install",
+    "postinstall": "npm --prefix ui install && npm --prefix lambdas install && npm --prefix tests install",
 
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
 
