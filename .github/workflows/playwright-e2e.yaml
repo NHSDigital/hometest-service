@@ -127,6 +127,37 @@ jobs:
           done
         if: always()
 
+      - name: "Publish Test Results"
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: Playwright Test Results
+          path: tests/testResults/junit-results.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      - name: "Generate Job Summary"
+        if: always()
+        run: |
+          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f tests/testResults/junit-results.xml ]; then
+            TESTS=$(grep -oP 'tests="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+            FAILURES=$(grep -oP 'failures="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+            ERRORS=$(grep -oP 'errors="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+            TIME=$(grep -oP 'time="\K[0-9.]+' tests/testResults/junit-results.xml | head -1)
+            PASSED=$((TESTS - FAILURES - ERRORS))
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| :white_check_mark: Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| :x: Failed | $FAILURES |" >> $GITHUB_STEP_SUMMARY
+            echo "| :warning: Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
+            echo "| :stopwatch: Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":warning: No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: "Upload test results"
         uses: actions/upload-artifact@v4
         if: always()
