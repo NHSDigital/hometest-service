@@ -11,7 +11,13 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const config = ConfigFactory.getConfig();
 
 export const getNumberOfWorkers = (authType: AuthType): number => {
-switch (authType) {
+  // Run only 1 worker for local environment
+  const env = ConfigFactory.getEnvironment();
+  if (env === 'local') {
+    return 1;
+  }
+
+  switch (authType) {
     case AuthType.SANDBOX:
       return 2;
     default:
