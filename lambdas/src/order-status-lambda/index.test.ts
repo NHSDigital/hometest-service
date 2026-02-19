@@ -1,4 +1,13 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
+import { handler } from "./index";
+import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
+import {
+  IdempotencyCheckResult,
+  OrderRow,
+  OrderStatusRow,
+} from "src/lib/db/order-status-db";
+
+const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
 const mockGetOrder = jest.fn();
 const mockGetLatestOrderStatus = jest.fn();
@@ -6,6 +15,12 @@ const mockCheckIdempotency = jest.fn();
 const mockUpdateOrderStatus = jest.fn();
 const mockExtractIdFromReference = jest.fn();
 const mockIsValidBusinessStatus = jest.fn();
+
+jest.mock("../lib/utils", () => ({
+  ...jest.requireActual("../lib/utils"),
+  getCorrelationIdFromEventHeaders: () =>
+    mockGetCorrelationIdFromEventHeaders(),
+}));
 
 jest.mock("../lib/db/order-status-db", () => ({
   OrderStatusService: jest.fn().mockImplementation(() => ({
@@ -24,9 +39,9 @@ jest.mock("../lib/db/db-client", () => ({
 
 process.env.DATABASE_URL = "postgres://localhost/test";
 
-import { handler } from "./index";
-import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
-import { OrderRow, OrderStatusRow } from "src/lib/db/order-status-db";
+const MOCK_CORRELATION_ID = "123e4567-e89b-12d3-a456-426614174000";
+const MOCK_ORDER_UID = "550e8400-e29b-41d4-a716-446655440000";
+const MOCK_PATIENT_UID = "patient-123";
 
 describe("Order Status Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
@@ -44,17 +59,17 @@ describe("Order Status Lambda Handler", () => {
     _mockContext = {};
 
     // Default mock values
+    mockGetCorrelationIdFromEventHeaders.mockReturnValue(MOCK_CORRELATION_ID);
     mockExtractIdFromReference.mockImplementation((reference: string) => {
-      if (reference.startsWith("Patient/")) return "patient-123";
-      if (reference.startsWith("ServiceRequest/"))
-        return "550e8400-e29b-41d4-a716-446655440000";
+      if (reference.startsWith("Patient/")) return MOCK_PATIENT_UID;
+      if (reference.startsWith("ServiceRequest/")) return MOCK_ORDER_UID;
 
       return null;
     });
 
     mockGetOrder.mockResolvedValue({
-      order_uid: "550e8400-e29b-41d4-a716-446655440000",
-      patient_uid: "patient-123",
+      order_uid: MOCK_ORDER_UID,
+      patient_uid: MOCK_PATIENT_UID,
       order_reference: 100001,
       supplier_id: "supplier-123",
       test_code: "TEST001",
@@ -65,7 +80,7 @@ describe("Order Status Lambda Handler", () => {
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockIsValidBusinessStatus.mockReturnValue(true);
     mockUpdateOrderStatus.mockResolvedValue({
-      order_uid: "550e8400-e29b-41d4-a716-446655440000",
+      order_uid: MOCK_ORDER_UID,
       status_code: "completed",
       created_at: "2024-01-15T10:00:00Z",
     } satisfies Partial<OrderStatusRow>);
@@ -77,13 +92,14 @@ describe("Order Status Lambda Handler", () => {
     intent: "order",
     basedOn: [
       {
-        reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000",
+        reference: `ServiceRequest/${MOCK_ORDER_UID}`,
       },
     ],
     for: {
-      reference: "Patient/patient-123",
+      reference: `Patient/${MOCK_PATIENT_UID}`,
     },
-    authoredOn: "2024-01-15T10:00:00Z",
+    authoredOn: "2024-01-15T09:00:00Z",
+    lastModified: "2024-01-15T10:00:00Z",
     businessStatus: {
       text: "DISPATCHED",
     },
@@ -119,12 +135,11 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if Task schema validation fails", async () => {
       mockEvent.body = JSON.stringify({
         resourceType: "Task",
-        status: "completed",
-        // Missing required basedOn field
+        status: "COMPLETE",
         for: {
-          reference: "Patient/patient-123",
+          reference: `Patient/${MOCK_PATIENT_UID}`,
         },
-      });
+      } satisfies Partial<Omit<FHIRTask, "basedOn">>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
@@ -175,9 +190,7 @@ describe("Order Status Lambda Handler", () => {
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
-      expect(mockGetOrder).toHaveBeenCalledWith(
-        "550e8400-e29b-41d4-a716-446655440000",
-      );
+      expect(mockGetOrder).toHaveBeenCalledWith(MOCK_ORDER_UID);
       expect(result.statusCode).toBe(200);
     });
   });
@@ -186,8 +199,7 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 when patient reference format is invalid", async () => {
       mockExtractIdFromReference.mockImplementation((reference: string) => {
         if (reference.startsWith("Patient/")) return null;
-        if (reference.startsWith("ServiceRequest/"))
-          return "550e8400-e29b-41d4-a716-446655440000";
+        if (reference.startsWith("ServiceRequest/")) return MOCK_ORDER_UID;
 
         return null;
       });
@@ -209,11 +221,11 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 when patient does not match order", async () => {
       mockExtractIdFromReference.mockImplementation((reference: string) => {
         if (reference.startsWith("Patient/")) return "different-patient";
-        if (reference.startsWith("ServiceRequest/"))
-          return "550e8400-e29b-41d4-a716-446655440000";
+        if (reference.startsWith("ServiceRequest/")) return MOCK_ORDER_UID;
 
         return null;
       });
+
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -289,35 +301,21 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
     });
-
-    it("should accept businessStatus.coding[0].code format", async () => {
-      mockIsValidBusinessStatus.mockReturnValueOnce(true);
-      mockEvent.body = JSON.stringify({
-        ...validTaskBody,
-        businessStatus: {
-          coding: [{ code: "DISPATCHED" }],
-        },
-      } satisfies Partial<FHIRTask>);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(200);
-      expect(mockIsValidBusinessStatus).toHaveBeenCalledWith("DISPATCHED");
-    });
   });
 
   describe("Idempotency via Correlation ID", () => {
     it("should detect duplicate updates with same correlation ID", async () => {
-      const correlationId = "12345678-1234-1234-1234-123456789012";
-      mockEvent.headers = { "X-Correlation-ID": correlationId };
       mockCheckIdempotency.mockResolvedValueOnce({
         isDuplicate: true,
         lastUpdate: {
-          order_uid: "550e8400-e29b-41d4-a716-446655440000",
-          status_code: "completed",
-          timestamp: "2024-01-15T09:00:00Z",
+          order_uid: MOCK_ORDER_UID,
+          status_code: "",
+          created_at: "",
+          status_id: "",
+          order_reference: 0,
+          correlation_id: "",
         },
-      });
+      } satisfies Partial<IdempotencyCheckResult>);
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
@@ -325,46 +323,58 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(
-        "550e8400-e29b-41d4-a716-446655440000",
-        correlationId,
+        MOCK_ORDER_UID,
+        MOCK_CORRELATION_ID,
       );
     });
 
     it("should process new updates with different correlation ID", async () => {
-      const correlationId = "12345678-1234-1234-1234-123456789012";
+      const newCorrelationId = "123e4567-e89b-12d3-a456-426614174999";
+      mockGetCorrelationIdFromEventHeaders.mockReturnValueOnce(
+        newCorrelationId,
+      );
 
-      mockEvent.headers = { "X-Correlation-ID": correlationId };
-      mockCheckIdempotency.mockResolvedValueOnce({ isDuplicate: false });
+      mockCheckIdempotency.mockResolvedValueOnce({
+        isDuplicate: false,
+      } satisfies IdempotencyCheckResult);
 
       mockEvent.body = JSON.stringify(validTaskBody);
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
-      expect(mockUpdateOrderStatus).toHaveBeenCalled();
+
+      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+        expect.objectContaining({
+          correlationId: newCorrelationId,
+        }),
+      );
     });
 
-    it("should handle missing correlation ID gracefully", async () => {
+    it("should return 400 when there is no correlation id", async () => {
       mockEvent.headers = {};
-      mockCheckIdempotency.mockResolvedValueOnce({ isDuplicate: false });
+
+      mockGetCorrelationIdFromEventHeaders.mockImplementation(() => {
+        throw new Error("Correlation ID is missing or invalid");
+      });
 
       mockEvent.body = JSON.stringify(validTaskBody);
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(400);
+
+      const body = JSON.parse(result.body);
+
+      expect(body.issue[0].diagnostics).toMatch(/correlation id/i);
     });
   });
 
   describe("Timestamp Handling", () => {
     it("should accept when lastModified timestamp is older than latest update", async () => {
-      mockGetLatestOrderStatus.mockResolvedValueOnce({
-        order_uid: "550e8400-e29b-41d4-a716-446655440000",
-        status_code: "in-progress",
-        created_at: "2024-01-15T09:00:00Z",
-      });
+      const mockedLastModifiedTimestamp = "2024-01-15T08:00:00Z";
 
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        lastModified: "2024-01-15T08:00:00Z", // Older than latest
+        lastModified: mockedLastModifiedTimestamp, // Older than latest
       } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -373,21 +383,17 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
-          createdAt: "2024-01-15T08:00:00Z",
+          createdAt: mockedLastModifiedTimestamp,
         }),
       );
     });
 
     it("should accept when lastModified timestamp is newer than latest update", async () => {
-      mockGetLatestOrderStatus.mockResolvedValueOnce({
-        order_uid: "550e8400-e29b-41d4-a716-446655440000",
-        status_code: "in-progress",
-        created_at: "2024-01-15T09:00:00Z",
-      });
+      const mockedLastModifiedTimestamp = "2024-01-15T11:00:00Z";
 
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        lastModified: "2024-01-15T11:00:00Z", // Newer than latest
+        lastModified: mockedLastModifiedTimestamp, // Newer than latest
       } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -396,7 +402,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
-          createdAt: "2024-01-15T11:00:00Z",
+          createdAt: mockedLastModifiedTimestamp,
         }),
       );
     });
@@ -404,7 +410,6 @@ describe("Order Status Lambda Handler", () => {
     it("should accept authoredOn timestamp instead of lastModified", async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        authoredOn: "2024-01-15T12:00:00Z",
         lastModified: undefined,
       } satisfies Partial<FHIRTask>);
 
@@ -414,7 +419,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
-          createdAt: "2024-01-15T12:00:00Z",
+          createdAt: validTaskBody.authoredOn,
         }),
       );
     });
@@ -426,11 +431,11 @@ describe("Order Status Lambda Handler", () => {
         intent: "order",
         basedOn: [
           {
-            reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000",
+            reference: `ServiceRequest/${MOCK_ORDER_UID}`,
           },
         ],
         for: {
-          reference: "Patient/patient-123",
+          reference: `Patient/${MOCK_PATIENT_UID}`,
         },
       } satisfies Partial<FHIRTask>);
 
@@ -457,29 +462,30 @@ describe("Order Status Lambda Handler", () => {
   describe("Successful Update", () => {
     it("should return 200 OK with updated Task when all validations pass", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
+
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
+
       const body = JSON.parse(result.body);
+
       expect(body.resourceType).toBe("Task");
       expect(body.status).toBe("COMPLETE");
-      expect(body.for.reference).toBe("Patient/patient-123");
+      expect(body.for.reference).toBe(`Patient/${MOCK_PATIENT_UID}`);
     });
 
     it("should call updateOrderStatus with correct parameters", async () => {
-      const correlationId = "corr-123";
-      mockEvent.headers = { "X-Correlation-ID": correlationId };
       mockEvent.body = JSON.stringify(validTaskBody);
 
       await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderId: "550e8400-e29b-41d4-a716-446655440000",
+          orderId: MOCK_ORDER_UID,
           statusCode: "COMPLETE",
-          createdAt: "2024-01-15T10:00:00Z",
-          correlationId,
+          createdAt: validTaskBody.lastModified,
+          correlationId: MOCK_CORRELATION_ID,
         }),
       );
     });

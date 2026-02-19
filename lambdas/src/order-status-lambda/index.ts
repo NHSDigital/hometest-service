@@ -9,9 +9,10 @@ import {
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils";
 
 const commons = new ConsoleCommons();
-const className = "order-status-lambda";
+const name = "order-status-lambda";
 
 /**
  * Lambda handler for PUT /test-order/status endpoint
@@ -22,7 +23,7 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   const { orderStatusDb } = init();
 
-  commons.logInfo(className, "Received order status update request", {
+  commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
   });
@@ -37,7 +38,7 @@ export const handler = async (
 
     task = JSON.parse(event.body);
   } catch (error) {
-    commons.logError(className, "Invalid JSON in request body", { error });
+    commons.logError(name, "Invalid JSON in request body", { error });
 
     return createFhirErrorResponse(
       400,
@@ -54,7 +55,7 @@ export const handler = async (
     let errorDetails: string = z.prettifyError(validationResult.error);
     errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, "");
 
-    commons.logError(className, "Task validation failed", {
+    commons.logError(name, "Task validation failed", {
       error: errorDetails,
     });
 
@@ -68,7 +69,7 @@ export const handler = async (
     );
 
     if (!orderId) {
-      commons.logError(className, "Invalid order reference format", {
+      commons.logError(name, "Invalid order reference format", {
         reference: task.basedOn[0].reference,
       });
 
@@ -80,12 +81,25 @@ export const handler = async (
       );
     }
 
-    const correlationId = event.headers["X-Correlation-ID"] || "";
+    let correlationId: string;
+
+    try {
+      correlationId = getCorrelationIdFromEventHeaders(event);
+    } catch (error) {
+      commons.logError(name, "Failed to retrieve correlation ID", { error });
+
+      return createFhirErrorResponse(
+        400,
+        "invalid",
+        error instanceof Error ? error.message : "Invalid correlation ID",
+        "error",
+      );
+    }
 
     // Check if order exists
     const existingOrder = await orderStatusDb.getOrder(orderId);
     if (!existingOrder) {
-      commons.logError(className, "Order not found", { orderId });
+      commons.logError(name, "Order not found", { orderId });
 
       return createFhirErrorResponse(
         404,
@@ -101,7 +115,7 @@ export const handler = async (
     );
 
     if (!patientIdFromTask) {
-      commons.logError(className, "Invalid patient reference format", {
+      commons.logError(name, "Invalid patient reference format", {
         reference: task.for.reference,
       });
 
@@ -114,7 +128,7 @@ export const handler = async (
     }
 
     if (patientIdFromTask !== existingOrder.patient_uid) {
-      commons.logError(className, "Patient mismatch for order", {
+      commons.logError(name, "Patient mismatch for order", {
         orderId,
         expectedPatient: existingOrder.patient_uid,
         providedPatient: patientIdFromTask,
@@ -133,7 +147,7 @@ export const handler = async (
       task.businessStatus?.text || task.businessStatus?.coding?.[0]?.code;
 
     if (!orderStatusDb.isValidBusinessStatus(businessStatusCode)) {
-      commons.logError(className, "Invalid business status", {
+      commons.logError(name, "Invalid business status", {
         businessStatus: businessStatusCode,
       });
 
@@ -149,7 +163,7 @@ export const handler = async (
     const { authoredOn, lastModified } = task;
 
     if (!authoredOn && !lastModified) {
-      commons.logError(className, "Missing timestamp in task", { orderId });
+      commons.logError(name, "Missing timestamp in task", { orderId });
 
       return createFhirErrorResponse(
         400,
@@ -166,14 +180,10 @@ export const handler = async (
     );
 
     if (idempotencyCheck.isDuplicate && idempotencyCheck.lastUpdate) {
-      commons.logInfo(
-        className,
-        "Duplicate update detected via correlation ID",
-        {
-          orderId,
-          correlationId,
-        },
-      );
+      commons.logInfo(name, "Duplicate update detected via correlation ID", {
+        orderId,
+        correlationId,
+      });
 
       return createFhirResponse(200, task);
     }
@@ -188,7 +198,7 @@ export const handler = async (
 
     await orderStatusDb.updateOrderStatus(updateParams);
 
-    commons.logInfo(className, "Order status updated successfully", {
+    commons.logInfo(name, "Order status updated successfully", {
       orderId,
       statusCode: task.status,
       correlationId,
@@ -197,7 +207,7 @@ export const handler = async (
     // Return updated Task resource
     return createFhirResponse(200, task);
   } catch (error) {
-    commons.logError(className, "Error processing order status update", {
+    commons.logError(name, "Error processing order status update", {
       error,
     });
     return createFhirErrorResponse(
