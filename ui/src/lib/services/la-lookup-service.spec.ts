@@ -6,7 +6,7 @@ global.fetch = mockFetch;
 
 describe("LaLookupService", () => {
   const postcode = "M503UQ";
-  const apiUrl = `http://mock-backend/eligibility-lookup/info?postcode=${postcode}`;
+  const apiUrl = `http://mock-backend/eligibility-lookup?postcode=${postcode}`;
 
   afterEach(() => {
     jest.clearAllMocks();
