@@ -1,5 +1,3 @@
-import { init } from "./init";
-
 const mockPostgresDbClient = jest.fn();
 const mockSupplierService = jest.fn();
 const mockLaLookupService = jest.fn();
@@ -21,6 +19,8 @@ jest.mock("../lib/commons", () => ({
   ConsoleCommons: mockConsoleCommons,
 }));
 
+// import remains here to avoid hoisting issues with jest.mock
+import { init } from "./init";
 describe("eligibility-lookup-lambda init", () => {
   beforeEach(() => {
     mockPostgresDbClient.mockReset();
