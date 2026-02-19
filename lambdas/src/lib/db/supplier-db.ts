@@ -133,7 +133,6 @@ export class SupplierService {
       VALUES ($1, $2, $3)
       ON CONFLICT (order_uid)
       DO UPDATE SET
-        order_reference = EXCLUDED.order_reference,
         status_code = EXCLUDED.status_code,
         created_at = CURRENT_TIMESTAMP
       RETURNING status_id;
