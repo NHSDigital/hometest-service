@@ -37,6 +37,7 @@ export const handler = async (
   commons.logInfo('order-result-lambda', 'Received result submission request', {
     path: event.path,
     method: event.httpMethod,
+    headers: event.headers,
   });
 
   let observation: Observation;
