@@ -3,9 +3,9 @@ import { ConfigFactory, type ConfigInterface } from '../configuration/configurat
 import { BasePage } from './BasePage';
 import { AddressModel } from '../models';
 
-export class EnterMobileNumberPage extends BasePage 
+export class EnterMobileNumberPage extends BasePage
 {
-  readonly mobileNumberInput: Locator;  
+  readonly mobileNumberInput: Locator;
   readonly continueButton: Locator;
 
   constructor(page: Page) {
@@ -15,7 +15,7 @@ export class EnterMobileNumberPage extends BasePage
   }
 
   async fillMobileNumberAndContinue(randomEntry: AddressModel): Promise<void> {
-    await this.mobileNumberInput.fill(randomEntry.mobileNumber);        
+    await this.mobileNumberInput.fill(randomEntry.mobileNumber);
     await this.continueButton.click();
   }
 }
