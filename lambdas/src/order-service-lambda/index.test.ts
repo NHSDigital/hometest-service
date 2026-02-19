@@ -2,8 +2,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 
 const mockInit = jest.fn();
-let mockCreatePatientAndOrder = jest.fn();
-let mockUpdateOrderStatus = jest.fn();
+const mockCreatePatientAndOrder = jest.fn();
+const mockUpdateOrderStatus = jest.fn();
 const mockSendMessage = jest.fn();
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 const mockBuildFhirServiceRequest = jest.fn();
@@ -43,25 +43,30 @@ const buildEvent = (body: string | null): APIGatewayProxyEvent =>
     isBase64Encoded: false,
   }) as APIGatewayProxyEvent;
 
-const buildValidRequestBody = (): string =>
+const basePatient = {
+  family: "Doe",
+  given: ["Jane"],
+  text: "Jane Doe",
+  telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
+  address: {
+    line: ["1 Test Street"],
+    postalCode: "AB1 2CD",
+  },
+  birthDate: "1990-01-01",
+  nhsNumber: "1234567890",
+};
+
+const buildRequestBody = (overrides: Partial<any> = {}): string =>
   JSON.stringify({
     testCode: "TEST001",
     testDescription: "Test description",
     supplierId: validSupplierId,
-    patient: {
-      family: "Doe",
-      given: ["Jane"],
-      text: "Jane Doe",
-      telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
-      address: {
-        line: ["1 Test Street"],
-        postalCode: "AB1 2CD",
-      },
-      birthDate: "1990-01-01",
-      nhsNumber: "1234567890",
-    },
-    consent: true,
+    patient: { ...basePatient, ...(overrides.patient || {}) },
+    consent: overrides.consent !== undefined ? overrides.consent : true,
+    ...overrides,
   });
+
+const buildValidRequestBody = (): string => buildRequestBody();
 
 describe("order-service-lambda handler", () => {
   let handler: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
@@ -69,8 +74,8 @@ describe("order-service-lambda handler", () => {
   beforeEach(async () => {
     jest.resetModules();
     mockInit.mockReset();
-    mockCreatePatientAndOrder = jest.fn();
-    mockUpdateOrderStatus = jest.fn();
+    mockCreatePatientAndOrder.mockReset();
+    mockUpdateOrderStatus.mockReset();
     mockSendMessage.mockReset();
     mockGetCorrelationIdFromEventHeaders.mockReset();
     mockBuildFhirServiceRequest.mockReset();
@@ -161,75 +166,25 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should return 400 for validation errors", async () => {
-      const invalidBody = JSON.stringify({
-        testCode: "TEST001",
-        testDescription: "Test description",
+      const invalidBody = buildRequestBody({
         supplierId: "not-a-uuid",
-        patient: {
-          family: "Doe",
-          telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
-          address: {
-            line: ["1 Test Street"],
-            postalCode: "AB1 2CD",
-          },
-          birthDate: "1990-01-01",
-          nhsNumber: "1234567890",
-        },
+        patient: { ...basePatient, given: undefined, text: undefined },
       });
-
       const response = await handler(buildEvent(invalidBody));
-
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body).message).toMatch(/Validation failed/);
     });
 
     it("should return 400 when consent field is missing", async () => {
-      const bodyWithoutConsent = JSON.stringify({
-        testCode: "TEST001",
-        testDescription: "Test description",
-        supplierId: validSupplierId,
-        patient: {
-          family: "Doe",
-          given: ["Jane"],
-          text: "Jane Doe",
-          telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
-          address: {
-            line: ["1 Test Street"],
-            postalCode: "AB1 2CD",
-          },
-          birthDate: "1990-01-01",
-          nhsNumber: "1234567890",
-        },
-      });
-
+      const bodyWithoutConsent = buildRequestBody({ consent: undefined });
       const response = await handler(buildEvent(bodyWithoutConsent));
-
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body).message).toMatch(/Validation failed/);
     });
 
     it("should return 400 when consent is false", async () => {
-      const bodyWithFalseConsent = JSON.stringify({
-        testCode: "TEST001",
-        testDescription: "Test description",
-        supplierId: validSupplierId,
-        patient: {
-          family: "Doe",
-          given: ["Jane"],
-          text: "Jane Doe",
-          telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
-          address: {
-            line: ["1 Test Street"],
-            postalCode: "AB1 2CD",
-          },
-          birthDate: "1990-01-01",
-          nhsNumber: "1234567890",
-        },
-        consent: false,
-      });
-
-      const response = await handler(buildEvent(bodyWithFalseConsent));
-
+      const body = buildRequestBody({ consent: false });
+      const response = await handler(buildEvent(body));
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toMatch(/Validation failed/);
