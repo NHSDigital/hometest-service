@@ -87,12 +87,18 @@ npm run test:coverage
 
 ### Integration Tests
 
-Integration tests use real services (PostgreSQL via Docker) to verify actual behavior. These tests:
+Integration tests use real services (PostgreSQL via Docker) to verify infrastructure behavior that cannot be reliably mocked.
 
-- Verify transaction atomicity with real database
-- Test complex queries with actual data
-- Validate foreign key constraints and database behavior
-- Use testcontainers to spin up PostgreSQL in Docker
+**Testing Philosophy:**
+
+- Test infrastructure layers (e.g., `DBClient`) that directly interact with external systems
+- Verify actual database behavior: transactions (BEGIN/COMMIT/ROLLBACK), constraints, SQL correctness
+- Do NOT duplicate tests already covered by unit tests
+- Business logic layers (e.g., `SupplierService`) are tested via unit tests that mock their dependencies
+
+**Current Integration Tests:**
+
+- `db-client.integration.test.ts` - Verifies PostgreSQL transaction atomicity, isolation, rollback behavior
 
 **Prerequisites:**
 
@@ -107,4 +113,4 @@ npm run test:integration
 npm test
 ```
 
-**Note:** Integration tests are slower (~10-30s startup) but provide confidence that database operations work correctly in production-like conditions.
+**Note:** Integration tests are slower (~10-30s startup) but provide confidence that infrastructure components work correctly with real external systems.
