@@ -48,6 +48,16 @@ output "login_endpoint" {
   value       = module.login_lambda.localstack_endpoint_url
 }
 
+output "session_endpoint" {
+  description = "Session Lambda endpoint"
+  value       = module.session_lambda.localstack_endpoint_url
+}
+
+output "backend_base_url" {
+  description = "Base URL for calling backend routes in LocalStack (append /login, /session, etc.)"
+  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
+}
+
 output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
   description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"

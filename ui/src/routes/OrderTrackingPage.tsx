@@ -5,18 +5,11 @@ import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import orderDetailsService from "@/lib/services/order-details-service";
+import { useAuth } from "@/state/AuthContext";
 import { useContent } from "@/hooks";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-
-function getPatient(): Patient {
-  // hardcoded - will be obtained from logged user later
-  return {
-    nhsNumber: "8888888888",
-    dateOfBirth: "1992-11-07",
-  };
-}
 
 function isValidGuid(value: string): boolean {
   const result = z.uuid().safeParse(value);
@@ -55,7 +48,7 @@ function OrderContent({
 
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
-  const patient = getPatient();
+  const { user } = useAuth();
   const { "order-tracking": content } = useContent();
 
   if (!orderId || !isValidGuid(orderId)) {
@@ -68,6 +61,11 @@ export default function OrderTrackingPage() {
       </PageLayout>
     );
   }
+
+  const patient: Patient = {
+    nhsNumber: user!.nhsNumber,
+    dateOfBirth: user!.birthdate,
+  };
 
   return (
     <PageLayout>

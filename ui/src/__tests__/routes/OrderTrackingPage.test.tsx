@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 
+import { AuthUser, useAuth } from "@/state/AuthContext";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,7 +11,6 @@ import { Patient } from "@/lib/models/patient";
 import { act } from "react";
 import orderDetailsService from "@/lib/services/order-details-service";
 
-// Mock the orderDetailsService
 jest.mock("@/lib/services/order-details-service", () => ({
   __esModule: true,
   default: {
@@ -18,7 +18,8 @@ jest.mock("@/lib/services/order-details-service", () => ({
   },
 }));
 
-// Mock Next.js components
+jest.mock("@/state/AuthContext");
+
 jest.mock("@/layouts/PageLayout", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => (
@@ -57,6 +58,14 @@ describe("OrderTrackingPage", () => {
     dateOfBirth: "1992-11-07",
   };
 
+  const mockUser: AuthUser = {
+    sub: "test-user-123",
+    nhsNumber: "2657119018",
+    birthdate: "1990-08-11",
+    identityProofingLevel: "P9",
+    phoneNumber: "07700900000",
+  };
+
   // Helper function to render with router and query client
   const renderWithRouter = (orderId: string) => {
     const queryClient = new QueryClient();
@@ -77,6 +86,11 @@ describe("OrderTrackingPage", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    (useAuth as jest.Mock).mockReturnValue({
+      user: mockUser,
+      setUser: jest.fn(),
+    });
   });
 
   describe("Successful order loading", () => {
