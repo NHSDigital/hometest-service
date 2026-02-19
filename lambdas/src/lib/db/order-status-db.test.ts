@@ -243,8 +243,11 @@ describe("OrderStatusService", () => {
         statusCode: OrderStatusCodes.COMPLETE,
 =======
         statusCode: "completed",
+<<<<<<< HEAD
         businessStatus: "DISPATCHED",
 >>>>>>> 84f1dcc (feat: add initial implementation)
+=======
+>>>>>>> cf72cd6 (chore: remove storage of business status)
         createdAt: "2024-01-15T11:00:00Z",
         correlationId: "corr-123",
       });
@@ -261,8 +264,11 @@ describe("OrderStatusService", () => {
 =======
           "completed",
           "2024-01-15T11:00:00Z",
+<<<<<<< HEAD
           "DISPATCHED",
 >>>>>>> 84f1dcc (feat: add initial implementation)
+=======
+>>>>>>> cf72cd6 (chore: remove storage of business status)
           "corr-123",
         ],
       );
@@ -289,7 +295,7 @@ describe("OrderStatusService", () => {
           "order-123",
           "in-progress",
           "2024-01-15T11:00:00Z",
-          null,
+          "corr-123",
         ]),
       );
     });

@@ -26,8 +26,11 @@ export interface OrderStatusRow {
 =======
   status_code: string;
   created_at: string;
+<<<<<<< HEAD
   business_status?: string;
 >>>>>>> 84f1dcc (feat: add initial implementation)
+=======
+>>>>>>> cf72cd6 (chore: remove storage of business status)
   correlation_id: string;
 }
 
@@ -47,8 +50,11 @@ export interface OrderStatusUpdateParams {
   statusCode: OrderStatusCode;
 =======
   statusCode: string;
+<<<<<<< HEAD
   businessStatus?: string;
 >>>>>>> 84f1dcc (feat: add initial implementation)
+=======
+>>>>>>> cf72cd6 (chore: remove storage of business status)
   createdAt: string;
   correlationId: string;
 }
@@ -113,7 +119,7 @@ export class OrderStatusService {
    */
   async getLatestOrderStatus(orderId: string): Promise<OrderStatusRow | null> {
     const query = `
-      SELECT status_id, order_uid, order_reference, status_code, created_at, business_status
+      SELECT status_id, order_uid, order_reference, status_code, created_at
       FROM hometest.order_status
       WHERE order_uid = $1
       ORDER BY created_at DESC
@@ -211,6 +217,7 @@ export class OrderStatusService {
     params: OrderStatusUpdateParams,
   ): Promise<OrderStatusRow> {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { orderId, orderReference, statusCode, createdAt, correlationId } =
       params;
 
@@ -227,11 +234,20 @@ export class OrderStatusService {
       VALUES ($1, $2, $3, $4, $5)
       RETURNING status_id, order_uid, order_reference, status_code, created_at, business_status;
 >>>>>>> 84f1dcc (feat: add initial implementation)
+=======
+    const { orderId, statusCode, createdAt, correlationId } = params;
+
+    const query = `
+      INSERT INTO hometest.order_status (order_uid, status_code, created_at, correlation_id)
+      VALUES ($1, $2, $3, $4)
+      RETURNING status_id, order_uid, order_reference, status_code, created_at;
+>>>>>>> cf72cd6 (chore: remove storage of business status)
     `;
 
     try {
       const result = await this.dbClient.query<
         OrderStatusRow,
+<<<<<<< HEAD
 <<<<<<< HEAD
         [string, number | null, string, string, string | null]
       >(query, [
@@ -249,6 +265,10 @@ export class OrderStatusService {
 >>>>>>> 84f1dcc (feat: add initial implementation)
         correlationId,
       ]);
+=======
+        [string, string, string, string | null]
+      >(query, [orderId, statusCode, createdAt, correlationId]);
+>>>>>>> cf72cd6 (chore: remove storage of business status)
 
       if (result.rowCount === 0) {
         throw new Error("Failed to insert order status");

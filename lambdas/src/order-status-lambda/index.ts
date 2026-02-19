@@ -183,7 +183,6 @@ export const handler = async (
     const updateParams: OrderStatusUpdateParams = {
       orderId,
       statusCode: task.status,
-      businessStatus: businessStatusCode,
       createdAt: (lastModified || authoredOn)!,
       correlationId,
     };
