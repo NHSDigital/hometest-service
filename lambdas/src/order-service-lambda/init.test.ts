@@ -27,7 +27,7 @@ describe("order-service-lambda init", () => {
       withTransaction: jest.fn(),
       close: jest.fn(),
     };
-    const supplierServiceInstance = { createPatientAndOrderAndStatus: jest.fn() };
+    const supplierServiceInstance = {};
 
     process.env.DATABASE_URL = "postgres://user:pass@host:5432/db";
 
