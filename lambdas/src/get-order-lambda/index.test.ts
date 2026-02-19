@@ -2,18 +2,17 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { Order } from "../lib/db/order-db-client";
 import { lambdaHandler } from "./index";
 
-var mockOrderDbClient!: { getOrder: jest.Mock };
+jest.mock("../lib/db/order-db-client");
 
-jest.mock("./init", () => {
-  mockOrderDbClient = {
-    getOrder: jest.fn(),
-  };
-  return {
-    init: jest.fn(() => ({ orderDbClient: mockOrderDbClient })),
-  };
-});
+const mockGetOrder = jest.fn();
 
-const mockGetOrder = mockOrderDbClient.getOrder;
+jest.mock("./init", () => ({
+  init: jest.fn(() => ({
+    orderDbClient: {
+      getOrder: mockGetOrder,
+    },
+  })),
+}));
 
 describe("Get Order Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
