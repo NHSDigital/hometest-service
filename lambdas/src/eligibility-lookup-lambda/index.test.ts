@@ -1,12 +1,12 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { lambdaHandler } from "./index";
+import { validatePostcodeFormat } from "./postcode-validator";
 
 jest.mock("./init", () => {
   // Declare mocks inside the factory
   const mockLookupByPostcode = jest.fn();
   const mockLogError = jest.fn();
 
-  // Export them so tests can access them
   return {
     init: () => ({
       laLookupService: { lookupByPostcode: mockLookupByPostcode },
@@ -20,11 +20,8 @@ jest.mock("./postcode-validator", () => ({
   validatePostcodeFormat: jest.fn(),
 }));
 
-import { validatePostcodeFormat } from "./postcode-validator";
 
-// Access the mocks exported from the factory
 const { mockLookupByPostcode, mockLogError } = require("./init").__mocks;
-
 const buildEvent = (postcode: string | null): APIGatewayProxyEvent =>
   ({
     body: null,
