@@ -175,7 +175,6 @@ export const handler = async (
         },
       );
 
-      // TODO: Return the previous response - reconstruct the task / Does this need to be the data from the last update instead of the incoming task?
       return createFhirResponse(200, task);
     }
 
