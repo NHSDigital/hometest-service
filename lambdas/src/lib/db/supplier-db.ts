@@ -50,7 +50,7 @@ export class SupplierService {
     this.dbClient = dbClient;
   }
 
-  async createPatientAndOrder(
+  async createPatientAndOrderAndStatus(
     nhsNumber: string,
     birthDate: string,
     supplierId: string,

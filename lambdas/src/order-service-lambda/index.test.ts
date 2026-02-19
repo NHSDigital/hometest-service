@@ -62,7 +62,7 @@ describe("order-service-lambda handler", () => {
     );
     mockInit.mockReturnValue({
       supplierService: {
-        createPatientAndOrder: mockCreatePatientAndOrder,
+        createPatientAndOrderAndStatus: mockCreatePatientAndOrder,
       },
     });
 
@@ -178,7 +178,7 @@ describe("order-service-lambda handler", () => {
     );
   });
 
-  it("should return 400 when createPatientAndOrder throws", async () => {
+  it("should return 400 when createPatientAndOrderAndStatus throws", async () => {
     mockCreatePatientAndOrder.mockRejectedValue(new Error("DB down"));
 
     const response = await handler(buildEvent(buildValidRequestBody()));

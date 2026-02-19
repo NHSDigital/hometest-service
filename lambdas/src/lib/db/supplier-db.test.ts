@@ -158,7 +158,7 @@ describe("SupplierService", () => {
     });
   });
 
-  describe("createPatientAndOrder", () => {
+  describe("createPatientAndOrderAndStatus", () => {
     const nhsNumber = "1234567890";
     const birthDate = "1990-01-01";
     const supplierId = "SUP001";
@@ -179,7 +179,7 @@ describe("SupplierService", () => {
           rowCount: 1,
         });
 
-      const result = await supplierService.createPatientAndOrder(
+      const result = await supplierService.createPatientAndOrderAndStatus(
         nhsNumber,
         birthDate,
         supplierId,
@@ -225,7 +225,7 @@ describe("SupplierService", () => {
           rowCount: 1,
         });
 
-      await supplierService.createPatientAndOrder(
+      await supplierService.createPatientAndOrderAndStatus(
         nhsNumber,
         birthDate,
         supplierId,
@@ -244,7 +244,7 @@ describe("SupplierService", () => {
       mockDbClient.query.mockResolvedValue({ rows: [], rowCount: 0 });
 
       await expect(
-        supplierService.createPatientAndOrder(
+        supplierService.createPatientAndOrderAndStatus(
           nhsNumber,
           birthDate,
           supplierId,
@@ -265,7 +265,7 @@ describe("SupplierService", () => {
         });
 
       await expect(
-        supplierService.createPatientAndOrder(
+        supplierService.createPatientAndOrderAndStatus(
           nhsNumber,
           birthDate,
           supplierId,
@@ -290,7 +290,7 @@ describe("SupplierService", () => {
         });
 
       await expect(
-        supplierService.createPatientAndOrder(
+        supplierService.createPatientAndOrderAndStatus(
           nhsNumber,
           birthDate,
           supplierId,
@@ -303,7 +303,7 @@ describe("SupplierService", () => {
       mockDbClient.query.mockRejectedValue(new Error("DB failure"));
 
       await expect(
-        supplierService.createPatientAndOrder(
+        supplierService.createPatientAndOrderAndStatus(
           nhsNumber,
           birthDate,
           supplierId,

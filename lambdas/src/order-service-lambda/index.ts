@@ -68,7 +68,7 @@ export const handler = async (
 
     // Create patient and order in database
     // ALPHA: no real idempotency check, so repeated requests will create multiple orders
-    const orderResult = await supplierService.createPatientAndOrder(
+    const orderResult = await supplierService.createPatientAndOrderAndStatus(
       orderRequest.patient.nhsNumber,
       orderRequest.patient.birthDate,
       orderRequest.supplierId,
