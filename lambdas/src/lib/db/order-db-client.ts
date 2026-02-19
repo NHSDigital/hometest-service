@@ -1,10 +1,16 @@
 import { type DBClient } from "./db-client";
 
+type OrderStatusCode =
+  | "ORDER_RECEIVED"
+  | "DISPATCHED"
+  | "RECEIVED"
+  | "COMPLETE";
+
 export interface Order {
   id: string;
   reference_number: number;
   created_at: Date;
-  status_code: string;
+  status_code: OrderStatusCode;
   status_description: string;
   status_created_at: Date;
   supplier_id: string;
@@ -47,11 +53,6 @@ export class OrderDbClient {
       [orderId, nhsNumber, dateOfBirth],
     );
 
-    const rowCount = result.rowCount ?? 0;
-    if (rowCount === 0) {
-      return null;
-    }
-
-    return result.rows[0];
+    return result?.rows[0] ?? null;
   }
 }

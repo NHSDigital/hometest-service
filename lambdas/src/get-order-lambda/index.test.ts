@@ -1,4 +1,5 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
 import { Order } from "../lib/db/order-db-client";
 import { lambdaHandler } from "./index";
 
@@ -49,6 +50,11 @@ describe("Get Order Lambda Handler", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
+  const getServiceRequestFromResult = (result: APIGatewayProxyResult) => {
+    const bundle = JSON.parse(result.body);
+    return bundle.entry[0].resource;
+  };
 
   describe("Success scenarios", () => {
     test("should return order bundle when valid query parameters are provided", async () => {
@@ -121,8 +127,7 @@ describe("Get Order Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      const responseBody = JSON.parse(result.body);
-      const serviceRequest = responseBody.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
       expect(serviceRequest.status).toBe("completed");
     });
 
@@ -134,8 +139,7 @@ describe("Get Order Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      const responseBody = JSON.parse(result.body);
-      const serviceRequest = responseBody.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
       expect(serviceRequest.status).toBe("active");
     });
   });
@@ -443,8 +447,7 @@ describe("Get Order Lambda Handler", () => {
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 
-      const bundle = JSON.parse(result.body);
-      const serviceRequest = bundle.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
 
       expect(serviceRequest.resourceType).toBe("ServiceRequest");
       expect(serviceRequest.identifier).toContainEqual({
@@ -458,8 +461,7 @@ describe("Get Order Lambda Handler", () => {
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 
-      const bundle = JSON.parse(result.body);
-      const serviceRequest = bundle.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
 
       expect(serviceRequest.performer).toHaveLength(1);
       expect(serviceRequest.performer[0]).toEqual({
@@ -474,8 +476,7 @@ describe("Get Order Lambda Handler", () => {
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 
-      const bundle = JSON.parse(result.body);
-      const serviceRequest = bundle.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
 
       const businessStatusExtension = serviceRequest.extension.find(
         (ext: any) =>
@@ -498,8 +499,7 @@ describe("Get Order Lambda Handler", () => {
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 
-      const bundle = JSON.parse(result.body);
-      const serviceRequest = bundle.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
 
       expect(serviceRequest.contained).toHaveLength(1);
       const patient = serviceRequest.contained[0];
@@ -518,8 +518,7 @@ describe("Get Order Lambda Handler", () => {
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 
-      const bundle = JSON.parse(result.body);
-      const serviceRequest = bundle.entry[0].resource;
+      const serviceRequest = getServiceRequestFromResult(result);
 
       expect(serviceRequest.code).toEqual({
         coding: [
