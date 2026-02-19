@@ -21,8 +21,8 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
-    await howComfortablePrickingFingerPage.selectYesOptionAndContinue(); 
-    await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress)
+    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
+    await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress);
   });
 
   test('Order test journey by providing address manually', async ({ findAddressPage, enterAddressManuallyPage }) => {
