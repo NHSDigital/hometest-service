@@ -10,5 +10,5 @@ output "api_integration" {
 
 output "localstack_endpoint_url" {
   description = "Lambda endpoint URL for LocalStack"
-  value       = "http://localhost:4566/restapis/${var.api_gateway_id}/${var.environment}/_user_request_/${var.api_path}"
+  value       = "http://localhost:4566/_aws/execute-api/${var.api_gateway_id}/${var.environment}/${var.api_path}"
 }

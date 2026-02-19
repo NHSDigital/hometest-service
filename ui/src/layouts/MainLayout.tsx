@@ -2,6 +2,8 @@ import { Container, Footer, Header } from "nhsuk-react-components";
 import { Link, Outlet, ScrollRestoration } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { AuthLoader } from "@/lib/auth/AuthLoader";
+import { AuthProvider } from "@/state/AuthContext";
 import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type React from "react";
 import { RoutePath } from "../lib/models/route-paths";
@@ -42,9 +44,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </Header>
       )}
       <Container>
-        <QueryClientProvider client={queryClient}>
-          {children ?? <Outlet />}
-        </QueryClientProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthLoader>{children}</AuthLoader>
+          </QueryClientProvider>
+        </AuthProvider>
       </Container>
       {!isNhsApp && (
         <Footer>
