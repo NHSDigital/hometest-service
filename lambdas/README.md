@@ -67,3 +67,44 @@ lambdas/
 - Include proper error handling and logging
 - Follow the single responsibility principle per Lambda
 - Each Lambda must have an `index.ts` file with the main handler
+
+## Testing
+
+### Unit Tests
+
+Unit tests use mocked dependencies and run quickly without external services.
+
+```bash
+# Run all unit tests (excludes integration tests)
+npm run test:unit
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run with coverage
+npm run test:coverage
+```
+
+### Integration Tests
+
+Integration tests use real services (PostgreSQL via Docker) to verify actual behavior. These tests:
+
+- Verify transaction atomicity with real database
+- Test complex queries with actual data
+- Validate foreign key constraints and database behavior
+- Use testcontainers to spin up PostgreSQL in Docker
+
+**Prerequisites:**
+
+- Docker must be running
+- Tests will automatically pull and start PostgreSQL containers
+
+```bash
+# Run only integration tests
+npm run test:integration
+
+# Run all tests (unit + integration)
+npm test
+```
+
+**Note:** Integration tests are slower (~10-30s startup) but provide confidence that database operations work correctly in production-like conditions.

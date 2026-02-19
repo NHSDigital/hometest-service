@@ -8,8 +8,12 @@ describe("SupplierService", () => {
   beforeEach(() => {
     mockDbClient = {
       query: jest.fn(),
+      withTransaction: jest.fn(),
       close: jest.fn(),
     };
+    mockDbClient.withTransaction.mockImplementation(async (fn) =>
+      fn(mockDbClient),
+    );
 
     supplierService = new SupplierService({ dbClient: mockDbClient });
   });
@@ -169,6 +173,10 @@ describe("SupplierService", () => {
         .mockResolvedValueOnce({
           rows: [{ order_uid: "order-1", order_reference: 123 }],
           rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ status_id: "status-1" }],
+          rowCount: 1,
         });
 
       const result = await supplierService.createPatientAndOrder(
@@ -183,7 +191,8 @@ describe("SupplierService", () => {
         orderReference: 123,
         patientUid: "patient-1",
       });
-      expect(mockDbClient.query).toHaveBeenCalledTimes(2);
+      expect(mockDbClient.withTransaction).toHaveBeenCalledTimes(1);
+      expect(mockDbClient.query).toHaveBeenCalledTimes(3);
       expect(mockDbClient.query).toHaveBeenNthCalledWith(
         1,
         expect.any(String),
@@ -193,6 +202,11 @@ describe("SupplierService", () => {
         2,
         expect.any(String),
         [supplierId, "patient-1", testCode, undefined],
+      );
+      expect(mockDbClient.query).toHaveBeenNthCalledWith(
+        3,
+        expect.any(String),
+        ["order-1", 123, "GENERATED"],
       );
     });
 
@@ -204,6 +218,10 @@ describe("SupplierService", () => {
         })
         .mockResolvedValueOnce({
           rows: [{ order_uid: "order-1", order_reference: 123 }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ status_id: "status-1" }],
           rowCount: 1,
         });
 
@@ -239,6 +257,31 @@ describe("SupplierService", () => {
       mockDbClient.query
         .mockResolvedValueOnce({
           rows: [{ patient_uid: "patient-1" }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [],
+          rowCount: 0,
+        });
+
+      await expect(
+        supplierService.createPatientAndOrder(
+          nhsNumber,
+          birthDate,
+          supplierId,
+          testCode,
+        ),
+      ).rejects.toThrow(/Failed to create patient and order in database/);
+    });
+
+    it("should throw error when order status insert returns no rows", async () => {
+      mockDbClient.query
+        .mockResolvedValueOnce({
+          rows: [{ patient_uid: "patient-1" }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ order_uid: "order-1", order_reference: 123 }],
           rowCount: 1,
         })
         .mockResolvedValueOnce({
