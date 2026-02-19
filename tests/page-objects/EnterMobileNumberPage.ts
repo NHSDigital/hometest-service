@@ -19,5 +19,3 @@ export class EnterMobileNumberPage extends BasePage
     await this.continueButton.click();
   }
 }
-  
-
