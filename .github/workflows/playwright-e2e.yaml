@@ -101,7 +101,7 @@ jobs:
           FILTER="${{ inputs.test_filter }}"
 
           # Build the command
-          CMD="npx playwright test"
+          CMD="ENV=dev npx playwright test"
 
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
