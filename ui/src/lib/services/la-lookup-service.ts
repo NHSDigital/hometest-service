@@ -17,7 +17,7 @@ class LaLookupService {
   }
 
   private async getFromApi(postcode: string): Promise<Response> {
-    const url = new URL(`${backendUrl}/test-order/info`);
+    const url = new URL(`${backendUrl}/eligibility-lookup`);
     url.searchParams.append("postcode", postcode);
 
     return fetch(url.toString(), {

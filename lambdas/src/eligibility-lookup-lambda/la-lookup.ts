@@ -1,4 +1,4 @@
-import postcodeLaMapping from './postcode-la-mapping.json';
+import postcodeLaMapping from '../__mocks__/postcode-la-mapping.json';
 
 export interface LaLookupResult {
   localAuthorityCode: string;
