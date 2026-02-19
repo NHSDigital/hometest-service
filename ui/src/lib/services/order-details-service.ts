@@ -3,7 +3,7 @@ import { Bundle, OperationOutcome } from "fhir/r4";
 import { OrderDetails } from "@/lib/models/order-details";
 import { OrderDetailsMapper } from "@/lib/mappers/order-details-mapper";
 import { Patient } from "@/lib/models/patient";
-import { backendApiEndpoint } from "@/settings";
+import { backendUrl } from "@/settings";
 
 class OrderDetailsService {
   async get(orderId: string, patient: Patient): Promise<OrderDetails | null> {
@@ -32,7 +32,7 @@ class OrderDetailsService {
     orderId: string,
     patient: Patient,
   ): Promise<Response> {
-    const url = new URL(`${backendApiEndpoint}/order`);
+    const url = new URL(`${backendUrl}/order`);
     url.searchParams.append("nhs_number", patient.nhsNumber);
     url.searchParams.append("date_of_birth", patient.dateOfBirth);
     url.searchParams.append("order_id", orderId);

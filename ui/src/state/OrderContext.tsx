@@ -3,21 +3,14 @@
 // TODO: remove console.logs
 
 import {
+  ReactNode,
   createContext,
+  useCallback,
   useContext,
   useState,
-  useCallback,
-  ReactNode,
 } from "react";
 
-// Data from NHS Login auth response
-export interface AuthUser {
-  sub: string;
-  nhsNumber: string;
-  birthdate: string;
-  identityProofingLevel: string;
-  phoneNumber: string;
-}
+import { AuthUser } from "./AuthContext";
 
 // Address structure
 export interface Address {
