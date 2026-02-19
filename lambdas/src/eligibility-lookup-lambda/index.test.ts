@@ -3,7 +3,6 @@ import { lambdaHandler } from "./index";
 import { validatePostcodeFormat } from "./postcode-validator";
 
 jest.mock("./init", () => {
-  // Declare mocks inside the factory
   const mockLookupByPostcode = jest.fn();
   const mockLogError = jest.fn();
 
