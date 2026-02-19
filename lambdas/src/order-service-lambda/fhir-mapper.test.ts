@@ -85,6 +85,7 @@ describe("fhir-mapper", () => {
         birthDate: "1990-01-01",
         nhsNumber: "1234567890",
       },
+      consent: true,
     };
 
     it("should build a valid FHIR ServiceRequest", () => {

@@ -60,6 +60,7 @@ const buildValidRequestBody = (): string =>
       birthDate: "1990-01-01",
       nhsNumber: "1234567890",
     },
+    consent: true,
   });
 
 describe("order-service-lambda handler", () => {
@@ -180,6 +181,59 @@ describe("order-service-lambda handler", () => {
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body).message).toMatch(/Validation failed/);
+    });
+
+    it("should return 400 when consent field is missing", async () => {
+      const bodyWithoutConsent = JSON.stringify({
+        testCode: "TEST001",
+        testDescription: "Test description",
+        supplierId: validSupplierId,
+        patient: {
+          family: "Doe",
+          given: ["Jane"],
+          text: "Jane Doe",
+          telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
+          address: {
+            line: ["1 Test Street"],
+            postalCode: "AB1 2CD",
+          },
+          birthDate: "1990-01-01",
+          nhsNumber: "1234567890",
+        },
+      });
+
+      const response = await handler(buildEvent(bodyWithoutConsent));
+
+      expect(response.statusCode).toBe(400);
+      expect(JSON.parse(response.body).message).toMatch(/Validation failed/);
+    });
+
+    it("should return 400 when consent is false", async () => {
+      const bodyWithFalseConsent = JSON.stringify({
+        testCode: "TEST001",
+        testDescription: "Test description",
+        supplierId: validSupplierId,
+        patient: {
+          family: "Doe",
+          given: ["Jane"],
+          text: "Jane Doe",
+          telecom: [{ phone: "0123456789" }, { email: "jane@example.com" }],
+          address: {
+            line: ["1 Test Street"],
+            postalCode: "AB1 2CD",
+          },
+          birthDate: "1990-01-01",
+          nhsNumber: "1234567890",
+        },
+        consent: false,
+      });
+
+      const response = await handler(buildEvent(bodyWithFalseConsent));
+
+      expect(response.statusCode).toBe(400);
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody.message).toMatch(/Validation failed/);
+      expect(responseBody.message).toMatch(/consent must be true/);
     });
   });
 
