@@ -1,15 +1,115 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { z } from "zod";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
-import { OrderServiceRequest } from "./order-service-request-type";
+import {
+  OrderServiceRequest,
+  OrderServiceTelecom,
+} from "./order-service-request-type";
 import {
   createJsonResponse,
   getCorrelationIdFromEventHeaders,
 } from "../lib/utils";
 import { init } from "./init";
+import type {
+  FHIRContactPoint,
+  FHIRServiceRequest,
+} from "../lib/models/fhir/fhir-service-request-type";
+import type { ParsedOrderBody } from "../order-router-lambda";
 
 const name = "order-service-lambda";
-const { supplierService } = init();
+const { supplierService, sqsClient, orderPlacementQueueUrl } = init();
+
+const mapTelecomToFhirContactPoints = (
+  telecom: OrderServiceTelecom[],
+): FHIRContactPoint[] => {
+  const result: FHIRContactPoint[] = [];
+  const mappings: Array<
+    [keyof OrderServiceTelecom, FHIRContactPoint["system"]]
+  > = [
+    ["phone", "phone"],
+    ["fax", "fax"],
+    ["email", "email"],
+    ["pager", "pager"],
+    ["url", "url"],
+    ["sms", "sms"],
+    ["other", "other"],
+  ];
+
+  telecom.forEach((entry) => {
+    mappings.forEach(([key, system]) => {
+      const value = entry[key];
+      if (value) {
+        result.push({ system, value });
+      }
+    });
+  });
+
+  return result;
+};
+
+const buildFhirServiceRequest = (
+  orderRequest: OrderServiceRequest,
+  patientUid: string,
+  orderUid: string,
+): FHIRServiceRequest => {
+  const { testCode, testDescription, supplierId, patient } = orderRequest;
+  const { family, given, text, telecom, address, birthDate } = patient;
+  const { use, type, line, city, postalCode, country } = address;
+
+  return {
+    resourceType: "ServiceRequest",
+    id: orderUid,
+    status: "active",
+    intent: "order",
+    code: {
+      coding: [
+        {
+          system: "http://snomed.info/sct",
+          code: testCode,
+          display: testDescription,
+        },
+      ],
+      text: testDescription,
+    },
+    contained: [
+      {
+        resourceType: "Patient",
+        id: patientUid,
+        name: [
+          {
+            use: "official",
+            family,
+            given,
+            text,
+          },
+        ],
+        telecom: mapTelecomToFhirContactPoints(telecom),
+        address: [
+          {
+            use,
+            type,
+            line,
+            city,
+            postalCode,
+            country,
+          },
+        ],
+        birthDate,
+      },
+    ],
+    subject: {
+      reference: `#${patientUid}`,
+    },
+    requester: {
+      reference: "HIV webapp",
+    },
+    performer: [
+      {
+        reference: `${supplierId}`,
+      },
+    ],
+  };
+};
 
 const parseAndValidateRequest = (
   eventBody: string | null,
@@ -67,13 +167,56 @@ export const handler = async (
     });
 
     // Create patient and order in database
-    // ALPHA: no real idempotency check, so repeated requests will create multiple orders
+    // ALPHA: no real idempotency check, but repeated requests should throw because of unique constraint on order_status.order_uid, which is generated as a UUID in createPatientAndOrderAndStatus
     const orderResult = await supplierService.createPatientAndOrderAndStatus(
       orderRequest.patient.nhsNumber,
       orderRequest.patient.birthDate,
       orderRequest.supplierId,
       orderRequest.testCode,
     );
+
+    const orderBody = buildFhirServiceRequest(
+      orderRequest,
+      orderResult.patientUid,
+      orderResult.orderUid,
+    );
+
+    const parsedOrderBody: ParsedOrderBody = {
+      supplier_code: orderRequest.supplierId,
+      correlation_id: correlationId,
+      order_body: orderBody,
+    };
+
+    try {
+      await sqsClient.sendMessage(
+        orderPlacementQueueUrl,
+        JSON.stringify(parsedOrderBody),
+      );
+    } catch (error) {
+      console.error(name, "Failed to enqueue order", {
+        correlationId,
+        error,
+      });
+      return createJsonResponse(500, {
+        message: "Failed to enqueue order",
+      });
+    }
+
+    try {
+      await supplierService.updateOrderStatus(
+        orderResult.orderUid,
+        orderResult.orderReference,
+        "QUEUED",
+      );
+    } catch (error) {
+      console.error(name, "Failed to update order status", {
+        correlationId,
+        error,
+      });
+      return createJsonResponse(500, {
+        message: "Failed to update order status",
+      });
+    }
 
     console.info(name, "Order created successfully", {
       correlationId,

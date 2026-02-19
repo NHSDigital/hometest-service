@@ -2,7 +2,11 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 const mockInit = jest.fn();
 let mockCreatePatientAndOrder = jest.fn();
+let mockUpdateOrderStatus = jest.fn();
+const mockSendMessage = jest.fn();
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
+const mockOrderPlacementQueueUrl =
+  "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
 
 jest.mock("./init", () => ({
   init: () => mockInit(),
@@ -56,6 +60,8 @@ describe("order-service-lambda handler", () => {
     jest.resetModules();
     mockInit.mockReset();
     mockCreatePatientAndOrder = jest.fn();
+    mockUpdateOrderStatus = jest.fn();
+    mockSendMessage.mockReset();
     mockGetCorrelationIdFromEventHeaders.mockReset();
     mockGetCorrelationIdFromEventHeaders.mockReturnValue(
       "123e4567-e89b-12d3-a456-426614174000",
@@ -63,7 +69,12 @@ describe("order-service-lambda handler", () => {
     mockInit.mockReturnValue({
       supplierService: {
         createPatientAndOrderAndStatus: mockCreatePatientAndOrder,
+        updateOrderStatus: mockUpdateOrderStatus,
       },
+      sqsClient: {
+        sendMessage: mockSendMessage,
+      },
+      orderPlacementQueueUrl: mockOrderPlacementQueueUrl,
     });
 
     const module = await import("./index");
@@ -97,6 +108,8 @@ describe("order-service-lambda handler", () => {
         orderReference: 456,
         patientUid: "patient-123",
       });
+      mockSendMessage.mockResolvedValue({ messageId: "message-123" });
+      mockUpdateOrderStatus.mockResolvedValue(undefined);
 
       const response = await handler(buildEvent(buildValidRequestBody()));
 
@@ -161,6 +174,8 @@ describe("order-service-lambda handler", () => {
       orderReference: 456,
       patientUid: "patient-123",
     });
+    mockSendMessage.mockResolvedValue({ messageId: "message-123" });
+    mockUpdateOrderStatus.mockResolvedValue(undefined);
 
     const response = await handler(buildEvent(buildValidRequestBody()));
 
@@ -176,6 +191,49 @@ describe("order-service-lambda handler", () => {
       "123e4567-e89b-12d3-a456-426614174000",
       "TEST001",
     );
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      mockOrderPlacementQueueUrl,
+      expect.any(String),
+    );
+    expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+      "order-123",
+      456,
+      "QUEUED",
+    );
+  });
+
+  it("should return 500 when sending to SQS fails", async () => {
+    mockCreatePatientAndOrder.mockResolvedValue({
+      orderUid: "order-123",
+      orderReference: 456,
+      patientUid: "patient-123",
+    });
+    mockSendMessage.mockRejectedValue(new Error("SQS down"));
+
+    const response = await handler(buildEvent(buildValidRequestBody()));
+
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toEqual({
+      message: "Failed to enqueue order",
+    });
+    expect(mockUpdateOrderStatus).not.toHaveBeenCalled();
+  });
+
+  it("should return 500 when updating order status fails", async () => {
+    mockCreatePatientAndOrder.mockResolvedValue({
+      orderUid: "order-123",
+      orderReference: 456,
+      patientUid: "patient-123",
+    });
+    mockSendMessage.mockResolvedValue({ messageId: "message-123" });
+    mockUpdateOrderStatus.mockRejectedValue(new Error("DB down"));
+
+    const response = await handler(buildEvent(buildValidRequestBody()));
+
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toEqual({
+      message: "Failed to update order status",
+    });
   });
 
   it("should return 400 when createPatientAndOrderAndStatus throws", async () => {
