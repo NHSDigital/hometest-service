@@ -134,12 +134,12 @@ resource "aws_api_gateway_rest_api" "api" {
   description = "API Gateway for ${var.project_name}"
 }
 
-# Eligibility Test Info Lambda
-module "eligibility_test_info_lambda" {
+# Eligibility Lookup Lambda
+module "eligibility_lookup_lambda" {
   source = "./modules/lambda"
 
   project_name                  = var.project_name
-  function_name                 = "eligibility-test-info"
+  function_name                 = "eligibility-lookup-lambda"
   zip_path                      = "${path.module}/../../lambdas/dist/eligibility-test-info-lambda.zip"
   lambda_role_arn               = aws_iam_role.lambda_role.arn
   environment                   = var.environment
@@ -148,10 +148,18 @@ module "eligibility_test_info_lambda" {
   api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
   api_path                      = "test-order/info"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "GET"
+
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["GET", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization"]
+  cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    NODE_OPTIONS                = "--enable-source-maps",
+    DATABASE_URL                = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest",
+    NHS_LOGIN_BASE_ENDPOINT_URL = "https://auth.sandpit.signin.nhs.uk"
   }
 }
 
@@ -325,7 +333,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
   depends_on = [
-    module.eligibility_test_info_lambda,
+    module.eligibility_lookup_lambda,
     module.order_result_lambda,
     module.login_lambda,
     module.order_service_lambda,

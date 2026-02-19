@@ -14,8 +14,8 @@ output "api_gateway_id" {
 }
 
 output "eligibility_test_info_endpoint" {
-  description = "Eligibility Test Info Lambda endpoint"
-  value       = module.eligibility_test_info_lambda.localstack_endpoint_url
+  description = "Eligibility Lookup Lambda endpoint"
+  value       = module.eligibility_lookup_lambda.localstack_endpoint_url
 }
 
 output "hello_world_endpoint" {
