@@ -29,7 +29,7 @@ export const handler = async (
 
   let task: FHIRTask;
 
-  // Step 1: Parse and validate request body
+  // Parse and validate request body
   try {
     if (event.body === "{}" || event.body === null) {
       throw new Error("Empty body");
@@ -47,7 +47,7 @@ export const handler = async (
     );
   }
 
-  // Step 2: Validate FHIR Task schema
+  // Validate FHIR Task schema
   const validationResult = FHIRTaskSchema.safeParse(task);
 
   if (!validationResult.success) {
@@ -62,7 +62,7 @@ export const handler = async (
   }
 
   try {
-    // Step 3: Extract order ID from Task.basedOn
+    // Extract order ID from Task.basedOn
     const orderId = orderStatusDb.extractIdFromReference(
       task.basedOn[0].reference,
     );
@@ -145,6 +145,20 @@ export const handler = async (
       );
     }
 
+    // Timestamp validation
+    const { authoredOn, lastModified } = task;
+
+    if (!authoredOn && !lastModified) {
+      commons.logError(className, "Missing timestamp in task", { orderId });
+
+      return createFhirErrorResponse(
+        400,
+        "invalid",
+        "Task must contain either authoredOn or lastModified timestamp",
+        "error",
+      );
+    }
+
     // Check for idempotency via Correlation ID
     const idempotencyCheck = await orderStatusDb.checkIdempotency(
       orderId,
@@ -163,46 +177,6 @@ export const handler = async (
 
       // TODO: Return the previous response - reconstruct the task / Does this need to be the data from the last update instead of the incoming task?
       return createFhirResponse(200, task);
-    }
-
-    // Timestamp validation
-    const { authoredOn, lastModified } = task;
-
-    if (!authoredOn && !lastModified) {
-      commons.logError(className, "Missing timestamp in task", { orderId });
-
-      return createFhirErrorResponse(
-        400,
-        "invalid",
-        "Task must contain either authoredOn or lastModified timestamp",
-        "error",
-      );
-    }
-
-    const latestStatus = await orderStatusDb.getLatestOrderStatus(orderId);
-
-    if (latestStatus) {
-      const latestTime = new Date(latestStatus.created_at).getTime();
-
-      if (lastModified) {
-        const modifiedTime = new Date(lastModified).getTime();
-
-        if (modifiedTime < latestTime) {
-          commons.logError(className, "Stale update rejected", {
-            orderId,
-            staleTimestampName: "lastModified",
-            staleTimestamp: lastModified,
-            latestTimestamp: latestStatus.created_at,
-          });
-
-          return createFhirErrorResponse(
-            400,
-            "invalid",
-            "lastModified timestamp is older than the latest stored update",
-            "error",
-          );
-        }
-      }
     }
 
     // Process the update

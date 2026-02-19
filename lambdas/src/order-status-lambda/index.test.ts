@@ -355,24 +355,26 @@ describe("Order Status Lambda Handler", () => {
   });
 
   describe("Timestamp Handling", () => {
-    it("should reject when lastModified timestamp is older than latest update", async () => {
+    it("should accept when lastModified timestamp is older than latest update", async () => {
       mockGetLatestOrderStatus.mockResolvedValueOnce({
         order_uid: "550e8400-e29b-41d4-a716-446655440000",
         status_code: "in-progress",
-        created_at: "2024-01-15T10:00:00Z",
+        created_at: "2024-01-15T09:00:00Z",
       });
 
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        lastModified: "2024-01-15T09:00:00Z", // Older than latest
+        lastModified: "2024-01-15T08:00:00Z", // Older than latest
       } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
-      expect(result.statusCode).toBe(400);
-      const body = JSON.parse(result.body);
-      expect(body.issue[0].diagnostics).toContain(
-        "older than the latest stored update",
+      expect(result.statusCode).toBe(200);
+
+      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+        expect.objectContaining({
+          createdAt: "2024-01-15T08:00:00Z",
+        }),
       );
     });
 

@@ -158,10 +158,10 @@ export class OrderStatusService {
     }
 
     const query = `
-    SELECT status_id, order_uid, order_reference, status_code, created_at, correlation_id
-    FROM hometest.order_status
-    WHERE order_uid = $1 AND correlation_id = $2
-    LIMIT 1;
+      SELECT status_id, order_uid, order_reference, status_code, created_at, correlation_id
+      FROM hometest.order_status
+      WHERE order_uid = $1 AND correlation_id = $2
+      LIMIT 1;
   `;
 
     try {
