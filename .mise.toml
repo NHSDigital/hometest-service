@@ -50,6 +50,9 @@ vale = "latest"
 # https://nodejs.org/en/download/releases
 node = "24"
 
+# https://www.python.org/downloads/
+python = "3.12"
+
 [tasks.pre-commit]
 description = "Run pre-commit checks on all files"
 run = "pre-commit run --all-files --show-diff-on-failure --color=always"

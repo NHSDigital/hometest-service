@@ -6,7 +6,7 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate(RoutePath.LoginPage);
+    navigate(RoutePath.GetSelfTestKitPage);
   }, [navigate]);
 
   return <div></div>;
