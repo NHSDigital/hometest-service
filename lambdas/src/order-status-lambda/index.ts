@@ -8,6 +8,7 @@ import {
 } from "../lib/fhir-response";
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
+import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 
 const commons = new ConsoleCommons();
 const className = "order-status-lambda";
@@ -165,8 +166,9 @@ export const handler = async (
     }
 
     // Timestamp validation
-    const incomingTimestamp = task.authoredOn || task.lastModified;
-    if (!incomingTimestamp) {
+    const { authoredOn, lastModified } = task;
+
+    if (!authoredOn && !lastModified) {
       commons.logError(className, "Missing timestamp in task", { orderId });
 
       return createFhirErrorResponse(
@@ -177,34 +179,38 @@ export const handler = async (
       );
     }
 
-    const incomingTime = new Date(incomingTimestamp).getTime();
     const latestStatus = await orderStatusDb.getLatestOrderStatus(orderId);
 
     if (latestStatus) {
       const latestTime = new Date(latestStatus.created_at).getTime();
 
-      if (incomingTime < latestTime) {
-        commons.logError(className, "Stale update rejected", {
-          orderId,
-          incomingTimestamp,
-          latestTimestamp: latestStatus.created_at,
-        });
+      if (lastModified) {
+        const modifiedTime = new Date(lastModified).getTime();
 
-        return createFhirErrorResponse(
-          400,
-          "invalid",
-          "Timestamp is older than the latest stored update",
-          "error",
-        );
+        if (modifiedTime < latestTime) {
+          commons.logError(className, "Stale update rejected", {
+            orderId,
+            staleTimestampName: "lastModified",
+            staleTimestamp: lastModified,
+            latestTimestamp: latestStatus.created_at,
+          });
+
+          return createFhirErrorResponse(
+            400,
+            "invalid",
+            "lastModified timestamp is older than the latest stored update",
+            "error",
+          );
+        }
       }
     }
 
     // Process the update
-    const updateParams = {
+    const updateParams: OrderStatusUpdateParams = {
       orderId,
       statusCode: task.status,
       businessStatus: businessStatusCode,
-      createdAt: incomingTimestamp,
+      createdAt: (lastModified || authoredOn)!,
       correlationId,
     };
 
