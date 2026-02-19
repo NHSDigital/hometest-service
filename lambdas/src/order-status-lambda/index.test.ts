@@ -107,7 +107,21 @@ describe("Order Status Lambda Handler", () => {
 
   describe("Request Parsing and Validation", () => {
     it("should return 400 if request body is empty", async () => {
-      mockEvent.body = "";
+      mockEvent.body = "{}";
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
+
+      expect(result.statusCode).toBe(400);
+      expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
+
+      const body = JSON.parse(result.body);
+
+      expect(body.resourceType).toBe("OperationOutcome");
+      expect(body.issue[0].code).toBe("invalid");
+    });
+
+    it("should return 400 if request body is null", async () => {
+      mockEvent.body = null;
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
