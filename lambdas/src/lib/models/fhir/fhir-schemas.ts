@@ -56,6 +56,12 @@ export const FHIRContainedPatientSchema = z.object({
     .optional(),
 });
 
+const FHIRIdentifierSchema = z.object({
+  system: z.string().optional(),
+  value: z.string(),
+  use: z.enum(["usual", "official", "temp", "secondary", "old"]).optional(),
+});
+
 export const FHIRServiceRequestSchema = z.object({
   resourceType: z.literal("ServiceRequest"),
   id: z.string().optional(),
@@ -84,4 +90,35 @@ export const FHIRServiceRequestSchema = z.object({
   subject: FHIRReferenceSchema,
   requester: FHIRReferenceSchema,
   performer: z.array(FHIRReferenceSchema).optional(),
+});
+
+export const FHIRTaskSchema = z.object({
+  resourceType: z.literal("Task"),
+  id: z.string().optional(),
+  identifier: z.array(FHIRIdentifierSchema).optional(),
+  basedOn: z.array(FHIRReferenceSchema).min(1),
+  status: z.enum([
+    // TODO: Verify if we should swap these with the true schema and map them in the lambda
+    "ORDER_RECEIVED",
+    "DISPATCHED",
+    "RECEIVED",
+    "COMPLETE",
+  ]),
+  intent: z.enum([
+    "proposal",
+    "plan",
+    "order",
+    "original-order",
+    "reflex-order",
+    "filler-order",
+    "instance-order",
+    "option",
+  ]),
+  statusReason: FHIRCodeableConceptSchema.optional(),
+  businessStatus: FHIRCodeableConceptSchema.optional(),
+  for: FHIRReferenceSchema,
+  authoredOn: z.string().datetime().optional(),
+  lastModified: z.string().datetime().optional(),
+  requester: FHIRReferenceSchema.optional(),
+  owner: FHIRReferenceSchema.optional(),
 });

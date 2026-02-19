@@ -373,6 +373,27 @@ module "get_order_lambda" {
   }
 }
 
+module "order_status_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "order-status"
+  zip_path                      = "${path.module}/../../lambdas/dist/order-status-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "test-order/status"
+  http_method                   = "PUT"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  environment_variables = {
+    NODE_OPTIONS = "--enable-source-maps"
+    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+  }
+}
+
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -383,7 +404,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.get_order_lambda,
     module.login_lambda,
     module.order_service_lambda,
-    module.session_lambda
+    module.session_lambda,
+    module.order_status_lambda,
   ]
 
   triggers = {

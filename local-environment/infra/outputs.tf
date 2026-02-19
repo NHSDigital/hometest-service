@@ -28,6 +28,11 @@ output "order_result_endpoint" {
   value       = module.order_result_lambda.localstack_endpoint_url
 }
 
+output "order_status_endpoint" {
+  description = "Order Status Lambda endpoint"
+  value       = module.order_status_lambda.localstack_endpoint_url
+}
+
 output "order_results_queue_url" {
   description = "SQS Queue URL for order results"
   value       = aws_sqs_queue.order_results.url

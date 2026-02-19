@@ -73,3 +73,50 @@ export interface FHIRServiceRequest {
   requester: FHIRReference;
   performer?: FHIRReference[];
 }
+
+export interface FHIRIdentifier {
+  system?: string;
+  value: string;
+  use?: "usual" | "official" | "temp" | "secondary" | "old";
+}
+
+// TODO: Verify if we should swap these with the true schema and map them in the lambda
+export type FHIRTaskStatus =
+  | "ORDER_RECEIVED"
+  | "DISPATCHED"
+  | "RECEIVED"
+  | "COMPLETE";
+
+export type FHIRTaskIntent =
+  | "proposal"
+  | "plan"
+  | "order"
+  | "original-order"
+  | "reflex-order"
+  | "filler-order"
+  | "instance-order"
+  | "option";
+
+export interface FHIRTaskPerformer {
+  actor: FHIRReference;
+}
+
+export interface FHIRTask {
+  resourceType: "Task";
+  id?: string;
+
+  identifier?: FHIRIdentifier[];
+  basedOn: FHIRReference[];
+  status: FHIRTaskStatus;
+  intent: FHIRTaskIntent;
+
+  statusReason?: FHIRCodeableConcept;
+  businessStatus?: FHIRCodeableConcept;
+
+  for: FHIRReference;
+  authoredOn?: string; // ISO datetime string
+  lastModified?: string; // ISO datetime string
+
+  requester?: FHIRReference;
+  owner?: FHIRReference;
+}
