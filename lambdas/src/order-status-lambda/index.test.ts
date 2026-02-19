@@ -10,7 +10,6 @@ import {
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
 const mockGetOrder = jest.fn();
-const mockGetLatestOrderStatus = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockUpdateOrderStatus = jest.fn();
 const mockExtractIdFromReference = jest.fn();
@@ -25,7 +24,6 @@ jest.mock("../lib/utils", () => ({
 jest.mock("../lib/db/order-status-db", () => ({
   OrderStatusService: jest.fn().mockImplementation(() => ({
     getOrder: mockGetOrder,
-    getLatestOrderStatus: mockGetLatestOrderStatus,
     checkIdempotency: mockCheckIdempotency,
     updateOrderStatus: mockUpdateOrderStatus,
     extractIdFromReference: mockExtractIdFromReference,
@@ -76,7 +74,6 @@ describe("Order Status Lambda Handler", () => {
       created_at: "2024-01-01T00:00:00Z",
     } satisfies OrderRow);
 
-    mockGetLatestOrderStatus.mockResolvedValue(null);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockIsValidBusinessStatus.mockReturnValue(true);
     mockUpdateOrderStatus.mockResolvedValue({
@@ -460,16 +457,6 @@ describe("Order Status Lambda Handler", () => {
       const body = JSON.parse(result.body);
 
       expect(body.issue[0].diagnostics).toContain("timestamp");
-    });
-
-    it("should accept update when no previous status exists", async () => {
-      mockGetLatestOrderStatus.mockResolvedValueOnce(null);
-
-      mockEvent.body = JSON.stringify(validTaskBody);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(200);
     });
   });
 

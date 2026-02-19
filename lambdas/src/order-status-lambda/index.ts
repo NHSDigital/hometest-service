@@ -205,7 +205,7 @@ export const handler = async (
     });
 
     // Return updated Task resource
-    return createFhirResponse(200, task);
+    return createFhirResponse(200, task); // TODO: Check if we want to return what persisted in the database instead of the incoming Task
   } catch (error) {
     commons.logError(name, "Error processing order status update", {
       error,
