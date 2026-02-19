@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "postinstall": "npm --prefix ui install && npm --prefix lambdas install && npm --prefix tests install",
-
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
     "test:playwright": "ENV=dev UI_BASE_URL=$(terraform -chdir=local-environment/infra output -raw ui_url) API_BASE_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url) npm --prefix tests run test:chrome",
 
@@ -15,38 +14,31 @@
     "clean:all": "npm run stop && rm -rf ./node_modules */node_modules */dist && docker system prune -f --volumes",
     "start": "npm ci && npm run local:start",
     "stop": "npm run local:stop",
-
     "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:start",
     "local:stop": "npm run local:terraform:destroy && COMPOSE_PROFILES=* npm run local:compose:down",
     "local:restart": "npm run local:stop && npm run local:start",
     "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
-
     "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up && npm run local:service:db:migrate",
     "local:frontend:start": "npm run local:terraform:env && COMPOSE_PROFILES=frontend npm run local:compose:up",
-
     "local:service:ui:start": "npm run local:compose:up -- ui",
     "local:service:ui:stop": "npm run local:compose:down -- ui",
-
     "local:service:db:start": "npm run local:compose:up -- postgres-db",
     "local:service:db:stop": "npm run local:compose:down -- postgres-db",
     "local:service:db:migrate": "npm run local:compose -- --profile backend up --build db-migrate",
-
     "local:service:localstack:start": "npm run local:compose:up -- localstack",
     "local:service:localstack:stop": "npm run local:compose:down -- localstack",
-
     "local:terraform": "terraform -chdir=local-environment/infra",
     "local:terraform:init": "npm run local:terraform -- init",
     "local:terraform:plan": "npm run local:terraform -- plan",
     "local:terraform:apply": "npm run local:terraform -- apply -auto-approve",
     "local:terraform:destroy": "npm run local:terraform -- destroy -auto-approve",
     "local:terraform:env": "bash scripts/terraform/post-apply-env-update.sh",
-
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
     "local:compose:up": "npm run local:compose -- up -d",
     "local:compose:down": "npm run local:compose -- down"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3",
+    "@types/node": "^24.10.13",
     "typescript": "^5.9.3"
   }
 }
