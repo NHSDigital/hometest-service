@@ -4,38 +4,9 @@ import { useState } from "react";
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
-import type { ValidationMessages } from "@/content/schema";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
-
-const UK_MOBILE_REGEX = /^(?:(?:\+44|0044|44)7\d{9}|07\d{9})$/;
-
-const validateMobileNumber = (
-  mobileNumber: string,
-  validationMessages: ValidationMessages
-): { valid: true; value: string } | { valid: false; message: string } => {
-  if (!mobileNumber || mobileNumber.trim() === "") {
-    return { valid: false, message: validationMessages.mobileNumber.required };
-  }
-
-  const trimmedNumber = mobileNumber.trim();
-  const normalisedNumber = trimmedNumber.replace(/[()\s-]/g, "");
-
-  if (!/^\+?\d+$/.test(normalisedNumber)) {
-    return { valid: false, message: validationMessages.mobileNumber.invalid };
-  }
-
-  const digitCount = normalisedNumber.replace(/\D/g, "").length;
-  if (digitCount > 15) {
-    return { valid: false, message: validationMessages.mobileNumber.invalid };
-  }
-
-  if (!UK_MOBILE_REGEX.test(normalisedNumber)) {
-    return { valid: false, message: validationMessages.mobileNumber.invalid };
-  }
-
-  return { valid: true, value: normalisedNumber };
-};
+import { validateMobileNumber } from "@/lib/validation/mobileNumberValidation";
 
 export default function EnterMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
