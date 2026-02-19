@@ -3,18 +3,14 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-
 import middy from "@middy/core";
 import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
-
 import { securityHeaders } from "../lib/http/security-headers";
 import { defaultCorsOptions } from "../login-lambda/cors-configuration";
-
 import { init } from "./init";
 import { validatePostcodeFormat } from "./postcode-validator";
-
 const name = "eligibility-lookup-lambda";
 const { laLookupService, commons } = init();
 
