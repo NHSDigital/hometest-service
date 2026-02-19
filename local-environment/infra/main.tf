@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -32,6 +36,17 @@ locals {
   secret_txt_files  = fileset(local.secrets_dir, "*.txt")
   secret_key_files  = fileset(local.secrets_dir, "*.pem")
 
+  # Required secrets that must exist
+  required_secrets = [
+    "nhs-login-private-key.pem"
+  ]
+
+  # Validate required secrets exist
+  missing_secrets = [
+    for secret in local.required_secrets :
+    secret if !fileexists("${local.secrets_dir}/${secret}")
+  ]
+
   secret_json_map = {
     for f in local.secret_json_files :
     trimsuffix(f, ".json") => f
@@ -46,6 +61,19 @@ locals {
   }
 
   secret_file_map = merge(local.secret_json_map, local.secret_txt_map, local.secret_key_map)
+}
+
+# Fail early if required secrets are missing
+resource "null_resource" "validate_secrets" {
+  lifecycle {
+    precondition {
+      condition     = length(local.missing_secrets) == 0
+      error_message = <<-EOT
+        Missing required secret files in ${local.secrets_dir}:
+        ${join("\n  - ", local.missing_secrets)}
+      EOT
+    }
+  }
 }
 
 resource "aws_secretsmanager_secret" "secrets" {
@@ -228,16 +256,11 @@ module "order_router_lambda" {
   api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
   api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
   api_path                      = "test-order/order"
-  http_method                   = "POST"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS                = "--enable-source-maps"
-    DATABASE_URL                = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
-    SUPPLIER_OAUTH_TOKEN_PATH   = "/oauth/token"
-    SUPPLIER_ORDER_PATH         = "/order"
-    SUPPLIER_CLIENT_ID          = "supplier-client"
-    SUPPLIER_CLIENT_SECRET_NAME = "supplier-oauth-client-secret"
+    NODE_OPTIONS = "--enable-source-maps"
+    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
   }
 }
 
@@ -276,6 +299,27 @@ module "order_result_lambda" {
   }
 }
 
+module "order_service_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "order-service"
+  zip_path                      = "${path.module}/../../lambdas/dist/order-service-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "order"
+  http_method                   = "POST"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  environment_variables = {
+    NODE_OPTIONS = "--enable-source-maps"
+    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+  }
+}
+
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -284,6 +328,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.eligibility_test_info_lambda,
     module.order_result_lambda,
     module.login_lambda,
+    module.order_service_lambda,
     module.session_lambda
   ]
 

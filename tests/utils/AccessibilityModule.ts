@@ -17,7 +17,7 @@ export class AccessibilityModule {
   constructor() {
     // Get standards from configuration or use default
     const standardsConfig = config.get(EnvironmentVariables.ACCESSIBILITY_STANDARDS);
-    this.standards = standardsConfig.split(',').map(s => s.trim());
+    this.standards = standardsConfig.split(',').map((s: string) => s.trim());
 
     // Get absolute path to tests/testResults/accessibility
     // __dirname is tests/utils, so go up one level to tests, then into testResults/accessibility

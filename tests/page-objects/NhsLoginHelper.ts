@@ -18,7 +18,15 @@ export default class NhsLoginHelper {
   ): Promise<void> {
     const loginPage = new NHSEmailAndPasswordPage(page);
     const codeSecurityPage = new CodeSecurityPage(page);
+
+    // Navigate to UI which will redirect through HomePage → LoginPage → NHS Login
     await page.goto(`${this.config.uiBaseUrl}`);
+
+    // Wait for redirect to NHS Login (external login page)
+    // URL is access.sandpit.signin.nhs.uk or similar
+    await page.waitForURL(/signin\.nhs\.uk/, { timeout: 60000 });
+    console.log(`Redirected to NHS Login: ${page.url()}`);
+
     await loginPage.fillAuthFormWithCredentialsAndClickContinue(nhsLoginUser);
     await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
       nhsLoginUser.otp

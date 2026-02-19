@@ -17,8 +17,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.992.0",
-    "@aws-sdk/client-sqs": "^3.992.0",
+    "@aws-sdk/client-secrets-manager": "^3.993.0",
+    "@aws-sdk/client-sqs": "^3.993.0",
     "@middy/core": "^7.0.3",
     "@middy/http-cors": "^7.0.3",
     "@middy/http-error-handler": "^7.0.3",
@@ -44,7 +44,7 @@
     "@types/node": "^24.10.13",
     "@types/pg": "^8.16.0",
     "archiver": "7.0.1",
-    "esbuild": "0.27.2",
+    "esbuild": "^0.27.3",
     "eslint": "^9.39.2",
     "globals": "^17.3.0",
     "jest": "^30.2.0",
@@ -54,8 +54,5 @@
     "tsx": "4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0"
-  },
-  "overrides": {
-    "fast-xml-parser": "^5.3.6"
   }
 }
