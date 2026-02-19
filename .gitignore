@@ -159,7 +159,11 @@ venv/
 # MCP
 mcp.json
 
-/frontend/
-/test-results/
+**/frontend/
+**/test-results/
 .next
 WorkerUser*
+junit.xml
+
+# Test configuration with personal credentials
+tests/users.ts

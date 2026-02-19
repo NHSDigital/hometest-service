@@ -1,0 +1,37 @@
+---
+name: "Initialize mise"
+description: "Initialize mise"
+runs:
+  using: "composite"
+  steps:
+    - name: Configure git
+      shell: bash
+      run: |
+        echo "::group::Configure git"
+        git config --global --add safe.directory '*'
+        echo "::endgroup::"
+
+    - name: Install mise
+      uses: jdx/mise-action@v3
+      with:
+        cache: true
+        install: true
+
+    - name: Cache node_modules
+      uses: actions/cache@v5
+      with:
+        path: |
+          node_modules
+          ui/node_modules
+          lambdas/node_modules
+          tests/node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          node-modules-${{ runner.os }}-
+
+    - name: Install npm dependencies
+      shell: bash
+      run: |
+        echo "::group::Install npm dependencies"
+        mise run install-npm
+        echo "::endgroup::"

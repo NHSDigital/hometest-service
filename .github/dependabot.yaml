@@ -2,12 +2,6 @@
 version: 2
 
 updates:
-
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "daily"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -19,13 +13,36 @@ updates:
       interval: "daily"
     cooldown:
       default-days: 7
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
-  - package-ecosystem: "pip"
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/ui"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
-  - package-ecosystem: "terraform"
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/lambdas"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/tests"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
