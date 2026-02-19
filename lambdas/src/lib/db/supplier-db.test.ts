@@ -313,6 +313,39 @@ describe("SupplierService", () => {
     });
   });
 
+  describe("updateOrderStatus", () => {
+    it("should upsert a new order status", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [{ status_id: "status-1" }],
+        rowCount: 1,
+      });
+
+      await supplierService.updateOrderStatus("order-1", 123, "QUEUED");
+
+      expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
+        "order-1",
+        123,
+        "QUEUED",
+      ]);
+    });
+
+    it("should throw error when status insert returns no rows", async () => {
+      mockDbClient.query.mockResolvedValue({ rows: [], rowCount: 0 });
+
+      await expect(
+        supplierService.updateOrderStatus("order-1", 123, "QUEUED"),
+      ).rejects.toThrow(/Failed to update order status/);
+    });
+
+    it("should throw error when database query fails", async () => {
+      mockDbClient.query.mockRejectedValue(new Error("DB failure"));
+
+      await expect(
+        supplierService.updateOrderStatus("order-1", 123, "QUEUED"),
+      ).rejects.toThrow(/Failed to update order status/);
+    });
+  });
+
   describe("getSupplierConfigBySupplierId", () => {
     it("should return SupplierConfig when supplier exists", async () => {
       mockDbClient.query.mockResolvedValue({

@@ -123,6 +123,36 @@ export class SupplierService {
     }
   }
 
+  async updateOrderStatus(
+    orderUid: string,
+    orderReference: number,
+    statusCode: string,
+  ): Promise<void> {
+    const orderStatusQuery = `
+      INSERT INTO hometest.order_status (order_uid, order_reference, status_code)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (order_uid)
+      DO UPDATE SET
+        order_reference = EXCLUDED.order_reference,
+        status_code = EXCLUDED.status_code,
+        created_at = CURRENT_TIMESTAMP
+      RETURNING status_id;
+    `;
+
+    try {
+      const statusResult = await this.dbClient.query<
+        { status_id: string },
+        [string, number, string]
+      >(orderStatusQuery, [orderUid, orderReference, statusCode]);
+
+      if (statusResult.rowCount === 0 || !statusResult.rows[0]) {
+        throw new Error("Failed to update order status");
+      }
+    } catch (error) {
+      throw new Error("Failed to update order status", { cause: error });
+    }
+  }
+
   async getSupplierConfigBySupplierId(
     supplierId: string,
   ): Promise<SupplierConfig | null> {
