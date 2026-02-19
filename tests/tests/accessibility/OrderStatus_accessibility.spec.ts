@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { test } from '../../fixtures';
 import { type Result } from 'axe-core';
-import { OrderStatus } from '../../test-data/orderStatus';
+import { OrderStatus } from '../../test-data/OrderStatus';
 
 const accessErrors: Result[] = [];
 test.describe('Accessibility Testing @accessibility', () => {
