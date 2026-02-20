@@ -318,10 +318,9 @@ module "order_result_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS     = "--enable-source-maps"
-    AWS_REGION       = "eu-west-1"
-    RESULT_QUEUE_URL = aws_sqs_queue.order_results.url
-    SQS_ENDPOINT     = "http://localstack:4566"
+    NODE_OPTIONS = "--enable-source-maps"
+    AWS_REGION   = "eu-west-1"
+    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
   }
 }
 

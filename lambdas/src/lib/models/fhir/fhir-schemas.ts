@@ -85,3 +85,27 @@ export const FHIRServiceRequestSchema = z.object({
   requester: FHIRReferenceSchema,
   performer: z.array(FHIRReferenceSchema).optional(),
 });
+
+// Not a complete FHIR Observation schema implementation,
+export const FHIRObservationSchema = z.looseObject({
+  resourceType: z.literal("Observation"),
+  id: z.string().optional(),
+  basedOn: z.array(FHIRReferenceSchema).optional(),
+  status: z.enum([
+    "registered",
+    "preliminary",
+    "final",
+    "amended",
+    "corrected",
+    "cancelled",
+    "entered-in-error",
+    "unknown",
+  ]),
+  code: FHIRCodeableConceptSchema,
+  subject: FHIRReferenceSchema.optional(),
+  effectiveDateTime: z.iso.datetime().optional(),
+  issued: z.iso.datetime().optional(),
+  performer: z.array(FHIRReferenceSchema).optional(),
+  valueCodeableConcept: FHIRCodeableConceptSchema.optional(),
+  interpretation: z.array(FHIRCodeableConceptSchema).optional(),
+});
