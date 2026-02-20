@@ -170,6 +170,7 @@ module "login_lambda" {
   api_path                      = "login"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
   http_method                   = "POST"
+  timeout                       = 30
 
   enable_cors            = true
   cors_allow_origin      = "http://localhost:3000"
