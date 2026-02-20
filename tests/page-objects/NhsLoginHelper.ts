@@ -3,6 +3,7 @@ import { ConfigFactory, type ConfigInterface } from '../configuration/configurat
 import type { NHSLoginUser } from '../utils/users/BaseUser';
 import { NHSEmailAndPasswordPage } from './NHSLogin/NHSEmailAndPasswordPage';
 import { CodeSecurityPage } from './NHSLogin/CodeSecurityPage';
+import { NhsLoginConsentPage } from './NHSLogin/NhsLoginConsentPage';
 
 
 export default class NhsLoginHelper {
@@ -18,6 +19,7 @@ export default class NhsLoginHelper {
   ): Promise<void> {
     const loginPage = new NHSEmailAndPasswordPage(page);
     const codeSecurityPage = new CodeSecurityPage(page);
+    const consentPage = new NhsLoginConsentPage(page);
 
     // Navigate to UI which will redirect through HomePage → LoginPage → NHS Login
     await page.goto(`${this.config.uiBaseUrl}`);
@@ -31,7 +33,20 @@ export default class NhsLoginHelper {
     await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
       nhsLoginUser.otp
     );
-    await page.waitForURL('**/get-self-test-kit-for-HIV');
+
+    // Handle NHS Login consent page if it appears (first login or expired consent)
+    // Race between consent page and direct app redirect — whichever arrives first
+    const consentAppeared = await Promise.race([
+      page.waitForURL(/nhs-login-consent/, { timeout: 15000 }).then(() => true),
+      page.waitForURL('**/get-self-test-kit-for-HIV', { timeout: 15000 }).then(() => false)
+    ]).catch(() => false);
+
+    if (consentAppeared) {
+      console.log('Consent page detected, agreeing to share information...');
+      await consentPage.agreeAndContinue();
+    }
+
+    await page.waitForURL('**/get-self-test-kit-for-HIV', { timeout: 60000 });
   }
 
   public async loginNhsUser(page: Page, user: NHSLoginUser): Promise<Page> {

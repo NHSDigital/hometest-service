@@ -11,7 +11,7 @@
     "build:lambdas": "npm --prefix lambdas run build",
     "package:lambdas": "npm --prefix lambdas run package",
 
-    "clean:all": "npm run stop && rm -rf ./node_modules */node_modules */dist && docker system prune -f --volumes",
+    "clean:all": "npm run stop && rm -rf ./node_modules */node_modules */dist */build && docker system prune -f --volumes",
     "start": "npm ci && npm run local:start",
     "stop": "npm run local:stop",
     "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:start",
