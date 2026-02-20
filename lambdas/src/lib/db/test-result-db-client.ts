@@ -7,6 +7,8 @@ export interface TestResult {
   status: TestResultStatusCode;
   created_at: Date;
   order_id: string;
+  test_code: string;
+  test_description: string;
   supplier_id: string;
   supplier_name: string;
   patient_id: string;
@@ -29,10 +31,13 @@ export class TestResultDbClient {
           rs.status as status,
           rs.created_at AS created_at,
           o.order_uid AS order_id,
+          tt.description AS procedure_description,
+          os.status_code AS status_code,
           s.supplier_id AS supplier_id,
           s.supplier_name AS supplier_name,
           p.patient_uid AS patient_id
       FROM hometest.test_order o
+      INNER JOIN test_type tt ON tt.test_code = o.test_code
       INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
       INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
       INNER JOIN hometest.result_status rs ON o.order_uid = o.order_uid

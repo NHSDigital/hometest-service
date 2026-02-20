@@ -13,13 +13,13 @@ export class ObservationBuilder {
       id: testResult.id,
       basedOn: [this.buildBasedOnReference(testResult)],
       status: this.OBSERVATION_STATUS,
-      code: this.buildHivProcedureCode(),
+      code: this.buildTestCode(testResult),
       subject: this.buildSubjectReference(testResult),
       effectiveDateTime: timestamp,
       issued: timestamp,
       performer: [this.buildPerformer(testResult)],
-      valueCodeableConcept: this.buildProcedureResultCode(),
-      interpretation: [this.buildProcedureResultInterpretationCode()],
+      valueCodeableConcept: this.buildTestResultCode(),
+      interpretation: [this.buildTestResultInterpretationCode()],
     };
   }
 
@@ -47,20 +47,20 @@ export class ObservationBuilder {
     };
   }
 
-  private static buildHivProcedureCode(): CodeableConcept {
+  private static buildTestCode(testResult: TestResult): CodeableConcept {
     return {
       coding: [
         {
           system: "http://snomed.info/sct",
-          code: "31676001",
-          display: "HIV antigen test",
+          code: testResult.test_code,
+          display: testResult.test_description,
         },
       ],
-      text: "HIV antigen test",
+      text: testResult.test_description,
     };
   }
 
-  private static buildProcedureResultCode(): CodeableConcept {
+  private static buildTestResultCode(): CodeableConcept {
     return {
       coding: [
         {
@@ -72,7 +72,7 @@ export class ObservationBuilder {
     };
   }
 
-  private static buildProcedureResultInterpretationCode(): CodeableConcept {
+  private static buildTestResultInterpretationCode(): CodeableConcept {
     return {
       coding: [
         {
