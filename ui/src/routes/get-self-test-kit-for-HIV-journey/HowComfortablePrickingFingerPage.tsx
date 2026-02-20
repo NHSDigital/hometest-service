@@ -33,7 +33,12 @@ export default function HowComfortablePrickingFingerPage() {
     console.log("[HowComfortablePrickingFingerPage] comfortableDoingTest:", orderAnswers);
 
     if (selectedOption === "Yes") {
-      // goToStep("mobile-phone");
+      if (orderAnswers.user?.phoneNumber) {
+        // goToStep("confirm-mobile-phone-number");
+      } else {
+        // User doesn't have phone number - route to enter
+        goToStep("enter-mobile-phone-number");
+      }
     } else {
       // goToStep("visit-nearest-clinic");
     }
