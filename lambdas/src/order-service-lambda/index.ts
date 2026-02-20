@@ -11,7 +11,12 @@ import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
 
 const name = "order-service-lambda";
-const { supplierService, sqsClient, orderPlacementQueueUrl } = init();
+const {
+  transactionService,
+  orderStatusService,
+  sqsClient,
+  orderPlacementQueueUrl,
+} = init();
 
 const parseAndValidateRequest = (
   eventBody: string | null,
@@ -70,7 +75,7 @@ export const handler = async (
 
     // Create patient and order in database
     // ALPHA: no real idempotency check, but repeated requests should throw because of unique constraint on order_status.order_uid, which is generated as a UUID in createPatientAndOrderAndStatus
-    const orderResult = await supplierService.createPatientAndOrderAndStatus(
+    const orderResult = await transactionService.createPatientAndOrderAndStatus(
       orderRequest.patient.nhsNumber,
       orderRequest.patient.birthDate,
       orderRequest.supplierId,
@@ -105,11 +110,12 @@ export const handler = async (
     }
 
     try {
-      await supplierService.updateOrderStatus(
-        orderResult.orderUid,
-        orderResult.orderReference,
-        "QUEUED",
-      );
+      await orderStatusService.updateOrderStatus({
+        orderId: orderResult.orderUid,
+        statusCode: "QUEUED",
+        createdAt: new Date().toISOString(),
+        correlationId: correlationId,
+      });
     } catch (error) {
       console.error(name, "Failed to update order status", {
         correlationId,

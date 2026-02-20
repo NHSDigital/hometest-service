@@ -1,10 +1,12 @@
-import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils";
+import { TransactionService } from "../lib/db/transaction-db-client";
+import { OrderStatusService } from "../lib/db/order-status-db";
 
 export interface Environment {
-  supplierService: SupplierService;
+  orderStatusService: OrderStatusService;
+  transactionService: TransactionService;
   sqsClient: AWSSQSClient;
   orderPlacementQueueUrl: string;
 }
@@ -15,11 +17,13 @@ export function init(): Environment {
     "ORDER_PLACEMENT_QUEUE_URL",
   );
   const dbClient = new PostgresDbClient(databaseUrl);
-  const supplierService = new SupplierService({ dbClient });
+  const orderStatusService = new OrderStatusService(dbClient);
+  const transactionService = new TransactionService({ dbClient });
   const sqsClient = new AWSSQSClient();
 
   return {
-    supplierService,
+    orderStatusService,
+    transactionService,
     sqsClient,
     orderPlacementQueueUrl,
   };

@@ -83,8 +83,10 @@ describe("order-service-lambda handler", () => {
       "123e4567-e89b-12d3-a456-426614174123",
     );
     mockInit.mockReturnValue({
-      supplierService: {
+      transactionService: {
         createPatientAndOrderAndStatus: mockCreatePatientAndOrder,
+      },
+      orderStatusService: {
         updateOrderStatus: mockUpdateOrderStatus,
       },
       sqsClient: {
@@ -266,11 +268,13 @@ describe("order-service-lambda handler", () => {
     it("should update order status to QUEUED", async () => {
       await handler(buildEvent(buildValidRequestBody()));
 
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
-        "order-123",
-        456,
-        "QUEUED",
-      );
+      const orderStatusCallArg = mockUpdateOrderStatus.mock.calls[0][0];
+      expect(orderStatusCallArg).toEqual({
+        orderId: "order-123",
+        statusCode: "QUEUED",
+        createdAt: expect.any(String),
+        correlationId: "123e4567-e89b-12d3-a456-426614174123",
+      });
     });
   });
 
