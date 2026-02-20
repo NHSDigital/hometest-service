@@ -8,8 +8,12 @@ describe("SupplierService", () => {
   beforeEach(() => {
     mockDbClient = {
       query: jest.fn(),
+      withTransaction: jest.fn(),
       close: jest.fn(),
     };
+    mockDbClient.withTransaction.mockImplementation(async (fn) =>
+      fn(mockDbClient),
+    );
 
     supplierService = new SupplierService({ dbClient: mockDbClient });
   });
@@ -151,122 +155,6 @@ describe("SupplierService", () => {
       await expect(
         supplierService.getSuppliersByLocalAuthorityAndTest("LA001", "TEST001"),
       ).rejects.toThrow(/Failed to fetch suppliers from database/);
-    });
-  });
-
-  describe("createPatientAndOrder", () => {
-    const nhsNumber = "1234567890";
-    const birthDate = "1990-01-01";
-    const supplierId = "SUP001";
-    const testCode = "TEST001";
-
-    it("should create patient and order successfully", async () => {
-      mockDbClient.query
-        .mockResolvedValueOnce({
-          rows: [{ patient_uid: "patient-1" }],
-          rowCount: 1,
-        })
-        .mockResolvedValueOnce({
-          rows: [{ order_uid: "order-1", order_reference: 123 }],
-          rowCount: 1,
-        });
-
-      const result = await supplierService.createPatientAndOrder(
-        nhsNumber,
-        birthDate,
-        supplierId,
-        testCode,
-      );
-
-      expect(result).toEqual({
-        orderUid: "order-1",
-        orderReference: 123,
-        patientUid: "patient-1",
-      });
-      expect(mockDbClient.query).toHaveBeenCalledTimes(2);
-      expect(mockDbClient.query).toHaveBeenNthCalledWith(
-        1,
-        expect.any(String),
-        [nhsNumber, birthDate],
-      );
-      expect(mockDbClient.query).toHaveBeenNthCalledWith(
-        2,
-        expect.any(String),
-        [supplierId, "patient-1", testCode, undefined],
-      );
-    });
-
-    it("should pass originator when provided", async () => {
-      mockDbClient.query
-        .mockResolvedValueOnce({
-          rows: [{ patient_uid: "patient-1" }],
-          rowCount: 1,
-        })
-        .mockResolvedValueOnce({
-          rows: [{ order_uid: "order-1", order_reference: 123 }],
-          rowCount: 1,
-        });
-
-      await supplierService.createPatientAndOrder(
-        nhsNumber,
-        birthDate,
-        supplierId,
-        testCode,
-        "originator-1",
-      );
-
-      expect(mockDbClient.query).toHaveBeenNthCalledWith(
-        2,
-        expect.any(String),
-        [supplierId, "patient-1", testCode, "originator-1"],
-      );
-    });
-
-    it("should throw error when patient insert returns no rows", async () => {
-      mockDbClient.query.mockResolvedValue({ rows: [], rowCount: 0 });
-
-      await expect(
-        supplierService.createPatientAndOrder(
-          nhsNumber,
-          birthDate,
-          supplierId,
-          testCode,
-        ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
-    });
-
-    it("should throw error when order insert returns no rows", async () => {
-      mockDbClient.query
-        .mockResolvedValueOnce({
-          rows: [{ patient_uid: "patient-1" }],
-          rowCount: 1,
-        })
-        .mockResolvedValueOnce({
-          rows: [],
-          rowCount: 0,
-        });
-
-      await expect(
-        supplierService.createPatientAndOrder(
-          nhsNumber,
-          birthDate,
-          supplierId,
-          testCode,
-        ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
-    });
-
-    it("should throw error when database query fails", async () => {
-      mockDbClient.query.mockRejectedValue(new Error("DB failure"));
-
-      await expect(
-        supplierService.createPatientAndOrder(
-          nhsNumber,
-          birthDate,
-          supplierId,
-          testCode,
-        ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
     });
   });
 

@@ -30,4 +30,5 @@ export interface OrderServiceRequest {
   testDescription: string;
   supplierId: string;
   patient: OrderServicePatient;
+  consent: boolean;
 }
