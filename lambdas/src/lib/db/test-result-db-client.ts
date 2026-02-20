@@ -25,7 +25,7 @@ export class TestResultDbClient {
   ) {
     const query = `
       SELECT
-          rs.result_id AS id
+          rs.result_id AS id,
           rs.status as status,
           rs.created_at AS created_at,
           o.order_uid AS order_id,

@@ -352,7 +352,7 @@ module "get_results_lambda" {
 
   project_name                  = var.project_name
   function_name                 = "get-results"
-  zip_path                      = "${path.module}/../../lambdas/dist/get-order-lambda.zip"
+  zip_path                      = "${path.module}/../../lambdas/dist/get-results-lambda.zip"
   lambda_role_arn               = aws_iam_role.lambda_role.arn
   environment                   = var.environment
   api_gateway_id                = aws_api_gateway_rest_api.api.id
