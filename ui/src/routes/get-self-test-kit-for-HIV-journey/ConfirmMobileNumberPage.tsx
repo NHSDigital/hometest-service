@@ -6,7 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
-import { validateMobileNumber } from "@/lib/validation/mobileNumberValidation";
+import { createMobileNumberSchema } from "@/lib/validation/mobileNumberValidation";
 
 export default function ConfirmMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
@@ -44,19 +44,20 @@ export default function ConfirmMobileNumberPage() {
       // TODO: Navigate to check-your-answers when HOTE-436 is implemented
       // goToStep("check-your-answers");
     } else {
-      const mobileValidation = validateMobileNumber(alternativeNumber, commonContent.validation);
+      const mobileNumberSchema = createMobileNumberSchema(commonContent.validation);
+      const result = mobileNumberSchema.safeParse(alternativeNumber);
 
-      if (!mobileValidation.valid) {
-        setError(mobileValidation.message);
-        return;
+      if (!result.success) {
+        setError(result.error.issues[0].message);
+      } else {
+        setError(null);
+        updateOrderAnswers({
+          mobileNumber: result.data,
+        });
+
+        // TODO: Navigate to check-your-answers when HOTE-436 is implemented
+        // goToStep("check-your-answers");
       }
-
-      updateOrderAnswers({
-        mobileNumber: mobileValidation.value,
-      });
-
-      // TODO: Navigate to check-your-answers when HOTE-436 is implemented
-      // goToStep("check-your-answers");
     }
   };
 
