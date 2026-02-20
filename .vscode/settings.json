@@ -4,5 +4,5 @@
     "MD024": { "siblings_only": true },
     "MD033": false
   },
-  "playwright.testDir": "tests",
+  "playwright.testDir": "tests"
 }
