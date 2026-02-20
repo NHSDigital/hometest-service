@@ -50,6 +50,9 @@ export interface ValidationMessages {
     required: string;
     invalid: string;
   };
+  consent: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -317,6 +320,17 @@ export interface CheckYourAnswersContent {
     mobileNumber: string;
   };
   changeLink: string;
+  consent: {
+    legend: string;
+    labelPrefix: string;
+    supplierName: string;
+    labelMiddle: string;
+    termsOfUseText: string;
+    termsOfUseHref: string;
+    labelAnd: string;
+    privacyPolicyText: string;
+    privacyPolicyHref: string;
+  };
   submitButton: string;
 }
 

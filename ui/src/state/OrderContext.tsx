@@ -35,7 +35,7 @@ export interface OrderAnswers {
   // From auth
   user?: AuthUser;
 
-  // From enter-delivery-address
+  // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
 
@@ -45,6 +45,10 @@ export interface OrderAnswers {
 
   // Mobile number
   mobileNumber?: string;
+
+  // Consent
+  consentGiven?: boolean;
+  consentTimestamp?: string;
 }
 
 interface CreateOrderContextType {

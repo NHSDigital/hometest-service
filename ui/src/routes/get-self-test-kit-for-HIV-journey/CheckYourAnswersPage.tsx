@@ -1,10 +1,13 @@
 "use client";
 
-import { Button, SummaryList } from "nhsuk-react-components";
+import { useState } from "react";
+import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
+
+// TODO: update to dynamically render supplier based on API (probably stored in state)
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -28,17 +31,39 @@ function formatUserName(user?: { givenName: string; familyName: string }): strin
 }
 
 export default function CheckYourAnswersPage() {
-  const { orderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, setReturnToStep } = useJourneyNavigationContext();
-  const { "check-your-answers": content } = useContent();
+  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { commonContent, "check-your-answers": content } = useContent();
+
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
 
   const handleChangeClick = (targetStep: string) => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
     goToStep(targetStep);
   };
 
+  const handleConsentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConsentChecked(e.target.checked);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!consentChecked) {
+      setConsentError(commonContent.validation.consent.required);
+      return;
+    }
+
+    setConsentError(null);
+
+    const consentTimestamp = new Date().toISOString();
+    updateOrderAnswers({
+      consentGiven: true,
+      consentTimestamp,
+    });
+
+    console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
     // TODO: Submit order via API
     console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
   };
@@ -50,9 +75,36 @@ export default function CheckYourAnswersPage() {
   return (
     <PageLayout
       showBackButton
-      onBackButtonClick={() => goBack()}
+      onBackButtonClick={() => {
+        if (stepHistory.length > 1) {
+          goBack();
+        } else {
+          goToStep(JourneyStepNames.EnterMobileNumber);
+        }
+      }}
     >
       <h1 className="nhsuk-heading-l">{content.title}</h1>
+
+      {consentError && (
+        <ErrorSummary aria-labelledby="error-summary-title" role="alert">
+          <ErrorSummary.Title id="error-summary-title">
+            {commonContent.errorSummary.title}
+          </ErrorSummary.Title>
+          <ErrorSummary.Body>
+            <ErrorSummary.List>
+              <ErrorSummary.Item
+                href="#consent"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("consent-1")?.focus();
+                }}
+              >
+                {consentError}
+              </ErrorSummary.Item>
+            </ErrorSummary.List>
+          </ErrorSummary.Body>
+        </ErrorSummary>
+      )}
 
       <p className="nhsuk-body">{content.updateMessage}</p>
       <p className="nhsuk-body">{content.deliveryMessage}</p>
@@ -135,6 +187,26 @@ export default function CheckYourAnswersPage() {
       </SummaryList>
 
       <form onSubmit={handleSubmit}>
+        <Fieldset>
+          <Fieldset.Legend size="m">{content.consent.legend}</Fieldset.Legend>
+          <Checkboxes
+            id="consent"
+            name="consent"
+            error={consentError || undefined}
+          >
+            <Checkboxes.Box
+              value="consent"
+              checked={consentChecked}
+              onChange={handleConsentChange}
+            >
+              {content.consent.labelPrefix} {content.consent.supplierName}{content.consent.labelMiddle}{" "}
+              <a href={content.consent.termsOfUseHref}>{content.consent.termsOfUseText}</a>{" "}
+              {content.consent.labelAnd}{" "}
+              <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.
+            </Checkboxes.Box>
+          </Checkboxes>
+        </Fieldset>
+
         <Button type="submit">{content.submitButton}</Button>
       </form>
     </PageLayout>

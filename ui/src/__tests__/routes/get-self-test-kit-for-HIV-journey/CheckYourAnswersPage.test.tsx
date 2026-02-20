@@ -245,8 +245,81 @@ describe("CheckYourAnswersPage", () => {
     });
   });
 
+  describe("Consent Checkbox", () => {
+    it("renders the consent fieldset with legend", () => {
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      expect(screen.getByText("Your consent")).toBeInTheDocument();
+    });
+
+    it("renders the consent checkbox", () => {
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).toBeInTheDocument();
+      expect(checkbox).not.toBeChecked();
+    });
+  });
+
   describe("Submit Order", () => {
-    it("calls handleSubmit when submit button is clicked", () => {
+    it("shows error when submitting without consent", () => {
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      const submitButton = screen.getByRole("button", {
+        name: /submit order/i,
+      });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      expect(
+        screen.getAllByText(
+          "Select if you agree to our partner's terms and conditions and privacy policy",
+        ).length,
+      ).toBeGreaterThanOrEqual(1);
+    });
+
+    it("error summary links to consent checkbox", () => {
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      const submitButton = screen.getByRole("button", {
+        name: /submit order/i,
+      });
+      fireEvent.click(submitButton);
+
+      const errorLink = screen.getByRole("link", {
+        name: "Select if you agree to our partner's terms and conditions and privacy policy",
+      });
+      expect(errorLink).toHaveAttribute("href", "#consent-1");
+    });
+
+    it("submits successfully when consent is ticked", () => {
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      const checkbox = screen.getByRole("checkbox");
+      fireEvent.click(checkbox);
+
+      const submitButton = screen.getByRole("button", {
+        name: /submit order/i,
+      });
+      fireEvent.click(submitButton);
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[CheckYourAnswersPage] Consent recorded at:",
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "[CheckYourAnswersPage] Submitting order:",
+        expect.any(Object),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it("does not submit when consent is not ticked", () => {
       const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
@@ -256,7 +329,7 @@ describe("CheckYourAnswersPage", () => {
       });
       fireEvent.click(submitButton);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy).not.toHaveBeenCalledWith(
         "[CheckYourAnswersPage] Submitting order:",
         expect.any(Object),
       );
