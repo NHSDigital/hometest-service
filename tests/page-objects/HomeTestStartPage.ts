@@ -27,6 +27,11 @@ export class HomeTestStartPage extends BasePage {
     await this.page.goto(`${this.config.uiBaseUrl}/get-self-test-kit-for-HIV`);
   }
 
+  async waitUntilPageLoad(): Promise<void> {
+    // Wait for the requireAuth loader to complete and the page to render
+    await this.headerText.waitFor({ timeout: 30000 });
+  }
+
   async clickFindClinicLink(expectedUrl: string): Promise<void> {
     await this.findClinicLink.click();
     await this.page.waitForURL(expectedUrl);
