@@ -364,9 +364,10 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     redeployment = sha1(jsonencode([
       module.eligibility_test_info_lambda,
       module.order_result_lambda,
+      module.get_order_lambda,
       module.login_lambda,
       module.order_service_lambda,
-      module.session_lambda,
+      module.session_lambda
     ]))
   }
 
