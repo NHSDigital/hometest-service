@@ -31,8 +31,8 @@ export class TestResultDbClient {
           rs.status as status,
           rs.created_at AS created_at,
           o.order_uid AS order_id,
-          tt.description AS procedure_description,
-          os.status_code AS status_code,
+          o.test_code AS test_code,
+          tt.description AS test_description,
           s.supplier_id AS supplier_id,
           s.supplier_name AS supplier_name,
           p.patient_uid AS patient_id
