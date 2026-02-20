@@ -93,7 +93,6 @@ export default function SelectDeliveryAddressPage() {
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
       console.error("Failed to lookup local authority:", err);
-      setAddressError("Unable to determine local authority. Please try again.");
     }
   };
 
