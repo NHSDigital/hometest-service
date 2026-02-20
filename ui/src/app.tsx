@@ -60,6 +60,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <MainLayout />,
     loader: requireAuth,
+    HydrateFallback: () => null,
     errorElement: (
       <MainLayout>
         <GlobalErrorPage />
