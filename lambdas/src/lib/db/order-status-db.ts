@@ -20,6 +20,7 @@ export interface OrderRow {
 
 export interface OrderStatusUpdateParams {
   orderId: string;
+  orderReference?: number;
   statusCode: string;
   createdAt: string;
   correlationId: string;
@@ -98,18 +99,26 @@ export class OrderStatusService {
   async updateOrderStatus(
     params: OrderStatusUpdateParams,
   ): Promise<OrderStatusRow> {
-    const { orderId, statusCode, createdAt, correlationId } = params;
+    const { orderId, orderReference, statusCode, createdAt, correlationId } =
+      params;
 
     const query = `
-      INSERT INTO hometest.order_status (order_uid, status_code, created_at, correlation_id)
-      VALUES ($1, $2, $3, $4);
+      INSERT INTO hometest.order_status (order_uid, order_reference, status_code, created_at, correlation_id)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING status_id, order_uid, order_reference, status_code, created_at, correlation_id;
     `;
 
     try {
       const result = await this.dbClient.query<
         OrderStatusRow,
-        [string, string, string, string | null]
-      >(query, [orderId, statusCode, createdAt, correlationId]);
+        [string, number | null, string, string, string | null]
+      >(query, [
+        orderId,
+        orderReference ?? null,
+        statusCode,
+        createdAt,
+        correlationId,
+      ]);
 
       if (result.rowCount === 0) {
         throw new Error("Failed to insert order status");
