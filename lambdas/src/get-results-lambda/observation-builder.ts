@@ -1,36 +1,41 @@
-import {
-  Bundle,
-  BundleEntry,
-  CodeableConcept,
-  Extension,
-  Identifier,
-  Patient,
-  Reference,
-  ServiceRequest,
-} from "fhir/r4";
+import { CodeableConcept, Observation, Reference } from "fhir/r4";
 
 import { TestResult } from "src/lib/db/test-result-db-client";
 
-const requesterId = "ORG001";
-
 export class ObservationBuilder {
-  public static build(testResult: TestResult): Bundle {
-    //todo change to build proper obervation
-    const serviceRequest = this.buildServiceRequest(testResult);
-    const bundleEntry = this.buildBundleEntry(testResult, serviceRequest);
+  private static readonly OBSERVATION_STATUS = "final" as const;
+
+  public static build(testResult: TestResult): Observation {
+    const timestamp = this.buildTimestamp(testResult);
 
     return {
-      resourceType: "Bundle",
-      type: "searchset",
-      total: 1,
-      entry: [bundleEntry],
+      resourceType: "Observation",
+      id: testResult.id,
+      basedOn: [this.buildBasedOnReference(testResult)],
+      status: this.OBSERVATION_STATUS,
+      code: this.buildHivProcedureCode(),
+      subject: this.buildSubjectReference(testResult),
+      effectiveDateTime: timestamp,
+      issued: timestamp,
+      performer: [this.buildPerformer(testResult)],
+      valueCodeableConcept: this.buildProcedureResultCode(),
+      interpretation: [this.buildProcedureResultInterpretationCode()],
     };
   }
 
-  private static buildIdentifier(testResult: TestResult): Identifier {
+  private static buildTimestamp(testResult: TestResult): string {
+    return testResult.created_at.toISOString();
+  }
+
+  private static buildBasedOnReference(testResult: TestResult): Reference {
     return {
-      system: "https://fhir.hometest.nhs.uk/Id/order-id",
-      value: `${testResult.reference_number}`,
+      reference: `ServiceRequest/${testResult.order_id}`,
+    };
+  }
+
+  private static buildSubjectReference(testResult: TestResult): Reference {
+    return {
+      reference: `Patient/${testResult.patient_id}`,
     };
   }
 
@@ -42,7 +47,7 @@ export class ObservationBuilder {
     };
   }
 
-  private static buildCode(): CodeableConcept {
+  private static buildHivProcedureCode(): CodeableConcept {
     return {
       coding: [
         {
@@ -55,78 +60,29 @@ export class ObservationBuilder {
     };
   }
 
-  private static buildRequester(): Reference {
+  private static buildProcedureResultCode(): CodeableConcept {
     return {
-      reference: `Organization/${requesterId}`,
-    };
-  }
-
-  private static buildBusinessStatusExtension(
-    testResult: TestResult,
-  ): Extension {
-    return {
-      url: "https://fhir.hometest.nhs.uk/StructureDefinition/business-status",
-      extension: [
+      coding: [
         {
-          url: "timestamp",
-          valueDate: testResult.status_created_at.toISOString().split("T")[0],
+          system: "http://snomed.info/sct",
+          code: "260415000",
+          display: "Not detected",
         },
       ],
-      valueCodeableConcept: {
-        coding: [
-          {
-            system:
-              "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
-            code: testResult.status_code,
-            display: testResult.status_description,
-          },
-        ],
-        text: testResult.status_code,
-      },
     };
   }
 
-  private static buildPatient(testResult: TestResult): Patient {
+  private static buildProcedureResultInterpretationCode(): CodeableConcept {
     return {
-      resourceType: "Patient",
-      id: "patient-1",
-      identifier: [
+      coding: [
         {
-          system: "https://fhir.nhs.uk/Id/nhs-number",
-          value: testResult.patient_nhs_number,
-          use: "official",
+          system:
+            "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+          code: "N",
+          display: "Normal",
         },
       ],
-      birthDate: testResult.patient_birth_date.toISOString().split("T")[0],
-    };
-  }
-
-  private static buildServiceRequest(testResult: TestResult): ServiceRequest {
-    return {
-      resourceType: "ServiceRequest",
-      id: testResult.id,
-      identifier: [this.buildIdentifier(testResult)],
-      status: testResult.status_code === "COMPLETE" ? "completed" : "active",
-      intent: "order",
-      code: this.buildCode(),
-      subject: {
-        reference: "#patient-1",
-      },
-      requester: this.buildRequester(),
-      performer: [this.buildPerformer(testResult)],
-      authoredOn: testResult.created_at.toISOString(),
-      extension: [this.buildBusinessStatusExtension(testResult)],
-      contained: [this.buildPatient(testResult)],
-    };
-  }
-
-  private static buildBundleEntry(
-    order: TestResult,
-    serviceRequest: ServiceRequest,
-  ): BundleEntry {
-    return {
-      fullUrl: `urn:uuid:${order.id}`,
-      resource: serviceRequest,
+      text: "Normal",
     };
   }
 }

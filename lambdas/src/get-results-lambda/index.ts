@@ -43,7 +43,9 @@ export const lambdaHandler = async (
     dateOfBirth,
   );
 
-  if (!testResult) {
+  // for Alpha we only return observation if RESULT_AVAILABLE
+  // and the returned observation is 'Not detected' with an interpretation of 'Normal'
+  if (!testResult || testResult.status !== "RESULT_AVAILABLE") {
     return createFhirErrorResponse(
       404,
       "not-found",

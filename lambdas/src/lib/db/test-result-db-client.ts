@@ -1,22 +1,15 @@
 import { type DBClient } from "./db-client";
 
-type OrderStatusCode =
-  | "ORDER_RECEIVED"
-  | "DISPATCHED"
-  | "RECEIVED"
-  | "COMPLETE";
+type TestResultStatusCode = "RESULT_AVAILABLE" | "RESULT_WITHHELD";
 
 export interface TestResult {
   id: string;
-  reference_number: number;
+  status: TestResultStatusCode;
   created_at: Date;
-  status_code: OrderStatusCode;
-  status_description: string;
-  status_created_at: Date;
+  order_id: string;
   supplier_id: string;
   supplier_name: string;
-  patient_nhs_number: string;
-  patient_birth_date: Date;
+  patient_id: string;
 }
 
 export class TestResultDbClient {
@@ -25,35 +18,43 @@ export class TestResultDbClient {
     this.dbClient = dbClient;
   }
 
-  public async getResult(orderId: string, nhsNumber: string, dateOfBirth: Date) {
-    //todo replace
-    // ensure about where COMPLETE, can they update from complete to lower status?
+  public async getResult(
+    orderId: string,
+    nhsNumber: string,
+    dateOfBirth: Date,
+  ) {
     const query = `
       SELECT
-          o.order_uid AS id,
-          o.order_reference AS reference_number,
-          o.created_at AS created_at,
-          os.status_code AS status_code,
-          st.description AS status_description,
-          os.created_at AS status_created_at,
+          rs.result_id AS id
+          rs.status as status,
+          rs.created_at AS created_at,
+          o.order_uid AS order_id,
           s.supplier_id AS supplier_id,
           s.supplier_name AS supplier_name,
-          p.nhs_number AS patient_nhs_number,
-          p.birth_date AS patient_birth_date
+          p.patient_uid AS patient_id
       FROM hometest.test_order o
-      INNER JOIN hometest.order_status os ON os.order_uid = o.order_uid
       INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
       INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
-      INNER JOIN hometest.result_status rs ON os.order_uid = o.order_uid
-      WHERE o.order_uid = $1 AND p.nhs_number = $2 AND p.birth_date = $3::date AND os.status_code = 'COMPLETE'
+      INNER JOIN hometest.result_status rs ON o.order_uid = o.order_uid
+      WHERE
+          (
+            SELECT os.status_code = 'COMPLETE'
+            FROM hometest.order_status os
+            WHERE os.order_uid = $1
+            ORDER BY os.created_at DESC
+            LIMIT 1
+          ) AND
+          o.order_uid = $1 AND
+          p.nhs_number = $2 AND
+          p.birth_date = $3::date
       ORDER BY rs.created_at DESC
       LIMIT 1;
     `;
 
-    const result = await this.dbClient.query<TestResult, [string, string, Date]>(
-      query,
-      [orderId, nhsNumber, dateOfBirth],
-    );
+    const result = await this.dbClient.query<
+      TestResult,
+      [string, string, Date]
+    >(query, [orderId, nhsNumber, dateOfBirth]);
 
     return result?.rows[0] ?? null;
   }
