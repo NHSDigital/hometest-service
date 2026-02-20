@@ -343,7 +343,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 
   triggers = {
     redeployment = sha1(jsonencode([
-      module.eligibility_test_info_lambda,
+      module.eligibility_lookup_lambda,
       module.order_result_lambda,
       module.login_lambda,
       module.order_service_lambda,
