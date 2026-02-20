@@ -15,12 +15,12 @@ export default function ConfirmMobileNumberPage() {
 
   const nhsPhone = orderAnswers.user?.phoneNumber;
 
-  const [selectedOption, setSelectedOption] = useState<"nhs" | "other" | null>(null);
+  const [selectedOption, setSelectedOption] = useState<"nhs-mobile-number" | "other" | null>(null);
   const [alternativeNumber, setAlternativeNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedOption(e.target.value as "nhs" | "other");
+    setSelectedOption(e.target.value as "nhs-mobile-number" | "other");
     setError(null);
   };
 
@@ -36,7 +36,7 @@ export default function ConfirmMobileNumberPage() {
       return;
     }
 
-    if (selectedOption === "nhs") {
+    if (selectedOption === "nhs-mobile-number") {
       updateOrderAnswers({
         mobileNumber: nhsPhone,
       });
@@ -110,8 +110,8 @@ export default function ConfirmMobileNumberPage() {
         >
           <Radios.Radio
             id="phone-confirmation-1"
-            value="nhs"
-            checked={selectedOption === "nhs"}
+            value="nhs-mobile-number"
+            checked={selectedOption === "nhs-mobile-number"}
             onChange={handleRadioChange}
           >
             {nhsPhone}
