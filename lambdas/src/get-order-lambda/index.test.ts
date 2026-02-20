@@ -35,6 +35,8 @@ describe("Get Order Lambda Handler", () => {
       id: "123e4567-e89b-12d3-a456-426614174000",
       reference_number: 12345,
       created_at: new Date("2024-01-15T10:30:00Z"),
+      test_code: "31676001",
+      test_description: "HIV antigen test",
       status_code: "DISPATCHED",
       status_description: "Order dispatched",
       status_created_at: new Date("2024-01-16T08:00:00Z"),

@@ -41,16 +41,16 @@ export class OrderBundleBuilder {
     };
   }
 
-  private static buildCode(): CodeableConcept {
+  private static buildTestCode(order: Order): CodeableConcept {
     return {
       coding: [
         {
           system: "http://snomed.info/sct",
-          code: "31676001",
-          display: "HIV antigen test",
+          code: order.test_code,
+          display: order.test_description,
         },
       ],
-      text: "HIV antigen test",
+      text: order.test_description,
     };
   }
 
@@ -105,7 +105,7 @@ export class OrderBundleBuilder {
       identifier: [this.buildIdentifier(order)],
       status: order.status_code === "COMPLETE" ? "completed" : "active",
       intent: "order",
-      code: this.buildCode(),
+      code: this.buildTestCode(order),
       subject: {
         reference: "#patient-1",
       },

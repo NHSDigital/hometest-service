@@ -10,6 +10,8 @@ export interface Order {
   id: string;
   reference_number: number;
   created_at: Date;
+  test_code: string;
+  test_description: string;
   status_code: OrderStatusCode;
   status_description: string;
   status_created_at: Date;
@@ -31,6 +33,8 @@ export class OrderDbClient {
           o.order_uid AS id,
           o.order_reference AS reference_number,
           o.created_at AS created_at,
+          o.test_code AS test_code,
+          tt.description AS test_description,
           os.status_code AS status_code,
           st.description AS status_description,
           os.created_at AS status_created_at,
@@ -39,6 +43,7 @@ export class OrderDbClient {
           p.nhs_number AS patient_nhs_number,
           p.birth_date AS patient_birth_date
       FROM hometest.test_order o
+      INNER JOIN test_type tt ON tt.test_code = o.test_code
       INNER JOIN hometest.order_status os ON os.order_uid = o.order_uid
       INNER JOIN hometest.status_type st ON st.status_code = os.status_code
       INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
