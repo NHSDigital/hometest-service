@@ -175,9 +175,7 @@ module "eligibility_lookup_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS                = "--enable-source-maps",
-    DATABASE_URL                = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest",
-    NHS_LOGIN_BASE_ENDPOINT_URL = "https://auth.sandpit.signin.nhs.uk"
+    NODE_OPTIONS = "--enable-source-maps"
   }
 }
 
