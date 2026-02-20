@@ -12,7 +12,6 @@ const mockGetCorrelationIdFromEventHeaders = jest.fn();
 const mockGetOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockUpdateOrderStatus = jest.fn();
-const mockExtractIdFromReference = jest.fn();
 const mockIsValidBusinessStatus = jest.fn();
 
 jest.mock("../lib/utils", () => ({
@@ -26,7 +25,6 @@ jest.mock("../lib/db/order-status-db", () => ({
     getOrder: mockGetOrder,
     checkIdempotency: mockCheckIdempotency,
     updateOrderStatus: mockUpdateOrderStatus,
-    extractIdFromReference: mockExtractIdFromReference,
     isValidBusinessStatus: mockIsValidBusinessStatus,
   })),
 }));
@@ -58,12 +56,6 @@ describe("Order Status Lambda Handler", () => {
 
     // Default mock values
     mockGetCorrelationIdFromEventHeaders.mockReturnValue(MOCK_CORRELATION_ID);
-    mockExtractIdFromReference.mockImplementation((reference: string) => {
-      if (reference.startsWith("Patient/")) return MOCK_PATIENT_UID;
-      if (reference.startsWith("ServiceRequest/")) return MOCK_ORDER_UID;
-
-      return null;
-    });
 
     mockGetOrder.mockResolvedValue({
       order_uid: MOCK_ORDER_UID,
@@ -163,8 +155,6 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should return 400 if basedOn reference format is invalid", async () => {
-      mockExtractIdFromReference.mockReturnValueOnce(null);
-
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         basedOn: [{ reference: "invalid-reference" }],
@@ -208,13 +198,6 @@ describe("Order Status Lambda Handler", () => {
 
   describe("Patient Ownership", () => {
     it("should return 400 when patient reference format is invalid", async () => {
-      mockExtractIdFromReference.mockImplementation((reference: string) => {
-        if (reference.startsWith("Patient/")) return null;
-        if (reference.startsWith("ServiceRequest/")) return MOCK_ORDER_UID;
-
-        return null;
-      });
-
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         for: { reference: "invalid-ref" },
@@ -230,14 +213,10 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should return 400 when patient does not match order", async () => {
-      mockExtractIdFromReference.mockImplementation((reference: string) => {
-        if (reference.startsWith("Patient/")) return "different-patient";
-        if (reference.startsWith("ServiceRequest/")) return MOCK_ORDER_UID;
-
-        return null;
-      });
-
-      mockEvent.body = JSON.stringify(validTaskBody);
+      mockEvent.body = JSON.stringify({
+        ...validTaskBody,
+        for: { reference: "Patient/other-patient" },
+      } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 

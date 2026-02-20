@@ -64,9 +64,7 @@ export const handler = async (
 
   try {
     // Extract order ID from Task.basedOn
-    const orderId = orderStatusDb.extractIdFromReference(
-      task.basedOn[0].reference,
-    );
+    const orderId = extractIdFromReference(task.basedOn[0].reference);
 
     if (!orderId) {
       commons.logError(name, "Invalid order reference format", {
@@ -110,9 +108,7 @@ export const handler = async (
     }
 
     // Verify patient ownership
-    const patientIdFromTask = orderStatusDb.extractIdFromReference(
-      task.for.reference,
-    );
+    const patientIdFromTask = extractIdFromReference(task.for.reference);
 
     if (!patientIdFromTask) {
       commons.logError(name, "Invalid patient reference format", {
@@ -217,4 +213,13 @@ export const handler = async (
       "fatal",
     );
   }
+};
+
+/**
+ * Extract UUID from a FHIR reference (e.g., "ServiceRequest/550e8400-e29b-41d4-a716-446655440000")
+ */
+const extractIdFromReference = (reference: string): string | null => {
+  const parts = reference.split("/");
+
+  return parts.length === 2 ? parts[1] : null;
 };

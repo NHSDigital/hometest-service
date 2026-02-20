@@ -147,13 +147,4 @@ export class OrderStatusService {
       });
     }
   }
-
-  /**
-   * Extract UUID from a FHIR reference
-   * e.g. "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
-   */
-  extractIdFromReference(reference: string): string | null {
-    const parts = reference.split("/");
-    return parts.length === 2 ? parts[1] : null;
-  }
 }
