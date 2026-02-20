@@ -26,7 +26,7 @@ export default class NhsLoginHelper {
     // Wait for redirect to NHS Login (external login page)
     // URL is access.sandpit.signin.nhs.uk or similar
     try {
-      await page.waitForURL(/signin\.nhs\.uk/, { timeout: 10000 });
+      await page.waitForURL(/signin\.nhs\.uk/, { timeout: 30000 });
       console.log(`Redirected to NHS Login: ${page.url()}`);
     } catch (error) {
       // Capture screenshot immediately when redirect to NHS Login fails
@@ -34,7 +34,7 @@ export default class NhsLoginHelper {
       fs.mkdirSync(outputDir, { recursive: true });
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const screenshotPath = `${outputDir}/nhs-login-redirect-failure-${timestamp}-screenshot.png`;
-      
+
       try {
         await page.screenshot({
           path: screenshotPath,
@@ -47,7 +47,7 @@ export default class NhsLoginHelper {
       } catch (screenshotError) {
         console.error('❌ Failed to capture screenshot:', screenshotError);
       }
-      
+
       // Re-throw the original error
       throw error;
     }
@@ -56,7 +56,7 @@ export default class NhsLoginHelper {
     await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
       nhsLoginUser.otp
     );
-    
+
     // Wait for redirect to home page after successful login
     try {
       await page.waitForURL('**/get-self-test-kit-for-HIV', { timeout: 30000 });
@@ -66,7 +66,7 @@ export default class NhsLoginHelper {
       fs.mkdirSync(outputDir, { recursive: true });
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const screenshotPath = `${outputDir}/home-page-redirect-failure-${timestamp}-screenshot.png`;
-      
+
       try {
         await page.screenshot({
           path: screenshotPath,
@@ -79,7 +79,7 @@ export default class NhsLoginHelper {
       } catch (screenshotError) {
         console.error('❌ Failed to capture screenshot:', screenshotError);
       }
-      
+
       // Re-throw the original error
       throw error;
     }
