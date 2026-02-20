@@ -62,6 +62,32 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   },
 }));
 
+// Mock useContent to provide predictable content for tests
+jest.mock('@/hooks/useContent', () => ({
+  useContent: () => ({
+    commonContent: {
+      validation: {
+        deliveryAddress: {
+          required: 'Select a delivery address',
+        },
+      },
+      errorSummary: {
+        title: 'There is a problem',
+      },
+      navigation: {
+        continue: 'Continue',
+        manualEntryLink: 'Enter address manually',
+      },
+    },
+    'select-delivery-address': {
+      title: 'addresses found',
+      postcodeLabel: 'Postcode:',
+      editPostcodeLink: 'Edit postcode',
+      formLabel: 'Select your delivery address',
+    },
+  }),
+}));
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
@@ -77,10 +103,8 @@ describe("SelectDeliveryAddressPage", () => {
     it("renders the main heading with correct address count", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const heading = screen.getByRole("heading", {
-        name: /3 addresses found/i,
-      });
-      expect(heading).toBeInTheDocument();
+      const heading = screen.getByRole("heading");
+      expect(heading).toHaveTextContent("3 addresses addresses found");
     });
 
     it("displays the searched postcode", () => {

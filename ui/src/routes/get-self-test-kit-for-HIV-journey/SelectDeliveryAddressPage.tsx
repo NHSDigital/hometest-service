@@ -64,13 +64,13 @@ export default function SelectDeliveryAddressPage() {
         // ALPHA: ToDo error screen thrown here:
         return null;
       }
-      // For now, select the first supplier (business logic may change)
-      const selectedSupplier = laResponse.suppliers[0];
+
       console.log("Eligibility lookup response:", laResponse);
 
       updateOrderAnswers({
         deliveryAddress: {
-          addressLine1: selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
+          addressLine1:
+            selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
           addressLine2: selected.DPA.THOROUGHFARE_NAME,
           addressLine3: selected.DPA.DEPENDENT_LOCALITY,
           postTown: selected.DPA.POST_TOWN,
@@ -80,11 +80,11 @@ export default function SelectDeliveryAddressPage() {
           code: laResponse.localAuthority.localAuthorityCode,
           region: laResponse.localAuthority.region,
         },
-        supplier: {
-          id: selectedSupplier.id,
-          name: selectedSupplier.name,
-          testCode: selectedSupplier.testCode,
-        },
+        supplier: laResponse.suppliers.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+          testCode: supplier.testCode,
+        })),
       });
 
 
