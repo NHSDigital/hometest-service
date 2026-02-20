@@ -28,6 +28,8 @@ describe("OrderDbClient", () => {
         id: orderId,
         reference_number: 12345,
         created_at: new Date("2026-02-15T10:30:00Z"),
+        test_code: "31676001",
+        test_description: "HIV antigen test",
         status_code: "DISPATCHED",
         status_description: "DISPATCHED",
         status_created_at: new Date("2026-02-16T08:00:00Z"),
@@ -88,6 +90,8 @@ describe("OrderDbClient", () => {
           o.order_uid AS id,
           o.order_reference AS reference_number,
           o.created_at AS created_at,
+          o.test_code AS test_code,
+          tt.description AS test_description,
           os.status_code AS status_code,
           st.description AS status_description,
           os.created_at AS status_created_at,
@@ -96,6 +100,7 @@ describe("OrderDbClient", () => {
           p.nhs_number AS patient_nhs_number,
           p.birth_date AS patient_birth_date
       FROM hometest.test_order o
+      INNER JOIN test_type tt ON tt.test_code = o.test_code
       INNER JOIN hometest.order_status os ON os.order_uid = o.order_uid
       INNER JOIN hometest.status_type st ON st.status_code = os.status_code
       INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
