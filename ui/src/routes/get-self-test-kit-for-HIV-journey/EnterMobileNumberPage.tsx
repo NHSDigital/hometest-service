@@ -5,8 +5,8 @@ import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
+import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
 import PageLayout from "@/layouts/PageLayout";
-import { validateMobileNumber } from "@/lib/validation/mobileNumberValidation";
 
 export default function EnterMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
@@ -23,13 +23,15 @@ export default function EnterMobileNumberPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const mobileValidation = validateMobileNumber(mobileNumber, commonContent.validation);
+    const mobileNumberSchema = createMobileNumberSchema(commonContent.validation);
+    const result = mobileNumberSchema.safeParse(mobileNumber);
 
-    setMobileNumberError(mobileValidation.valid ? null : mobileValidation.message);
-
-    if (mobileValidation.valid) {
+    if (!result.success) {
+      setMobileNumberError(result.error.issues[0].message);
+    } else {
+      setMobileNumberError(null);
       const updatedData = {
-        mobileNumber: mobileValidation.value,
+        mobileNumber: result.data,
       };
       console.log("[EnterMobileNumberPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
