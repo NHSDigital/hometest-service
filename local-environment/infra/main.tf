@@ -170,6 +170,7 @@ module "login_lambda" {
   api_path                      = "login"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
   http_method                   = "POST"
+  timeout                       = 30
 
   enable_cors            = true
   cors_allow_origin      = "http://localhost:3000"
@@ -187,6 +188,37 @@ module "login_lambda" {
     AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = "60",
     AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = "60",
     AUTH_COOKIE_SAME_SITE                      = "Lax"
+    AUTH_COOKIE_SECURE                         = "false"
+  }
+}
+
+module "session_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "session"
+  zip_path                      = "${path.module}/../../lambdas/dist/session-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "session"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "GET"
+
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["GET", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization"]
+  cors_allow_credentials = true
+
+  environment_variables = {
+    NODE_OPTIONS = "--enable-source-maps"
+
+    AUTH_COOKIE_KEY_ID                 = "key"
+    AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
+    NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
   }
 }
 
@@ -297,8 +329,19 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.eligibility_test_info_lambda,
     module.order_result_lambda,
     module.login_lambda,
-    module.order_service_lambda
+    module.order_service_lambda,
+    module.session_lambda
   ]
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      module.eligibility_test_info_lambda,
+      module.order_result_lambda,
+      module.login_lambda,
+      module.order_service_lambda,
+      module.session_lambda,
+    ]))
+  }
 
   lifecycle {
     create_before_destroy = true

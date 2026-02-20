@@ -1,9 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { Observation, Parameters } from 'fhir/r4';
+import { Observation } from 'fhir/r4';
 import { z } from 'zod';
 import { AWSSQSClient } from '../lib/sqs/sqs-client';
 import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
 import { ConsoleCommons } from '../lib/commons';
+import {getCorrelationIdFromEventHeaders} from "../lib/utils";
 
 const sqsClient = new AWSSQSClient();
 const commons = new ConsoleCommons();
@@ -64,7 +65,7 @@ export const handler = async (
 
   try{
     const orderUid = extractOrderUid(observation);
-    const correlationId = event.headers['X-Correlation-ID'];
+    const correlationId = getCorrelationIdFromEventHeaders(event);
     const messageBody = JSON.stringify({
       observation,
       correlationId,
