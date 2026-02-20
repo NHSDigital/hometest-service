@@ -392,6 +392,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.eligibility_test_info_lambda,
       module.order_result_lambda,
       module.get_order_lambda,
+      module.get_results_lambda,
       module.login_lambda,
       module.order_service_lambda,
       module.session_lambda
