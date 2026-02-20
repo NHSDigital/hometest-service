@@ -41,7 +41,6 @@ export interface OrderStatusUpdateParams {
 
 export interface IdempotencyCheckResult {
   isDuplicate: boolean;
-  lastUpdate?: OrderStatusRow;
 }
 
 export class OrderStatusService {

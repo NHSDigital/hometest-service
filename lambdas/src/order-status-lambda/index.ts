@@ -11,9 +11,10 @@ import { init } from "./init";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils";
 import {
-  AllowedInternalBusinessStatuses,
-  IncomingBusinessStatus,
-} from "./types";
+  businessStatusMapping,
+  extractIdFromReference,
+  isValidBusinessStatus,
+} from "./utils";
 
 const commons = new ConsoleCommons();
 const name = "order-status-lambda";
@@ -143,32 +144,44 @@ export const handler = async (
     }
 
     // Validate business status
-    const businessStatusCode =
-      task.businessStatus?.text || task.businessStatus?.coding?.[0]?.code; // TODO: Verify we need to the code version
+    const businessStatus = task.businessStatus?.text;
 
-    if (!isValidBusinessStatus(businessStatusCode)) {
+    if (!businessStatus) {
+      commons.logError(name, "Missing business status");
+
+      return createFhirErrorResponse(
+        400,
+        "invalid",
+        `Missing business status`,
+        "error",
+      );
+    }
+
+    if (!isValidBusinessStatus(businessStatus)) {
       commons.logError(name, "Invalid business status", {
-        businessStatus: businessStatusCode,
+        businessStatus: businessStatus,
       });
 
       return createFhirErrorResponse(
         400,
         "invalid",
-        `Invalid business status: ${businessStatusCode}. Allowed values: ${Object.values(AllowedInternalBusinessStatuses).join(", ")}`,
+        `Invalid business status: ${businessStatus}`,
         "error",
       );
     }
 
-    // Timestamp validation
-    const { authoredOn, lastModified } = task;
+    const internalBusinessStatus = businessStatusMapping[businessStatus];
 
-    if (!authoredOn && !lastModified) {
+    // Timestamp validation
+    const { lastModified } = task;
+
+    if (!lastModified) {
       commons.logError(name, "Missing timestamp in task", { orderId });
 
       return createFhirErrorResponse(
         400,
         "invalid",
-        "Task must contain either authoredOn or lastModified timestamp",
+        "Task must contain either lastModified timestamp",
         "error",
       );
     }
@@ -179,7 +192,7 @@ export const handler = async (
       correlationId,
     );
 
-    if (idempotencyCheck.isDuplicate && idempotencyCheck.lastUpdate) {
+    if (idempotencyCheck.isDuplicate) {
       commons.logInfo(name, "Duplicate update detected via correlation ID", {
         orderId,
         correlationId,
@@ -191,8 +204,8 @@ export const handler = async (
     // Process the update
     const updateParams: OrderStatusUpdateParams = {
       orderId,
-      statusCode: task.status,
-      createdAt: (lastModified || authoredOn)!,
+      statusCode: internalBusinessStatus,
+      createdAt: lastModified,
       correlationId,
     };
 
@@ -200,7 +213,7 @@ export const handler = async (
 
     commons.logInfo(name, "Order status updated successfully", {
       orderId,
-      statusCode: task.status,
+      statusCode: internalBusinessStatus,
       correlationId,
     });
 
@@ -217,32 +230,4 @@ export const handler = async (
       "fatal",
     );
   }
-};
-
-/**
- * Extract UUID from a FHIR reference (e.g., "ServiceRequest/550e8400-e29b-41d4-a716-446655440000")
- */
-const extractIdFromReference = (reference: string): string | null => {
-  const parts = reference.split("/");
-
-  return parts.length === 2 ? parts[1] : null;
-};
-
-/**
- * Validate business status against allowed domain-specific statuses
- */
-const allowedBusinessStatusMapping: Record<
-  IncomingBusinessStatus,
-  AllowedInternalBusinessStatuses
-> = {
-  [IncomingBusinessStatus.DISPATCHED]:
-    AllowedInternalBusinessStatuses.DISPATCHED,
-  [IncomingBusinessStatus.RECEIVED_AT_LAB]:
-    AllowedInternalBusinessStatuses.RECEIVED,
-};
-
-export const isValidBusinessStatus = (status?: string): boolean => {
-  if (!status) return true;
-
-  return Object.keys(allowedBusinessStatusMapping).includes(status);
 };

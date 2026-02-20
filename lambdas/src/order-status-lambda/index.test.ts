@@ -6,8 +6,8 @@ import {
   OrderRow,
   OrderStatusRow,
 } from "src/lib/db/order-status-db";
-
 import { IncomingBusinessStatus } from "./types";
+import { businessStatusMapping } from "./utils";
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
@@ -38,6 +38,7 @@ process.env.DATABASE_URL = "postgres://localhost/test";
 const MOCK_CORRELATION_ID = "123e4567-e89b-12d3-a456-426614174000";
 const MOCK_ORDER_UID = "550e8400-e29b-41d4-a716-446655440000";
 const MOCK_PATIENT_UID = "patient-123";
+const MOCK_BUSINESS_STATUS = IncomingBusinessStatus.DISPATCHED;
 
 describe("Order Status Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
@@ -86,10 +87,9 @@ describe("Order Status Lambda Handler", () => {
     for: {
       reference: `Patient/${MOCK_PATIENT_UID}`,
     },
-    authoredOn: "2024-01-15T09:00:00Z",
     lastModified: "2024-01-15T10:00:00Z",
     businessStatus: {
-      text: IncomingBusinessStatus.DISPATCHED,
+      text: MOCK_BUSINESS_STATUS,
     },
   };
 
@@ -250,8 +250,22 @@ describe("Order Status Lambda Handler", () => {
       const body = JSON.parse(result.body);
 
       expect(body.issue[0].diagnostics).toContain("Invalid business status");
-      expect(body.issue[0].diagnostics).toContain("DISPATCHED");
-      expect(body.issue[0].diagnostics).toContain("RECEIVED");
+      expect(body.issue[0].diagnostics).toContain("INVALID_STATUS");
+    });
+
+    it("should return 400 for missing business status", async () => {
+      mockEvent.body = JSON.stringify({
+        ...validTaskBody,
+        businessStatus: undefined,
+      } satisfies Partial<FHIRTask>);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent);
+
+      expect(result.statusCode).toBe(400);
+
+      const body = JSON.parse(result.body);
+
+      expect(body.issue[0].diagnostics).toContain("Missing business status");
     });
 
     it(`should accept ${IncomingBusinessStatus.DISPATCHED} business status`, async () => {
@@ -275,31 +289,12 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
     });
-
-    it("should allow missing business status", async () => {
-      mockEvent.body = JSON.stringify({
-        ...validTaskBody,
-        businessStatus: undefined,
-      } satisfies Partial<FHIRTask>);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(200);
-    });
   });
 
   describe("Idempotency via Correlation ID", () => {
     it("should detect duplicate updates with same correlation ID", async () => {
       mockCheckIdempotency.mockResolvedValueOnce({
         isDuplicate: true,
-        lastUpdate: {
-          order_uid: MOCK_ORDER_UID,
-          status_code: "",
-          created_at: "",
-          status_id: "",
-          order_reference: 0,
-          correlation_id: "",
-        },
       } satisfies Partial<IdempotencyCheckResult>);
 
       mockEvent.body = JSON.stringify(validTaskBody);
@@ -314,7 +309,7 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should process new updates with different correlation ID", async () => {
-      const newCorrelationId = "123e4567-e89b-12d3-a456-426614174999";
+      const newCorrelationId = "mock-new-correlation-id-123";
       mockGetCorrelationIdFromEventHeaders.mockReturnValueOnce(
         newCorrelationId,
       );
@@ -392,36 +387,12 @@ describe("Order Status Lambda Handler", () => {
       );
     });
 
-    it("should accept authoredOn timestamp instead of lastModified", async () => {
+    it("should reject when lastModified is missing", async () => {
+      const { lastModified: _lastModified, ...bodyWithoutLastModified } =
+        validTaskBody;
+
       mockEvent.body = JSON.stringify({
-        ...validTaskBody,
-        lastModified: undefined,
-      } satisfies Partial<FHIRTask>);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(200);
-
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
-        expect.objectContaining({
-          createdAt: validTaskBody.authoredOn,
-        }),
-      );
-    });
-
-    it("should reject when both authoredOn and lastModified are missing", async () => {
-      mockEvent.body = JSON.stringify({
-        resourceType: "Task",
-        status: "in-progress",
-        intent: "order",
-        basedOn: [
-          {
-            reference: `ServiceRequest/${MOCK_ORDER_UID}`,
-          },
-        ],
-        for: {
-          reference: `Patient/${MOCK_PATIENT_UID}`,
-        },
+        ...bodyWithoutLastModified,
       } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -458,7 +429,7 @@ describe("Order Status Lambda Handler", () => {
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
           orderId: MOCK_ORDER_UID,
-          statusCode: validTaskBody.status,
+          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
           createdAt: validTaskBody.lastModified,
           correlationId: MOCK_CORRELATION_ID,
         }),
@@ -485,6 +456,7 @@ describe("Order Status Lambda Handler", () => {
       mockGetOrder.mockRejectedValueOnce(
         new Error("Database connection failed"),
       );
+
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
