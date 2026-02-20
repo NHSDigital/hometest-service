@@ -46,6 +46,10 @@ export interface ValidationMessages {
   comfortableDoingTest: {
     required: string;
   };
+  mobileNumber: {
+    required: string;
+    invalid: string;
+  };
 }
 
 export interface CommonLinks {
@@ -252,6 +256,15 @@ export interface HowComfortablePrickingFingerContent {
   };
 }
 
+export interface EnterMobilePhoneNumberContent {
+  title: string;
+  description: string;
+  form: {
+    label: string;
+    hint: string;
+  };
+}
+
 export interface GlobalErrorContent {
   title: string;
   message: string;
@@ -304,6 +317,7 @@ export interface PagesContent {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "blood-sample-guide": BloodSampleGuideContent;
