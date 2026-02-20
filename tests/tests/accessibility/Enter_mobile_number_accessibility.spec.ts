@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
 import { AddressModel } from '../../models';
+import { PersonalDetailsModel } from '../../models/PersonalDetails';
 
 test.describe('Accessibility Testing @accessibility', () => {
 
@@ -13,7 +14,8 @@ test.describe('Accessibility Testing @accessibility', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress);
+    const randomMobileNumber = PersonalDetailsModel.getRandomPersonalDetails();
+    await enterMobileNumberPage.fillMobileNumberAndContinue(randomMobileNumber);
     const accessErrors = await accessibility.runAccessibilityCheck(enterMobileNumberPage.page, "Enter Mobile Number Page");
     expect(accessErrors).toHaveLength(0);
   });
