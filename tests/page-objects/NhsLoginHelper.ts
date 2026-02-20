@@ -24,7 +24,7 @@ export default class NhsLoginHelper {
 
     // Wait for redirect to NHS Login (external login page)
     // URL is access.sandpit.signin.nhs.uk or similar
-    await page.waitForURL(/signin\.nhs\.uk/, { timeout: 60000 });
+    await page.waitForURL(/signin\.nhs\.uk/, { timeout: 10000 });
     console.log(`Redirected to NHS Login: ${page.url()}`);
 
     await loginPage.fillAuthFormWithCredentialsAndClickContinue(nhsLoginUser);
