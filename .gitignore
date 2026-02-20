@@ -167,3 +167,4 @@ junit.xml
 
 # Test configuration with personal credentials
 tests/users.ts
+/testResults*
