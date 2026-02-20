@@ -1,6 +1,7 @@
 import {
   OrderRow,
   OrderStatusRow,
+  OrderStatusCodes,
   OrderStatusService,
   OrderStatusUpdateParams,
 } from "./order-status-db";
@@ -107,7 +108,7 @@ describe("OrderStatusService", () => {
         status_id: "status-456",
         order_uid: "550e8400-e29b-41d4-a716-446655440000",
         order_reference: 100001,
-        status_code: "completed",
+        status_code: OrderStatusCodes.COMPLETE,
         created_at: "2024-01-15T11:00:00Z",
         correlation_id: "corr-123",
       };
@@ -120,7 +121,7 @@ describe("OrderStatusService", () => {
       const result = await service.updateOrderStatus({
         orderId: "550e8400-e29b-41d4-a716-446655440000",
         orderReference: 100001,
-        statusCode: "completed",
+        statusCode: OrderStatusCodes.COMPLETE,
         createdAt: "2024-01-15T11:00:00Z",
         correlationId: "corr-123",
       });
@@ -131,7 +132,7 @@ describe("OrderStatusService", () => {
         [
           "550e8400-e29b-41d4-a716-446655440000",
           100001,
-          "completed",
+          OrderStatusCodes.COMPLETE,
           "2024-01-15T11:00:00Z",
           "corr-123",
         ],
@@ -144,7 +145,7 @@ describe("OrderStatusService", () => {
       await expect(
         service.updateOrderStatus({
           orderId: "order-123",
-          statusCode: "completed",
+          statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
           correlationId: "corr-123",
         } satisfies OrderStatusUpdateParams),
@@ -160,7 +161,7 @@ describe("OrderStatusService", () => {
       await expect(
         service.updateOrderStatus({
           orderId: "order-123",
-          statusCode: "completed",
+          statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
           correlationId: "corr-123",
         } satisfies OrderStatusUpdateParams),

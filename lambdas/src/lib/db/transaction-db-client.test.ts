@@ -1,3 +1,4 @@
+import { OrderStatusCodes } from "./order-status-db";
 import { TransactionService } from "./transaction-db-client";
 
 const mockQuery = jest.fn();
@@ -72,7 +73,7 @@ describe("TransactionService", () => {
       expect(mockQuery).toHaveBeenNthCalledWith(3, expect.any(String), [
         "order-1",
         123,
-        "GENERATED",
+        OrderStatusCodes.GENERATED,
         expect.any(String),
         correlationId,
       ]);

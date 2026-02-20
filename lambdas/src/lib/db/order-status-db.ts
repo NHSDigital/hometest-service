@@ -1,10 +1,23 @@
 import { DBClient } from "./db-client";
 
+export const OrderStatusCodes = {
+  GENERATED: "GENERATED",
+  QUEUED: "QUEUED",
+  PLACED: "PLACED",
+  ORDER_RECEIVED: "ORDER_RECEIVED",
+  DISPATCHED: "DISPATCHED",
+  RECEIVED: "RECEIVED",
+  COMPLETE: "COMPLETE",
+} as const;
+
+export type OrderStatusCode =
+  (typeof OrderStatusCodes)[keyof typeof OrderStatusCodes];
+
 export interface OrderStatusRow {
   status_id: string;
   order_uid: string;
   order_reference: number;
-  status_code: string;
+  status_code: OrderStatusCode;
   created_at: string;
   correlation_id: string;
 }
@@ -21,7 +34,7 @@ export interface OrderRow {
 export interface OrderStatusUpdateParams {
   orderId: string;
   orderReference?: number;
-  statusCode: string;
+  statusCode: OrderStatusCode;
   createdAt: string;
   correlationId: string;
 }

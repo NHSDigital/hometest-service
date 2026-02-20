@@ -1,5 +1,5 @@
 import { DBClient } from "./db-client";
-import { OrderStatusService } from "./order-status-db";
+import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
 
 export interface TransactionServiceProperties {
   dbClient: DBClient;
@@ -68,7 +68,7 @@ export class TransactionService {
         await orderStatusService.updateOrderStatus({
           orderId: order_uid,
           orderReference: order_reference,
-          statusCode: "GENERATED",
+          statusCode: OrderStatusCodes.GENERATED,
           createdAt: new Date().toISOString(),
           correlationId,
         });

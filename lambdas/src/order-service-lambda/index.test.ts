@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
+import { OrderStatusCodes } from "../lib/db/order-status-db";
 
 const mockInit = jest.fn();
 const mockCreatePatientAndOrder = jest.fn();
@@ -272,7 +273,7 @@ describe("order-service-lambda handler", () => {
       const orderStatusCallArg = mockUpdateOrderStatus.mock.calls[0][0];
       expect(orderStatusCallArg).toEqual({
         orderId: "order-123",
-        statusCode: "QUEUED",
+        statusCode: OrderStatusCodes.QUEUED,
         createdAt: expect.any(String),
         correlationId: "123e4567-e89b-12d3-a456-426614174123",
       });

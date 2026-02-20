@@ -9,6 +9,7 @@ import {
 import { init } from "./init";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
+import { OrderStatusCodes } from "../lib/db/order-status-db";
 
 const name = "order-service-lambda";
 const {
@@ -113,7 +114,7 @@ export const handler = async (
     try {
       await orderStatusService.updateOrderStatus({
         orderId: orderResult.orderUid,
-        statusCode: "QUEUED",
+        statusCode: OrderStatusCodes.QUEUED,
         createdAt: new Date().toISOString(),
         correlationId: correlationId,
       });
