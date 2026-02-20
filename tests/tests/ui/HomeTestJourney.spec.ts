@@ -24,7 +24,7 @@ test.describe('HIV Test Order journeys', () => {
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
-   test('Mobile number journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, enterMobileNumberPage }) => {
+   test('Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, enterMobileNumberPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
