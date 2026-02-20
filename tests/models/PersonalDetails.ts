@@ -1,4 +1,4 @@
-import personaldetails from '../test-data/personaldetails.json';
+import personalDetails from '../test-data/personalDetails.json';
 
 export interface PersonalDetails {
   mobileNumber: string;
@@ -16,7 +16,7 @@ export class PersonalDetailsModel implements PersonalDetails {
   }
 
   static getRandomPersonalDetails(): PersonalDetailsModel {
-    const randomIndex = Math.floor(Math.random() * personaldetails.length);
-    return new PersonalDetailsModel(personaldetails[randomIndex]);
+    const randomIndex = Math.floor(Math.random() * personalDetails.length);
+    return new PersonalDetailsModel(personalDetails[randomIndex]);
   }
 }
