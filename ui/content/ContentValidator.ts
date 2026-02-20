@@ -29,8 +29,10 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "no-address-found",
   "select-delivery-address",
   "how-comfortable-pricking-finger",
+  "enter-mobile-phone-number",
   "global-error",
   "order-tracking",
+  "blood-sample-guide",
 ];
 
 const isObject = (value: unknown): value is Record<string, unknown> =>

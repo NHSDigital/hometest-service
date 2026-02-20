@@ -7,7 +7,6 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await findAddressPage.clickEnterAddressManuallyLink();
-    // Wait for page to load
     await enterAddressManuallyPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(enterAddressManuallyPage.page, "Enter Address Manually Page");
     expect(accessErrors).toHaveLength(0);
