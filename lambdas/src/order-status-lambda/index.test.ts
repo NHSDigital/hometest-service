@@ -7,6 +7,8 @@ import {
   OrderStatusRow,
 } from "src/lib/db/order-status-db";
 
+import { IncomingBusinessStatus } from "./types";
+
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
 const mockGetOrder = jest.fn();
@@ -74,7 +76,7 @@ describe("Order Status Lambda Handler", () => {
 
   const validTaskBody: FHIRTask = {
     resourceType: "Task",
-    status: "COMPLETE",
+    status: "in-progress",
     intent: "order",
     basedOn: [
       {
@@ -87,7 +89,7 @@ describe("Order Status Lambda Handler", () => {
     authoredOn: "2024-01-15T09:00:00Z",
     lastModified: "2024-01-15T10:00:00Z",
     businessStatus: {
-      text: "DISPATCHED",
+      text: IncomingBusinessStatus.DISPATCHED,
     },
   };
 
@@ -135,7 +137,7 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if Task schema validation fails", async () => {
       mockEvent.body = JSON.stringify({
         resourceType: "Task",
-        status: "COMPLETE",
+        status: "in-progress",
         for: {
           reference: `Patient/${MOCK_PATIENT_UID}`,
         },
@@ -252,10 +254,10 @@ describe("Order Status Lambda Handler", () => {
       expect(body.issue[0].diagnostics).toContain("RECEIVED");
     });
 
-    it("should accept DISPATCHED business status", async () => {
+    it(`should accept ${IncomingBusinessStatus.DISPATCHED} business status`, async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        businessStatus: { text: "DISPATCHED" },
+        businessStatus: { text: IncomingBusinessStatus.DISPATCHED },
       } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -263,10 +265,10 @@ describe("Order Status Lambda Handler", () => {
       expect(result.statusCode).toBe(200);
     });
 
-    it("should accept RECEIVED business status", async () => {
+    it(`should accept ${IncomingBusinessStatus.RECEIVED_AT_LAB} business status`, async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        businessStatus: { text: "RECEIVED" },
+        businessStatus: { text: IncomingBusinessStatus.RECEIVED_AT_LAB },
       } satisfies Partial<FHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent);
@@ -410,7 +412,7 @@ describe("Order Status Lambda Handler", () => {
     it("should reject when both authoredOn and lastModified are missing", async () => {
       mockEvent.body = JSON.stringify({
         resourceType: "Task",
-        status: "COMPLETE",
+        status: "in-progress",
         intent: "order",
         basedOn: [
           {
@@ -444,7 +446,7 @@ describe("Order Status Lambda Handler", () => {
       const body = JSON.parse(result.body);
 
       expect(body.resourceType).toBe("Task");
-      expect(body.status).toBe("COMPLETE");
+      expect(body.status).toBe(validTaskBody.status);
       expect(body.for.reference).toBe(`Patient/${MOCK_PATIENT_UID}`);
     });
 
@@ -456,7 +458,7 @@ describe("Order Status Lambda Handler", () => {
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
           orderId: MOCK_ORDER_UID,
-          statusCode: "COMPLETE",
+          statusCode: validTaskBody.status,
           createdAt: validTaskBody.lastModified,
           correlationId: MOCK_CORRELATION_ID,
         }),

@@ -82,10 +82,18 @@ export interface FHIRIdentifier {
 
 // TODO: Verify if we should swap these with the true schema and map them in the lambda
 export type FHIRTaskStatus =
-  | "ORDER_RECEIVED"
-  | "DISPATCHED"
-  | "RECEIVED"
-  | "COMPLETE";
+  | "draft"
+  | "requested"
+  | "received"
+  | "accepted"
+  | "rejected"
+  | "ready"
+  | "cancelled"
+  | "in-progress"
+  | "on-hold"
+  | "failed"
+  | "completed"
+  | "entered-in-error";
 
 export type FHIRTaskIntent =
   | "proposal"

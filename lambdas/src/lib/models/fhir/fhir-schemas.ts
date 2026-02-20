@@ -98,11 +98,18 @@ export const FHIRTaskSchema = z.object({
   identifier: z.array(FHIRIdentifierSchema).optional(),
   basedOn: z.array(FHIRReferenceSchema).min(1),
   status: z.enum([
-    // TODO: Verify if we should swap these with the true schema and map them in the lambda
-    "ORDER_RECEIVED",
-    "DISPATCHED",
-    "RECEIVED",
-    "COMPLETE",
+    "draft",
+    "requested",
+    "received",
+    "accepted",
+    "rejected",
+    "ready",
+    "cancelled",
+    "in-progress",
+    "on-hold",
+    "failed",
+    "completed",
+    "entered-in-error",
   ]),
   intent: z.enum([
     "proposal",

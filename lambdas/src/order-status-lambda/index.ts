@@ -10,6 +10,10 @@ import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils";
+import {
+  AllowedInternalBusinessStatuses,
+  IncomingBusinessStatus,
+} from "./types";
 
 const commons = new ConsoleCommons();
 const name = "order-status-lambda";
@@ -140,7 +144,7 @@ export const handler = async (
 
     // Validate business status
     const businessStatusCode =
-      task.businessStatus?.text || task.businessStatus?.coding?.[0]?.code;
+      task.businessStatus?.text || task.businessStatus?.coding?.[0]?.code; // TODO: Verify we need to the code version
 
     if (!isValidBusinessStatus(businessStatusCode)) {
       commons.logError(name, "Invalid business status", {
@@ -150,7 +154,7 @@ export const handler = async (
       return createFhirErrorResponse(
         400,
         "invalid",
-        `Invalid business status: ${businessStatusCode}. Allowed values: DISPATCHED, RECEIVED`,
+        `Invalid business status: ${businessStatusCode}. Allowed values: ${Object.values(AllowedInternalBusinessStatuses).join(", ")}`,
         "error",
       );
     }
@@ -227,13 +231,18 @@ const extractIdFromReference = (reference: string): string | null => {
 /**
  * Validate business status against allowed domain-specific statuses
  */
-const isValidBusinessStatus = (businessStatus?: string): boolean => {
-  // Allowed business statuses from the AC3 requirement
-  const ALLOWED_BUSINESS_STATUSES = ["DISPATCHED", "RECEIVED"];
+const allowedBusinessStatusMapping: Record<
+  IncomingBusinessStatus,
+  AllowedInternalBusinessStatuses
+> = {
+  [IncomingBusinessStatus.DISPATCHED]:
+    AllowedInternalBusinessStatuses.DISPATCHED,
+  [IncomingBusinessStatus.RECEIVED_AT_LAB]:
+    AllowedInternalBusinessStatuses.RECEIVED,
+};
 
-  if (!businessStatus) {
-    return true; // Business status is optional
-  }
+export const isValidBusinessStatus = (status?: string): boolean => {
+  if (!status) return true;
 
-  return ALLOWED_BUSINESS_STATUSES.includes(businessStatus);
+  return Object.keys(allowedBusinessStatusMapping).includes(status);
 };
