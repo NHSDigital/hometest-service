@@ -1,15 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
-import { EnvironmentVariables } from "./init";
 import { HttpError } from "../lib/http/http-client";
 
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
 const mockSupplierAuthGetAccessToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
-const mockEnvironmentVariables: EnvironmentVariables =
-  {} as EnvironmentVariables;
+
 const supplierOrderBody = JSON.parse(
   readFileSync(
     join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"),
@@ -25,7 +23,6 @@ jest.mock("./init", () => ({
     supplierAuthClient: {
       getAccessToken: mockSupplierAuthGetAccessToken,
     },
-    environmentVariables: mockEnvironmentVariables,
     supplierDb: {
       getSupplierConfigBySupplierId: mockGetSupplierConfigBySupplierId,
     },
@@ -89,9 +86,6 @@ describe("order-router-lambda", () => {
     mockHttpClientPostRaw.mockReset();
     mockSupplierAuthGetAccessToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
-
-    // Set environment variables
-    mockEnvironmentVariables.DATABASE_URL = "postgres://user:pass@host:5432/db";
 
     process.env.AWS_REGION = "eu-west-2";
   });

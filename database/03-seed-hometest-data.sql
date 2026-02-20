@@ -26,8 +26,8 @@ VALUES (
   'https://www.preventx.com/',
   'test_supplier_client_secret',
   'preventx-client-id',
-  '/api/oauth',
-  '/api/order',
+  '/oauth/token',
+  '/order',
   'orders results'
 )
 ON CONFLICT (supplier_id) DO NOTHING;
