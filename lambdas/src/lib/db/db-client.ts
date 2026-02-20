@@ -13,6 +13,9 @@ export interface DBClient {
     text: string,
     values?: I,
   ): Promise<DbResult<T>>;
+  withTransaction<T>(
+    fn: (client: DBClient) => Promise<T>,
+  ): Promise<T>;
   close(): Promise<void>;
 }
 
@@ -40,6 +43,43 @@ export class PostgresDbClient implements DBClient {
       rows: result.rows as T[],
       rowCount: result.rowCount,
     };
+  }
+
+  async withTransaction<T>(
+    fn: (client: DBClient) => Promise<T>,
+  ): Promise<T> {
+    const client = await this.pool.connect();
+    const txClient: DBClient = {
+      query: async <Q = any, I extends any[] = any[]>(
+        text: string,
+        values?: I,
+      ): Promise<DbResult<Q>> => {
+        const result = await client.query(text, values as any[]);
+        return {
+          rows: result.rows as Q[],
+          rowCount: result.rowCount,
+        };
+      },
+      withTransaction: async <U>(nestedFn: (client: DBClient) => Promise<U>) =>
+        nestedFn(txClient),
+      close: async () => undefined,
+    };
+
+    try {
+      await client.query("BEGIN");
+      const result = await fn(txClient);
+      await client.query("COMMIT");
+      return result;
+    } catch (error) {
+      try {
+        await client.query("ROLLBACK");
+      } catch (rollbackError) {
+        console.error("Failed to rollback transaction", { rollbackError });
+      }
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async close(): Promise<void> {
