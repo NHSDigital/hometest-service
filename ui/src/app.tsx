@@ -19,6 +19,7 @@ import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journe
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
+import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 
 const router = createBrowserRouter([
   {
@@ -87,6 +88,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.EnterMobileNumber,
             element: <EnterMobileNumberPage />,
+          },
+          {
+            path: JourneyStepNames.CheckYourAnswers,
+            element: <CheckYourAnswersPage />,
           },
         ],
       },

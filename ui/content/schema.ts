@@ -306,6 +306,20 @@ export interface BloodSampleGuideContent {
   }>;
 }
 
+export interface CheckYourAnswersContent {
+  title: string;
+  updateMessage: string;
+  deliveryMessage: string;
+  summaryLabels: {
+    name: string;
+    deliveryAddress: string;
+    comfortableDoingTest: string;
+    mobileNumber: string;
+  };
+  changeLink: string;
+  submitButton: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -318,6 +332,7 @@ export interface PagesContent {
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
+  "check-your-answers": CheckYourAnswersContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "blood-sample-guide": BloodSampleGuideContent;

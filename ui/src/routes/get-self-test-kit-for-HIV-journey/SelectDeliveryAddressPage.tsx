@@ -22,7 +22,7 @@ interface AddressResult {
 }
 
 export default function SelectDeliveryAddressPage() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
 
@@ -65,7 +65,13 @@ export default function SelectDeliveryAddressPage() {
         },
       });
 
-      goToStep("how-comfortable-pricking-finger");
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep("how-comfortable-pricking-finger");
+      }
     }
   };
 

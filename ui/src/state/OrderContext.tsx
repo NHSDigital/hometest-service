@@ -17,6 +17,8 @@ export interface AuthUser {
   birthdate: string;
   identityProofingLevel: string;
   phoneNumber: string;
+  givenName: string;
+  familyName: string;
 }
 
 // Address structure

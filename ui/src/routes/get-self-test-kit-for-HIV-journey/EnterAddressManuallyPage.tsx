@@ -102,7 +102,7 @@ const validatePostcode = (postcode: string, validationMessages: ValidationMessag
 
 export default function EnterAddressManuallyPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { commonContent, "enter-address-manually": content } = useContent();
 
   const [addressLine1, setAddressLine1] = useState("");
@@ -181,7 +181,13 @@ export default function EnterAddressManuallyPage() {
       console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
-      goToStep("how-comfortable-pricking-finger");
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep("how-comfortable-pricking-finger");
+      }
     }
   };
 

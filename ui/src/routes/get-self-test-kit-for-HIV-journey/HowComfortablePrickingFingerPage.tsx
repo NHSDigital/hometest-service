@@ -9,7 +9,7 @@ import PageLayout from "@/layouts/PageLayout";
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 
 export default function HowComfortablePrickingFingerPage() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
@@ -33,7 +33,11 @@ export default function HowComfortablePrickingFingerPage() {
     console.log("[HowComfortablePrickingFingerPage] comfortableDoingTest:", orderAnswers);
 
     if (selectedOption === "Yes") {
-      if (orderAnswers.user?.phoneNumber) {
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else if (orderAnswers.user?.phoneNumber) {
         // goToStep("confirm-mobile-phone-number");
       } else {
         // User doesn't have phone number - route to enter
