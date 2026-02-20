@@ -268,6 +268,16 @@ export interface EnterMobilePhoneNumberContent {
   };
 }
 
+export interface ConfirmMobilePhoneNumberContent {
+  title: string;
+  description: string;
+  form: {
+    alternativeLabel: string;
+    alternativeInputLabel: string;
+    alternativeInputHint: string;
+  };
+}
+
 export interface GlobalErrorContent {
   title: string;
   message: string;
@@ -347,6 +357,7 @@ export interface PagesContent {
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "check-your-answers": CheckYourAnswersContent;
+  "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "blood-sample-guide": BloodSampleGuideContent;

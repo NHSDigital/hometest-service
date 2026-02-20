@@ -4,38 +4,9 @@ import { useState } from "react";
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
-import type { ValidationMessages } from "@/content/schema";
 import { JourneyStepNames } from "@/lib/models/route-paths";
+import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
 import PageLayout from "@/layouts/PageLayout";
-
-const UK_MOBILE_REGEX = /^(?:(?:\+44|0044|44)7\d{9}|07\d{9})$/;
-
-const validateMobileNumber = (
-  mobileNumber: string,
-  validationMessages: ValidationMessages
-): { valid: true; value: string } | { valid: false; message: string } => {
-  if (!mobileNumber || mobileNumber.trim() === "") {
-    return { valid: false, message: validationMessages.mobileNumber.required };
-  }
-
-  const trimmedNumber = mobileNumber.trim();
-  const normalisedNumber = trimmedNumber.replace(/[()\s-]/g, "");
-
-  if (!/^\+?\d+$/.test(normalisedNumber)) {
-    return { valid: false, message: validationMessages.mobileNumber.invalid };
-  }
-
-  const digitCount = normalisedNumber.replace(/\D/g, "").length;
-  if (digitCount > 15) {
-    return { valid: false, message: validationMessages.mobileNumber.invalid };
-  }
-
-  if (!UK_MOBILE_REGEX.test(normalisedNumber)) {
-    return { valid: false, message: validationMessages.mobileNumber.invalid };
-  }
-
-  return { valid: true, value: normalisedNumber };
-};
 
 export default function EnterMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
@@ -52,13 +23,15 @@ export default function EnterMobileNumberPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const mobileValidation = validateMobileNumber(mobileNumber, commonContent.validation);
+    const mobileNumberSchema = createMobileNumberSchema(commonContent.validation);
+    const result = mobileNumberSchema.safeParse(mobileNumber);
 
-    setMobileNumberError(mobileValidation.valid ? null : mobileValidation.message);
-
-    if (mobileValidation.valid) {
+    if (!result.success) {
+      setMobileNumberError(result.error.issues[0].message);
+    } else {
+      setMobileNumberError(null);
       const updatedData = {
-        mobileNumber: mobileValidation.value,
+        mobileNumber: result.data,
       };
       console.log("[EnterMobileNumberPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);

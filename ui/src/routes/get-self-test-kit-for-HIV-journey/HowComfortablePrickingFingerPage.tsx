@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Radios, Images, Button, ErrorSummary } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
@@ -38,13 +39,12 @@ export default function HowComfortablePrickingFingerPage() {
         setReturnToStep(null);
         goToStep(step);
       } else if (orderAnswers.user?.phoneNumber) {
-        // goToStep("confirm-mobile-phone-number");
+          goToStep(JourneyStepNames.ConfirmMobileNumber);
       } else {
-        // User doesn't have phone number - route to enter
-        goToStep("enter-mobile-phone-number");
+        goToStep(JourneyStepNames.EnterMobileNumber);
       }
     } else {
-      // goToStep("visit-nearest-clinic");
+      // goToStep(JourneyStepNames.VisitNearestClinic);
     }
   };
 
@@ -59,7 +59,7 @@ export default function HowComfortablePrickingFingerPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("enter-delivery-address");
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
         }
       }}>
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
@@ -106,7 +106,7 @@ export default function HowComfortablePrickingFingerPage() {
             href="blood-sample-guide"
             onClick={(e) => {
               e.preventDefault();
-              goToStep("blood-sample-guide");
+              goToStep(JourneyStepNames.BloodSampleGuide);
             }}
           >
             {commonContent.links.bloodSampleGuide.text}

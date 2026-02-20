@@ -15,4 +15,5 @@ export enum JourneyStepNames {
   BloodSampleGuide = "blood-sample-guide",
   EnterMobileNumber = "enter-mobile-phone-number",
   CheckYourAnswers = "check-your-answers",
+  ConfirmMobileNumber = "confirm-mobile-phone-number",
 }

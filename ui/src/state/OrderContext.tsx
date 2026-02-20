@@ -3,11 +3,11 @@
 // TODO: remove console.logs
 
 import {
+  ReactNode,
   createContext,
+  useCallback,
   useContext,
   useState,
-  useCallback,
-  ReactNode,
 } from "react";
 
 // Data from NHS Login auth response

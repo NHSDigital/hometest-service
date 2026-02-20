@@ -1,0 +1,27 @@
+{
+  "testCode": "31676001",
+  "testDescription": "HIV antigen test",
+  "supplierId": "c1a2b3c4-1234-4def-8abc-123456789abc",
+  "patient": {
+    "family": "Doe",
+    "given": ["Alex"],
+    "text": "Alex Doe",
+    "telecom": [
+      { "phone": "+447700900000" },
+      { "fax": "+441234567890" },
+      { "email": "alex.doe@example.com" },
+      { "pager": "123456" },
+      { "url": "https://alexdoe.example.com" },
+      { "sms": "+447700900001" },
+      { "other": "Contact via app" }
+    ],
+    "address": {
+      "line": ["123 Main Street", "Flat 4B"],
+      "city": "London",
+      "postalCode": "SW1A 1AA",
+      "country": "United Kingdom"
+    },
+    "birthDate": "1990-01-01",
+    "nhsNumber": "1234567890"
+  }
+}
