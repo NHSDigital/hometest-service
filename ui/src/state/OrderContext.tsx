@@ -38,13 +38,17 @@ export interface OrderAnswers {
   // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
+  selectedAddressUPRN?: string;
 
   // Final delivery address
   deliveryAddress?: Address;
+  addressEntryMethod?: 'postcode-search' | 'manual';
+  
   comfortableDoingTest?: string;
 
   // Mobile number
   mobileNumber?: string;
+  mobileNumberSource?: 'nhs-login' | 'manual';
 
   // Consent
   consentGiven?: boolean;

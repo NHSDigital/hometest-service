@@ -14,7 +14,7 @@ export default function HowComfortablePrickingFingerPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
-  const [selectedOption, setSelectedOption] = useState<string>("");
+  const [selectedOption, setSelectedOption] = useState<string>(orderAnswers.comfortableDoingTest || "");
   const [optionError, setOptionError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -125,10 +125,10 @@ export default function HowComfortablePrickingFingerPage() {
           error={optionError || undefined}
           onChange={handleRadioChange}
         >
-          <Radios.Radio value="Yes" hint={content.options.yes.hint}>
+          <Radios.Radio value="Yes" hint={content.options.yes.hint} checked={selectedOption === "Yes"}>
             {content.options.yes.text}
           </Radios.Radio>
-          <Radios.Radio value="No" hint={content.options.no.hint}>
+          <Radios.Radio value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>
             {content.options.no.text}
           </Radios.Radio>
         </Radios>

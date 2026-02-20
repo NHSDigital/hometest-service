@@ -26,7 +26,7 @@ export default function SelectDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
 
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN || "");
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const addresses = mockAddressResponse.results as AddressResult[];
@@ -63,6 +63,8 @@ export default function SelectDeliveryAddressPage() {
           postTown: selected.DPA.POST_TOWN,
           postcode: selected.DPA.POSTCODE,
         },
+        addressEntryMethod: 'postcode-search',
+        selectedAddressUPRN: selected.DPA.UPRN,
       });
 
       if (returnToStep) {
@@ -139,7 +141,11 @@ export default function SelectDeliveryAddressPage() {
             onChange={handleRadioChange}
           >
             {addresses.map((address) => (
-              <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
+              <Radios.Radio 
+                key={address.DPA.UPRN} 
+                value={address.DPA.UPRN}
+                checked={selectedAddress === address.DPA.UPRN}
+              >
                 {address.DPA.ADDRESS}
               </Radios.Radio>
             ))}

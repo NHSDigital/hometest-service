@@ -38,9 +38,28 @@ export default function CheckYourAnswersPage() {
   const [consentChecked, setConsentChecked] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
 
-  const handleChangeClick = (targetStep: string) => {
+  const handleChangeClick = (field: 'address' | 'mobile' | 'comfort') => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
-    goToStep(targetStep);
+    
+    if (field === 'address') {
+      // Route based on how address was entered
+      if (orderAnswers.addressEntryMethod === 'manual') {
+        goToStep(JourneyStepNames.EnterAddressManually);
+      } else {
+        // Default to select address (postcode search flow)
+        goToStep(JourneyStepNames.SelectDeliveryAddress);
+      }
+    } else if (field === 'mobile') {
+      // Route based on mobile number source
+      if (orderAnswers.mobileNumberSource === 'manual') {
+        goToStep(JourneyStepNames.EnterMobileNumber);
+      } else {
+        // NHS Login flow
+        goToStep(JourneyStepNames.ConfirmMobileNumber);
+      }
+    } else if (field === 'comfort') {
+      goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+    }
   };
 
   const handleConsentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +151,7 @@ export default function CheckYourAnswersPage() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleChangeClick(JourneyStepNames.EnterDeliveryAddress);
+                handleChangeClick('address');
               }}
             >
               {content.changeLink}
@@ -155,7 +174,7 @@ export default function CheckYourAnswersPage() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleChangeClick(JourneyStepNames.HowComfortablePrickingFinger);
+                handleChangeClick('comfort');
               }}
             >
               {content.changeLink}
@@ -174,7 +193,7 @@ export default function CheckYourAnswersPage() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleChangeClick(JourneyStepNames.EnterMobileNumber);
+                handleChangeClick('mobile');
               }}
             >
               {content.changeLink}

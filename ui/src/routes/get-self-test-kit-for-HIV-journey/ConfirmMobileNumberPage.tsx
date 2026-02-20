@@ -15,8 +15,16 @@ export default function ConfirmMobileNumberPage() {
 
   const nhsPhone = orderAnswers.user?.phoneNumber;
 
-  const [selectedOption, setSelectedOption] = useState<"nhs-mobile-number" | "other" | null>(null);
-  const [alternativeNumber, setAlternativeNumber] = useState("");
+  // Pre-populate based on existing data
+  const getInitialSelection = (): "nhs-mobile-number" | "other" | null => {
+    if (!orderAnswers.mobileNumber) return null;
+    if (orderAnswers.mobileNumberSource === 'nhs-login') return "nhs-mobile-number";
+    if (orderAnswers.mobileNumberSource === 'manual') return "other";
+    return null;
+  };
+
+  const [selectedOption, setSelectedOption] = useState<"nhs-mobile-number" | "other" | null>(getInitialSelection());
+  const [alternativeNumber, setAlternativeNumber] = useState(orderAnswers.mobileNumberSource === 'manual' ? orderAnswers.mobileNumber || "" : "");
   const [error, setError] = useState<string | null>(null);
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +47,7 @@ export default function ConfirmMobileNumberPage() {
     if (selectedOption === "nhs-mobile-number") {
       updateOrderAnswers({
         mobileNumber: nhsPhone,
+        mobileNumberSource: 'nhs-login',
       });
 
       goToStep(JourneyStepNames.CheckYourAnswers);
@@ -52,6 +61,7 @@ export default function ConfirmMobileNumberPage() {
         setError(null);
         updateOrderAnswers({
           mobileNumber: result.data,
+          mobileNumberSource: 'manual',
         });
 
         goToStep(JourneyStepNames.CheckYourAnswers);
