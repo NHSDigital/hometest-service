@@ -39,6 +39,9 @@ export interface OrderAnswers {
     code: string;
     region: string;
   };
+
+  // Mobile number
+  mobileNumber?: string;
 }
 
 interface CreateOrderContextType {
