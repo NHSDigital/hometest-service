@@ -10,7 +10,6 @@ test.describe('Accessibility Testing @accessibility', () => {
     await homeTestStartPage.clickStartNowButton();
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    // Wait for page to load
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(howComfortablePrickingFingerPage.page, "How Comfortable Pricking Finger Page");
     expect(accessErrors).toHaveLength(0);
