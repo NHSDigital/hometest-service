@@ -297,11 +297,6 @@ resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
   batch_size       = 1
 }
 
-# SQS Queue for order results
-resource "aws_sqs_queue" "order_results" {
-  name = "${var.project_name}-order-results"
-}
-
 module "order_result_lambda" {
   source = "./modules/lambda"
 
