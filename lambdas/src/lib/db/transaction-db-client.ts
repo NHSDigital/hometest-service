@@ -1,4 +1,5 @@
 import { DBClient } from "./db-client";
+import { OrderStatusService } from "./order-status-db";
 
 export interface TransactionServiceProperties {
   dbClient: DBClient;
@@ -21,10 +22,12 @@ export class TransactionService {
     birthDate: string,
     supplierId: string,
     testCode: string,
+    correlationId: string,
     originator?: string,
   ): Promise<CreateOrderResult> {
     try {
       return await this.dbClient.withTransaction(async (tx) => {
+        // ALPHA: consider refactoring to use a dedicated patient service and order service to encapsulate this logic and make it more testable
         const patientQuery = `
           INSERT INTO hometest.patient_mapping (nhs_number, birth_date)
           VALUES ($1, $2)
@@ -61,20 +64,14 @@ export class TransactionService {
 
         const { order_uid, order_reference } = orderResult.rows[0];
 
-        const orderStatusQuery = `
-          INSERT INTO hometest.order_status (order_uid, order_reference, status_code)
-          VALUES ($1, $2, $3)
-          RETURNING status_id;
-        `;
-
-        const statusResult = await tx.query<
-          { status_id: string },
-          [string, number, string]
-        >(orderStatusQuery, [order_uid, order_reference, "GENERATED"]);
-
-        if (statusResult.rowCount === 0 || !statusResult.rows[0]) {
-          throw new Error("Failed to create order status");
-        }
+        const orderStatusService = new OrderStatusService(tx);
+        await orderStatusService.updateOrderStatus({
+          orderId: order_uid,
+          orderReference: order_reference,
+          statusCode: "GENERATED",
+          createdAt: new Date().toISOString(),
+          correlationId,
+        });
 
         return {
           orderUid: order_uid,

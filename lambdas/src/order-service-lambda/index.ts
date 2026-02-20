@@ -80,6 +80,7 @@ export const handler = async (
       orderRequest.patient.birthDate,
       orderRequest.supplierId,
       orderRequest.testCode,
+      correlationId,
     );
 
     const orderBody = buildFhirServiceRequest(

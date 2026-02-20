@@ -27,6 +27,7 @@ describe("TransactionService", () => {
     const birthDate = "1990-01-01";
     const supplierId = "SUP001";
     const testCode = "TEST001";
+    const correlationId = "corr-123";
 
     it("should create patient and order successfully", async () => {
       mockQuery
@@ -48,6 +49,7 @@ describe("TransactionService", () => {
         birthDate,
         supplierId,
         testCode,
+        correlationId,
       );
 
       expect(result).toEqual({
@@ -71,6 +73,8 @@ describe("TransactionService", () => {
         "order-1",
         123,
         "GENERATED",
+        expect.any(String),
+        correlationId,
       ]);
     });
 
@@ -94,6 +98,7 @@ describe("TransactionService", () => {
         birthDate,
         supplierId,
         testCode,
+        correlationId,
         "originator-1",
       );
 
@@ -114,6 +119,7 @@ describe("TransactionService", () => {
           birthDate,
           supplierId,
           testCode,
+          correlationId,
         ),
       ).rejects.toThrow(/Failed to create patient and order in database/);
     });
@@ -135,6 +141,7 @@ describe("TransactionService", () => {
           birthDate,
           supplierId,
           testCode,
+          correlationId,
         ),
       ).rejects.toThrow(/Failed to create patient and order in database/);
     });
@@ -160,6 +167,7 @@ describe("TransactionService", () => {
           birthDate,
           supplierId,
           testCode,
+          correlationId,
         ),
       ).rejects.toThrow(/Failed to create patient and order in database/);
     });
@@ -173,6 +181,7 @@ describe("TransactionService", () => {
           birthDate,
           supplierId,
           testCode,
+          correlationId,
         ),
       ).rejects.toThrow(/Failed to create patient and order in database/);
     });
