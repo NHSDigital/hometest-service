@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { EnvironmentVariables, availableEnvironments, Environment } from './environment-variables';
 
+export { EnvironmentVariables };
 
 export enum AuthType {
   SANDBOX = 'sandbox'
