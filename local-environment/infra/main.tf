@@ -129,6 +129,24 @@ resource "aws_iam_role_policy" "lambda_secrets_read" {
   })
 }
 
+resource "aws_iam_role_policy" "lambdas_sqs_publish" {
+  name = "${var.project_name}-lambdas-sqs-publish"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = aws_sqs_queue.order_placement.arn
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "api" {
   name        = "${var.project_name}-api"
   description = "API Gateway for ${var.project_name}"
@@ -324,8 +342,9 @@ module "order_service_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    NODE_OPTIONS              = "--enable-source-maps"
+    DATABASE_URL              = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
   }
 }
 
