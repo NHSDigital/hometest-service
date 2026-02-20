@@ -4,7 +4,7 @@ import { AddressModel } from '../../models';
 
 test.describe('Accessibility Testing @accessibility', () => {
 
-  test('Select Delivery Address Page', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, accessibility, enterMobileNumberPage, howComfortablePrickingFingerPage }) => {
+  test('Enter mobile number scenario', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, accessibility, enterMobileNumberPage, howComfortablePrickingFingerPage }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     const randomAddress = AddressModel.getRandomAddress();
