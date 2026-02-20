@@ -7,6 +7,7 @@ import { init } from './init';
 import { OrderResultSummary } from '../lib/db/order-db';
 import { FHIRObservationSchema, FHIRReferenceSchema, FHIRCodeableConceptSchema } from 'src/lib/models/fhir/fhir-schemas';
 import {getCorrelationIdFromEventHeaders} from "../lib/utils";
+import { OrderStatus, ResultStatus } from 'src/lib/types/status';
 
 const { commons, orderService } = init();
 
@@ -29,12 +30,14 @@ const orderResultFHIRObservationSchema = FHIRObservationSchema.extend({
   interpretation: z.array(orderResultInterpretationCodingSchema),
 })
 
-const RESULT_AVAILABLE = 'RESULT_AVAILABLE';
-const RESULT_WITHHELD = 'RESULT_WITHHELD';
+enum InterpretationCode {
+  Normal = 'N',
+  Abnormal = 'A',
+}
 
-const resultCodeMapping: { [key: string]: string } = {
-  'N': RESULT_AVAILABLE,
-  'A': RESULT_WITHHELD,
+const resultCodeMapping: { [key in InterpretationCode ]: string } = {
+  [InterpretationCode.Normal]: ResultStatus.Result_Available,
+  [InterpretationCode.Abnormal]: ResultStatus.Result_Withheld,
 };
 
 interface Identifiers {
@@ -121,8 +124,8 @@ function extractSupplierIdFromFHIRObservation(observation: Observation): string 
   return parts[1];
 }
 
-function extractInterpretationCodeFromFHIRObservation(observation: Observation): string {
-  return observation.interpretation![0].coding![0].code!;
+function extractInterpretationCodeFromFHIRObservation(observation: Observation): InterpretationCode {
+  return observation.interpretation![0].coding![0].code as InterpretationCode;
 }
 
 function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { validateObservationErrorResponse: APIGatewayProxyResult | null, observation?: Observation, identifiers?: Identifiers } {
@@ -157,7 +160,7 @@ function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { val
     orderUid,
     patientId,
     supplierId,
-    correlationId
+    correlationId,
   };
 
   return {
@@ -205,17 +208,14 @@ async function validateDBData(
   return null;
 }
 
-function updateDatabase(identifiers: Identifiers, interpretationCode: string): void {
-  if (interpretationCode === 'N') {
-    // Update DB: order_status to 'COMPLETE', result_status to 'RESULT_AVAILABLE'
-    orderService.updateOrderStatusAndResultStatus(identifiers.orderUid, 'COMPLETE', RESULT_AVAILABLE, identifiers.correlationId);
+function updateDatabase(identifiers: Identifiers, interpretationCode: InterpretationCode, orderReference: string): void {
+  if (interpretationCode === InterpretationCode.Normal) {
+    orderService.updateOrderStatusAndResultStatus(identifiers.orderUid, orderReference, OrderStatus.Complete, ResultStatus.Result_Available, identifiers.correlationId);
   }
 
-  if (interpretationCode === 'A') {
-    // Update DB: result_status to 'RESULT_WITHHELD'
-    orderService.updateResultStatus(identifiers.orderUid, RESULT_WITHHELD, identifiers.correlationId);
+  if (interpretationCode === InterpretationCode.Abnormal) {
+    orderService.updateResultStatus(identifiers.orderUid, ResultStatus.Result_Withheld, identifiers.correlationId);
   }
-
 }
 
 /**
@@ -241,7 +241,6 @@ export const handler = async (
     return validateObservationErrorResponse;
   }
 
-  // get test_order via orderUid, if not found return 404
   const testOrderResult: OrderResultSummary | null = await orderService.retrieveOrderDetails(identifiers!.orderUid);
 
   if (!testOrderResult) {
@@ -262,7 +261,7 @@ export const handler = async (
   const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation!);
 
   try{
-    updateDatabase(identifiers!, interpretationCode);
+    updateDatabase(identifiers!, interpretationCode, testOrderResult.order_reference);
   } catch (error) {
     commons.logError('order-result-lambda', 'Database update failed', { error });
     return createFhirErrorResponse(500, 'exception', 'An internal error occurred', 'fatal');
