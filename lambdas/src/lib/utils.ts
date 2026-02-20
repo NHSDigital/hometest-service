@@ -4,6 +4,7 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
 } from "aws-lambda/trigger/api-gateway-proxy";
+import { z } from "zod";
 
 // ALPHA: Reimplentation needed with lambdas (nhslogin init.ts)
 const alwaysUppercase = new Set(["UK", "NHS"]);
@@ -148,3 +149,7 @@ export const createJsonResponse = (
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(body),
 });
+
+export const generateReadableError = (error: z.ZodError) => {
+  return z.prettifyError(error).replace(/(?:\u2716 |\r?\n )/g, '');
+};
