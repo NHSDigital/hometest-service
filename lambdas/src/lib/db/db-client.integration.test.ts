@@ -7,7 +7,7 @@ describe("PostgresDbClient Integration Tests", () => {
 
   beforeAll(async () => {
     // Start a real PostgreSQL container
-    container = await new PostgreSqlContainer("postgres:16-alpine")
+    container = await new PostgreSqlContainer("postgres:17.7-alpine")
       .withDatabase("testdb")
       .withUsername("testuser")
       .withPassword("testpass")
