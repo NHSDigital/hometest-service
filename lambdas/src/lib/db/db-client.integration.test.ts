@@ -39,6 +39,8 @@ describe("PostgresDbClient Integration Tests", () => {
     await client.query("DELETE FROM test_users");
   });
 
+  // ALPHA: consider calling postgres more directly in some tests to verify connection pooling and transaction behavior more deeply, rather than relying solely on the client abstraction. This could help identify any issues with connection management or transaction handling that might not be apparent through the client interface alone.
+
   describe("Transaction Atomicity", () => {
     it("should rollback all changes when transaction fails", async () => {
       // Verify table is empty
