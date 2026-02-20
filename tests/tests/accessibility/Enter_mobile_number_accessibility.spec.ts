@@ -12,7 +12,7 @@ test.describe('Accessibility Testing @accessibility', () => {
     await selectDeliveryAddressPage.waitUntilPageLoad();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
-    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();      
+    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
     await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress);
     const accessErrors = await accessibility.runAccessibilityCheck(enterMobileNumberPage.page, "Enter Mobile Number Page");
     expect(accessErrors).toHaveLength(0);
