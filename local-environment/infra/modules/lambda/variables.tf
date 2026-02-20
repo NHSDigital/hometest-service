@@ -56,3 +56,9 @@ variable "cors_allow_methods" {
   type    = list(string)
   default = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }
+
+variable "timeout" {
+  type        = number
+  default     = 10
+  description = "Lambda function timeout in seconds (default: 10)"
+}
