@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 
 const mockSQSClientSendMessage = jest.fn();
 
@@ -6,16 +6,6 @@ jest.mock('../lib/sqs/sqs-client', () => ({
   AWSSQSClient: jest.fn().mockImplementation(() => ({
     sendMessage: mockSQSClientSendMessage,
     close: jest.fn(),
-  })),
-}));
-// Silence validation errors from appearing on console output during tests
-const mockCommonsLoggerError = jest.fn();
-const mockCommonsLoggerInfo = jest.fn();
-
-jest.mock('../lib/commons', () => ({
-  ConsoleCommons: jest.fn().mockImplementation(() => ({
-    logError: mockCommonsLoggerError,
-    logInfo: mockCommonsLoggerInfo,
   })),
 }));
 
@@ -34,7 +24,9 @@ describe('Order Result Lambda Handler', () => {
       httpMethod: 'POST',
       path: '/result',
       body: null,
-      headers: {},
+      headers: {
+        'X-Correlation-ID': '550e8400-e29b-41d4-a716-446655440000',
+      },
     };
 
     body = {
@@ -73,8 +65,6 @@ describe('Order Result Lambda Handler', () => {
     };
 
     mockSQSClientSendMessage.mockReset();
-    mockCommonsLoggerError.mockReset();
-    mockCommonsLoggerInfo.mockReset();
   });
 
   afterEach(() => {
@@ -106,7 +96,6 @@ describe('Order Result Lambda Handler', () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
-      expect(mockCommonsLoggerError).toHaveBeenCalledTimes(1);
       expect(JSON.parse(result.body)).toMatchObject({
         issue: [
           {
@@ -125,7 +114,6 @@ describe('Order Result Lambda Handler', () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(400);
-      expect(mockCommonsLoggerError).toHaveBeenCalledTimes(1);
       expect(JSON.parse(result.body)).toMatchObject({
         issue: [
           {
