@@ -14,7 +14,7 @@ test.describe('Accessibility Testing @accessibility', () => {
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();      
     await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress);
-    const accessErrors2 = await accessibility.runAccessibilityCheck(enterMobileNumberPage.page, "Enter Mobile Number Page");
-    expect(accessErrors2).toHaveLength(0);
+    const accessErrors = await accessibility.runAccessibilityCheck(enterMobileNumberPage.page, "Enter Mobile Number Page");
+    expect(accessErrors).toHaveLength(0);
   });
 });
