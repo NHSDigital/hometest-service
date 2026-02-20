@@ -178,6 +178,7 @@ module "login_lambda" {
   api_path                      = "login"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
   http_method                   = "POST"
+  timeout                       = 30
 
   enable_cors            = true
   cors_allow_origin      = "http://localhost:3000"
@@ -339,6 +340,16 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.order_service_lambda,
     module.session_lambda
   ]
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      module.eligibility_test_info_lambda,
+      module.order_result_lambda,
+      module.login_lambda,
+      module.order_service_lambda,
+      module.session_lambda,
+    ]))
+  }
 
   lifecycle {
     create_before_destroy = true
