@@ -16,4 +16,14 @@ regexes = [
 ]
 
 [allowlist]
-paths = ['''.terraform.lock.hcl''', '''poetry.lock''', '''yarn.lock''', '''local-environment/*''', '''lambdas/.*\.test\..*''', '''tests/playwright.config.ts''', '''ui/.next/*''', '''ui/build/*''', '''cdk.out/*''', '''lambdas/dist/*''']
+paths = [
+  '''.terraform.lock.hcl''',
+  '''poetry.lock''',
+  '''yarn.lock''',
+  '''local-environment/*''',
+  '''lambdas/.*\.test\..*''', '''lambdas/dist/*''',
+  '''tests/playwright.config.ts''',
+  '''ui/.next/*''', '''ui/build/*''',
+  '''cdk.out/*''',
+  '''.idea/*'''
+]
