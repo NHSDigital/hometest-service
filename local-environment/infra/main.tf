@@ -333,6 +333,16 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.session_lambda
   ]
 
+  triggers = {
+    redeployment = sha1(jsonencode([
+      module.eligibility_test_info_lambda,
+      module.order_result_lambda,
+      module.login_lambda,
+      module.order_service_lambda,
+      module.session_lambda,
+    ]))
+  }
+
   lifecycle {
     create_before_destroy = true
   }
