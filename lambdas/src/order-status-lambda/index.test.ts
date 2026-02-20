@@ -12,7 +12,6 @@ const mockGetCorrelationIdFromEventHeaders = jest.fn();
 const mockGetOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockUpdateOrderStatus = jest.fn();
-const mockIsValidBusinessStatus = jest.fn();
 
 jest.mock("../lib/utils", () => ({
   ...jest.requireActual("../lib/utils"),
@@ -25,7 +24,6 @@ jest.mock("../lib/db/order-status-db", () => ({
     getOrder: mockGetOrder,
     checkIdempotency: mockCheckIdempotency,
     updateOrderStatus: mockUpdateOrderStatus,
-    isValidBusinessStatus: mockIsValidBusinessStatus,
   })),
 }));
 
@@ -67,7 +65,6 @@ describe("Order Status Lambda Handler", () => {
     } satisfies OrderRow);
 
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
-    mockIsValidBusinessStatus.mockReturnValue(true);
     mockUpdateOrderStatus.mockResolvedValue({
       order_uid: MOCK_ORDER_UID,
       status_code: "completed",
@@ -239,8 +236,6 @@ describe("Order Status Lambda Handler", () => {
 
   describe("Business Status Validation", () => {
     it("should return 400 for invalid business status", async () => {
-      mockIsValidBusinessStatus.mockReturnValueOnce(false);
-
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         businessStatus: { text: "INVALID_STATUS" },
@@ -266,7 +261,6 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
-      expect(mockIsValidBusinessStatus).toHaveBeenCalledWith("DISPATCHED");
     });
 
     it("should accept RECEIVED business status", async () => {
@@ -278,7 +272,6 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent);
 
       expect(result.statusCode).toBe(200);
-      expect(mockIsValidBusinessStatus).toHaveBeenCalledWith("RECEIVED");
     });
 
     it("should allow missing business status", async () => {

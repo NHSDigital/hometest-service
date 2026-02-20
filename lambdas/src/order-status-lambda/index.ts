@@ -142,7 +142,7 @@ export const handler = async (
     const businessStatusCode =
       task.businessStatus?.text || task.businessStatus?.coding?.[0]?.code;
 
-    if (!orderStatusDb.isValidBusinessStatus(businessStatusCode)) {
+    if (!isValidBusinessStatus(businessStatusCode)) {
       commons.logError(name, "Invalid business status", {
         businessStatus: businessStatusCode,
       });
@@ -222,4 +222,18 @@ const extractIdFromReference = (reference: string): string | null => {
   const parts = reference.split("/");
 
   return parts.length === 2 ? parts[1] : null;
+};
+
+/**
+ * Validate business status against allowed domain-specific statuses
+ */
+const isValidBusinessStatus = (businessStatus?: string): boolean => {
+  // Allowed business statuses from the AC3 requirement
+  const ALLOWED_BUSINESS_STATUSES = ["DISPATCHED", "RECEIVED"];
+
+  if (!businessStatus) {
+    return true; // Business status is optional
+  }
+
+  return ALLOWED_BUSINESS_STATUSES.includes(businessStatus);
 };
