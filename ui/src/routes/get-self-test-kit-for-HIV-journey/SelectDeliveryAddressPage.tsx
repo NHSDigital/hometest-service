@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -65,7 +64,6 @@ export default function SelectDeliveryAddressPage() {
         // ALPHA: ToDo error screen thrown here:
         return null;
       }
-
       console.log("Eligibility lookup response:", laResponse);
 
       updateOrderAnswers({

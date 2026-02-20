@@ -60,6 +60,7 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(400);
     expect(JSON.parse(result.body)).toEqual({ error: "Invalid postcode format" });
+    // logError is not called for 400 errors
   });
 
   it("returns 500 if no local authority found", async () => {
