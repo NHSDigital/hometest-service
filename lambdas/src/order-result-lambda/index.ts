@@ -1,13 +1,14 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { Observation } from 'fhir/r4';
 import { z } from 'zod';
-import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
+import { createFhirErrorResponse, createFhirResponse, ErrorStatusCode } from '../lib/fhir-response';
 import { isUUID } from 'src/lib/utils';
 import { init } from './init';
 import { OrderResultSummary } from '../lib/db/order-db';
 import { FHIRObservationSchema, FHIRReferenceSchema, FHIRCodeableConceptSchema } from 'src/lib/models/fhir/fhir-schemas';
 import {getCorrelationIdFromEventHeaders} from "../lib/utils";
 import { OrderStatus, ResultStatus } from 'src/lib/types/status';
+
 
 const { commons, orderService } = init();
 
@@ -45,6 +46,15 @@ interface Identifiers {
   patientId: string;
   supplierId: string;
   correlationId: string;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  isIdempotent?: boolean;
+  errorCode?: ErrorStatusCode;
+  errorType?: 'not-found' | 'invalid' | 'forbidden' | 'conflict';
+  errorMessage?: string;
+  severity?: 'error' | 'warning' | 'information';
 }
 
 const generateReadableError = (error: z.ZodError) => {
@@ -128,11 +138,19 @@ function extractInterpretationCodeFromFHIRObservation(observation: Observation):
   return observation.interpretation![0].coding![0].code as InterpretationCode;
 }
 
-function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { validateObservationErrorResponse: APIGatewayProxyResult | null, observation?: Observation, identifiers?: Identifiers } {
+function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { validationResult: ValidationResult, observation?: Observation, identifiers?: Identifiers } {
   try {
     validateBody(event.body);
   } catch (error) {
-    return { validateObservationErrorResponse: createFhirErrorResponse(400, 'invalid', (error as Error).message, 'error')};
+    return { 
+      validationResult: { 
+        isValid: false, 
+        errorCode: 400, 
+        errorType: 'invalid', 
+        errorMessage: (error as Error).message, 
+        severity: 'error' 
+      } 
+    };
   }
 
   const observation: Observation = JSON.parse(event.body!);
@@ -142,7 +160,15 @@ function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { val
     correlationId = getCorrelationIdFromEventHeaders(event);
   } catch (error) {
     commons.logError('order-result-lambda', 'Header validation failed', { error: (error as Error).message });
-    return { validateObservationErrorResponse: createFhirErrorResponse(400, 'invalid', (error as Error).message, 'error') };
+    return { 
+      validationResult: { 
+        isValid: false, 
+        errorCode: 400, 
+        errorType: 'invalid', 
+        errorMessage: (error as Error).message, 
+        severity: 'error' 
+      } 
+    };
   }
 
   let orderUid: string, patientId: string, supplierId: string;
@@ -153,7 +179,16 @@ function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { val
     supplierId = extractSupplierIdFromFHIRObservation(observation);
   } catch (error) {
     commons.logError('order-result-lambda', 'Error extracting identifiers from Observation', { error });
-    return { validateObservationErrorResponse: createFhirErrorResponse(400, 'invalid', 'Unable to extract necessary identifiers from Observation', 'error') };
+
+    return {
+      validationResult: {
+        isValid: false,
+        errorCode: 400,
+        errorType: 'invalid',
+        errorMessage: 'Unable to extract necessary identifiers from Observation',
+        severity: 'error',
+      }
+    };
   }
 
   const identifiers: Identifiers = {
@@ -164,7 +199,7 @@ function extractAndValidateObservationFields(event: APIGatewayProxyEvent): { val
   };
 
   return {
-    validateObservationErrorResponse: null,
+    validationResult: { isValid: true },
     observation,
     identifiers,
   };
@@ -174,38 +209,66 @@ async function validateDBData(
   identifiers: Identifiers,
   observation: Observation,
   testOrderResult: OrderResultSummary,
-): Promise<APIGatewayProxyResult | null> {
+): Promise<ValidationResult> {
 
   const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation);
   const { orderUid, patientId, supplierId, correlationId } = identifiers;
 
   if (!testOrderResult) {
     commons.logError('order-result-lambda', 'Test order not found for orderUid', { orderUid });
-    return createFhirErrorResponse(404, 'not-found', `No order found for orderUid ${orderUid}`, 'error');
+    return { 
+      isValid: false, 
+      errorCode: 404, 
+      errorType: 'not-found', 
+      errorMessage: `No order found for orderUid ${orderUid}`, 
+      severity: 'error' 
+    };
   }
 
   // Idempotency check
-  if (testOrderResult.correlation_id && testOrderResult.correlation_id === correlationId) { //TODO: double check if the itempotency check logic is correct
+  if (testOrderResult.correlation_id && testOrderResult.correlation_id === correlationId) {
     if (resultCodeMapping[interpretationCode] !== testOrderResult.result_status) {
       commons.logError('order-result-lambda', 'Idempotency check failed, different result detected on same correlation ID.', { orderUid, correlationId });
-      return createFhirErrorResponse(409, 'conflict', 'A different result has already been submitted for this order with the same correlation ID', 'error');
+      return {
+        isValid: false,
+        errorCode: 409,
+        errorType: 'conflict',
+        errorMessage: 'A different result has already been submitted for this order with the same correlation ID',
+        severity: 'error',
+        isIdempotent: true,
+      }
     }
 
     commons.logInfo('order-result-lambda', 'Duplicate submission with same correlation ID detected, returning success without reprocessing', { orderUid, correlationId });
-    return createFhirResponse(201, observation);
+    return {
+      isValid: true,
+      isIdempotent: true,
+    }
   }
 
   if (testOrderResult.patient_uid !== patientId ) {
     commons.logError('order-result-lambda', 'Patient ID in Observation does not match test order record', { orderUid, patientId });
-    return createFhirErrorResponse(400, 'invalid', 'Patient ID in Observation does not match order', 'error');
+    return { 
+      isValid: false, 
+      errorCode: 400, 
+      errorType: 'invalid', 
+      errorMessage: 'Patient ID in Observation does not match order record', 
+      severity: 'error' 
+    };
   }
 
   if (testOrderResult.supplier_id !== supplierId) {
     commons.logError('order-result-lambda', 'Supplier ID in Observation does not match test order record', { orderUid, supplierId });
-    return createFhirErrorResponse(403, 'forbidden', 'Supplier not authorized for this order', 'error');
+    return { 
+      isValid: false, 
+      errorCode: 403, 
+      errorType: 'forbidden', 
+      errorMessage: 'Supplier not authorized for this order', 
+      severity: 'error' 
+    };
   }
 
-  return null;
+  return { isValid: true };
 }
 
 function updateDatabase(identifiers: Identifiers, interpretationCode: InterpretationCode, orderReference: string): void {
@@ -232,13 +295,13 @@ export const handler = async (
   });
 
   const {
-    validateObservationErrorResponse,
+    validationResult,
     observation,
     identifiers
   } = extractAndValidateObservationFields(event);
 
-  if (validateObservationErrorResponse) {
-    return validateObservationErrorResponse;
+  if (!validationResult.isValid) {
+    return createFhirErrorResponse(validationResult.errorCode as ErrorStatusCode, validationResult.errorType!, validationResult.errorMessage!, validationResult.severity);
   }
 
   const testOrderResult: OrderResultSummary | null = await orderService.retrieveOrderDetails(identifiers!.orderUid);
@@ -248,14 +311,18 @@ export const handler = async (
     return createFhirErrorResponse(404, 'not-found', `No order found for orderUid ${identifiers!.orderUid}`, 'error');
   }
 
-  const dbValidationErrorResponse = await validateDBData(
+  const dbValidationResult = await validateDBData(
     identifiers!,
     observation!,
     testOrderResult,
   );
 
-  if (dbValidationErrorResponse) {
-    return dbValidationErrorResponse;
+  if (!dbValidationResult.isValid) {
+    return createFhirErrorResponse(dbValidationResult.errorCode!, dbValidationResult.errorType!, dbValidationResult.errorMessage!, dbValidationResult.severity);
+  }
+
+  if (dbValidationResult.isIdempotent) {
+    return createFhirResponse(201, observation!);
   }
 
   const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation!);
