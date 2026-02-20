@@ -11,6 +11,11 @@ export enum EnvironmentVariables {
   EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC = 'EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC',
   EXTERNAL_LINK_NEAREST_AE = 'EXTERNAL_LINK_NEAREST_AE',
   EXTERNAL_LINK_HIV_AIDS_INFO = 'EXTERNAL_LINK_HIV_AIDS_INFO',
+  DB_HOST     = 'DB_HOST',
+  DB_PORT     = 'DB_PORT',
+  DB_NAME     = 'DB_NAME',
+  DB_USER     = 'DB_USER',
+  DB_PASSWORD = 'DB_PASSWORD',
 }
 
 export const availableEnvironments = ['local','dev'] as const;

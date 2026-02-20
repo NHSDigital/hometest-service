@@ -10,7 +10,6 @@ test.describe('HIV Start Test Page', () => {
     await homeTestStartPage.navigate();
   });
 
-
   test('Opening external links', async ({ homeTestStartPage }) => {
     await homeTestStartPage.waitUntilPageLoad();
 
@@ -38,5 +37,4 @@ test.describe('HIV Start Test Page', () => {
     expect(homeTestStartPage.page.url()).toBe(hivAidsInfoUrl);
     await homeTestStartPage.page.goBack();
   });
-
 });
