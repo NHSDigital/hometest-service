@@ -80,7 +80,6 @@ export interface FHIRIdentifier {
   use?: "usual" | "official" | "temp" | "secondary" | "old";
 }
 
-// TODO: Verify if we should swap these with the true schema and map them in the lambda
 export type FHIRTaskStatus =
   | "draft"
   | "requested"
