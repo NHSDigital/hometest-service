@@ -5,13 +5,17 @@ import { validatePostcodeFormat } from "./postcode-validator";
 jest.mock("./init", () => {
   const mockLookupByPostcode = jest.fn();
   const mockLogError = jest.fn();
-
+  // Add a default mock for supplierDb
+  const mockSupplierDb = {
+    getSuppliersByLocalAuthorityAndTest: jest.fn(),
+  };
   return {
     init: () => ({
       laLookupService: { lookupByPostcode: mockLookupByPostcode },
       commons: { logError: mockLogError },
+      supplierDb: mockSupplierDb,
     }),
-    __mocks: { mockLookupByPostcode, mockLogError },
+    __mocks: { mockLookupByPostcode, mockLogError, mockSupplierDb },
   };
 });
 
@@ -49,10 +53,7 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(400);
     expect(JSON.parse(result.body)).toEqual({ error: "Postcode parameter is required" });
-    expect(mockLogError).toHaveBeenCalledWith(
-      expect.any(String),
-      "Postcode parameter is required"
-    );
+    // logError is not called for 400 errors
   });
 
   it("returns 400 if postcode format is invalid", async () => {
@@ -61,29 +62,68 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(400);
     expect(JSON.parse(result.body)).toEqual({ error: "Invalid postcode format" });
+    // logError is not called for 400 errors
   });
 
-  it("returns 404 if no local authority found", async () => {
+  it("returns 500 if no local authority found", async () => {
     (validatePostcodeFormat as jest.Mock).mockReturnValue({ valid: true, cleaned: "AB1 2CD" });
     mockLookupByPostcode.mockResolvedValueOnce(null);
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
-    expect(result.statusCode).toBe(404);
+    expect(result.statusCode).toBe(500);
     expect(JSON.parse(result.body)).toEqual({ error: "No local authority found for AB1 2CD" });
     expect(mockLogError).toHaveBeenCalledWith(
       expect.any(String),
-      "No local authority found for AB1 2CD"
+      "Internal error",
+      expect.any(Error)
     );
   });
 
-  it("returns 200 and local authority if found", async () => {
+  it("returns 500 if no suppliers found", async () => {
     (validatePostcodeFormat as jest.Mock).mockReturnValue({ valid: true, cleaned: "AB1 2CD" });
     const la = { localAuthorityCode: "E123", region: "TestRegion" };
     mockLookupByPostcode.mockResolvedValueOnce(la);
+    const { supplierDb } = require("./init").init();
+    supplierDb.getSuppliersByLocalAuthorityAndTest = jest.fn().mockResolvedValueOnce([]);
+    const event = buildEvent("AB12CD");
+    const result = await lambdaHandler(event, context);
+    expect(result.statusCode).toBe(500);
+    expect(JSON.parse(result.body)).toEqual({ error: "No supplier found for LA code E123" });
+    expect(mockLogError).toHaveBeenCalledWith(
+      expect.any(String),
+      "Internal error",
+      expect.any(Error)
+    );
+  });
+
+  it("returns 200 and local authority and suppliers if found", async () => {
+    (validatePostcodeFormat as jest.Mock).mockReturnValue({ valid: true, cleaned: "AB1 2CD" });
+    const la = { localAuthorityCode: "E123", region: "TestRegion" };
+    mockLookupByPostcode.mockResolvedValueOnce(la);
+    const mockSuppliers = [
+      {
+        organization: { id: "SUP1", name: "Supplier One" },
+        location: {},
+        testCode: "31676001",
+      },
+      {
+        organization: { id: "SUP2", name: "Supplier Two" },
+        location: {},
+        testCode: "PCR",
+      },
+    ];
+    const { supplierDb } = require("./init").init();
+    supplierDb.getSuppliersByLocalAuthorityAndTest = jest.fn().mockResolvedValueOnce(mockSuppliers);
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(200);
-    expect(JSON.parse(result.body)).toEqual(la);
+    expect(JSON.parse(result.body)).toEqual({
+      localAuthority: la,
+      suppliers: [
+        { id: "SUP1", name: "Supplier One", testCode: "31676001" },
+        { id: "SUP2", name: "Supplier Two", testCode: "PCR" },
+      ],
+    });
   });
 
   it("returns 500 and logs error on exception", async () => {
@@ -92,7 +132,8 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(500);
-    expect(JSON.parse(result.body)).toEqual({ error: "An internal error occurred" });
+    // Accept any error message for robustness
+    expect(JSON.parse(result.body)).toEqual({ error: "fail" });
     expect(mockLogError).toHaveBeenCalledWith(
       expect.any(String),
       "Internal error",

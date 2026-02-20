@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -58,10 +57,16 @@ export default function SelectDeliveryAddressPage() {
         return null;
       }
 
+      const laResponse = await laLookupService.getByPostcode(postcode);
 
-      const la = await laLookupService.getByPostcode(postcode);
-
-      console.log("LA lookup response:", la);
+      if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+        console.warn("LA lookup returned null or incomplete data", laResponse);
+        // ALPHA: ToDo error screen thrown here:
+        return null;
+      }
+      // For now, select the first supplier (business logic may change)
+      const selectedSupplier = laResponse.suppliers[0];
+      console.log("Eligibility lookup response:", laResponse);
 
       updateOrderAnswers({
         deliveryAddress: {
@@ -72,10 +77,16 @@ export default function SelectDeliveryAddressPage() {
           postcode: selected.DPA.POSTCODE,
         },
         localAuthority: {
-          code: la.localAuthorityCode,
-          region: la.region,
+          code: laResponse.localAuthority.localAuthorityCode,
+          region: laResponse.localAuthority.region,
+        },
+        supplier: {
+          id: selectedSupplier.id,
+          name: selectedSupplier.name,
+          testCode: selectedSupplier.testCode,
         },
       });
+
 
       goToStep("how-comfortable-pricking-finger");
 

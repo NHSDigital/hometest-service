@@ -50,8 +50,14 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   __esModule: true,
   default: {
     getByPostcode: jest.fn().mockResolvedValue({
-      localAuthorityCode: "4230",
-      region: "Salford",
+      localAuthority: {
+        localAuthorityCode: "4230",
+        region: "Salford",
+      },
+      suppliers: [
+        { id: "SUP1", name: "Supplier One", testCode: "31676001" },
+        { id: "SUP2", name: "Supplier Two", testCode: "PCR" },
+      ],
     }),
   },
 }));
