@@ -62,7 +62,6 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   },
 }));
 
-// Mock useContent to provide predictable content for tests
 jest.mock('@/hooks/useContent', () => ({
   useContent: () => ({
     commonContent: {

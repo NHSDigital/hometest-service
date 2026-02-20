@@ -114,40 +114,6 @@ export class SupplierService {
     }
   }
 
-  async getSuppliersByLaCode(laCode: LaCode): Promise<
-    { id: string; name: string }[]
-  > {
-    const query = `
-      SELECT s.supplier_id,
-             s.supplier_name
-      FROM hometest.supplier s
-             JOIN hometest.la_supplier_offering o
-                  ON s.supplier_id = o.supplier_id
-      WHERE o.la_code = $1;
-    `;
-
-    try {
-      const result = await this.dbClient.query<
-        { supplier_id: string; supplier_name: string },
-        [string]
-      >(query, [laCode]);
-
-      if (result.rowCount === 0) {
-        return [];
-      }
-
-      return result.rows.map((row) => ({
-        id: row.supplier_id,
-        name: row.supplier_name,
-      }));
-    } catch (error) {
-      throw new Error(
-        `Failed to fetch suppliers for laCode ${laCode}`,
-        { cause: error }
-      );
-    }
-  }
-
   async getSuppliersByLocalAuthorityAndTest(
     laCode: LaCode,
     testCode?: TestCode,

@@ -5,7 +5,6 @@ import { validatePostcodeFormat } from "./postcode-validator";
 jest.mock("./init", () => {
   const mockLookupByPostcode = jest.fn();
   const mockLogError = jest.fn();
-  // Add a default mock for supplierDb
   const mockSupplierDb = {
     getSuppliersByLocalAuthorityAndTest: jest.fn(),
   };
@@ -53,7 +52,6 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(400);
     expect(JSON.parse(result.body)).toEqual({ error: "Postcode parameter is required" });
-    // logError is not called for 400 errors
   });
 
   it("returns 400 if postcode format is invalid", async () => {
@@ -62,7 +60,6 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(400);
     expect(JSON.parse(result.body)).toEqual({ error: "Invalid postcode format" });
-    // logError is not called for 400 errors
   });
 
   it("returns 500 if no local authority found", async () => {
@@ -132,7 +129,6 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(500);
-    // Accept any error message for robustness
     expect(JSON.parse(result.body)).toEqual({ error: "fail" });
     expect(mockLogError).toHaveBeenCalledWith(
       expect.any(String),
