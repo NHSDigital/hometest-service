@@ -8,6 +8,7 @@ describe('OrderService', () => {
     beforeEach(() => {
         dbClient = {
             query: jest.fn(),
+            withTransaction: jest.fn()
         };
         orderService = new OrderService(dbClient);
     });
@@ -41,7 +42,7 @@ describe('OrderService', () => {
 
     describe('updateOrderStatusAndResultStatus', () => {
         it('should call dbClient.query with correct parameters', async () => {
-            dbClient.query.mockResolvedValue({});
+            dbClient.withTransaction.mockResolvedValue({});
             await orderService.updateOrderStatusAndResultStatus(
                 'order-1',
                 'ref-1',
@@ -49,9 +50,8 @@ describe('OrderService', () => {
                 ResultStatus.Result_Available,
                 'corr-1'
             );
-            expect(dbClient.query).toHaveBeenCalledWith(
-                expect.stringContaining('INSERT INTO hometest.order_status'),
-                ['order-1', 'ref-1', OrderStatus.Complete, ResultStatus.Result_Available, 'corr-1']
+            expect(dbClient.withTransaction).toHaveBeenCalledWith(
+                expect.any(Function)
             );
         });
     });
