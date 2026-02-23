@@ -34,7 +34,7 @@ export class PostgresDbClient implements DBClient {
     const connectionString =
       await connectionStringProvider.getConnectionString();
 
-    // Check if SSL should be disabled based on connection string
+    // ALPHA: should get connection config some other way to avoid parsing the connection string here, which is a bit hacky. Consider refactoring to have the connection config available directly.
     const url = new URL(connectionString);
     const sslMode = url.searchParams.get('sslmode');
     const useSsl = sslMode !== 'disable';
