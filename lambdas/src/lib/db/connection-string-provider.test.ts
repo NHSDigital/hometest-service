@@ -71,6 +71,24 @@ describe('connection-string-provider', () => {
       schema: "public",
       expectedPassword: "p%40ss%3Aword%2Ftest",
     },
+    {
+      testName: "no schema provided (undefined)",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: undefined,
+      expectedPassword: "testpass",
+    },
+    {
+      testName: "empty schema string",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "",
+      expectedPassword: "testpass",
+    },
   ])("should build connection string with $testName", async ({
     password,
     username,
@@ -95,7 +113,9 @@ describe('connection-string-provider', () => {
       "postgres-db-password", { "jsonKey": "password" }
     );
     expect(connectionString).toEqual(
-      `postgresql://${username}:${expectedPassword}@${address}:5432/${database}?options=-c%20search_path%3D${schema}`
+      schema
+        ? `postgresql://${username}:${expectedPassword}@${address}:5432/${database}?options=-c%20search_path%3D${schema}`
+        : `postgresql://${username}:${expectedPassword}@${address}:5432/${database}`
     );
   });
 
@@ -116,7 +136,6 @@ describe('connection-string-provider', () => {
         ["DB_ADDRESS"],
         ["DB_PORT"],
         ["DB_NAME"],
-        ["DB_SCHEMA"],
         ["DB_SECRET_NAME"],
       ])("should throw error when %s is missing", (envVar: string) => {
         delete process.env[envVar];
@@ -133,7 +152,6 @@ describe('connection-string-provider', () => {
         ["DB_ADDRESS"],
         ["DB_PORT"],
         ["DB_NAME"],
-        ["DB_SCHEMA"],
         ["DB_SECRET_NAME"],
       ])("should throw error when %s is empty", (envVar: string) => {
         process.env[envVar] = "";

@@ -1,4 +1,4 @@
-import {retrieveMandatoryEnvVariable} from "../utils";
+import {retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable} from "../utils";
 
 export interface ConnectionStringProvider {
   getConnectionString(): Promise<string>;
@@ -34,7 +34,7 @@ export function postgresFromEnv(secretsClient: SecretsClient): ConnectionStringP
     address: retrieveMandatoryEnvVariable("DB_ADDRESS"),
     port: retrieveMandatoryEnvVariable("DB_PORT"),
     database: retrieveMandatoryEnvVariable("DB_NAME"),
-    schema: retrieveMandatoryEnvVariable("DB_SCHEMA"),
+    schema: retrieveOptionalEnvVariable("DB_SCHEMA"),
     passwordSecretName: retrieveMandatoryEnvVariable("DB_SECRET_NAME"),
   };
 
