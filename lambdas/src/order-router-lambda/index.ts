@@ -9,9 +9,9 @@ import z from "zod";
 
 const name = "order-router-lambda";
 
-const { httpClient, environmentVariables, supplierDb, secretsClient } = init();
+const { httpClient, supplierDb, secretsClient } = init();
 
-interface ParsedOrderBody {
+export interface ParsedOrderBody {
   supplier_code: string;
   correlation_id: string;
   order_body: FHIRServiceRequest;

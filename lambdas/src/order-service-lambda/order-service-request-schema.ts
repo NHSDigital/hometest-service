@@ -43,4 +43,9 @@ export const OrderServiceRequestSchema = z.object({
     .string()
     .refine(isUUID, { message: "supplierId must be a valid UUID" }),
   patient: OrderServicePatientSchema,
+  consent: z
+    .boolean()
+    .refine((value) => value === true, {
+      message: "consent must be true",
+    }),
 });
