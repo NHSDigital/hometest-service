@@ -129,29 +129,53 @@ resource "aws_iam_role_policy" "lambda_secrets_read" {
   })
 }
 
+resource "aws_iam_role_policy" "lambdas_sqs_publish" {
+  name = "${var.project_name}-lambdas-sqs-publish"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = aws_sqs_queue.order_placement.arn
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "api" {
   name        = "${var.project_name}-api"
   description = "API Gateway for ${var.project_name}"
 }
 
-# Eligibility Test Info Lambda
-module "eligibility_test_info_lambda" {
+# Eligibility Lookup Lambda
+module "eligibility_lookup_lambda" {
   source = "./modules/lambda"
 
   project_name                  = var.project_name
-  function_name                 = "eligibility-test-info"
-  zip_path                      = "${path.module}/../../lambdas/dist/eligibility-test-info-lambda.zip"
+  function_name                 = "eligibility-lookup-lambda"
+  zip_path                      = "${path.module}/../../lambdas/dist/eligibility-lookup-lambda.zip"
   lambda_role_arn               = aws_iam_role.lambda_role.arn
   environment                   = var.environment
   api_gateway_id                = aws_api_gateway_rest_api.api.id
   api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
   api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "test-order/info"
+  api_path                      = "eligibility-lookup"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "GET"
+
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["GET", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization"]
+  cors_allow_credentials = true
 
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
   }
 }
 
@@ -316,8 +340,9 @@ module "order_service_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    NODE_OPTIONS              = "--enable-source-maps"
+    DATABASE_URL              = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
   }
 }
 
@@ -326,7 +351,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 
   depends_on = [
-    module.eligibility_test_info_lambda,
+    module.eligibility_lookup_lambda,
     module.order_result_lambda,
     module.login_lambda,
     module.order_service_lambda,
@@ -335,7 +360,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 
   triggers = {
     redeployment = sha1(jsonencode([
-      module.eligibility_test_info_lambda,
+      module.eligibility_lookup_lambda,
       module.order_result_lambda,
       module.login_lambda,
       module.order_service_lambda,

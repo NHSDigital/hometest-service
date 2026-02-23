@@ -3,6 +3,7 @@ import type {
   CommonContent,
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
+  EnterMobilePhoneNumberContent,
   GlobalErrorContent,
   HowComfortablePrickingFingerContent,
   NoAddressFoundContent,
@@ -21,6 +22,7 @@ export interface UseContentReturn {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
@@ -36,6 +38,7 @@ export const useContent = (): UseContentReturn => {
     "select-delivery-address": content.pages["select-delivery-address"],
     "how-comfortable-pricking-finger":
       content.pages["how-comfortable-pricking-finger"],
+    "enter-mobile-phone-number": content.pages["enter-mobile-phone-number"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
     "blood-sample-guide": content.pages["blood-sample-guide"],

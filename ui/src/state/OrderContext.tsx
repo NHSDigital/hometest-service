@@ -33,6 +33,15 @@ export interface OrderAnswers {
   // Final delivery address
   deliveryAddress?: Address;
   comfortableDoingTest?: string;
+
+  // From LA Lookup
+  localAuthority?: {
+    code: string;
+    region: string;
+  };
+
+  // Mobile number
+  mobileNumber?: string;
 }
 
 interface CreateOrderContextType {
