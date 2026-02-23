@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Radios, Images, Button, ErrorSummary } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
@@ -34,10 +35,9 @@ export default function HowComfortablePrickingFingerPage() {
 
     if (selectedOption === "Yes") {
       if (orderAnswers.user?.phoneNumber) {
-        // goToStep("confirm-mobile-phone-number");
+        goToStep(JourneyStepNames.ConfirmMobileNumber);
       } else {
-        // User doesn't have phone number - route to enter
-        goToStep("enter-mobile-phone-number");
+        goToStep(JourneyStepNames.EnterMobileNumber);
       }
     } else {
       // goToStep("visit-nearest-clinic");

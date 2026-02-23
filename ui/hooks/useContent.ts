@@ -1,6 +1,7 @@
 import type {
   BloodSampleGuideContent,
   CommonContent,
+  ConfirmMobilePhoneNumberContent,
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
@@ -23,6 +24,7 @@ export interface UseContentReturn {
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
+  "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
@@ -38,6 +40,7 @@ export const useContent = (): UseContentReturn => {
     "select-delivery-address": content.pages["select-delivery-address"],
     "how-comfortable-pricking-finger":
       content.pages["how-comfortable-pricking-finger"],
+    "confirm-mobile-phone-number": content.pages["confirm-mobile-phone-number"],
     "enter-mobile-phone-number": content.pages["enter-mobile-phone-number"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
@@ -58,6 +61,12 @@ export function usePageContent(
 export function usePageContent(
   page: "enter-address-manually",
 ): EnterAddressManuallyContent;
+export function usePageContent(
+  page: "enter-mobile-phone-number",
+): EnterMobilePhoneNumberContent;
+export function usePageContent(
+  page: "confirm-mobile-phone-number",
+): ConfirmMobilePhoneNumberContent;
 export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
 export function usePageContent(
   page: "select-delivery-address",
@@ -76,6 +85,8 @@ export function usePageContent(
     | "no-address-found"
     | "select-delivery-address"
     | "how-comfortable-pricking-finger"
+    | "enter-mobile-phone-number"
+    | "confirm-mobile-phone-number"
     | "global-error"
     | "order-tracking"
     | "blood-sample-guide",
