@@ -182,6 +182,7 @@ module "eligibility_lookup_lambda" {
     DB_NAME        = "local_hometest_db"
     DB_SCHEMA      = "hometest"
     DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL_MODE    = "disable"
   }
 }
 
@@ -297,6 +298,7 @@ module "order_router_lambda" {
     DB_NAME        = "local_hometest_db"
     DB_SCHEMA      = "hometest"
     DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL_MODE    = "disable"
   }
 }
 
@@ -359,6 +361,7 @@ module "order_service_lambda" {
     DB_NAME                   = "local_hometest_db"
     DB_SCHEMA                 = "hometest"
     DB_SECRET_NAME            = "postgres-db-password"
+    DB_SSL_MODE               = "disable"
   }
 }
 

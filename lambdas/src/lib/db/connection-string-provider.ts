@@ -13,6 +13,7 @@ export interface ConnectionConfig {
   database: string;
   schema?: string;
   passwordSecretName: string;
+  sslMode?: 'disable' | 'require' | 'verify-ca' | 'verify-full';
 }
 
 export function postgresConnection(config: ConnectionConfig, secretsClient: SecretsClient): ConnectionStringProvider {
@@ -36,6 +37,7 @@ export function postgresFromEnv(secretsClient: SecretsClient): ConnectionStringP
     database: retrieveMandatoryEnvVariable("DB_NAME"),
     schema: retrieveOptionalEnvVariable("DB_SCHEMA"),
     passwordSecretName: retrieveMandatoryEnvVariable("DB_SECRET_NAME"),
+    sslMode: retrieveOptionalEnvVariable("DB_SSL_MODE", "require") as ConnectionConfig['sslMode']
   };
 
   return postgresConnection(config, secretsClient);
@@ -58,10 +60,16 @@ async function buildConnectionString(
   const database = config.database;
   const base = `postgresql://${username}:${encodedPassword}@${address}:${port}/${database}`;
 
-  if (!config.schema) {
-    return base;
+  const queryParams: string[] = [];
+
+  if (config.schema) {
+    const schemaOption = encodeURIComponent(`-c search_path=${config.schema}`);
+    queryParams.push(`options=${schemaOption}`);
   }
 
-  const options = encodeURIComponent(`-c search_path=${config.schema}`);
-  return `${base}?options=${options}`;
+  if (config.sslMode) {
+    queryParams.push(`sslmode=${config.sslMode}`);
+  }
+
+  return queryParams.length > 0 ? `${base}?${queryParams.join('&')}` : base;
 }

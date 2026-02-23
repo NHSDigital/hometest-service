@@ -24,7 +24,9 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: "public",
+      sslMode: undefined,
       expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic",
     },
     {
       testName: "password with surrounding double quotes",
@@ -33,7 +35,9 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: "public",
+      sslMode: undefined,
       expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic",
     },
     {
       testName: "password with surrounding single quotes",
@@ -42,7 +46,9 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: "public",
+      sslMode: undefined,
       expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic",
     },
     {
       testName: "password with trailing newline",
@@ -51,7 +57,9 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: "public",
+      sslMode: undefined,
       expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic",
     },
     {
       testName: "password with quotes and newline",
@@ -60,7 +68,9 @@ describe('connection-string-provider', () => {
       address: "postgres-db",
       database: "local_hometest_db",
       schema: "hometest",
+      sslMode: undefined,
       expectedPassword: "STRONG_APP_PASSWORD",
+      expectedSuffix: "?options=-c%20search_path%3Dhometest",
     },
     {
       testName: "password with special characters requiring URL encoding",
@@ -69,7 +79,9 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: "public",
+      sslMode: undefined,
       expectedPassword: "p%40ss%3Aword%2Ftest",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic",
     },
     {
       testName: "no schema provided (undefined)",
@@ -78,7 +90,9 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: undefined,
+      sslMode: undefined,
       expectedPassword: "testpass",
+      expectedSuffix: "",
     },
     {
       testName: "empty schema string",
@@ -87,7 +101,64 @@ describe('connection-string-provider', () => {
       address: "localhost",
       database: "testdb",
       schema: "",
+      sslMode: undefined,
       expectedPassword: "testpass",
+      expectedSuffix: "",
+    },
+    {
+      testName: "SSL mode require",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      sslMode: "require" as const,
+      expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic&sslmode=require",
+    },
+    {
+      testName: "SSL mode disable",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      sslMode: "disable" as const,
+      expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic&sslmode=disable",
+    },
+    {
+      testName: "SSL mode verify-ca",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      sslMode: "verify-ca" as const,
+      expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic&sslmode=verify-ca",
+    },
+    {
+      testName: "SSL mode verify-full",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      sslMode: "verify-full" as const,
+      expectedPassword: "testpass",
+      expectedSuffix: "?options=-c%20search_path%3Dpublic&sslmode=verify-full",
+    },
+    {
+      testName: "SSL mode without schema",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: undefined,
+      sslMode: "require" as const,
+      expectedPassword: "testpass",
+      expectedSuffix: "?sslmode=require",
     },
   ])("should build connection string with $testName", async ({
     password,
@@ -95,7 +166,9 @@ describe('connection-string-provider', () => {
     address,
     database,
     schema,
+    sslMode,
     expectedPassword,
+    expectedSuffix,
   }) => {
     secretsClient.getSecretValue.mockResolvedValue(password);
     const connectionProvider = postgresConnection({
@@ -105,6 +178,7 @@ describe('connection-string-provider', () => {
       database,
       schema,
       passwordSecretName: "postgres-db-password",
+      sslMode,
     }, secretsClient);
 
     const connectionString = await connectionProvider.getConnectionString();
@@ -113,9 +187,7 @@ describe('connection-string-provider', () => {
       "postgres-db-password", { "jsonKey": "password" }
     );
     expect(connectionString).toEqual(
-      schema
-        ? `postgresql://${username}:${expectedPassword}@${address}:5432/${database}?options=-c%20search_path%3D${schema}`
-        : `postgresql://${username}:${expectedPassword}@${address}:5432/${database}`
+      `postgresql://${username}:${expectedPassword}@${address}:5432/${database}${expectedSuffix}`
     );
   });
 
@@ -158,6 +230,49 @@ describe('connection-string-provider', () => {
 
         expect(() => postgresFromEnv(secretsClient)).toThrow(
           `Missing value for an environment variable ${envVar}`,
+        );
+      });
+    });
+
+    describe("SSL mode configuration", () => {
+      it("should use default SSL mode 'require' when DB_SSL_MODE is not set", async () => {
+        delete process.env.DB_SSL_MODE;
+        secretsClient.getSecretValue.mockResolvedValue("testpass");
+
+        const connectionProvider = postgresFromEnv(secretsClient);
+        const connectionString = await connectionProvider.getConnectionString();
+
+        expect(connectionString).toContain("sslmode=require");
+        expect(connectionString).toBe(
+          "postgresql://test-username:testpass@test-address:5432/test-database?options=-c%20search_path%3Dtest-schema&sslmode=require"
+        );
+      });
+
+      it.each([
+        ["disable"],
+        ["require"],
+        ["verify-ca"],
+        ["verify-full"],
+      ])("should use SSL mode '%s' when DB_SSL_MODE is set", async (sslMode) => {
+        process.env.DB_SSL_MODE = sslMode;
+        secretsClient.getSecretValue.mockResolvedValue("testpass");
+
+        const connectionProvider = postgresFromEnv(secretsClient);
+        const connectionString = await connectionProvider.getConnectionString();
+
+        expect(connectionString).toContain(`sslmode=${sslMode}`);
+      });
+
+      it("should not include sslmode parameter when DB_SSL_MODE is empty string", async () => {
+        process.env.DB_SSL_MODE = "";
+        secretsClient.getSecretValue.mockResolvedValue("testpass");
+
+        const connectionProvider = postgresFromEnv(secretsClient);
+        const connectionString = await connectionProvider.getConnectionString();
+
+        expect(connectionString).not.toContain("sslmode");
+        expect(connectionString).toBe(
+          "postgresql://test-username:testpass@test-address:5432/test-database?options=-c%20search_path%3Dtest-schema"
         );
       });
     });
