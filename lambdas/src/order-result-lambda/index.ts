@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { createFhirErrorResponse, createFhirResponse, ErrorStatusCode } from '../lib/fhir-response';
 import { init } from './init';
 import { OrderResultSummary } from '../lib/db/order-db';
-import { FHIRObservationSchema, FHIRReferenceSchema, FHIRCodeableConceptSchema } from 'src/lib/models/fhir/fhir-schemas';
-import { OrderStatus, ResultStatus } from 'src/lib/types/status';
+import { FHIRObservationSchema, FHIRReferenceSchema, FHIRCodeableConceptSchema } from '../lib/models/fhir/fhir-schemas';
+import { OrderStatus, ResultStatus } from '../lib/types/status';
 import { extractAndValidateObservationFields, extractInterpretationCodeFromFHIRObservation, validateDBData } from './validation';
 
 const { commons, orderService } = init();
@@ -45,13 +45,13 @@ export interface Identifiers {
   correlationId: string;
 }
 
-function updateDatabase(identifiers: Identifiers, interpretationCode: InterpretationCode, orderReference: string): void {
+async function updateDatabase(identifiers: Identifiers, interpretationCode: InterpretationCode, orderReference: string): Promise<void> {
   if (interpretationCode === InterpretationCode.Normal) {
-    orderService.updateOrderStatusAndResultStatus(identifiers.orderUid, orderReference, OrderStatus.Complete, ResultStatus.Result_Available, identifiers.correlationId);
+    await orderService.updateOrderStatusAndResultStatus(identifiers.orderUid, orderReference, OrderStatus.Complete, ResultStatus.Result_Available, identifiers.correlationId);
   }
 
   if (interpretationCode === InterpretationCode.Abnormal) {
-    orderService.updateResultStatus(identifiers.orderUid, ResultStatus.Result_Withheld, identifiers.correlationId);
+    await orderService.updateResultStatus(identifiers.orderUid, ResultStatus.Result_Withheld, identifiers.correlationId);
   }
 }
 
@@ -103,7 +103,7 @@ export const handler = async (
   const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation!);
 
   try{
-    updateDatabase(identifiers!, interpretationCode, testOrderResult.order_reference);
+    await updateDatabase(identifiers!, interpretationCode, testOrderResult.order_reference);
   } catch (error) {
     commons.logError('order-result-lambda', 'Database update failed', { error });
     return createFhirErrorResponse(500, 'exception', 'An internal error occurred', 'fatal');

@@ -39,7 +39,6 @@ export class OrderService {
                 VALUES ($1, $2, $3)
             INSERT INTO hometest.result_status (order_uid, status, correlation_id)
                 VALUES ($1, $4, $5)
-                ON CONFLICT (order_uid) DO UPDATE SET status = EXCLUDED.status, correlation_id = EXCLUDED.correlation_id;
             COMMIT;
         `;
 
