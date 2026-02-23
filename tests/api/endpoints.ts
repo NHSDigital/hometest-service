@@ -8,4 +8,7 @@ export const API_ENDPOINTS = {
     createUser: '/users',
     getUser: (id: number) => `/users/${id}`,
   },
+  order: {
+    create: '/order',
+  },
 } as const;

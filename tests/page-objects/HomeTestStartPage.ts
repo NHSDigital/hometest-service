@@ -11,7 +11,6 @@ export class HomeTestStartPage extends BasePage {
   readonly startNowBtn: Locator;
   readonly bloodSampleGuideLink: Locator;
 
-
   constructor(page: Page) {
     super(page);
     this.findClinicLink = page.getByRole('link', { name: 'Find a sexual health clinic' });

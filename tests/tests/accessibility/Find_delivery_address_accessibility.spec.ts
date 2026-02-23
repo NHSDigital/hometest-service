@@ -6,8 +6,6 @@ test.describe('Accessibility Testing @accessibility', () => {
   test('Find Delivery Address Page', async ({ homeTestStartPage, findAddressPage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-
-    // Wait for page to load
     await findAddressPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(findAddressPage.page, "Find Delivery Address Page");
     expect(accessErrors).toHaveLength(0);
