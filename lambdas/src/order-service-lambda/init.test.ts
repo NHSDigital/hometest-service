@@ -59,14 +59,7 @@ describe("order-service-lambda init", () => {
     const secretsClientInstance = { getSecretValue: jest.fn() };
 
     process.env.AWS_REGION = "eu-west-2";
-    process.env.DB_USERNAME = "app_user";
-    process.env.DB_ADDRESS = "postgres-db";
-    process.env.DB_PORT = "5432";
-    process.env.DB_NAME = "local_hometest_db";
-    process.env.DB_SCHEMA = "hometest";
-    process.env.DB_SECRET_NAME = "postgres-db-password";
-    process.env.ORDER_PLACEMENT_QUEUE_URL =
-      "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
+    setAllEnvVars();
 
     mockPostgresDbClient.mockImplementation(() => dbClientInstance);
     mockOrderStatusService.mockImplementation(() => orderStatusServiceInstance);
@@ -101,30 +94,37 @@ describe("order-service-lambda init", () => {
     });
   });
 
-  it("should throw when order placement queue URL is missing", () => {
-    process.env.DB_USERNAME = "app_user";
-    process.env.DB_ADDRESS = "postgres-db";
-    process.env.DB_PORT = "5432";
-    process.env.DB_NAME = "local_hometest_db";
-    process.env.DB_SCHEMA = "hometest";
-    process.env.DB_SECRET_NAME = "postgres-db-password";
+  describe.each([
+    ["DB_USERNAME"],
+    ["DB_ADDRESS"],
+    ["DB_PORT"],
+    ["DB_NAME"],
+    ["DB_SCHEMA"],
+    ["DB_SECRET_NAME"],
+    ["ORDER_PLACEMENT_QUEUE_URL"],
+  ])("should throw when %s is missing", (missingVar) => {
+    it(`throws when ${missingVar} is missing`, () => {
+      // Set all mandatory env vars
+      setAllEnvVars();
 
-    expect(() => init()).toThrow(
-      "Missing value for an environment variable ORDER_PLACEMENT_QUEUE_URL",
-    );
-  });
+      // Delete the one under test
+      delete process.env[missingVar];
 
-  it("should throw when DB_NAME is missing", () => {
-    process.env.DB_USERNAME = "app_user";
-    process.env.DB_ADDRESS = "postgres-db";
-    process.env.DB_PORT = "5432";
-    process.env.DB_SCHEMA = "hometest";
-    process.env.DB_SECRET_NAME = "postgres-db-password";
-    process.env.ORDER_PLACEMENT_QUEUE_URL =
-      "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
-
-    expect(() => init()).toThrow(
-      "Missing value for an environment variable DB_NAME",
-    );
+      expect(() => init()).toThrow(
+        `Missing value for an environment variable ${missingVar}`,
+      );
+    });
   });
 });
+
+// Helper for setting all mandatory env vars
+function setAllEnvVars() {
+  process.env.DB_USERNAME = "app_user";
+  process.env.DB_ADDRESS = "postgres-db";
+  process.env.DB_PORT = "5432";
+  process.env.DB_NAME = "local_hometest_db";
+  process.env.DB_SCHEMA = "hometest";
+  process.env.DB_SECRET_NAME = "postgres-db-password";
+  process.env.ORDER_PLACEMENT_QUEUE_URL =
+    "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
+}
