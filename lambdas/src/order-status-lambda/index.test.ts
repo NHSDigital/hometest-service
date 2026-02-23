@@ -4,8 +4,9 @@ import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
 import {
   IdempotencyCheckResult,
   OrderRow,
+  OrderStatusCodes,
   OrderStatusRow,
-} from "src/lib/db/order-status-db";
+} from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
 
@@ -22,6 +23,7 @@ jest.mock("../lib/utils", () => ({
 }));
 
 jest.mock("../lib/db/order-status-db", () => ({
+  ...jest.requireActual("../lib/db/order-status-db"),
   OrderStatusService: jest.fn().mockImplementation(() => ({
     getOrder: mockGetOrder,
     checkIdempotency: mockCheckIdempotency,
@@ -70,7 +72,7 @@ describe("Order Status Lambda Handler", () => {
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockUpdateOrderStatus.mockResolvedValue({
       order_uid: MOCK_ORDER_UID,
-      status_code: "completed",
+      status_code: OrderStatusCodes.COMPLETE,
       created_at: "2024-01-15T10:00:00Z",
     } satisfies Partial<OrderStatusRow>);
   });
