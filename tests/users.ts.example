@@ -16,6 +16,7 @@ export const localUser: NHSLoginUser = {
   nhsNumber: '9999999999', // Your 10-digit NHS number
   odsCode: 'YOUR_ODS_CODE', // Your ODS (Organisation Data Service) code
   age: 49, // User age (must match eligibility criteria)
+  dob: '1964-02-13', // User dob
   otp: process.env.OTP as unknown as string, // Set via OTP environment variable
   password: process.env.GENERIC_PASS as unknown as string, // Set via GENERIC_PASS environment variable
   description: 'eligible user - local environment',

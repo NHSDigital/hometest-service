@@ -53,11 +53,6 @@ describe("OrderTrackingPage", () => {
     maxDeliveryDays: 5,
   };
 
-  const mockPatient: Patient = {
-    nhsNumber: "2657119018",
-    dateOfBirth: "1990-08-11",
-  };
-
   const mockUser: AuthUser = {
     sub: "test-user-123",
     nhsNumber: "2657119018",
@@ -140,10 +135,10 @@ describe("OrderTrackingPage", () => {
 
       await screen.findByTestId("order-status");
 
-      expect(orderDetailsService.get).toHaveBeenCalledWith(
-        orderId,
-        mockPatient,
-      );
+      expect(orderDetailsService.get).toHaveBeenCalledWith(orderId, {
+        nhsNumber: "2657119018",
+        dateOfBirth: "1990-08-11",
+      });
       expect(orderDetailsService.get).toHaveBeenCalledTimes(1);
     });
 
