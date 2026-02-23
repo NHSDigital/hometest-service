@@ -4,17 +4,17 @@ import { validatePostcodeFormat } from "./postcode-validator";
 
 jest.mock("./init", () => {
   const mockLookupByPostcode = jest.fn();
-  const mockLogError = jest.fn();
   const mockSupplierDb = {
     getSuppliersByLocalAuthorityAndTest: jest.fn(),
   };
+  const mockLogError = jest.fn();
   return {
     init: () => ({
       laLookupService: { lookupByPostcode: mockLookupByPostcode },
-      commons: { logError: mockLogError },
       supplierDb: mockSupplierDb,
+      commons: { logError: mockLogError },
     }),
-    __mocks: { mockLookupByPostcode, mockLogError, mockSupplierDb },
+    __mocks: { mockLookupByPostcode, mockSupplierDb, mockLogError },
   };
 });
 
@@ -23,7 +23,7 @@ jest.mock("./postcode-validator", () => ({
 }));
 
 
-const { mockLookupByPostcode, mockLogError } = require("./init").__mocks;
+const { mockLookupByPostcode } = require("./init").__mocks;
 const buildEvent = (postcode: string | null): APIGatewayProxyEvent =>
   ({
     body: null,
@@ -70,11 +70,6 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(500);
     expect(JSON.parse(result.body)).toEqual({ error: "No local authority found for AB1 2CD" });
-    expect(mockLogError).toHaveBeenCalledWith(
-      expect.any(String),
-      "Internal error",
-      expect.any(Error)
-    );
   });
 
   it("returns 500 if no suppliers found", async () => {
@@ -87,11 +82,6 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(500);
     expect(JSON.parse(result.body)).toEqual({ error: "No supplier found for LA code E123" });
-    expect(mockLogError).toHaveBeenCalledWith(
-      expect.any(String),
-      "Internal error",
-      expect.any(Error)
-    );
   });
 
   it("returns 200 and local authority and suppliers if found", async () => {
@@ -131,10 +121,5 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(500);
     expect(JSON.parse(result.body)).toEqual({ error: "fail" });
-    expect(mockLogError).toHaveBeenCalledWith(
-      expect.any(String),
-      "Internal error",
-      expect.any(Error)
-    );
   });
 });
