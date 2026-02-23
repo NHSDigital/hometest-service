@@ -33,8 +33,8 @@ export class PostgresDbClient implements DBClient {
     return new Pool({
       connectionString,
       max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      idleTimeoutMillis: 60000,
+      connectionTimeoutMillis: 60000,
     });
   }
 
