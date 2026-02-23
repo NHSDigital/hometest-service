@@ -98,7 +98,6 @@ describe("OrderStatusService", () => {
       const result = await service.checkIdempotency("order-123", "new-corr-id");
 
       expect(result.isDuplicate).toBe(false);
-      expect(result.lastUpdate).toBeUndefined();
     });
   });
 

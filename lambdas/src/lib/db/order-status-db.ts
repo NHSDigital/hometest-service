@@ -41,7 +41,6 @@ export interface OrderStatusUpdateParams {
 
 export interface IdempotencyCheckResult {
   isDuplicate: boolean;
-  lastUpdate?: OrderStatusRow;
 }
 
 export class OrderStatusService {
@@ -116,9 +115,8 @@ export class OrderStatusService {
       params;
 
     const query = `
-      INSERT INTO hometest.order_status (order_uid, order_reference, status_code, created_at, correlation_id)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING status_id, order_uid, order_reference, status_code, created_at, correlation_id;
+      INSERT INTO hometest.order_status (order_uid, status_code, created_at, correlation_id)
+      VALUES ($1, $2, $3, $4)
     `;
 
     try {
