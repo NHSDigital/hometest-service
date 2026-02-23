@@ -2,6 +2,7 @@ const mockPostgresDbClient = jest.fn();
 const mockOrderStatusService = jest.fn();
 const mockTransactionService = jest.fn();
 const mockAwssqsClient = jest.fn();
+const mockAwsSecretsClient = jest.fn();
 
 jest.mock("../lib/db/db-client", () => ({
   PostgresDbClient: mockPostgresDbClient,
@@ -19,6 +20,10 @@ jest.mock("../lib/sqs/sqs-client", () => ({
   AWSSQSClient: mockAwssqsClient,
 }));
 
+jest.mock("../lib/secrets/secrets-manager-client", () => ({
+  AwsSecretsClient: mockAwsSecretsClient,
+}));
+
 import { init } from "./init";
 
 describe("order-service-lambda init", () => {
@@ -27,8 +32,15 @@ describe("order-service-lambda init", () => {
     mockOrderStatusService.mockReset();
     mockTransactionService.mockReset();
     mockAwssqsClient.mockReset();
-    delete process.env.DATABASE_URL;
+    mockAwsSecretsClient.mockReset();
+    delete process.env.DB_USERNAME;
+    delete process.env.DB_ADDRESS;
+    delete process.env.DB_PORT;
+    delete process.env.DB_NAME;
+    delete process.env.DB_SCHEMA;
+    delete process.env.DB_SECRET_NAME;
     delete process.env.ORDER_PLACEMENT_QUEUE_URL;
+    delete process.env.AWS_REGION;
   });
 
   afterEach(() => {
@@ -44,8 +56,15 @@ describe("order-service-lambda init", () => {
     const orderStatusServiceInstance = {};
     const transactionServiceInstance = {};
     const sqsClientInstance = {};
+    const secretsClientInstance = { getSecretValue: jest.fn() };
 
-    process.env.DATABASE_URL = "postgres://user:pass@host:5432/db";
+    process.env.AWS_REGION = "eu-west-2";
+    process.env.DB_USERNAME = "app_user";
+    process.env.DB_ADDRESS = "postgres-db";
+    process.env.DB_PORT = "5432";
+    process.env.DB_NAME = "local_hometest_db";
+    process.env.DB_SCHEMA = "hometest";
+    process.env.DB_SECRET_NAME = "postgres-db-password";
     process.env.ORDER_PLACEMENT_QUEUE_URL =
       "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
 
@@ -53,11 +72,20 @@ describe("order-service-lambda init", () => {
     mockOrderStatusService.mockImplementation(() => orderStatusServiceInstance);
     mockTransactionService.mockImplementation(() => transactionServiceInstance);
     mockAwssqsClient.mockImplementation(() => sqsClientInstance);
+    mockAwsSecretsClient.mockImplementation(() => secretsClientInstance);
 
     const result = init();
 
     expect(mockPostgresDbClient).toHaveBeenCalledWith(
-      "postgres://user:pass@host:5432/db",
+      {
+        username: "app_user",
+        address: "postgres-db",
+        port: "5432",
+        database: "local_hometest_db",
+        schema: "hometest",
+        passwordSecretName: "postgres-db-password",
+      },
+      secretsClientInstance,
     );
     expect(mockOrderStatusService).toHaveBeenCalledWith(dbClientInstance);
     expect(mockTransactionService).toHaveBeenCalledWith({
@@ -74,19 +102,29 @@ describe("order-service-lambda init", () => {
   });
 
   it("should throw when order placement queue URL is missing", () => {
-    process.env.DATABASE_URL = "postgres://user:pass@host:5432/db";
+    process.env.DB_USERNAME = "app_user";
+    process.env.DB_ADDRESS = "postgres-db";
+    process.env.DB_PORT = "5432";
+    process.env.DB_NAME = "local_hometest_db";
+    process.env.DB_SCHEMA = "hometest";
+    process.env.DB_SECRET_NAME = "postgres-db-password";
 
     expect(() => init()).toThrow(
       "Missing value for an environment variable ORDER_PLACEMENT_QUEUE_URL",
     );
   });
 
-  it("should throw when DATABASE_URL is missing", () => {
+  it("should throw when DB_NAME is missing", () => {
+    process.env.DB_USERNAME = "app_user";
+    process.env.DB_ADDRESS = "postgres-db";
+    process.env.DB_PORT = "5432";
+    process.env.DB_SCHEMA = "hometest";
+    process.env.DB_SECRET_NAME = "postgres-db-password";
     process.env.ORDER_PLACEMENT_QUEUE_URL =
       "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
 
     expect(() => init()).toThrow(
-      "Missing value for an environment variable DATABASE_URL",
+      "Missing value for an environment variable DB_NAME",
     );
   });
 });
