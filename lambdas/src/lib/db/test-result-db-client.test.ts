@@ -9,6 +9,7 @@ describe("TestResultDbClient", () => {
     mockDbClient = {
       query: jest.fn(),
       close: jest.fn(),
+      withTransaction: jest.fn(),
     };
 
     testResultDbClient = new TestResultDbClient(mockDbClient);

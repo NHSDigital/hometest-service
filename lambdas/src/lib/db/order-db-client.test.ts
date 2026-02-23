@@ -9,6 +9,7 @@ describe("OrderDbClient", () => {
     mockDbClient = {
       query: jest.fn(),
       close: jest.fn(),
+      withTransaction: jest.fn(),
     };
 
     orderDbClient = new OrderDbClient(mockDbClient);

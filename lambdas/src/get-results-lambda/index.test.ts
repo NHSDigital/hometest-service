@@ -8,6 +8,7 @@ jest.mock("../lib/db/test-result-db-client");
 
 const mockGetResult = jest.fn();
 const mockGetResults = jest.fn();
+const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
@@ -20,11 +21,18 @@ jest.mock("./init", () => ({
   })),
 }));
 
+jest.mock("../lib/utils", () => ({
+  ...jest.requireActual("../lib/utils"),
+  getCorrelationIdFromEventHeaders: () =>
+    mockGetCorrelationIdFromEventHeaders(),
+}));
+
 describe("Get Results Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
   let mockTestResult: TestResult;
   let mockBundle: Bundle<Observation>;
   let expectedObservation: Observation;
+  const testCorrelationId = "550e8400-e29b-41d4-a716-446655440099";
 
   beforeEach(() => {
     mockEvent = {
@@ -35,7 +43,9 @@ describe("Get Results Lambda Handler", () => {
         nhs_number: "1234567890",
         date_of_birth: "1990-01-15",
       },
-      headers: {},
+      headers: {
+        "X-Correlation-ID": testCorrelationId,
+      },
     };
 
     mockTestResult = {
@@ -112,6 +122,8 @@ describe("Get Results Lambda Handler", () => {
 
     mockGetResult.mockReset();
     mockGetResults.mockReset();
+    mockGetCorrelationIdFromEventHeaders.mockReset();
+    mockGetCorrelationIdFromEventHeaders.mockReturnValue(testCorrelationId);
 
     // Default mocks for successful flow
     mockGetResults.mockResolvedValue(mockBundle); // Results API response
@@ -143,6 +155,11 @@ describe("Get Results Lambda Handler", () => {
         "123e4567-e89b-12d3-a456-426614174000",
         "1234567890",
         new Date("1990-01-15"),
+      );
+      expect(mockGetResults).toHaveBeenCalledWith(
+        "123e4567-e89b-12d3-a456-426614174000",
+        "SUP001",
+        testCorrelationId,
       );
     });
 
@@ -181,6 +198,55 @@ describe("Get Results Lambda Handler", () => {
         "123e4567-e89b-12d3-a456-426614174000",
         "1234567890",
         new Date("1990-01-15"),
+      );
+    });
+  });
+
+  describe("Correlation ID handling", () => {
+    test("should throw error when correlation ID is missing or invalid", async () => {
+      mockGetCorrelationIdFromEventHeaders.mockImplementation(() => {
+        throw new Error(
+          "Correlation ID is missing or invalid in the event headers. Expected a valid UUID in 'X-Correlation-ID' or 'x-correlation-id'.",
+        );
+      });
+
+      await expect(
+        lambdaHandler(mockEvent as APIGatewayProxyEvent),
+      ).rejects.toThrow(
+        "Correlation ID is missing or invalid in the event headers",
+      );
+    });
+
+    test("should use correlation ID from X-Correlation-ID header", async () => {
+      const customCorrelationId = "custom-550e8400-e29b-41d4-a716-446655440099";
+      mockGetCorrelationIdFromEventHeaders.mockReturnValue(customCorrelationId);
+      mockGetResult.mockResolvedValue(mockTestResult);
+
+      await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+
+      expect(mockGetResults).toHaveBeenCalledWith(
+        "123e4567-e89b-12d3-a456-426614174000",
+        "SUP001",
+        customCorrelationId,
+      );
+    });
+
+    test("should use correlation ID from x-correlation-id header (lowercase)", async () => {
+      const customCorrelationId =
+        "lowercase-550e8400-e29b-41d4-a716-446655440099";
+      mockGetCorrelationIdFromEventHeaders.mockReturnValue(customCorrelationId);
+      mockGetResult.mockResolvedValue(mockTestResult);
+
+      mockEvent.headers = {
+        "x-correlation-id": customCorrelationId,
+      };
+
+      await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+
+      expect(mockGetResults).toHaveBeenCalledWith(
+        "123e4567-e89b-12d3-a456-426614174000",
+        "SUP001",
+        customCorrelationId,
       );
     });
   });

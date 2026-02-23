@@ -7,17 +7,18 @@ import {
 import { ObservationValidation } from "../lib/validators/observation-validation";
 import cors from "@middy/http-cors";
 import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils";
 import { getResultsQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { init } from "./init";
 import middy from "@middy/core";
 import { securityHeaders } from "../lib/http/security-headers";
-import { v4 as uuidv4 } from "uuid";
 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  const correlationId = getCorrelationIdFromEventHeaders(event);
   const { testResultDbClient, supplierTestResultsService } = init();
 
   const validationResult = getResultsQueryParamsSchema.safeParse(
@@ -52,7 +53,6 @@ export const lambdaHandler = async (
     );
   }
 
-  const correlationId = uuidv4();
   const bundle = await supplierTestResultsService.getResults(
     orderId,
     testResult.supplier_id,
