@@ -16,9 +16,9 @@ export class TestOrderDbClient extends BaseDbClient {
         s.supplier_name,
         p.nhs_number,
         p.birth_date
-      FROM hometest.test_order t
-      JOIN hometest.supplier s ON s.supplier_id = t.supplier_id
-      JOIN hometest.patient_mapping p ON p.patient_uid = t.patient_uid
+      FROM test_order t
+      JOIN supplier s ON s.supplier_id = t.supplier_id
+      JOIN patient_mapping p ON p.patient_uid = t.patient_uid
       WHERE t.order_uid = $1
     `, [orderUid]);
     return rows[0];
@@ -26,7 +26,7 @@ export class TestOrderDbClient extends BaseDbClient {
 
   async deleteOrderByUid(orderUid: string): Promise<void> {
     await this.query(`
-      DELETE FROM hometest.test_order
+      DELETE FROM test_order
       WHERE order_uid = $1
     `, [orderUid]);
   }

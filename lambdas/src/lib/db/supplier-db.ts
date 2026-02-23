@@ -56,7 +56,7 @@ export class SupplierService {
             oauth_token_path,
             order_path,
             oauth_scope
-      FROM hometest.supplier
+      FROM supplier
       WHERE supplier_id = $1
       LIMIT 1;
     `;
@@ -120,8 +120,8 @@ export class SupplierService {
     const query = `
       SELECT s.supplier_id,
              s.supplier_name
-      FROM hometest.supplier s
-             JOIN hometest.la_supplier_offering o
+      FROM supplier s
+             JOIN la_supplier_offering o
                   ON s.supplier_id = o.supplier_id
       WHERE o.la_code = $1;
     `;
@@ -158,8 +158,8 @@ export class SupplierService {
             s.service_url,
             s.website_url,
             o.test_code
-      FROM hometest.supplier s
-            JOIN hometest.la_supplier_offering o ON s.supplier_id = o.supplier_id
+      FROM supplier s
+            JOIN la_supplier_offering o ON s.supplier_id = o.supplier_id
       WHERE o.la_code = $1
         AND ($2::VARCHAR IS NULL OR o.test_code = $2)
         AND o.effective_from <= CURRENT_TIMESTAMP;
