@@ -1,11 +1,11 @@
 import { Observation } from 'fhir/r4';
-import { orderResultFHIRObservationSchema, Identifiers, resultCodeMapping, InterpretationCode } from '.';
-import { generateReadableError } from 'src/lib/utils';
-import { ConsoleCommons } from 'src/lib/commons';
+import { orderResultFHIRObservationSchema, Identifiers, resultCodeMapping, InterpretationCode } from './index';
+import { generateReadableError } from '../lib/utils';
+import { ConsoleCommons } from '../lib/commons';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { getCorrelationIdFromEventHeaders, isUUID } from 'src/lib/utils';
-import { OrderResultSummary } from 'src/lib/db/order-db';
-import { ErrorStatusCode } from 'src/lib/fhir-response';
+import { getCorrelationIdFromEventHeaders, isUUID } from '../lib/utils';
+import { OrderResultSummary } from '../lib/db/order-db';
+import { ErrorStatusCode } from '../lib/fhir-response';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -226,5 +226,3 @@ export function extractSupplierIdFromFHIRObservation(observation: Observation): 
 export function extractInterpretationCodeFromFHIRObservation(observation: Observation): InterpretationCode {
   return observation.interpretation![0].coding![0].code as InterpretationCode;
 }
-
-
