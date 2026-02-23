@@ -217,8 +217,7 @@ export const handler = async (
       correlationId,
     });
 
-    // Return updated Task resource
-    return createFhirResponse(200, task); // TODO: Check if we want to return what persisted in the database instead of the incoming Task
+    return createFhirResponse(200, task);
   } catch (error) {
     commons.logError(name, "Error processing order status update", {
       error,
