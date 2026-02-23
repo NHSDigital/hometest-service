@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.29.0",
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",
     "@testcontainers/postgresql": "^11.11.0",
     "@types/archiver": "7.0.0",
