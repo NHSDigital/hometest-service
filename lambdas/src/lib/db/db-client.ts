@@ -28,13 +28,20 @@ export class PostgresDbClient implements DBClient {
     this.poolPromise = this.createPool(connectionStringProvider);
   }
 
-  private async createPool(connectionStringProvider: ConnectionStringProvider): Promise<Pool> {
-    const connectionString = await connectionStringProvider.getConnectionString();
+  private async createPool(
+    connectionStringProvider: ConnectionStringProvider,
+  ): Promise<Pool> {
+    const connectionString =
+      await connectionStringProvider.getConnectionString();
     return new Pool({
       connectionString,
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
+
+      ssl: {
+        rejectUnauthorized: false, // <-- THIS is where you set it
+      },
     });
   }
 
