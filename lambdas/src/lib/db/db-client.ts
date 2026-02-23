@@ -61,7 +61,9 @@ export class PostgresDbClient implements DBClient {
 
   private buildConnectionString(password: string): string {
     const username = encodeURIComponent(this.config.username);
-    const encodedPassword = encodeURIComponent(password);
+    // Trim whitespace and remove surrounding quotes
+    const sanitisedPassword = password.trim().replace(/^["']|["']$/g, '');
+    const encodedPassword = encodeURIComponent(sanitisedPassword);
     const address = this.config.address;
     const port = this.config.port;
     const database = this.config.database;

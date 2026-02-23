@@ -39,14 +39,90 @@ describe("PostgresDbClient", () => {
     jest.clearAllMocks();
   });
 
-  it("should build the connection string from config and secret", async () => {
+  it.each([
+    {
+      testName: "clean password",
+      password: "testpass",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      expectedPassword: "testpass",
+    },
+    {
+      testName: "password with surrounding double quotes",
+      password: '"testpass"',
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      expectedPassword: "testpass",
+    },
+    {
+      testName: "password with surrounding single quotes",
+      password: "'testpass'",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      expectedPassword: "testpass",
+    },
+    {
+      testName: "password with trailing newline",
+      password: "testpass\n",
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      expectedPassword: "testpass",
+    },
+    {
+      testName: "password with quotes and newline",
+      password: '"STRONG_APP_PASSWORD"\n',
+      username: "app_user",
+      address: "postgres-db",
+      database: "local_hometest_db",
+      schema: "hometest",
+      expectedPassword: "STRONG_APP_PASSWORD",
+    },
+    {
+      testName: "password with special characters requiring URL encoding",
+      password: '"p@ss:word/test"\n',
+      username: "test",
+      address: "localhost",
+      database: "testdb",
+      schema: "public",
+      expectedPassword: "p%40ss%3Aword%2Ftest",
+    },
+  ])("should build connection string with $testName", async ({
+    password,
+    username,
+    address,
+    database,
+    schema,
+    expectedPassword,
+  }) => {
+    secretsClient.getSecretValue.mockResolvedValue(password);
+    const client = new PostgresDbClient(
+      {
+        username,
+        address,
+        port: "5432",
+        database,
+        schema,
+        passwordSecretName: "postgres-db-password",
+      },
+      secretsClient,
+    );
+    await (client as any).poolPromise;
+
     expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
       "postgres-db-password",
     );
     expect(Pool).toHaveBeenCalledWith(
       expect.objectContaining({
         connectionString:
-          "postgresql://test:testpass@localhost:5432/testdb?options=-c%20search_path%3Dpublic",
+          `postgresql://${username}:${expectedPassword}@${address}:5432/${database}?options=-c%20search_path%3D${schema}`,
       }),
     );
   });
