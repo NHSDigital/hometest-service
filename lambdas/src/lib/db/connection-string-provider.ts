@@ -45,7 +45,10 @@ async function buildConnectionString(
   config: ConnectionConfig,
   secretsClient: SecretsClient
 ): Promise<string> {
-  const password = await secretsClient.getSecretValue(config.passwordSecretName);
+  const password = await secretsClient.getSecretValue(
+    config.passwordSecretName,
+    { jsonKey: "password" },
+  );
 
   const username = encodeURIComponent(config.username);
   const sanitisedPassword = password.trim().replace(/^["']|["']$/g, '');

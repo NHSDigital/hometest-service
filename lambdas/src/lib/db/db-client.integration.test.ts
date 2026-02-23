@@ -1,6 +1,6 @@
 import { PostgresDbClient } from "./db-client";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import {postgresConnection} from "./connection-string-provider";
+import { postgresConnection } from "./connection-string-provider";
 
 describe("PostgresDbClient Integration Tests", () => {
   let container: StartedPostgreSqlContainer;

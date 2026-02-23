@@ -92,7 +92,7 @@ describe('connection-string-provider', () => {
     const connectionString = await connectionProvider.getConnectionString();
 
     expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
-      "postgres-db-password",
+      "postgres-db-password", { "jsonKey": "password" }
     );
     expect(connectionString).toEqual(
       `postgresql://${username}:${expectedPassword}@${address}:5432/${database}?options=-c%20search_path%3D${schema}`
@@ -175,7 +175,7 @@ describe('connection-string-provider', () => {
     const connectionString = await connectionProvider.getConnectionString();
 
     expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
-      "postgres-db-password",
+      "postgres-db-password", { "jsonKey": "password" }
     );
     expect(connectionString).toEqual(
       `postgresql://${username}:${expectedPassword}@${address}:5432/${database}?options=-c%20search_path%3D${schema}`
@@ -227,5 +227,4 @@ describe('connection-string-provider', () => {
       });
     });
   })
-
 })
