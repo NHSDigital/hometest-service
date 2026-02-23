@@ -6,7 +6,7 @@ import {
 
 import { ObservationValidation } from "../lib/validators/observation-validation";
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "./cors-configuration";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { getResultsQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
