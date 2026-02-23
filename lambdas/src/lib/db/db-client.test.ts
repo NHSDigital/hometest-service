@@ -118,6 +118,7 @@ describe("PostgresDbClient", () => {
 
     expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
       "postgres-db-password",
+      { jsonKey: "password" },
     );
     expect(Pool).toHaveBeenCalledWith(
       expect.objectContaining({

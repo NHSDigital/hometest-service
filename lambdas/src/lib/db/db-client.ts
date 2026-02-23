@@ -14,9 +14,7 @@ export interface DBClient {
     text: string,
     values?: I,
   ): Promise<DbResult<T>>;
-  withTransaction<T>(
-    fn: (client: DBClient) => Promise<T>,
-  ): Promise<T>;
+  withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T>;
   close(): Promise<void>;
 }
 
@@ -47,6 +45,7 @@ export class PostgresDbClient implements DBClient {
   private async createPool(): Promise<Pool> {
     const password = await this.secretsClient.getSecretValue(
       this.config.passwordSecretName,
+      { jsonKey: "password" },
     );
     const connectionString = this.buildConnectionString(password);
     const pool = new Pool({
@@ -62,7 +61,7 @@ export class PostgresDbClient implements DBClient {
   private buildConnectionString(password: string): string {
     const username = encodeURIComponent(this.config.username);
     // Trim whitespace and remove surrounding quotes
-    const sanitisedPassword = password.trim().replace(/^["']|["']$/g, '');
+    const sanitisedPassword = password.trim().replace(/^["']|["']$/g, "");
     const encodedPassword = encodeURIComponent(sanitisedPassword);
     const address = this.config.address;
     const port = this.config.port;
@@ -93,9 +92,7 @@ export class PostgresDbClient implements DBClient {
     };
   }
 
-  async withTransaction<T>(
-    fn: (client: DBClient) => Promise<T>,
-  ): Promise<T> {
+  async withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T> {
     const pool = await this.getPool();
     const client = await pool.connect();
     const txClient: DBClient = {
