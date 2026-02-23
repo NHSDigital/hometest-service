@@ -14,8 +14,14 @@ describe("LaLookupService", () => {
 
   it("should return local authority data for a valid postcode", async () => {
     const mockResponse: LaLookupResponse = {
-      localAuthorityCode: "4230",
-      region: "Salford",
+      localAuthority: {
+        localAuthorityCode: "4230",
+        region: "Salford",
+      },
+      suppliers: [
+        { id: "SUP1", name: "Supplier One", testCode: "31676001" },
+        { id: "SUP2", name: "Supplier Two", testCode: "PCR" },
+      ],
     };
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -36,7 +42,12 @@ describe("LaLookupService", () => {
   it("should call the API with the correct URL and headers", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ localAuthorityCode: "4230", region: "Salford" }),
+      json: async () => ({
+        localAuthority: { localAuthorityCode: "4230", region: "Salford" },
+        suppliers: [
+          { id: "SUP1", name: "Supplier One", testCode: "31676001" },
+        ],
+      }),
     });
     await laLookupService.getByPostcode(postcode);
     expect(mockFetch).toHaveBeenCalledWith(apiUrl, {
