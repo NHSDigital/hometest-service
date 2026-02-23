@@ -3,6 +3,7 @@ const mockSupplierService = jest.fn();
 const mockLaLookupService = jest.fn();
 const mockConsoleCommons = jest.fn();
 const mockAwsSecretsClient = jest.fn();
+const mockPostgresFromEnv = jest.fn();
 
 jest.mock("../lib/db/db-client", () => ({
   PostgresDbClient: mockPostgresDbClient,
@@ -24,6 +25,10 @@ jest.mock("../lib/commons", () => ({
   ConsoleCommons: mockConsoleCommons,
 }));
 
+jest.mock("../lib/db/connection-string-provider", () => ({
+  postgresFromEnv: mockPostgresFromEnv,
+}));
+
 // import remains here to avoid hoisting issues with jest.mock
 import { init } from "./init";
 describe("eligibility-lookup-lambda init", () => {
@@ -33,6 +38,7 @@ describe("eligibility-lookup-lambda init", () => {
     mockLaLookupService.mockReset();
     mockConsoleCommons.mockReset();
     mockAwsSecretsClient.mockReset();
+
     delete process.env.DB_USERNAME;
     delete process.env.DB_ADDRESS;
     delete process.env.DB_PORT;
@@ -52,6 +58,10 @@ describe("eligibility-lookup-lambda init", () => {
     const laLookupServiceInstance = { getByPostcode: jest.fn() };
     const commonsInstance = { log: jest.fn() };
     const secretsClientInstance = { getSecretValue: jest.fn() };
+    const mockConnectionStringProvider = {
+      getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
+    };
+
 
     process.env.AWS_REGION = "eu-west-2";
     process.env.DB_USERNAME = "app_user";
@@ -66,21 +76,12 @@ describe("eligibility-lookup-lambda init", () => {
     mockLaLookupService.mockImplementation(() => laLookupServiceInstance);
     mockConsoleCommons.mockImplementation(() => commonsInstance);
     mockAwsSecretsClient.mockImplementation(() => secretsClientInstance);
+    mockPostgresFromEnv.mockReturnValue(mockConnectionStringProvider);
 
     const result = init();
 
     expect(mockConsoleCommons).toHaveBeenCalled();
-    expect(mockPostgresDbClient).toHaveBeenCalledWith(
-      {
-        username: "app_user",
-        address: "postgres-db",
-        port: "5432",
-        database: "local_hometest_db",
-        schema: "hometest",
-        passwordSecretName: "postgres-db-password",
-      },
-      secretsClientInstance,
-    );
+    expect(mockPostgresDbClient).toHaveBeenCalledWith(mockConnectionStringProvider);
     expect(mockSupplierService).toHaveBeenCalledWith({ dbClient: dbClientInstance });
     expect(mockLaLookupService).toHaveBeenCalled();
 

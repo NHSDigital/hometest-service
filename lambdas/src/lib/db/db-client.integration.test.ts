@@ -1,5 +1,6 @@
 import { PostgresDbClient } from "./db-client";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import {postgresConnection} from "./connection-string-provider";
 
 describe("PostgresDbClient Integration Tests", () => {
   let container: StartedPostgreSqlContainer;
@@ -21,7 +22,7 @@ describe("PostgresDbClient Integration Tests", () => {
     const password = decodeURIComponent(connectionUri.password);
     secretsClient.getSecretValue.mockResolvedValue(password);
 
-    client = new PostgresDbClient(
+    client = new PostgresDbClient(postgresConnection(
       {
         username: decodeURIComponent(connectionUri.username),
         address: connectionUri.hostname,
@@ -31,7 +32,7 @@ describe("PostgresDbClient Integration Tests", () => {
         passwordSecretName: "postgres-db-password",
       },
       secretsClient,
-    );
+    ));
 
     // Create a test table
     await client.query(`
