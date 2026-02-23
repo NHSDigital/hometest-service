@@ -30,6 +30,7 @@ describe("PostgresDbClient Integration Tests", () => {
         database: connectionUri.pathname.replace("/", ""),
         schema: "public",
         passwordSecretName: "postgres-db-password",
+        sslMode: "disable",
       },
       secretsClient,
     ));

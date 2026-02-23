@@ -33,14 +33,20 @@ export class PostgresDbClient implements DBClient {
   ): Promise<Pool> {
     const connectionString =
       await connectionStringProvider.getConnectionString();
+
+    // Check if SSL should be disabled based on connection string
+    const url = new URL(connectionString);
+    const sslMode = url.searchParams.get('sslmode');
+    const useSsl = sslMode !== 'disable';
+
     return new Pool({
       connectionString,
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
-      ssl: {
+      ssl: useSsl ? {
         rejectUnauthorized: false,
-      },
+      } : false,
     });
   }
 
