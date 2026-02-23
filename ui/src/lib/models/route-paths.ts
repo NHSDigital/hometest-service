@@ -14,4 +14,5 @@ export enum JourneyStepNames {
   HowComfortablePrickingFinger = "how-comfortable-pricking-finger",
   BloodSampleGuide = "blood-sample-guide",
   EnterMobileNumber = "enter-mobile-phone-number",
+  ConfirmMobileNumber = "confirm-mobile-phone-number",
 }

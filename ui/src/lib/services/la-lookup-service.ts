@@ -1,9 +1,17 @@
 import { backendUrl } from "@/settings";
 
 export interface LaLookupResponse {
-  localAuthorityCode: string;
-  region: string;
+  localAuthority: {
+    localAuthorityCode: string;
+    region: string;
+  };
+  suppliers: {
+    id: string;
+    name: string;
+    testCode: string;
+  }[];
 }
+
 
 class LaLookupService {
   async getByPostcode(postcode: string): Promise<LaLookupResponse> {

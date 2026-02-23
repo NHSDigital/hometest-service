@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -58,6 +57,15 @@ export default function SelectDeliveryAddressPage() {
         return null;
       }
 
+      const laResponse = await laLookupService.getByPostcode(postcode);
+
+      if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+        console.warn("LA lookup returned null or incomplete data", laResponse);
+        // ALPHA: ToDo error screen thrown here:
+        return null;
+      }
+      console.log("Eligibility lookup response:", laResponse);
+
 
       const la = await laLookupService.getByPostcode(postcode);
 
@@ -65,24 +73,30 @@ export default function SelectDeliveryAddressPage() {
 
       updateOrderAnswers({
         deliveryAddress: {
-          addressLine1: selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
+          addressLine1:
+            selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
           addressLine2: selected.DPA.THOROUGHFARE_NAME,
           addressLine3: selected.DPA.DEPENDENT_LOCALITY,
           postTown: selected.DPA.POST_TOWN,
           postcode: selected.DPA.POSTCODE,
         },
         localAuthority: {
-          code: la.localAuthorityCode,
-          region: la.region,
+          code: laResponse.localAuthority.localAuthorityCode,
+          region: laResponse.localAuthority.region,
         },
+        supplier: laResponse.suppliers.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+          testCode: supplier.testCode,
+        })),
       });
+
 
       goToStep("how-comfortable-pricking-finger");
 
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
       console.error("Failed to lookup local authority:", err);
-      setAddressError("Unable to determine local authority. Please try again.");
     }
   };
 
