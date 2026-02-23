@@ -66,6 +66,11 @@ export default function SelectDeliveryAddressPage() {
       }
       console.log("Eligibility lookup response:", laResponse);
 
+
+      const la = await laLookupService.getByPostcode(postcode);
+
+      console.log("LA lookup response:", la);
+
       updateOrderAnswers({
         deliveryAddress: {
           addressLine1:
