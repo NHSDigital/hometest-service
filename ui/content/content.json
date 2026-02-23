@@ -216,6 +216,15 @@
         "hint": "For example, 07771 900 900 or +44 7771 900 900"
       }
     },
+    "confirm-mobile-phone-number": {
+      "title": "What's your mobile phone number?",
+      "description": "You'll get updates to this number.",
+      "form": {
+        "alternativeLabel": "Use another mobile phone number",
+        "alternativeInputLabel": "UK mobile phone number",
+        "alternativeInputHint": "For example, 07771 900 900 or +44 7771 900 900"
+      }
+    },
     "global-error": {
       "title": "Oops!",
       "message": "Sorry, an unexpected error has occurred."

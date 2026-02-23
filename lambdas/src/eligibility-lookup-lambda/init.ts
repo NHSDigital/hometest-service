@@ -7,18 +7,18 @@ import {PostgresDbClient} from "../lib/db/db-client";
 export interface Environment {
   commons: Commons;
   supplierDb: SupplierService;
-  /*laLookupService: LaLookupService*/
+  laLookupService: LaLookupService
 }
 
 export function init(): Environment {
   const commons = new ConsoleCommons();
   const dbClient = new PostgresDbClient(process.env.DATABASE_URL!);
   const supplierDb = new SupplierService({ dbClient });
-  /*const laLookupService = new LaLookupService({baseUrl: process.env.LA_LOOKUP_URL!, httpClient}, commons);*/
+  const laLookupService = new LaLookupService();
 
   return {
     commons,
     supplierDb,
-    /*laLookupService*/
+    laLookupService
   };
 }
