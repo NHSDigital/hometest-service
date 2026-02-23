@@ -78,7 +78,14 @@ export const handler = async (
     return createFhirErrorResponse(validationResult.errorCode as ErrorStatusCode, validationResult.errorType!, validationResult.errorMessage!, validationResult.severity);
   }
 
-  const testOrderResult: OrderResultSummary | null = await orderService.retrieveOrderDetails(identifiers!.orderUid);
+  let testOrderResult: OrderResultSummary | null;
+
+  try{
+    testOrderResult = await orderService.retrieveOrderDetails(identifiers!.orderUid);
+  } catch (error) {
+    commons.logError('order-result-lambda', 'Failed to retrieve order details', { error, orderUid: identifiers!.orderUid });
+    return createFhirErrorResponse(500, 'exception', 'An internal error occurred', 'fatal');
+  }
 
   if (!testOrderResult) {
     commons.logError('order-result-lambda', 'Test order not found for orderUid', { orderUid: identifiers!.orderUid });

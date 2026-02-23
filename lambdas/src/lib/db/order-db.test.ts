@@ -1,5 +1,6 @@
 import { OrderService, OrderResultSummary } from './order-db';
 import { OrderStatus, ResultStatus } from '../types/status';
+import { Commons } from '../commons';
 
 describe('OrderService', () => {
     let dbClient: any;
@@ -10,7 +11,10 @@ describe('OrderService', () => {
             query: jest.fn(),
             withTransaction: jest.fn()
         };
-        orderService = new OrderService(dbClient);
+        const commons = {
+            logError: jest.fn()
+        };
+        orderService = new OrderService(dbClient, commons as any as Commons);
     });
 
     describe('retrieveOrderDetails', () => {
@@ -27,6 +31,8 @@ describe('OrderService', () => {
             dbClient.query.mockResolvedValue({ rows: [mockSummary] });
 
             const result = await orderService.retrieveOrderDetails('order-123');
+
+            expect(dbClient.query).toHaveBeenCalledTimes(1);
             expect(dbClient.query).toHaveBeenCalledWith(expect.any(String), ['order-123']);
             expect(result).toEqual(mockSummary);
         });
@@ -35,6 +41,8 @@ describe('OrderService', () => {
             dbClient.query.mockResolvedValue({ rows: [] });
 
             const result = await orderService.retrieveOrderDetails('order-404');
+
+            expect(dbClient.query).toHaveBeenCalledTimes(1);
             expect(dbClient.query).toHaveBeenCalledWith(expect.any(String), ['order-404']);
             expect(result).toBeNull();
         });
@@ -43,6 +51,7 @@ describe('OrderService', () => {
     describe('updateOrderStatusAndResultStatus', () => {
         it('should call dbClient.query with correct parameters', async () => {
             dbClient.withTransaction.mockResolvedValue({});
+
             await orderService.updateOrderStatusAndResultStatus(
                 'order-1',
                 'ref-1',
@@ -50,6 +59,8 @@ describe('OrderService', () => {
                 ResultStatus.Result_Available,
                 'corr-1'
             );
+
+            expect(dbClient.withTransaction).toHaveBeenCalledTimes(1);
             expect(dbClient.withTransaction).toHaveBeenCalledWith(
                 expect.any(Function)
             );
@@ -59,7 +70,10 @@ describe('OrderService', () => {
     describe('updateResultStatus', () => {
         it('should call dbClient.query with correct parameters', async () => {
             dbClient.query.mockResolvedValue({});
+
             await orderService.updateResultStatus('order-2', ResultStatus.Result_Withheld, 'corr-2');
+
+            expect(dbClient.query).toHaveBeenCalledTimes(1);
             expect(dbClient.query).toHaveBeenCalledWith(
                 expect.stringContaining('INSERT INTO hometest.result_status'),
                 ['order-2', ResultStatus.Result_Withheld, 'corr-2']

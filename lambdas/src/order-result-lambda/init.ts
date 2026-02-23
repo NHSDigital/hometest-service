@@ -11,7 +11,7 @@ export interface Environment {
 export function init(): Environment {
   const commons = new ConsoleCommons();
   const dbClient = new PostgresDbClient(process.env.DATABASE_URL!);
-  const orderService = new OrderService(dbClient);
+  const orderService = new OrderService(dbClient, commons);
 
   return {
     commons,

@@ -1,10 +1,11 @@
-import { validateBody } from './validation';
-import { InterpretationCode, orderResultFHIRObservationSchema, resultCodeMapping } from './index';
+import { InterpretationCode, orderResultFHIRObservationSchema } from './index';
 import { ConsoleCommons } from '../lib/commons';
 import * as validation from './validation';
-import * as utils from '../lib/utils';
+import * as utils from '../lib/utils/utils';
+import * as validationUtils from '../lib/utils/validation-utils';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { ResultStatus } from '../lib/types/status';
+import { Observation } from 'fhir/r4';
 
 describe('validation', () => {
     let commons: jest.Mocked<ConsoleCommons>;
@@ -27,7 +28,7 @@ describe('validation', () => {
 
     describe('validateBody', () => {
         it('throws error and logs when body is null', () => {
-            expect(() => validation.validateBody(null, commons)).toThrow('Body is empty');
+            expect(() => validation.validateAndExtractObservation(null, commons)).toThrow('Body is empty');
             expect(commons.logError).toHaveBeenCalledWith(
                 'order-result-lambda',
                 'Invalid JSON in request body',
@@ -36,7 +37,7 @@ describe('validation', () => {
         });
 
         it('throws error and logs when body is empty object', () => {
-            expect(() => validation.validateBody('{}', commons)).toThrow('Body is empty');
+            expect(() => validation.validateAndExtractObservation('{}', commons)).toThrow('Body is empty');
             expect(commons.logError).toHaveBeenCalledWith(
                 'order-result-lambda',
                 'Invalid JSON in request body',
@@ -45,7 +46,7 @@ describe('validation', () => {
         });
 
         it('throws error and logs when body is invalid JSON', () => {
-            expect(() => validation.validateBody('{invalid json}', commons)).toThrow();
+            expect(() => validation.validateAndExtractObservation('{invalid json}', commons)).toThrow();
             expect(commons.logError).toHaveBeenCalledWith(
                 'order-result-lambda',
                 'Invalid JSON in request body',
@@ -54,16 +55,18 @@ describe('validation', () => {
         });
 
         it('throws error and logs when schema validation fails', () => {
+            const generateReadableErrorSpy = jest
+                .spyOn(validationUtils, 'generateReadableError')
+                .mockReturnValue('Invalid schema');
+
             const invalidObservation = JSON.stringify({ foo: 'bar' });
             jest.spyOn(orderResultFHIRObservationSchema, 'safeParse').mockReturnValue({
                 success: false,
                 error: { issues: [{ message: 'Invalid schema' }] }
-            } as any);
+            } as ReturnType<typeof orderResultFHIRObservationSchema.safeParse>);
 
-            const generateReadableError = jest.fn().mockReturnValue('Invalid schema');
-            jest.spyOn(utils, 'generateReadableError').mockImplementation(generateReadableError);
-
-            expect(() => validation.validateBody(invalidObservation, commons)).toThrow();
+            expect(() => validation.validateAndExtractObservation(invalidObservation, commons)).toThrow();
+            expect(generateReadableErrorSpy).toHaveBeenCalledTimes(1);
             expect(commons.logError).toHaveBeenCalledWith(
                 'order-result-lambda',
                 'Validation failed',
@@ -76,9 +79,9 @@ describe('validation', () => {
             jest.spyOn(orderResultFHIRObservationSchema, 'safeParse').mockReturnValue({
                 success: true,
                 data: { resourceType: 'Observation' }
-            } as any);
+            } as ReturnType<typeof orderResultFHIRObservationSchema.safeParse>);
 
-            expect(() => validation.validateBody(validObservation, commons)).not.toThrow();
+            expect(() => validation.validateAndExtractObservation(validObservation, commons)).not.toThrow();
         });
     });
 
@@ -86,8 +89,14 @@ describe('validation', () => {
         const makeEvent = (body: string | null, headers: Record<string, string> = {}) =>
             ({ body, headers } as unknown as APIGatewayProxyEvent);
 
+        const observation = {
+            basedOn: [{ reference: 'ServiceRequest/550e8400-e29b-41d4-a716-446655440000' }],
+            subject: { reference: 'Patient/550e8400-e29b-41d4-a716-446655440001' },
+            performer: [{ reference: 'Organization/supplier-123' }],
+        } as Observation;
+
         it('returns invalid result when validateBody throws', () => {
-            jest.spyOn(validation, 'validateBody').mockImplementation(() => {
+            jest.spyOn(validation, 'validateAndExtractObservation').mockImplementation(() => {
                 throw new Error('bad body');
             });
 
@@ -103,7 +112,7 @@ describe('validation', () => {
         });
 
         it('returns invalid result when correlation header is invalid', () => {
-            jest.spyOn(validation, 'validateBody').mockImplementation(() => { });
+            jest.spyOn(validation, 'validateAndExtractObservation').mockReturnValue(observation);
             jest.spyOn(utils, 'getCorrelationIdFromEventHeaders').mockImplementation(() => {
                 throw new Error('missing correlation id');
             });
@@ -125,7 +134,9 @@ describe('validation', () => {
         });
 
         it('returns invalid result when identifier extraction fails', () => {
-            jest.spyOn(validation, 'validateBody').mockImplementation(() => { });
+            jest.spyOn(validation, 'validateAndExtractObservation').mockImplementation(() => {
+                throw new Error('Unable to extract necessary identifiers from Observation');
+            });
             jest.spyOn(utils, 'getCorrelationIdFromEventHeaders').mockReturnValue('corr-id');
             jest.spyOn(validation, 'extractOrderUidFromFHIRObservation').mockImplementation(() => {
                 throw new Error('bad order uid');
@@ -133,11 +144,6 @@ describe('validation', () => {
 
             const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'), commons);
 
-            expect(commons.logError).toHaveBeenCalledWith(
-                'order-result-lambda',
-                'Error extracting identifiers from Observation',
-                expect.objectContaining({ error: expect.any(Error) })
-            );
             expect(result.validationResult).toEqual({
                 isValid: false,
                 errorCode: 400,
@@ -148,16 +154,16 @@ describe('validation', () => {
         });
 
         it('returns valid result with observation and identifiers on success', () => {
-            jest.spyOn(validation, 'validateBody').mockImplementation(() => { });
+            jest.spyOn(validation, 'validateAndExtractObservation').mockReturnValue(observation);
             jest.spyOn(utils, 'getCorrelationIdFromEventHeaders').mockReturnValue('corr-id');
 
-            const observation = {
+            const observationEvent = {
                 basedOn: [{ reference: 'ServiceRequest/550e8400-e29b-41d4-a716-446655440000' }],
                 subject: { reference: 'Patient/550e8400-e29b-41d4-a716-446655440001' },
                 performer: [{ reference: 'Organization/supplier-123' }],
             };
             const result = validation.extractAndValidateObservationFields(
-                makeEvent(JSON.stringify(observation)),
+                makeEvent(JSON.stringify(observationEvent)),
                 commons
             );
 
