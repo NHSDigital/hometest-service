@@ -119,7 +119,6 @@ describe("OrderStatusService", () => {
 
       const result = await service.updateOrderStatus({
         orderId: "550e8400-e29b-41d4-a716-446655440000",
-        orderReference: 100001,
         statusCode: OrderStatusCodes.COMPLETE,
         createdAt: "2024-01-15T11:00:00Z",
         correlationId: "corr-123",
@@ -130,7 +129,6 @@ describe("OrderStatusService", () => {
         expect.stringContaining("INSERT INTO"),
         [
           "550e8400-e29b-41d4-a716-446655440000",
-          100001,
           OrderStatusCodes.COMPLETE,
           "2024-01-15T11:00:00Z",
           "corr-123",

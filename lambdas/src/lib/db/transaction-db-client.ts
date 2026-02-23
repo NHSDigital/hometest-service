@@ -67,7 +67,6 @@ export class TransactionService {
         const orderStatusService = new OrderStatusService(tx);
         await orderStatusService.updateOrderStatus({
           orderId: order_uid,
-          orderReference: order_reference,
           statusCode: OrderStatusCodes.GENERATED,
           createdAt: new Date().toISOString(),
           correlationId,
