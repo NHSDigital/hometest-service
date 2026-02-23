@@ -1,7 +1,5 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
-
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
@@ -46,6 +44,16 @@ jest.mock("@/mocks/addressLookupResponse.json", () => ({
       },
     },
   ],
+}));
+
+jest.mock('@/lib/services/la-lookup-service', () => ({
+  __esModule: true,
+  default: {
+    getByPostcode: jest.fn().mockResolvedValue({
+      localAuthorityCode: "4230",
+      region: "Salford",
+    }),
+  },
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -172,6 +180,17 @@ describe("SelectDeliveryAddressPage", () => {
       expect(radios[0]).not.toBeChecked();
       expect(radios[1]).toBeChecked();
       expect(radios[2]).not.toBeChecked();
+    });
+
+    it("updates order answers and navigates on valid submission", async () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await screen.findByText(/3 POST OFFICE COTTAGE/i);
     });
   });
 
