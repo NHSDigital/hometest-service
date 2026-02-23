@@ -33,18 +33,14 @@ export class PostgresDbClient implements DBClient {
   ): Promise<Pool> {
     const connectionString =
       await connectionStringProvider.getConnectionString();
-
-    // ALPHA: should get connection config some other way to avoid parsing the connection string here, which is a bit hacky. Consider refactoring to have the connection config available directly.
-    const url = new URL(connectionString);
-    const sslMode = url.searchParams.get('sslmode');
-    const useSsl = sslMode !== 'disable';
+    const sslEnabled = connectionStringProvider.getSslEnabled();
 
     return new Pool({
       connectionString,
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
-      ssl: useSsl ? {
+      ssl: sslEnabled ? {
         rejectUnauthorized: false,
       } : false,
     });

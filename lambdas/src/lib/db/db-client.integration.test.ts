@@ -22,18 +22,20 @@ describe("PostgresDbClient Integration Tests", () => {
     const password = decodeURIComponent(connectionUri.password);
     secretsClient.getSecretValue.mockResolvedValue(password);
 
-    client = new PostgresDbClient(postgresConnection(
-      {
-        username: decodeURIComponent(connectionUri.username),
-        address: connectionUri.hostname,
-        port: connectionUri.port,
-        database: connectionUri.pathname.replace("/", ""),
-        schema: "public",
-        passwordSecretName: "postgres-db-password",
-        sslMode: "disable",
-      },
-      secretsClient,
-    ));
+    client = new PostgresDbClient(
+      postgresConnection(
+        {
+          username: decodeURIComponent(connectionUri.username),
+          address: connectionUri.hostname,
+          port: connectionUri.port,
+          database: connectionUri.pathname.replace("/", ""),
+          schema: "public",
+          passwordSecretName: "postgres-db-password",
+          ssl: false, // Disable SSL for test container
+        },
+        secretsClient,
+      )
+    );
 
     // Create a test table
     await client.query(`
