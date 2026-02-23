@@ -6,9 +6,9 @@ export interface OrderResultSummary {
     order_reference: string;
     supplier_id: string;
     patient_uid: string;
-    result_status: string;
+    result_status: ResultStatus | null;
     correlation_id: string;
-    order_status_code: string;
+    order_status_code: OrderStatus | null;
 }
 
 export class OrderService {
