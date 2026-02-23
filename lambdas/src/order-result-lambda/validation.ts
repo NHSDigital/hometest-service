@@ -1,9 +1,9 @@
 import { Observation } from 'fhir/r4';
 import { orderResultFHIRObservationSchema, Identifiers, resultCodeMapping, InterpretationCode } from './index';
-import { generateReadableError } from '../lib/utils';
 import { ConsoleCommons } from '../lib/commons';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { getCorrelationIdFromEventHeaders, isUUID } from '../lib/utils';
+import { getCorrelationIdFromEventHeaders, isUUID } from '../lib/utils/utils';
+import { generateReadableError } from "../lib/utils/validation-utils";
 import { OrderResultSummary } from '../lib/db/order-db';
 import { ErrorStatusCode } from '../lib/fhir-response';
 
@@ -16,7 +16,7 @@ export interface ValidationResult {
   severity?: 'error' | 'warning' | 'information';
 }
 
-export const validateBody = (body: string | null, commons: ConsoleCommons) => {
+export const validateAndExtractObservation = (body: string | null, commons: ConsoleCommons): Observation => {
   let observation: Observation;
 
   try {
@@ -37,11 +37,14 @@ export const validateBody = (body: string | null, commons: ConsoleCommons) => {
     commons.logError('order-result-lambda', 'Validation failed', { error: errorDetails });
     throw new Error(`FHIR Observation validation error: ${errorDetails}`);
   }
+
+  return observation;
 };
 
 export function extractAndValidateObservationFields(event: APIGatewayProxyEvent, commons: ConsoleCommons): { validationResult: ValidationResult; observation?: Observation; identifiers?: Identifiers; } {
+  let observation: Observation;
   try {
-    validateBody(event.body, commons);
+    observation = validateAndExtractObservation(event.body, commons);
   } catch (error) {
     return {
       validationResult: {
@@ -54,7 +57,6 @@ export function extractAndValidateObservationFields(event: APIGatewayProxyEvent,
     };
   }
 
-  const observation: Observation = JSON.parse(event.body!);
   let correlationId: string;
 
   try {

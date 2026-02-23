@@ -1,6 +1,6 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
-import { retrieveMandatoryEnvVariable } from "../lib/utils";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 import { TransactionService } from "../lib/db/transaction-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";

@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { OrderStatus, ResultStatus } from '../lib/types/status';
-const { extractAndValidateObservationFields, extractInterpretationCodeFromFHIRObservation, validateDBData } = require('./validation');
-const { createFhirErrorResponse, createFhirResponse } = require('../lib/fhir-response');
+import { extractAndValidateObservationFields, extractInterpretationCodeFromFHIRObservation, validateDBData } from './validation';
+import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
 
 const initSingleton = {
   commons: {
@@ -15,14 +15,18 @@ const initSingleton = {
   },
 }
 
+const extractAndValidateObservationFieldsMock = jest.fn();
+const extractInterpretationCodeFromFHIRObservationMock = jest.fn();
+const validateDBDataMock = jest.fn();
+
 jest.mock('./init', () => ({
   init: () => initSingleton,
 }));
 
 jest.mock('./validation', () => ({
-  extractAndValidateObservationFields: jest.fn(),
-  extractInterpretationCodeFromFHIRObservation: jest.fn(),
-  validateDBData: jest.fn(),
+  extractAndValidateObservationFields: extractAndValidateObservationFieldsMock,
+  extractInterpretationCodeFromFHIRObservation: extractInterpretationCodeFromFHIRObservationMock,
+  validateDBData: validateDBDataMock,
 }));
 
 jest.mock('../lib/fhir-response', () => ({
@@ -70,14 +74,14 @@ describe('order-result-lambda handler', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    extractAndValidateObservationFields.mockReturnValue({
+    extractAndValidateObservationFieldsMock.mockReturnValue({
       validationResult: { isValid: true },
       observation,
       identifiers,
     });
     orderService.retrieveOrderDetails.mockResolvedValue(testOrderResult);
-    validateDBData.mockResolvedValue({ isValid: true, isIdempotent: false });
-    extractInterpretationCodeFromFHIRObservation.mockReturnValue(InterpretationCode.Normal);
+    validateDBDataMock.mockResolvedValue({ isValid: true, isIdempotent: false });
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
     orderService.updateResultStatus.mockResolvedValue(undefined);
   });
@@ -89,7 +93,7 @@ describe('order-result-lambda handler', () => {
   });
 
   it('returns error if validation fails', async () => {
-    extractAndValidateObservationFields.mockReturnValueOnce({
+    extractAndValidateObservationFieldsMock.mockReturnValueOnce({
       validationResult: { isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'fail', severity: 'error' },
     });
     const res = await handler(event as APIGatewayProxyEvent);
@@ -105,21 +109,21 @@ describe('order-result-lambda handler', () => {
   });
 
   it('returns error if db validation fails', async () => {
-    validateDBData.mockResolvedValueOnce({ isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'db fail', severity: 'error' });
+    validateDBDataMock.mockResolvedValueOnce({ isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'db fail', severity: 'error' });
     const res = await handler(event as APIGatewayProxyEvent);
     expect(res.statusCode).toBe(400);
     expect(createFhirErrorResponse).toHaveBeenCalledWith(400, 'invalid', 'db fail', 'error');
   });
 
   it('returns 201 if idempotent', async () => {
-    validateDBData.mockResolvedValueOnce({ isValid: true, isIdempotent: true });
+    validateDBDataMock.mockResolvedValueOnce({ isValid: true, isIdempotent: true });
     const res = await handler(event as APIGatewayProxyEvent);
     expect(res.statusCode).toBe(201);
     expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
   });
 
   it('calls updateOrderStatusAndResultStatus for interpretation code normal with order status complete and result available', async () => {
-    extractInterpretationCodeFromFHIRObservation.mockReturnValueOnce(InterpretationCode.Normal);
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Normal);
     await handler(event as APIGatewayProxyEvent);
     expect(orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
       identifiers.orderUid,
@@ -131,7 +135,7 @@ describe('order-result-lambda handler', () => {
   });
 
   it('calls updateResultStatus for interpretation code abnormal with result withheld', async () => {
-    extractInterpretationCodeFromFHIRObservation.mockReturnValueOnce(InterpretationCode.Abnormal);
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Abnormal);
     await handler(event as APIGatewayProxyEvent);
     expect(orderService.updateResultStatus).toHaveBeenCalledWith(
       identifiers.orderUid,

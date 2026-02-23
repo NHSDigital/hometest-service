@@ -1,20 +1,22 @@
 import { OrderStatus, ResultStatus } from "../types/status";
 import { DBClient } from "./db-client";
-
+import { Commons } from "../commons";
 export interface OrderResultSummary {
     order_uid: string;
     order_reference: string;
     supplier_id: string;
     patient_uid: string;
     result_status: ResultStatus | null;
-    correlation_id: string;
+    correlation_id: string | null;
     order_status_code: OrderStatus | null;
 }
 
 export class OrderService {
     private readonly dbClient: DBClient;
-    constructor(dbClient: DBClient) {
+    private readonly commons: Commons;
+    constructor(dbClient: DBClient, commons: Commons) {
         this.dbClient = dbClient;
+        this.commons = commons;
     }
 
     async retrieveOrderDetails(orderUid: string): Promise<OrderResultSummary | null> {
@@ -28,32 +30,47 @@ export class OrderService {
                 LIMIT 1;
         `;
 
-        const result = await this.dbClient.query<OrderResultSummary, [string]>(query, [orderUid]);
+        let result;
+        try {
+            result = await this.dbClient.query<OrderResultSummary, [string]>(query, [orderUid]);
+        } catch (error) {
+            this.commons.logError('order-db', 'Failed to retrieve order details', { error, orderUid });
+            throw error;
+        }
         return result.rows[0] || null;
     }
 
-    async updateOrderStatusAndResultStatus(orderUid: string, orderReference: string, statusCode: OrderStatus, resultStatus: ResultStatus, correlationId: string) {
-        await this.dbClient.withTransaction(async (tx) => {
-            const orderStatusQuery = `
-            INSERT INTO hometest.order_status (order_uid, order_reference, status_code, correlation_id)
-                VALUES ($1, $2, $3, $4)
-            `;
-            await tx.query(orderStatusQuery, [orderUid, orderReference, statusCode, correlationId]);
+    async updateOrderStatusAndResultStatus(orderUid: string, orderReference: string, statusCode: OrderStatus, resultStatus: ResultStatus, correlationId: string): Promise<void> {
+        try {
+            await this.dbClient.withTransaction(async (tx) => {
+                const orderStatusQuery = `
+                INSERT INTO hometest.order_status (order_uid, order_reference, status_code, correlation_id)
+                    VALUES ($1, $2, $3, $4)
+                `;
+                await tx.query(orderStatusQuery, [orderUid, orderReference, statusCode, correlationId]);
 
-            const resultStatusQuery = `
-            INSERT INTO hometest.result_status (order_uid, status, correlation_id)
-                VALUES ($1, $2, $3)
-            `;
-            await tx.query(resultStatusQuery, [orderUid, resultStatus, correlationId]);
-        });
+                const resultStatusQuery = `
+                INSERT INTO hometest.result_status (order_uid, status, correlation_id)
+                    VALUES ($1, $2, $3)
+                `;
+                await tx.query(resultStatusQuery, [orderUid, resultStatus, correlationId]);
+            });
+        } catch (error) {
+            this.commons.logError('order-db', 'Failed to update order and result status', { error, orderUid });
+            throw error;
+        }
     }
 
-    async updateResultStatus(orderUid: string, resultStatus: ResultStatus, correlationId: string) {
+    async updateResultStatus(orderUid: string, resultStatus: ResultStatus, correlationId: string): Promise<void> {
         const query = `
             INSERT INTO hometest.result_status (order_uid, status, correlation_id)
                 VALUES ($1, $2, $3)
         `;
-
-        await this.dbClient.query(query, [orderUid, resultStatus, correlationId]);
+        try {
+            await this.dbClient.query(query, [orderUid, resultStatus, correlationId]);
+        } catch (error) {
+            this.commons.logError('order-db', 'Failed to update result status', { error, orderUid });
+            throw error;
+        }
     }
 }
