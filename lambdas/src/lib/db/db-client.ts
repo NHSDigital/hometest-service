@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import type { SecretsClient } from "../secrets/secrets-manager-client";
+import { ConnectionStringProvider } from "./connection-string-provider";
 
 /**
  * A library-agnostic representation of a database result.
@@ -18,62 +18,24 @@ export interface DBClient {
   close(): Promise<void>;
 }
 
-export interface PostgresDbClientConfig {
-  username: string;
-  address: string;
-  port: string;
-  database: string;
-  schema?: string;
-  passwordSecretName: string;
-}
-
 /**
  * Concrete implementation using pg.Pool
  */
 export class PostgresDbClient implements DBClient {
-  private pool: Pool | null = null;
   private readonly poolPromise: Promise<Pool>;
-  private readonly config: PostgresDbClientConfig;
-  private readonly secretsClient: SecretsClient;
 
-  constructor(config: PostgresDbClientConfig, secretsClient: SecretsClient) {
-    this.config = config;
-    this.secretsClient = secretsClient;
-    this.poolPromise = this.createPool();
+  constructor(connectionStringProvider: ConnectionStringProvider) {
+    this.poolPromise = this.createPool(connectionStringProvider);
   }
 
-  private async createPool(): Promise<Pool> {
-    const password = await this.secretsClient.getSecretValue(
-      this.config.passwordSecretName,
-      { jsonKey: "password" },
-    );
-    const connectionString = this.buildConnectionString(password);
-    const pool = new Pool({
-      connectionString: connectionString,
+  private async createPool(connectionStringProvider: ConnectionStringProvider): Promise<Pool> {
+    const connectionString = await connectionStringProvider.getConnectionString();
+    return new Pool({
+      connectionString,
       max: 5,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
     });
-    this.pool = pool;
-    return pool;
-  }
-
-  private buildConnectionString(password: string): string {
-    const username = encodeURIComponent(this.config.username);
-    // Trim whitespace and remove surrounding quotes
-    const sanitisedPassword = password.trim().replace(/^["']|["']$/g, "");
-    const encodedPassword = encodeURIComponent(sanitisedPassword);
-    const address = this.config.address;
-    const port = this.config.port;
-    const database = this.config.database;
-    const base = `postgresql://${username}:${encodedPassword}@${address}:${port}/${database}`;
-
-    if (!this.config.schema) {
-      return base;
-    }
-
-    const options = encodeURIComponent(`-c search_path=${this.config.schema}`);
-    return `${base}?options=${options}`;
   }
 
   private async getPool(): Promise<Pool> {

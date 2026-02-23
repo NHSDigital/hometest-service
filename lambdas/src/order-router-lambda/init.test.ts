@@ -3,12 +3,14 @@ import { FetchHttpClient } from "../lib/http/http-client";
 import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import {postgresFromEnv} from "../lib/db/connection-string-provider";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("../lib/db/connection-string-provider");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -22,12 +24,18 @@ describe("init", () => {
     DB_SECRET_NAME: "test-secret-name",
   };
 
+  const mockConnectionStringProvider = {
+    getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset process.env to a clean state
     process.env = { ...originalEnv };
     // Set default mock environment variables
     Object.assign(process.env, mockEnvVariables);
+
+    (postgresFromEnv as jest.Mock).mockReturnValue(mockConnectionStringProvider);
   });
 
   afterEach(() => {
@@ -80,17 +88,7 @@ describe("init", () => {
 
       init();
 
-      expect(PostgresDbClient).toHaveBeenCalledWith(
-        {
-          username: "test-username",
-          address: "test-address",
-          port: "5432",
-          database: "test-database",
-          schema: "test-schema",
-          passwordSecretName: "test-secret-name",
-        },
-        expect.any(AwsSecretsClient),
-      );
+      expect(PostgresDbClient).toHaveBeenCalledWith(mockConnectionStringProvider);
     });
 
     it("should create SupplierService with PostgresDbClient instance", () => {
@@ -112,48 +110,7 @@ describe("init", () => {
     });
   });
 
-  describe("missing environment variables", () => {
-    it.each([
-      ["DB_USERNAME"],
-      ["DB_ADDRESS"],
-      ["DB_PORT"],
-      ["DB_NAME"],
-      ["DB_SCHEMA"],
-      ["DB_SECRET_NAME"],
-    ])("should throw error when %s is missing", (envVar) => {
-      delete process.env[envVar];
-
-      expect(() => init()).toThrow(
-        `Missing value for an environment variable ${envVar}`,
-      );
-    });
-  });
-
-  describe("empty environment variables", () => {
-    it.each([
-      ["DB_USERNAME"],
-      ["DB_ADDRESS"],
-      ["DB_PORT"],
-      ["DB_NAME"],
-      ["DB_SCHEMA"],
-      ["DB_SECRET_NAME"],
-    ])("should throw error when %s is empty string", (envVar) => {
-      process.env[envVar] = "";
-
-      expect(() => init()).toThrow(
-        `Missing value for an environment variable ${envVar}`,
-      );
-    });
-  });
-
   describe("integration of components", () => {
-    it("should pass an AwsSecretsClient instance to PostgresDbClient", () => {
-      init();
-
-      const postgresDbClientCalls = (PostgresDbClient as jest.Mock).mock.calls;
-      expect(postgresDbClientCalls[0][1]).toBeInstanceOf(AwsSecretsClient);
-    });
-
     it("should pass a PostgresDbClient instance to SupplierService", () => {
       init();
 
@@ -173,7 +130,6 @@ describe("init", () => {
       expect(PostgresDbClient).toHaveBeenCalledTimes(1);
       expect(PostgresDbClient).toHaveBeenCalledWith(
         expect.any(Object),
-        expect.any(AwsSecretsClient),
       );
 
       // SupplierService should be created with a PostgresDbClient
