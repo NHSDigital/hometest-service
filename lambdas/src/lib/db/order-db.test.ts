@@ -20,9 +20,9 @@ describe('OrderService', () => {
                 order_reference: 'ref-456',
                 supplier_id: 'supplier-789',
                 patient_uid: 'patient-abc',
-                result_status: 'RESULT_AVAILABLE',
+                result_status: ResultStatus.Result_Available,
                 correlation_id: 'corr-xyz',
-                order_status_code: 'COMPLETE',
+                order_status_code: OrderStatus.Complete,
             };
             dbClient.query.mockResolvedValue({ rows: [mockSummary] });
 
