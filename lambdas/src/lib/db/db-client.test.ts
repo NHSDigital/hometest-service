@@ -13,16 +13,42 @@ jest.mock("pg", () => {
 describe("PostgresDbClient", () => {
   let client: PostgresDbClient;
   let mockPool: jest.Mocked<Pool>;
+  const secretsClient = {
+    getSecretValue: jest.fn(),
+    getSecretString: jest.fn(),
+  };
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    secretsClient.getSecretValue.mockResolvedValue("testpass");
     client = new PostgresDbClient(
-      "postgresql://test:test@localhost:5432/testdb",
+      {
+        username: "test",
+        address: "localhost",
+        port: "5432",
+        database: "testdb",
+        schema: "public",
+        passwordSecretName: "postgres-db-password",
+      },
+      secretsClient,
     );
+    await (client as any).poolPromise;
     mockPool = (client as any).pool;
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it("should build the connection string from config and secret", async () => {
+    expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
+      "postgres-db-password",
+    );
+    expect(Pool).toHaveBeenCalledWith(
+      expect.objectContaining({
+        connectionString:
+          "postgresql://test:testpass@localhost:5432/testdb?options=-c%20search_path%3Dpublic",
+      }),
+    );
   });
 
   describe("query", () => {

@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import type { SecretsClient } from "../secrets/secrets-manager-client";
 
 /**
  * A library-agnostic representation of a database result.
@@ -19,26 +20,71 @@ export interface DBClient {
   close(): Promise<void>;
 }
 
+export interface PostgresDbClientConfig {
+  username: string;
+  address: string;
+  port: string;
+  database: string;
+  schema?: string;
+  passwordSecretName: string;
+}
+
 /**
  * Concrete implementation using pg.Pool
  */
 export class PostgresDbClient implements DBClient {
-  private pool: Pool;
+  private pool: Pool | null = null;
+  private readonly poolPromise: Promise<Pool>;
+  private readonly config: PostgresDbClientConfig;
+  private readonly secretsClient: SecretsClient;
 
-  constructor(connectionString: string) {
-    this.pool = new Pool({
+  constructor(config: PostgresDbClientConfig, secretsClient: SecretsClient) {
+    this.config = config;
+    this.secretsClient = secretsClient;
+    this.poolPromise = this.createPool();
+  }
+
+  private async createPool(): Promise<Pool> {
+    const password = await this.secretsClient.getSecretValue(
+      this.config.passwordSecretName,
+    );
+    const connectionString = this.buildConnectionString(password);
+    const pool = new Pool({
       connectionString: connectionString,
       max: 5,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
     });
+    this.pool = pool;
+    return pool;
+  }
+
+  private buildConnectionString(password: string): string {
+    const username = encodeURIComponent(this.config.username);
+    const encodedPassword = encodeURIComponent(password);
+    const address = this.config.address;
+    const port = this.config.port;
+    const database = this.config.database;
+    const base = `postgresql://${username}:${encodedPassword}@${address}:${port}/${database}`;
+
+    if (!this.config.schema) {
+      return base;
+    }
+
+    const options = encodeURIComponent(`-c search_path=${this.config.schema}`);
+    return `${base}?options=${options}`;
+  }
+
+  private async getPool(): Promise<Pool> {
+    return this.poolPromise;
   }
 
   async query<T = any, I extends any[] = any[]>(
     text: string,
     values?: I,
   ): Promise<DbResult<T>> {
-    const result = await this.pool.query(text, values as any[]);
+    const pool = await this.getPool();
+    const result = await pool.query(text, values as any[]);
     return {
       rows: result.rows as T[],
       rowCount: result.rowCount,
@@ -48,7 +94,8 @@ export class PostgresDbClient implements DBClient {
   async withTransaction<T>(
     fn: (client: DBClient) => Promise<T>,
   ): Promise<T> {
-    const client = await this.pool.connect();
+    const pool = await this.getPool();
+    const client = await pool.connect();
     const txClient: DBClient = {
       query: async <Q = any, I extends any[] = any[]>(
         text: string,
@@ -83,6 +130,7 @@ export class PostgresDbClient implements DBClient {
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    const pool = await this.getPool();
+    await pool.end();
   }
 }

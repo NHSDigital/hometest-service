@@ -4,6 +4,10 @@ import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers
 describe("PostgresDbClient Integration Tests", () => {
   let container: StartedPostgreSqlContainer;
   let client: PostgresDbClient;
+  const secretsClient = {
+    getSecretValue: jest.fn(),
+    getSecretString: jest.fn(),
+  };
 
   beforeAll(async () => {
     // Start a real PostgreSQL container
@@ -13,7 +17,21 @@ describe("PostgresDbClient Integration Tests", () => {
       .withPassword("testpass")
       .start();
 
-    client = new PostgresDbClient(container.getConnectionUri());
+    const connectionUri = new URL(container.getConnectionUri());
+    const password = decodeURIComponent(connectionUri.password);
+    secretsClient.getSecretValue.mockResolvedValue(password);
+
+    client = new PostgresDbClient(
+      {
+        username: decodeURIComponent(connectionUri.username),
+        address: connectionUri.hostname,
+        port: connectionUri.port,
+        database: connectionUri.pathname.replace("/", ""),
+        schema: "public",
+        passwordSecretName: "postgres-db-password",
+      },
+      secretsClient,
+    );
 
     // Create a test table
     await client.query(`
