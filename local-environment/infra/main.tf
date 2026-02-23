@@ -175,7 +175,13 @@ module "eligibility_lookup_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
   }
 }
 
