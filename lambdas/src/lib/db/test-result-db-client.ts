@@ -3,15 +3,9 @@ import { type DBClient } from "./db-client";
 type TestResultStatusCode = "RESULT_AVAILABLE" | "RESULT_WITHHELD";
 
 export interface TestResult {
-  id: string;
+  id: number;
   status: TestResultStatusCode;
-  created_at: Date;
-  order_id: string;
-  test_code: string;
-  test_description: string;
   supplier_id: string;
-  supplier_name: string;
-  patient_id: string;
 }
 
 export class TestResultDbClient {
@@ -29,17 +23,9 @@ export class TestResultDbClient {
       SELECT
           rs.result_id AS id,
           rs.status as status,
-          rs.created_at AS created_at,
-          o.order_uid AS order_id,
-          o.test_code AS test_code,
-          tt.description AS test_description,
-          s.supplier_id AS supplier_id,
-          s.supplier_name AS supplier_name,
-          p.patient_uid AS patient_id
+          o.supplier_id AS supplier_id
       FROM hometest.test_order o
-      INNER JOIN test_type tt ON tt.test_code = o.test_code
       INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
-      INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
       INNER JOIN hometest.result_status rs ON o.order_uid = o.order_uid
       WHERE
           (

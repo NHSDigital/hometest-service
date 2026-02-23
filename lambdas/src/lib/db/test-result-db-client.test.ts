@@ -25,15 +25,9 @@ describe("TestResultDbClient", () => {
 
     it("should return test result when found", async () => {
       const mockTestResult: TestResult = {
-        id: "result-123",
+        id: 123,
         status: "RESULT_AVAILABLE",
-        created_at: new Date("2026-02-20T10:30:00Z"),
-        order_id: orderId,
-        test_code: "31676001",
-        test_description: "HIV antigen test",
         supplier_id: "SUP001",
-        supplier_name: "Test Supplier Ltd",
-        patient_id: "patient-456",
       };
 
       mockDbClient.query.mockResolvedValue({
@@ -77,15 +71,9 @@ describe("TestResultDbClient", () => {
 
     it("should return test result with RESULT_WITHHELD status", async () => {
       const mockTestResult: TestResult = {
-        id: "result-789",
+        id: 789,
         status: "RESULT_WITHHELD",
-        created_at: new Date("2026-02-20T15:45:00Z"),
-        order_id: orderId,
-        test_code: "31676001",
-        test_description: "HIV antigen test",
         supplier_id: "SUP002",
-        supplier_name: "Another Supplier Ltd",
-        patient_id: "patient-999",
       };
 
       mockDbClient.query.mockResolvedValue({
@@ -111,34 +99,27 @@ describe("TestResultDbClient", () => {
 
       await testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth);
 
-      const expectedQuery = `SELECT
-          rs.result_id AS id,
-          rs.status as status,
-          rs.created_at AS created_at,
-          o.order_uid AS order_id,
-          o.test_code AS test_code,
-          tt.description AS test_description,
-          s.supplier_id AS supplier_id,
-          s.supplier_name AS supplier_name,
-          p.patient_uid AS patient_id
-      FROM hometest.test_order o
-      INNER JOIN test_type tt ON tt.test_code = o.test_code
-      INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
-      INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
-      INNER JOIN hometest.result_status rs ON o.order_uid = o.order_uid
-      WHERE
-          (
-            SELECT os.status_code = 'COMPLETE'
-            FROM hometest.order_status os
-            WHERE os.order_uid = $1
-            ORDER BY os.created_at DESC
-            LIMIT 1
-          ) AND
-          o.order_uid = $1 AND
-          p.nhs_number = $2 AND
-          p.birth_date = $3::date
-      ORDER BY rs.created_at DESC
-      LIMIT 1;`;
+      const expectedQuery = `
+        SELECT
+            rs.result_id AS id,
+            rs.status as status,
+            o.supplier_id AS supplier_id
+        FROM hometest.test_order o
+        INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
+        INNER JOIN hometest.result_status rs ON o.order_uid = o.order_uid
+        WHERE
+            (
+              SELECT os.status_code = 'COMPLETE'
+              FROM hometest.order_status os
+              WHERE os.order_uid = $1
+              ORDER BY os.created_at DESC
+              LIMIT 1
+            ) AND
+            o.order_uid = $1 AND
+            p.nhs_number = $2 AND
+            p.birth_date = $3::date
+        ORDER BY rs.created_at DESC
+        LIMIT 1;`;
 
       const actualQuery = mockDbClient.query.mock.calls[0][0];
 
