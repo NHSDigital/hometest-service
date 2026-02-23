@@ -5,8 +5,7 @@ import {
   createFhirResponse,
 } from "../lib/fhir-response";
 
-import { OAuthSupplierAuthClient } from "src/lib/supplier/supplier-auth-client";
-import { ObservationBuilder } from "./observation-builder";
+import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import cors from "@middy/http-cors";
 import { defaultCorsOptions } from "./cors-configuration";
 import { getResultsQueryParamsSchema } from "./schemas";
@@ -46,8 +45,6 @@ export const lambdaHandler = async (
     dateOfBirth,
   );
 
-  // for Alpha we only return observation if RESULT_AVAILABLE
-  // and the returned observation is 'Not detected' with an interpretation of 'Normal'
   if (!testResult || testResult.status !== "RESULT_AVAILABLE") {
     return createFhirErrorResponse(
       404,
@@ -79,28 +76,25 @@ export const lambdaHandler = async (
   const resultsUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}/results`;
 
   const url = new URL(resultsUrl);
-  url.searchParams.append("order_id", orderId);
+  url.searchParams.append("order_uid", orderId);
 
   const correlationId = uuidv4();
-  const response = await httpClient.get<Bundle<Observation>>(resultsUrl, {
+  const response = await httpClient.get<Bundle<Observation>>(url.toString(), {
     Authorization: `Bearer ${accessToken}`,
     Accept: "application/fhir+json",
     "X-Correlation-ID": correlationId,
   });
 
-  const isNormal =
-    response.entry?.[0].resource?.interpretation?.[0].coding?.[0].code === "N";
+  const observation = response.entry?.[0]?.resource;
+  const isNormal = observation?.interpretation?.[0].coding?.[0].code === "N";
 
-  if (!isNormal) {
+  if (!isNormal || !observation) {
     return createFhirErrorResponse(
       404,
       "not-found",
       "The requested resource could not be found",
     );
   }
-
-  // todo update builder implementation with observation from supplier
-  const observation = ObservationBuilder.build(testResult);
 
   return createFhirResponse(200, observation);
 };

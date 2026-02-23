@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { Bundle, Observation } from "fhir/r4";
 
 import { TestResult } from "../lib/db/test-result-db-client";
 import { lambdaHandler } from "./index";
@@ -6,11 +7,25 @@ import { lambdaHandler } from "./index";
 jest.mock("../lib/db/test-result-db-client");
 
 const mockGetResult = jest.fn();
+const mockHttpGet = jest.fn();
+const mockHttpPost = jest.fn();
+const mockGetSecretValue = jest.fn();
+const mockGetSupplierConfig = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
     testResultDbClient: {
       getResult: mockGetResult,
+    },
+    httpClient: {
+      get: mockHttpGet,
+      post: mockHttpPost,
+    },
+    secretsClient: {
+      getSecretValue: mockGetSecretValue,
+    },
+    supplierDb: {
+      getSupplierConfigBySupplierId: mockGetSupplierConfig,
     },
   })),
 }));
@@ -18,6 +33,8 @@ jest.mock("./init", () => ({
 describe("Get Results Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
   let mockTestResult: TestResult;
+  let mockBundle: Bundle<Observation>;
+  let expectedObservation: Observation;
 
   beforeEach(() => {
     mockEvent = {
@@ -43,7 +60,89 @@ describe("Get Results Lambda Handler", () => {
       patient_id: "pat-123e4567-e89b-12d3-a456-426614174000",
     };
 
+    expectedObservation = {
+      resourceType: "Observation",
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      basedOn: [
+        {
+          reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000",
+        },
+      ],
+      status: "final",
+      code: {
+        coding: [
+          {
+            system: "http://snomed.info/sct",
+            code: "31676001",
+            display: "HIV antigen test",
+          },
+        ],
+        text: "HIV antigen test",
+      },
+      subject: {
+        reference: "Patient/123e4567-e89b-12d3-a456-426614174000",
+      },
+      effectiveDateTime: "2025-11-04T15:45:00Z",
+      issued: "2025-11-04T16:00:00Z",
+      performer: [
+        {
+          reference: "Organization/SUPP001",
+          display: "Test Supplier Ltd",
+        },
+      ],
+      valueCodeableConcept: {
+        coding: [
+          {
+            system: "http://snomed.info/sct",
+            code: "260415000",
+            display: "Not detected",
+          },
+        ],
+      },
+      interpretation: [
+        {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              code: "N",
+              display: "Normal",
+            },
+          ],
+          text: "Normal",
+        },
+      ],
+    };
+
+    mockBundle = {
+      resourceType: "Bundle",
+      type: "searchset",
+      total: 1,
+      entry: [
+        {
+          fullUrl: "urn:uuid:550e8400-e29b-41d4-a716-446655440001",
+          resource: expectedObservation,
+        },
+      ],
+    };
+
     mockGetResult.mockReset();
+    mockHttpGet.mockReset();
+    mockHttpPost.mockReset();
+    mockGetSecretValue.mockReset();
+    mockGetSupplierConfig.mockReset();
+
+    // Default mocks for successful flow
+    mockGetSupplierConfig.mockResolvedValue({
+      serviceUrl: "https://supplier-api.example.com",
+      oauthTokenPath: "/oauth/token",
+      clientId: "client-123",
+      clientSecretName: "supplier-secret",
+      oauthScope: "read:results",
+    });
+    mockGetSecretValue.mockResolvedValue("mock-secret");
+    mockHttpPost.mockResolvedValue({ access_token: "mock-token" }); // OAuth token
+    mockHttpGet.mockResolvedValue(mockBundle); // Results API response
   });
 
   afterEach(() => {
@@ -51,7 +150,7 @@ describe("Get Results Lambda Handler", () => {
   });
 
   const getObservationFromResult = (result: APIGatewayProxyResult) => {
-    return JSON.parse(result.body);
+    return JSON.parse(result.body) as Observation;
   };
 
   describe("Success scenarios", () => {
@@ -66,9 +165,7 @@ describe("Get Results Lambda Handler", () => {
       });
 
       const observation = getObservationFromResult(result);
-      expect(observation.resourceType).toBe("Observation");
-      expect(observation.id).toBe(mockTestResult.id);
-      expect(observation.status).toBe("final");
+      expect(observation).toEqual(expectedObservation);
 
       expect(mockGetResult).toHaveBeenCalledWith(
         "123e4567-e89b-12d3-a456-426614174000",
@@ -140,6 +237,56 @@ describe("Get Results Lambda Handler", () => {
     test("should return 404 when result status is RESULT_WITHHELD", async () => {
       mockTestResult.status = "RESULT_WITHHELD";
       mockGetResult.mockResolvedValue(mockTestResult);
+
+      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
+
+      expect(result.statusCode).toBe(404);
+      expect(result.headers).toEqual({
+        "Content-Type": "application/fhir+json",
+      });
+
+      const responseBody = JSON.parse(result.body);
+      expect(responseBody.resourceType).toBe("OperationOutcome");
+      expect(responseBody.issue).toHaveLength(1);
+      expect(responseBody.issue[0]).toMatchObject({
+        severity: "error",
+        code: "not-found",
+        diagnostics: "The requested resource could not be found",
+      });
+    });
+
+    test("should return 404 when supplier API returns abnormal result", async () => {
+      mockGetResult.mockResolvedValue(mockTestResult);
+
+      // Setup mocks again with abnormal result
+      const abnormalBundle = {
+        ...mockBundle,
+        entry: [
+          {
+            ...mockBundle.entry![0],
+            resource: {
+              ...mockBundle.entry![0].resource,
+              interpretation: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                      code: "A", // Abnormal
+                      display: "Abnormal",
+                    },
+                  ],
+                  text: "Abnormal",
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      mockHttpGet.mockReset();
+      mockHttpGet.mockResolvedValueOnce({ access_token: "mock-token" });
+      mockHttpGet.mockResolvedValueOnce(abnormalBundle);
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 
