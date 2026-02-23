@@ -7,9 +7,17 @@ import {
   getCorrelationIdFromEventHeaders,
 } from "../lib/utils";
 import { init } from "./init";
+import type { ParsedOrderBody } from "../order-router-lambda";
+import { buildFhirServiceRequest } from "./fhir-mapper";
+import { OrderStatusCodes } from "../lib/db/order-status-db";
 
 const name = "order-service-lambda";
-const { supplierService } = init();
+const {
+  transactionService,
+  orderStatusService,
+  sqsClient,
+  orderPlacementQueueUrl,
+} = init();
 
 const parseAndValidateRequest = (
   eventBody: string | null,
@@ -67,13 +75,58 @@ export const handler = async (
     });
 
     // Create patient and order in database
-    // ALPHA: no real idempotency check, so repeated requests will create multiple orders
-    const orderResult = await supplierService.createPatientAndOrder(
+    // ALPHA: no real idempotency check, but repeated requests should throw because of unique constraint on order_status.order_uid, which is generated as a UUID in createPatientAndOrderAndStatus
+    const orderResult = await transactionService.createPatientAndOrderAndStatus(
       orderRequest.patient.nhsNumber,
       orderRequest.patient.birthDate,
       orderRequest.supplierId,
       orderRequest.testCode,
+      correlationId,
     );
+
+    const orderBody = buildFhirServiceRequest(
+      orderRequest,
+      orderResult.patientUid,
+      orderResult.orderUid,
+    );
+
+    const parsedOrderBody: ParsedOrderBody = {
+      supplier_code: orderRequest.supplierId,
+      correlation_id: correlationId,
+      order_body: orderBody,
+    };
+
+    try {
+      await sqsClient.sendMessage(
+        orderPlacementQueueUrl,
+        JSON.stringify(parsedOrderBody),
+      );
+    } catch (error) {
+      console.error(name, "Failed to enqueue order", {
+        correlationId,
+        error,
+      });
+      return createJsonResponse(500, {
+        message: "Failed to enqueue order",
+      });
+    }
+
+    try {
+      await orderStatusService.updateOrderStatus({
+        orderId: orderResult.orderUid,
+        statusCode: OrderStatusCodes.QUEUED,
+        createdAt: new Date().toISOString(),
+        correlationId: correlationId,
+      });
+    } catch (error) {
+      console.error(name, "Failed to update order status", {
+        correlationId,
+        error,
+      });
+      return createJsonResponse(500, {
+        message: "Failed to update order status",
+      });
+    }
 
     console.info(name, "Order created successfully", {
       correlationId,

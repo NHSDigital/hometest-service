@@ -26,6 +26,7 @@ The outer code is more complex; it can have 1-2 letters, 1 digit, and an optiona
 The outer code and inner code are joined with a space.
 To simplify, all letters must be uppercase.
 */
+
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/
 
 export function validatePostcodeFormat(postcode: string): ValidationResult {

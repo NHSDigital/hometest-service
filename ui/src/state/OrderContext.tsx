@@ -43,8 +43,20 @@ export interface OrderAnswers {
   // Final delivery address
   deliveryAddress?: Address;
   addressEntryMethod?: 'postcode-search' | 'manual';
-  
+
   comfortableDoingTest?: string;
+
+  // From LA Lookup
+  localAuthority?: {
+    code: string;
+    region: string;
+  };
+
+  supplier?: {
+    id: string;
+    name: string;
+    testCode: string;
+  }[];
 
   // Mobile number
   mobileNumber?: string;

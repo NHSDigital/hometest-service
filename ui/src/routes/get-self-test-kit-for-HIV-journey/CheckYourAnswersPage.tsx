@@ -40,7 +40,7 @@ export default function CheckYourAnswersPage() {
 
   const handleChangeClick = (field: 'address' | 'mobile' | 'comfort') => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
-    
+
     if (field === 'address') {
       // Route based on how address was entered
       if (orderAnswers.addressEntryMethod === 'manual') {

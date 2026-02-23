@@ -1,7 +1,5 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
-
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
@@ -48,6 +46,47 @@ jest.mock("@/mocks/addressLookupResponse.json", () => ({
   ],
 }));
 
+jest.mock('@/lib/services/la-lookup-service', () => ({
+  __esModule: true,
+  default: {
+    getByPostcode: jest.fn().mockResolvedValue({
+      localAuthority: {
+        localAuthorityCode: "4230",
+        region: "Salford",
+      },
+      suppliers: [
+        { id: "SUP1", name: "Supplier One", testCode: "31676001" },
+        { id: "SUP2", name: "Supplier Two", testCode: "PCR" },
+      ],
+    }),
+  },
+}));
+
+jest.mock('@/hooks/useContent', () => ({
+  useContent: () => ({
+    commonContent: {
+      validation: {
+        deliveryAddress: {
+          required: 'Select a delivery address',
+        },
+      },
+      errorSummary: {
+        title: 'There is a problem',
+      },
+      navigation: {
+        continue: 'Continue',
+        manualEntryLink: 'Enter address manually',
+      },
+    },
+    'select-delivery-address': {
+      title: 'addresses found',
+      postcodeLabel: 'Postcode:',
+      editPostcodeLink: 'Edit postcode',
+      formLabel: 'Select your delivery address',
+    },
+  }),
+}));
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
@@ -63,10 +102,8 @@ describe("SelectDeliveryAddressPage", () => {
     it("renders the main heading with correct address count", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const heading = screen.getByRole("heading", {
-        name: /3 addresses found/i,
-      });
-      expect(heading).toBeInTheDocument();
+      const heading = screen.getByRole("heading");
+      expect(heading).toHaveTextContent("3 addresses addresses found");
     });
 
     it("displays the searched postcode", () => {
@@ -172,6 +209,17 @@ describe("SelectDeliveryAddressPage", () => {
       expect(radios[0]).not.toBeChecked();
       expect(radios[1]).toBeChecked();
       expect(radios[2]).not.toBeChecked();
+    });
+
+    it("updates order answers and navigates on valid submission", async () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await screen.findByText(/3 POST OFFICE COTTAGE/i);
     });
   });
 

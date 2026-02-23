@@ -198,7 +198,7 @@ describe("CheckYourAnswersPage", () => {
       fireEvent.click(changeLinks[0]);
 
       expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
-      expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
+      expect(mockGoToStep).toHaveBeenCalledWith("select-delivery-address");
     });
 
     it("sets returnToStep and navigates when comfortable doing test change is clicked", () => {
@@ -220,7 +220,7 @@ describe("CheckYourAnswersPage", () => {
       fireEvent.click(changeLinks[2]);
 
       expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
-      expect(mockGoToStep).toHaveBeenCalledWith("enter-mobile-phone-number");
+      expect(mockGoToStep).toHaveBeenCalledWith("confirm-mobile-phone-number");
     });
 
     it("renders visually hidden text for accessibility on change links", () => {
@@ -290,7 +290,7 @@ describe("CheckYourAnswersPage", () => {
       const errorLink = screen.getByRole("link", {
         name: "Select if you agree to our partner's terms and conditions and privacy policy",
       });
-      expect(errorLink).toHaveAttribute("href", "#consent-1");
+      expect(errorLink).toHaveAttribute("href", "#consent");
     });
 
     it("submits successfully when consent is ticked", () => {
