@@ -7,25 +7,15 @@ import { lambdaHandler } from "./index";
 jest.mock("../lib/db/test-result-db-client");
 
 const mockGetResult = jest.fn();
-const mockHttpGet = jest.fn();
-const mockHttpPost = jest.fn();
-const mockGetSecretValue = jest.fn();
-const mockGetSupplierConfig = jest.fn();
+const mockGetResults = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
     testResultDbClient: {
       getResult: mockGetResult,
     },
-    httpClient: {
-      get: mockHttpGet,
-      post: mockHttpPost,
-    },
-    secretsClient: {
-      getSecretValue: mockGetSecretValue,
-    },
-    supplierDb: {
-      getSupplierConfigBySupplierId: mockGetSupplierConfig,
+    supplierTestResultsService: {
+      getResults: mockGetResults,
     },
   })),
 }));
@@ -127,22 +117,10 @@ describe("Get Results Lambda Handler", () => {
     };
 
     mockGetResult.mockReset();
-    mockHttpGet.mockReset();
-    mockHttpPost.mockReset();
-    mockGetSecretValue.mockReset();
-    mockGetSupplierConfig.mockReset();
+    mockGetResults.mockReset();
 
     // Default mocks for successful flow
-    mockGetSupplierConfig.mockResolvedValue({
-      serviceUrl: "https://supplier-api.example.com",
-      oauthTokenPath: "/oauth/token",
-      clientId: "client-123",
-      clientSecretName: "supplier-secret",
-      oauthScope: "read:results",
-    });
-    mockGetSecretValue.mockResolvedValue("mock-secret");
-    mockHttpPost.mockResolvedValue({ access_token: "mock-token" }); // OAuth token
-    mockHttpGet.mockResolvedValue(mockBundle); // Results API response
+    mockGetResults.mockResolvedValue(mockBundle); // Results API response
   });
 
   afterEach(() => {
@@ -284,9 +262,7 @@ describe("Get Results Lambda Handler", () => {
         ],
       };
 
-      mockHttpGet.mockReset();
-      mockHttpGet.mockResolvedValueOnce({ access_token: "mock-token" });
-      mockHttpGet.mockResolvedValueOnce(abnormalBundle);
+      mockGetResults.mockResolvedValueOnce(abnormalBundle);
 
       const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent);
 

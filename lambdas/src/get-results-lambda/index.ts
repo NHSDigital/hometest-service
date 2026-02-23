@@ -1,11 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { Bundle, Observation } from "fhir/r4";
 import {
   createFhirErrorResponse,
   createFhirResponse,
 } from "../lib/fhir-response";
 
-import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
+import { ObservationValidation } from "../lib/validators/observation-validation";
 import cors from "@middy/http-cors";
 import { defaultCorsOptions } from "./cors-configuration";
 import { getResultsQueryParamsSchema } from "./schemas";
@@ -19,7 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { httpClient, testResultDbClient, supplierDb, secretsClient } = init();
+  const { testResultDbClient, supplierTestResultsService } = init();
 
   const validationResult = getResultsQueryParamsSchema.safeParse(
     event.queryStringParameters,
@@ -53,42 +52,16 @@ export const lambdaHandler = async (
     );
   }
 
-  const serviceConfig = await supplierDb.getSupplierConfigBySupplierId(
-    testResult.supplier_id,
-  );
-
-  if (!serviceConfig) {
-    throw new Error("Missing supplier config");
-  }
-
-  const supplierAuthClient = new OAuthSupplierAuthClient(
-    httpClient,
-    secretsClient,
-    serviceConfig.serviceUrl,
-    serviceConfig.oauthTokenPath,
-    serviceConfig.clientId,
-    serviceConfig.clientSecretName,
-    serviceConfig.oauthScope,
-  );
-
-  const accessToken = await supplierAuthClient.getAccessToken();
-
-  const resultsUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}/results`;
-
-  const url = new URL(resultsUrl);
-  url.searchParams.append("order_uid", orderId);
-
   const correlationId = uuidv4();
-  const response = await httpClient.get<Bundle<Observation>>(url.toString(), {
-    Authorization: `Bearer ${accessToken}`,
-    Accept: "application/fhir+json",
-    "X-Correlation-ID": correlationId,
-  });
+  const bundle = await supplierTestResultsService.getResults(
+    orderId,
+    testResult.supplier_id,
+    correlationId,
+  );
 
-  const observation = response.entry?.[0]?.resource;
-  const isNormal = observation?.interpretation?.[0].coding?.[0].code === "N";
+  const observation = bundle.entry?.[0]?.resource;
 
-  if (!isNormal || !observation) {
+  if (!observation || !ObservationValidation.isNormalResult(observation)) {
     return createFhirErrorResponse(
       404,
       "not-found",
