@@ -33,23 +33,25 @@ export class OrderService {
     }
 
     async updateOrderStatusAndResultStatus(orderUid: string, orderReference: string, statusCode: OrderStatus, resultStatus: ResultStatus, correlationId: string) {
-        const query = `
-            BEGIN;
-            INSERT INTO hometest.order_status (order_uid, order_reference, status_code)
-                VALUES ($1, $2, $3)
-            INSERT INTO hometest.result_status (order_uid, status, correlation_id)
-                VALUES ($1, $4, $5)
-            COMMIT;
-        `;
+        await this.dbClient.withTransaction(async (tx) => {
+            const orderStatusQuery = `
+            INSERT INTO hometest.order_status (order_uid, order_reference, status_code, correlation_id)
+                VALUES ($1, $2, $3, $4)
+            `;
+            await tx.query(orderStatusQuery, [orderUid, orderReference, statusCode, correlationId]);
 
-        await this.dbClient.query(query, [orderUid, orderReference, statusCode, resultStatus, correlationId]);
+            const resultStatusQuery = `
+            INSERT INTO hometest.result_status (order_uid, status, correlation_id)
+                VALUES ($1, $2, $3)
+            `;
+            await tx.query(resultStatusQuery, [orderUid, resultStatus, correlationId]);
+        });
     }
 
     async updateResultStatus(orderUid: string, resultStatus: ResultStatus, correlationId: string) {
         const query = `
             INSERT INTO hometest.result_status (order_uid, status, correlation_id)
                 VALUES ($1, $2, $3)
-                ON CONFLICT (order_uid) DO UPDATE SET status = EXCLUDED.status, correlation_id = EXCLUDED.correlation_id;
         `;
 
         await this.dbClient.query(query, [orderUid, resultStatus, correlationId]);
