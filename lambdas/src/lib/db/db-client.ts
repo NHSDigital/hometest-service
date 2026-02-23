@@ -38,9 +38,8 @@ export class PostgresDbClient implements DBClient {
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
-
       ssl: {
-        rejectUnauthorized: false, // <-- THIS is where you set it
+        rejectUnauthorized: false,
       },
     });
   }
