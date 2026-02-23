@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -7,6 +8,7 @@ import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import mockAddressResponse from "@/mocks/addressLookupResponse.json";
 import PageLayout from "@/layouts/PageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
+import laLookupService from "@/lib/services/la-lookup-service";
 
 interface AddressResult {
   DPA: {
@@ -31,7 +33,7 @@ export default function SelectDeliveryAddressPage() {
 
   const addresses = mockAddressResponse.results as AddressResult[];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
@@ -42,30 +44,45 @@ export default function SelectDeliveryAddressPage() {
     setAddressError(null);
 
     const selected = addresses.find((addr) => addr.DPA.UPRN === selectedAddress);
-    if (selected) {
-      const addressLines = [];
+    if (!selected) return;
 
-      if (selected.DPA.BUILDING_NAME) {
-        addressLines.push(selected.DPA.BUILDING_NAME);
+    try {
+      const postcode = orderAnswers.postcodeSearch;
+
+      if (!postcode) {
+        console.error(
+          "[SelectDeliveryAddressPage] Missing postcode in journey context."
+        );
+
+        // ALPHA: ToDo error screen thrown here:
+        return null;
       }
-      if (selected.DPA.BUILDING_NUMBER) {
-        addressLines.push(selected.DPA.BUILDING_NUMBER);
-      }
-      if (selected.DPA.THOROUGHFARE_NAME) {
-        addressLines.push(selected.DPA.THOROUGHFARE_NAME);
-      }
+
+
+      const la = await laLookupService.getByPostcode(postcode);
+
+      console.log("LA lookup response:", la);
 
       updateOrderAnswers({
         deliveryAddress: {
-          addressLine1: addressLines[0],
-          addressLine2: addressLines[1],
+          addressLine1: selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
+          addressLine2: selected.DPA.THOROUGHFARE_NAME,
           addressLine3: selected.DPA.DEPENDENT_LOCALITY,
           postTown: selected.DPA.POST_TOWN,
           postcode: selected.DPA.POSTCODE,
         },
+        localAuthority: {
+          code: la.localAuthorityCode,
+          region: la.region,
+        },
       });
 
       goToStep("how-comfortable-pricking-finger");
+
+    } catch (err) {
+      // ALPHA: Remove the console log and use proper logging pattern
+      console.error("Failed to lookup local authority:", err);
+      setAddressError("Unable to determine local authority. Please try again.");
     }
   };
 
@@ -87,76 +104,76 @@ export default function SelectDeliveryAddressPage() {
           goToStep("enter-delivery-address");
         }
       }}>
-        <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-          {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
-        </h1>
-        <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
-          <a href="enter-delivery-address" onClick={(e) => {
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
+        {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
+      </h1>
+      <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
+        <a href="enter-delivery-address" onClick={(e) => {
+          e.preventDefault();
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
+        }}>
+          {content.editPostcodeLink}
+        </a>
+      </p>
+
+      {addressError && (
+        <ErrorSummary aria-labelledby="error-summary-title" role="alert">
+          <ErrorSummary.Title id="error-summary-title">
+            {commonContent.errorSummary.title}
+          </ErrorSummary.Title>
+          <ErrorSummary.Body>
+            <ErrorSummary.List>
+              <ErrorSummary.Item
+                href="#collection-point"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('collection-point-1')?.focus();
+                }}
+              >
+                {addressError}
+              </ErrorSummary.Item>
+            </ErrorSummary.List>
+          </ErrorSummary.Body>
+        </ErrorSummary>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <Radios
+          id="collection-point"
+          name="collection-point"
+          label={content.formLabel}
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          error={addressError || undefined}
+          onChange={handleRadioChange}
+        >
+          {addresses.map((address) => (
+            <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
+              {address.DPA.ADDRESS}
+            </Radios.Radio>
+          ))}
+        </Radios>
+
+        <Button type="submit">{commonContent.navigation.continue}</Button>
+      </form>
+
+      <p className="nhsuk-body">
+        <a
+          href="enter-address-manually"
+          onClick={(e) => {
             e.preventDefault();
-            goToStep(JourneyStepNames.EnterDeliveryAddress);
-          }}>
-            {content.editPostcodeLink}
-          </a>
-        </p>
-
-        {addressError && (
-          <ErrorSummary aria-labelledby="error-summary-title" role="alert">
-            <ErrorSummary.Title id="error-summary-title">
-              {commonContent.errorSummary.title}
-            </ErrorSummary.Title>
-            <ErrorSummary.Body>
-              <ErrorSummary.List>
-                <ErrorSummary.Item
-                  href="#collection-point"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('collection-point-1')?.focus();
-                  }}
-                >
-                  {addressError}
-                </ErrorSummary.Item>
-              </ErrorSummary.List>
-            </ErrorSummary.Body>
-          </ErrorSummary>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <Radios
-            id="collection-point"
-            name="collection-point"
-            label={content.formLabel}
-            labelProps={{
-                isPageHeading: false,
-                size: "s",
-              }}
-            error={addressError || undefined}
-            onChange={handleRadioChange}
-          >
-            {addresses.map((address) => (
-              <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
-                {address.DPA.ADDRESS}
-              </Radios.Radio>
-            ))}
-          </Radios>
-
-          <Button type="submit">{commonContent.navigation.continue}</Button>
-        </form>
-
-        <p className="nhsuk-body">
-          <a
-            href="enter-address-manually"
-            onClick={(e) => {
-              e.preventDefault();
-              updateOrderAnswers({
-                postcodeSearch: undefined,
-                buildingNumber: undefined
-              });
-              goToStep("enter-address-manually");
-            }}
-          >
-            {commonContent.navigation.manualEntryLink}
-          </a>
-        </p>
+            updateOrderAnswers({
+              postcodeSearch: undefined,
+              buildingNumber: undefined
+            });
+            goToStep("enter-address-manually");
+          }}
+        >
+          {commonContent.navigation.manualEntryLink}
+        </a>
+      </p>
     </PageLayout>
   );
 }

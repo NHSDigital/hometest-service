@@ -34,6 +34,12 @@ export interface OrderAnswers {
   deliveryAddress?: Address;
   comfortableDoingTest?: string;
 
+  // From LA Lookup
+  localAuthority?: {
+    code: string;
+    region: string;
+  };
+
   // Mobile number
   mobileNumber?: string;
 }
