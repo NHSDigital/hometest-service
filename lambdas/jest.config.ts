@@ -4,6 +4,7 @@ export default {
   testEnvironment: "node",
   setupFiles: ["<rootDir>/jest/jest.setup.js"],
   testRegex: ".*\\.test\\.ts$",
+  testPathIgnorePatterns: ["/node_modules/"],
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "json", "json-summary"],

@@ -3,13 +3,8 @@ import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 
-export interface EnvironmentVariables {
-  DATABASE_URL: string;
-}
-
 export interface Environment {
   httpClient: FetchHttpClient;
-  environmentVariables: EnvironmentVariables;
   supplierDb: SupplierService;
   secretsClient: AwsSecretsClient;
 }
@@ -26,9 +21,6 @@ export function init(): Environment {
 
   return {
     httpClient,
-    environmentVariables: {
-      DATABASE_URL: databaseUrl,
-    },
     supplierDb,
     secretsClient,
   };
