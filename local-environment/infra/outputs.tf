@@ -33,6 +33,16 @@ output "order_results_queue_url" {
   value       = aws_sqs_queue.order_results.url
 }
 
+output "order_router_endpoint" {
+  description = "Order Router Lambda endpoint"
+  value       = module.order_router_lambda.localstack_endpoint_url
+}
+
+output "get_order_endpoint" {
+  description = "Get Order  Lambda endpoint"
+  value       = module.get_order_lambda.localstack_endpoint_url
+}
+
 output "login_endpoint" {
   description = "Login Lambda endpoint"
   value       = module.login_lambda.localstack_endpoint_url
