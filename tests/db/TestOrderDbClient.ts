@@ -2,6 +2,62 @@ import { BaseDbClient } from './BaseDbClient';
 import { TestOrderRow, CreateOrderInput, OrderStatusCode, UUID, PatientMapping, Supplier, TestOrder } from '../models/TestOrder';
 export class TestOrderDbClient extends BaseDbClient {
 
+  async insertPatientMapping(params: {
+    patientUid: string;
+    nhsNumber: string;
+    birthDate: string;
+  }): Promise<void> {
+    await this.query(`
+      INSERT INTO hometest.patient_mapping (patient_uid, nhs_number, birth_date)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (patient_uid) DO NOTHING
+    `, [params.patientUid, params.nhsNumber, params.birthDate]);
+  }
+
+  async deletePatientMappingByUid(patientUid: string): Promise<void> {
+    await this.query(`
+      DELETE FROM hometest.patient_mapping
+      WHERE patient_uid = $1
+    `, [patientUid]);
+  }
+
+  async insertTestOrder(params: {
+    orderUid: string;
+    supplierId: string;
+    patientUid: string;
+    testCode: string;
+    originator: string;
+  }): Promise<void> {
+    await this.query(`
+      INSERT INTO hometest.test_order (order_uid, supplier_id, patient_uid, test_code, originator)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (order_uid) DO NOTHING
+    `, [
+      params.orderUid,
+      params.supplierId,
+      params.patientUid,
+      params.testCode,
+      params.originator,
+    ]);
+  }
+
+  async insertOrderStatus(params: {
+    orderUid: string;
+    statusCode: string;
+    createdAt: string;
+    correlationId: string;
+  }): Promise<void> {
+    await this.query(`
+      INSERT INTO hometest.order_status (order_uid, status_code, created_at, correlation_id)
+      VALUES ($1, $2, $3, $4)
+    `, [
+      params.orderUid,
+      params.statusCode,
+      params.createdAt,
+      params.correlationId,
+    ]);
+  }
+
   async getOrderByUid(orderUid: string): Promise<TestOrderRow | undefined> {
     const rows = await this.query<TestOrderRow>(`
       SELECT

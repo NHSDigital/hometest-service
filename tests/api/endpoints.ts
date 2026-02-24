@@ -12,4 +12,7 @@ export const API_ENDPOINTS = {
     create: '/order',
     get: '/order',
   },
+  orderStatus: {
+    update: '/test-order/status',
+  },
 } as const;
