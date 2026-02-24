@@ -51,9 +51,9 @@ export class OrderStatusService {
   }
 
   /**
-   * Verify that an order exists and retrieve its details
+   * Retrieve patient ID associated with an order from the database. Returns null if order is not found.
    */
-  async getOrder(orderId: string): Promise<OrderRow | null> {
+  async getPatientIdFromOrder(orderId: string): Promise<string | null> {
     const query = `
       SELECT patient_uid
       FROM hometest.test_order
@@ -66,7 +66,7 @@ export class OrderStatusService {
         orderId,
       ]);
 
-      return result.rowCount === 0 ? null : result.rows[0];
+      return result.rowCount === 0 ? null : result.rows[0].patient_uid;
     } catch (error) {
       throw new Error(
         `Failed to fetch order from database for orderId ${orderId}`,

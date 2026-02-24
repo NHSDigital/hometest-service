@@ -26,7 +26,7 @@ describe("OrderStatusService", () => {
     service = new OrderStatusService(mockDbClient as any);
   });
 
-  describe("getOrder", () => {
+  describe("getPatientIdFromOrder", () => {
     it("should fetch order by UUID", async () => {
       const mockOrder: OrderRow = {
         order_uid: "550e8400-e29b-41d4-a716-446655440000",
@@ -42,13 +42,13 @@ describe("OrderStatusService", () => {
         rowCount: 1,
       });
 
-      const result = await service.getOrder(
+      const result = await service.getPatientIdFromOrder(
         "550e8400-e29b-41d4-a716-446655440000",
       );
 
-      expect(result).toEqual(mockOrder);
+      expect(result).toEqual(mockOrder.patient_uid);
       expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining("SELECT"), // TODO: Look into this type of assertion
+        expect.stringContaining("SELECT"),
         ["550e8400-e29b-41d4-a716-446655440000"],
       );
     });
@@ -59,7 +59,7 @@ describe("OrderStatusService", () => {
         rowCount: 0,
       });
 
-      const result = await service.getOrder("nonexistent-id");
+      const result = await service.getPatientIdFromOrder("nonexistent-id");
 
       expect(result).toBeNull();
     });
@@ -67,7 +67,7 @@ describe("OrderStatusService", () => {
     it("should throw error on database failure", async () => {
       mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
-      await expect(service.getOrder("order-123")).rejects.toThrow(
+      await expect(service.getPatientIdFromOrder("order-123")).rejects.toThrow(
         "Failed to fetch order from database",
       );
     });

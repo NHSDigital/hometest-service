@@ -3,7 +3,6 @@ import { handler } from "./index";
 import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
 import {
   IdempotencyCheckResult,
-  OrderRow,
   OrderStatusCodes,
   OrderStatusRow,
 } from "../lib/db/order-status-db";
@@ -12,7 +11,7 @@ import { businessStatusMapping } from "./utils";
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
-const mockGetOrder = jest.fn();
+const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockUpdateOrderStatus = jest.fn();
 
@@ -25,7 +24,7 @@ jest.mock("../lib/utils", () => ({
 jest.mock("../lib/db/order-status-db", () => ({
   ...jest.requireActual("../lib/db/order-status-db"),
   OrderStatusService: jest.fn().mockImplementation(() => ({
-    getOrder: mockGetOrder,
+    getPatientIdFromOrder: mockGetPatientIdFromOrder,
     checkIdempotency: mockCheckIdempotency,
     updateOrderStatus: mockUpdateOrderStatus,
   })),
@@ -60,14 +59,7 @@ describe("Order Status Lambda Handler", () => {
     // Default mock values
     mockGetCorrelationIdFromEventHeaders.mockReturnValue(MOCK_CORRELATION_ID);
 
-    mockGetOrder.mockResolvedValue({
-      order_uid: MOCK_ORDER_UID,
-      patient_uid: MOCK_PATIENT_UID,
-      order_reference: 100001,
-      supplier_id: "supplier-123",
-      test_code: "TEST001",
-      created_at: "2024-01-01T00:00:00Z",
-    } satisfies OrderRow);
+    mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
 
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockUpdateOrderStatus.mockResolvedValue({
@@ -188,7 +180,7 @@ describe("Order Status Lambda Handler", () => {
 
   describe("Order Existence", () => {
     it("should return 404 when order does not exist", async () => {
-      mockGetOrder.mockResolvedValueOnce(null);
+      mockGetPatientIdFromOrder.mockResolvedValueOnce(null);
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(
@@ -206,6 +198,7 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should proceed when order exists", async () => {
+      mockGetPatientIdFromOrder.mockResolvedValueOnce(MOCK_PATIENT_UID);
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(
@@ -213,7 +206,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(mockGetOrder).toHaveBeenCalledWith(MOCK_ORDER_UID);
+      expect(mockGetPatientIdFromOrder).toHaveBeenCalledWith(MOCK_ORDER_UID);
       expect(result.statusCode).toBe(200);
     });
   });
@@ -521,7 +514,7 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should return 500 with OperationOutcome for database errors", async () => {
-      mockGetOrder.mockRejectedValueOnce(
+      mockGetPatientIdFromOrder.mockRejectedValueOnce(
         new Error("Database connection failed"),
       );
 

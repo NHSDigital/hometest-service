@@ -1,5 +1,4 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { z } from "zod";
 import { FHIRTaskSchema } from "../lib/models/fhir/fhir-schemas";
 import { FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import {
@@ -105,9 +104,10 @@ export const lambdaHandler = async (
       );
     }
 
-    // Check if order exists
-    const existingOrder = await orderStatusDb.getOrder(orderId);
-    if (!existingOrder) {
+    // Verify order exists and retrieve associated patient ID
+    const orderPatientId = await orderStatusDb.getPatientIdFromOrder(orderId);
+
+    if (!orderPatientId) {
       commons.logError(name, "Order not found", { orderId });
 
       return createFhirErrorResponse(
@@ -134,10 +134,10 @@ export const lambdaHandler = async (
       );
     }
 
-    if (patientIdFromTask !== existingOrder.patient_uid) {
+    if (patientIdFromTask !== orderPatientId) {
       commons.logError(name, "Patient mismatch for order", {
         orderId,
-        expectedPatient: existingOrder.patient_uid,
+        expectedPatient: orderPatientId,
         providedPatient: patientIdFromTask,
       });
 
