@@ -22,6 +22,8 @@ export default function GetSelfTestKitPage() {
       birthdate: "1968-02-12",
       identityProofingLevel: "P9",
       phoneNumber: "+447887510886",
+      givenName: "John",
+      familyName: "Smith",
     };
 
     updateOrderAnswers({ user: authData });

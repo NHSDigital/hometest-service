@@ -38,6 +38,9 @@ const mockValidationMessages: ValidationMessages = {
     required: "Enter a UK mobile phone number",
     invalid: "Enter a UK mobile phone number",
   },
+  consent: {
+    required: ""
+  }
 };
 
 describe("mobile number Zod schema", () => {

@@ -10,7 +10,16 @@ import {
   useState,
 } from "react";
 
-import { AuthUser } from "./AuthContext";
+// Data from NHS Login auth response
+export interface AuthUser {
+  sub: string;
+  nhsNumber: string;
+  birthdate: string;
+  identityProofingLevel: string;
+  phoneNumber: string;
+  givenName: string;
+  familyName: string;
+}
 
 // Address structure
 export interface Address {
@@ -26,12 +35,15 @@ export interface OrderAnswers {
   // From auth
   user?: AuthUser;
 
-  // From enter-delivery-address
+  // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
+  selectedAddressUPRN?: string;
 
   // Final delivery address
   deliveryAddress?: Address;
+  addressEntryMethod?: 'postcode-search' | 'manual';
+
   comfortableDoingTest?: string;
 
   // From LA Lookup
@@ -48,7 +60,11 @@ export interface OrderAnswers {
 
   // Mobile number
   mobileNumber?: string;
+  mobileNumberSource?: 'nhs-login' | 'manual';
 
+  // Consent
+  consentGiven?: boolean;
+  consentTimestamp?: string;
 }
 
 interface CreateOrderContextType {
