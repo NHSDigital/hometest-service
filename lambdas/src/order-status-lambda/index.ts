@@ -15,6 +15,12 @@ import {
   extractIdFromReference,
   isValidBusinessStatus,
 } from "./utils";
+import httpErrorHandler from "@middy/http-error-handler";
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpSecurityHeaders from "@middy/http-security-headers";
+import { securityHeaders } from "../lib/http/security-headers";
+import { defaultCorsOptions } from "../login-lambda/cors-configuration";
 
 const commons = new ConsoleCommons();
 const name = "order-status-lambda";
@@ -23,7 +29,7 @@ const name = "order-status-lambda";
  * Lambda handler for PUT /test-order/status endpoint
  * Updates the status of an existing test order using FHIR Task resource
  */
-export const handler = async (
+export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   const { orderStatusDb } = init();
@@ -230,3 +236,8 @@ export const handler = async (
     );
   }
 };
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(defaultCorsOptions))
+  .use(httpErrorHandler());

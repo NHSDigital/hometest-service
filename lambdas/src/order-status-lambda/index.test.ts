@@ -99,7 +99,10 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if request body is empty", async () => {
       mockEvent.body = "{}";
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
@@ -113,7 +116,10 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if request body is null", async () => {
       mockEvent.body = null;
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
@@ -127,7 +133,10 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if request body is invalid JSON", async () => {
       mockEvent.body = "{invalid json";
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -145,7 +154,10 @@ describe("Order Status Lambda Handler", () => {
         },
       } satisfies Partial<Omit<FHIRTask, "basedOn">>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -161,7 +173,10 @@ describe("Order Status Lambda Handler", () => {
         basedOn: [{ reference: "invalid-reference" }],
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -176,7 +191,10 @@ describe("Order Status Lambda Handler", () => {
       mockGetOrder.mockResolvedValueOnce(null);
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(404);
 
@@ -190,7 +208,10 @@ describe("Order Status Lambda Handler", () => {
     it("should proceed when order exists", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(mockGetOrder).toHaveBeenCalledWith(MOCK_ORDER_UID);
       expect(result.statusCode).toBe(200);
@@ -204,7 +225,10 @@ describe("Order Status Lambda Handler", () => {
         for: { reference: "invalid-ref" },
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -219,7 +243,10 @@ describe("Order Status Lambda Handler", () => {
         for: { reference: "Patient/other-patient" },
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -232,7 +259,10 @@ describe("Order Status Lambda Handler", () => {
     it("should proceed when patient matches order", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
     });
@@ -245,7 +275,10 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: { text: "INVALID_STATUS" },
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -261,7 +294,10 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: undefined,
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -276,7 +312,10 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: { text: IncomingBusinessStatus.DISPATCHED },
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
     });
@@ -287,7 +326,10 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: { text: IncomingBusinessStatus.RECEIVED_AT_LAB },
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
     });
@@ -301,7 +343,10 @@ describe("Order Status Lambda Handler", () => {
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(
@@ -321,7 +366,10 @@ describe("Order Status Lambda Handler", () => {
       } satisfies IdempotencyCheckResult);
 
       mockEvent.body = JSON.stringify(validTaskBody);
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
 
@@ -340,7 +388,10 @@ describe("Order Status Lambda Handler", () => {
       });
 
       mockEvent.body = JSON.stringify(validTaskBody);
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -359,7 +410,10 @@ describe("Order Status Lambda Handler", () => {
         lastModified: mockedLastModifiedTimestamp, // Older than latest
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
 
@@ -378,7 +432,10 @@ describe("Order Status Lambda Handler", () => {
         lastModified: mockedLastModifiedTimestamp, // Newer than latest
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
 
@@ -397,7 +454,10 @@ describe("Order Status Lambda Handler", () => {
         ...bodyWithoutLastModified,
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
 
@@ -411,7 +471,10 @@ describe("Order Status Lambda Handler", () => {
     it("should return 200 OK with updated Task when all validations pass", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(200);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
@@ -426,7 +489,7 @@ describe("Order Status Lambda Handler", () => {
     it("should call updateOrderStatus with correct parameters", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      await handler(mockEvent as APIGatewayProxyEvent);
+      await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -446,7 +509,10 @@ describe("Order Status Lambda Handler", () => {
         // Invalid - missing required fields
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(400);
       const body = JSON.parse(result.body);
@@ -461,7 +527,10 @@ describe("Order Status Lambda Handler", () => {
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(500);
 
@@ -477,7 +546,10 @@ describe("Order Status Lambda Handler", () => {
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+      const result = await handler(
+        mockEvent as APIGatewayProxyEvent,
+        {} as Context,
+      );
 
       expect(result.statusCode).toBe(500);
 
