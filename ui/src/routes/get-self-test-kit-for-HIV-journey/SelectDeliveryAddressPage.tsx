@@ -23,11 +23,11 @@ interface AddressResult {
 }
 
 export default function SelectDeliveryAddressPage() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
 
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN || "");
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const addresses = mockAddressResponse.results as AddressResult[];
@@ -66,11 +66,6 @@ export default function SelectDeliveryAddressPage() {
       }
       console.log("Eligibility lookup response:", laResponse);
 
-
-      const la = await laLookupService.getByPostcode(postcode);
-
-      console.log("LA lookup response:", la);
-
       updateOrderAnswers({
         deliveryAddress: {
           addressLine1:
@@ -80,6 +75,8 @@ export default function SelectDeliveryAddressPage() {
           postTown: selected.DPA.POST_TOWN,
           postcode: selected.DPA.POSTCODE,
         },
+        addressEntryMethod: 'postcode-search',
+        selectedAddressUPRN: selected.DPA.UPRN,
         localAuthority: {
           code: laResponse.localAuthority.localAuthorityCode,
           region: laResponse.localAuthority.region,
@@ -91,8 +88,13 @@ export default function SelectDeliveryAddressPage() {
         })),
       });
 
-
-      goToStep("how-comfortable-pricking-finger");
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep("how-comfortable-pricking-finger");
+      }
 
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
@@ -164,7 +166,11 @@ export default function SelectDeliveryAddressPage() {
           onChange={handleRadioChange}
         >
           {addresses.map((address) => (
-            <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
+            <Radios.Radio
+              key={address.DPA.UPRN}
+              value={address.DPA.UPRN}
+              checked={selectedAddress === address.DPA.UPRN}
+            >
               {address.DPA.ADDRESS}
             </Radios.Radio>
           ))}
