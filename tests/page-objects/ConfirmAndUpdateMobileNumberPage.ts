@@ -22,6 +22,7 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
         await this.mobileNumberInput.fill(randomEntry.mobileNumber);
         await this.continueButton.click();
     }
+    
     async confirmMobileNumberAndContinue(): Promise<void> {
         await this.confirmMobileNumber.check();
         await this.continueButton.click();
