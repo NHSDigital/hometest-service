@@ -169,7 +169,7 @@ export default function SelectDeliveryAddressPage() {
             e.preventDefault();
             goToStep(JourneyStepNames.EnterDeliveryAddress);
           }}>
-            {content.editPostcodeLink}
+            {commonContent.navigation.manualEntryLink}
           </a>
         </p>
 
