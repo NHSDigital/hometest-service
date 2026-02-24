@@ -56,8 +56,9 @@ export const handler = async (
   const validationResult = FHIRTaskSchema.safeParse(task);
 
   if (!validationResult.success) {
-    let errorDetails: string = z.prettifyError(validationResult.error);
-    errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, "");
+    const errorDetails = validationResult.error.issues
+      .map((err) => `${err.path.join(".")}: ${err.message}`)
+      .join("; ");
 
     commons.logError(name, "Task validation failed", {
       error: errorDetails,
