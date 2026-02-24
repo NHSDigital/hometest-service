@@ -15,6 +15,9 @@ export default function HowComfortablePrickingFingerPage() {
   const [selectedOption, setSelectedOption] = useState<string>(orderAnswers.comfortableDoingTest || "");
   const [optionError, setOptionError] = useState<string | null>(null);
 
+  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -125,7 +128,7 @@ export default function HowComfortablePrickingFingerPage() {
         >
           <Radios.Radio
             value="Yes"
-            hint={content.options.yes.hint.replace('{supplier}', orderAnswers.supplier?.[0]?.name || '[Supplier]')}
+            hint={content.options.yes.hint.replace('{supplier}', supplierName)}
             checked={selectedOption === "Yes"}
           >
             {content.options.yes.text}

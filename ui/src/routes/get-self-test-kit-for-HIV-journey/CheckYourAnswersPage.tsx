@@ -36,6 +36,8 @@ export default function CheckYourAnswersPage() {
   const [consentChecked, setConsentChecked] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
 
+  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+
   const handleChangeClick = (field: 'address' | 'mobile' | 'comfort') => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
 
@@ -216,7 +218,7 @@ export default function CheckYourAnswersPage() {
               checked={consentChecked}
               onChange={handleConsentChange}
             >
-              {content.consent.label.replace('{supplier}', orderAnswers.supplier?.[0]?.name || '[Supplier]')}{" "}
+              {content.consent.label.replace('{supplier}', supplierName)}{" "}
               <a href={content.consent.termsOfUseHref}>{content.consent.termsOfUseText}</a>{" "}
               {content.consent.labelAnd}{" "}
               <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.
