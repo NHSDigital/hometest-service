@@ -53,7 +53,6 @@ export const handler = async (
     );
   }
 
-  // Validate FHIR Task schema
   const validationResult = FHIRTaskSchema.safeParse(task);
 
   if (!validationResult.success) {
