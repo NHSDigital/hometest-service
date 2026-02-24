@@ -8,8 +8,12 @@ describe("SupplierService", () => {
   beforeEach(() => {
     mockDbClient = {
       query: jest.fn(),
+      withTransaction: jest.fn(),
       close: jest.fn(),
     };
+    mockDbClient.withTransaction.mockImplementation(async (fn) =>
+      fn(mockDbClient),
+    );
 
     supplierService = new SupplierService({ dbClient: mockDbClient });
   });

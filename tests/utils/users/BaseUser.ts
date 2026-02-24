@@ -3,6 +3,7 @@ export class BaseTestUser {
   odsCode?: string;
   patientId?: string;
   age?: number;
+  dob?: string;
   code?: string;
 }
 

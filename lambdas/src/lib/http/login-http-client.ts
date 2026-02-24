@@ -2,9 +2,9 @@ import axios, {
   type RawAxiosResponseHeaders,
   type AddressFamily,
   type LookupAddress,
-  type RawAxiosRequestHeaders
-} from 'axios';
-import { Resolver } from 'node:dns';
+  type RawAxiosRequestHeaders,
+} from "axios";
+import { Resolver } from "node:dns";
 
 export interface HttpErrorDetails {
   httpCode?: number;
@@ -23,8 +23,8 @@ export type CustomLookupType = (
   callback: (
     err: Error | null,
     address: LookupAddress | LookupAddress[],
-    family?: AddressFamily
-  ) => void
+    family?: AddressFamily,
+  ) => void,
 ) => void;
 
 export class HttpClient {
@@ -44,7 +44,7 @@ export class HttpClient {
   async doPostRequestWithStatus<TBody, TResponse>(
     endpointUrl: string,
     body: TBody,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<{ data: TResponse; httpCode: number }> {
     try {
       const timeoutInSeconds = this.options?.timeoutInSeconds ?? 30;
@@ -52,24 +52,24 @@ export class HttpClient {
       const response = await axios.post<TResponse>(endpointUrl, body, {
         headers,
         timeout: timeoutInSeconds * 1000,
-        lookup: this.customLookup
+        lookup: this.customLookup,
       });
       return { httpCode: response.status, data: response.data };
     } catch (error: any) {
       const errorDetails = this.createErrorDetailsObject(error);
-      throw this.createErrorWithDetails('Post', errorDetails);
+      throw this.createErrorWithDetails("Post", errorDetails);
     }
   }
 
   async doPostRequest<TBody, TResponse>(
     endpointUrl: string,
     body: TBody,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<TResponse> {
     const response = await this.doPostRequestWithStatus<TBody, TResponse>(
       endpointUrl,
       body,
-      headers
+      headers,
     );
     return response.data;
   }
@@ -77,39 +77,39 @@ export class HttpClient {
   async postRequest<TBody, TResponse>(
     endpointUrl: string,
     body: TBody,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<TResponse> {
     const defaultHeaders = this.getDefaultRequestHeaders();
     return await this.doPostRequest(endpointUrl, body, {
       ...defaultHeaders,
-      ...headers
+      ...headers,
     });
   }
 
   async doPutRequestWithStatus<TBody, TResponse>(
     endpointUrl: string,
     body: TBody,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<{ data: TResponse; httpCode: number }> {
     try {
       const timeoutInSeconds = this.options?.timeoutInSeconds ?? 30;
       const response = await axios.put<TResponse>(endpointUrl, body, {
         headers,
         timeout: timeoutInSeconds * 1000,
-        lookup: this.customLookup
+        lookup: this.customLookup,
       });
 
       return { httpCode: response.status, data: response.data };
     } catch (error: any) {
       const errorDetails = this.createErrorDetailsObject(error);
-      throw this.createErrorWithDetails('Put', errorDetails);
+      throw this.createErrorWithDetails("Put", errorDetails);
     }
   }
 
   async putRequest<TBody, TResponse>(
     endpointUrl: string,
     body: TBody,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<TResponse> {
     const defaultHeaders = this.getDefaultRequestHeaders();
     const response = await this.doPutRequestWithStatus<TBody, TResponse>(
@@ -117,8 +117,8 @@ export class HttpClient {
       body,
       {
         ...defaultHeaders,
-        ...headers
-      }
+        ...headers,
+      },
     );
 
     return response.data;
@@ -126,31 +126,30 @@ export class HttpClient {
 
   async deleteRequest<TResponse>(
     endpointUrl: string,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<TResponse> {
     try {
       const defaultHeaders = this.getDefaultRequestHeaders();
       const response = await axios.delete<TResponse>(endpointUrl, {
         headers: { ...defaultHeaders, ...headers },
-        lookup: this.customLookup
+        lookup: this.customLookup,
       });
 
       return response.data;
     } catch (error: any) {
       const errorDetails = this.createErrorDetailsObject(error);
-      throw this.createErrorWithDetails('Delete', errorDetails);
+      throw this.createErrorWithDetails("Delete", errorDetails);
     }
   }
 
   async doGetRequestWithHeaders<TResponse>(
     endpointUrl: string,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<{ data: TResponse; headers: RawAxiosResponseHeaders }> {
-
     const response = await axios.get<TResponse>(endpointUrl, {
       withCredentials: false,
       headers,
-      lookup: this.customLookup
+      lookup: this.customLookup,
     });
 
     return { headers: response.headers, data: response.data };
@@ -158,13 +157,13 @@ export class HttpClient {
 
   async getRequest<TResponse>(
     endpointUrl: string,
-    headers: RawAxiosRequestHeaders = {}
+    headers: RawAxiosRequestHeaders = {},
   ): Promise<TResponse> {
     try {
       const defaultHeaders = this.getDefaultRequestHeaders();
       const response = await this.doGetRequestWithHeaders<TResponse>(
         endpointUrl,
-        { ...defaultHeaders, ...headers }
+        { ...defaultHeaders, ...headers },
       );
 
       return response.data;
@@ -172,22 +171,23 @@ export class HttpClient {
       const errDetails = HttpClient.getHttpErrorDetails(error);
       const errJson = HttpClient.isHttpError(error) ? error.toJSON() : error;
 
-      throw new Error('Get API call failure', {
-        cause: {
-          details: {
-            httpCode: errDetails.httpCode,
-            responseData: errDetails.responseData,
-            underlyingCause: (error as Error).cause
-          }
-        }
+      console.log("getRequest error", {
+        errorDetails: {
+          ...errDetails,
+          name: errJson.name,
+          code: errJson.code,
+          status: errJson.status,
+        },
       });
+
+      throw new Error("Get API call failure", { cause: error });
     }
   }
 
   private getDefaultRequestHeaders(): RawAxiosRequestHeaders {
     return {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
+      Accept: "application/json",
+      "Content-Type": "application/json",
     };
   }
 
@@ -230,18 +230,18 @@ export class HttpClient {
       responseStatus: error.response?.status,
       responseData: error.response?.data,
       errorCause: error.cause,
-      isHttpError: true
+      isHttpError: true,
     };
   }
 
   private createErrorWithDetails(
     apiMethod: string,
-    errorDetails: Record<string, any>
+    errorDetails: Record<string, any>,
   ): Error {
     return new Error(`${apiMethod} API call failure`, {
       cause: {
-        details: errorDetails
-      }
+        details: errorDetails,
+      },
     });
   }
 
@@ -255,7 +255,7 @@ export class HttpClient {
     return {
       httpCode: error.cause?.details?.responseStatus,
       responseData: error.cause?.details?.responseData,
-      cause: error.cause?.details?.errorCause
+      cause: error.cause?.details?.errorCause,
     };
   }
 }

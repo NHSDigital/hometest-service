@@ -1,18 +1,40 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useCreateOrderContext } from "@/state/OrderContext";
+import { AuthUser, useAuth } from "@/state/AuthContext";
+import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
+import { useEffect, useRef } from "react";
+
 import { RoutePath } from "@/lib/models/route-paths";
+import { backendUrl } from "@/settings";
+import { useCreateOrderContext } from "@/state/OrderContext";
 import { useNavigate } from "react-router-dom";
 
-export default function CallbackPage() {
-  type Result =
-  | null
-  | { data: unknown }
-  | { error: string };
+function safeReturnTo(value: string | null | undefined) {
+  if (!value) return null;
+  // Allow only in-app relative paths to avoid open redirects.
+  if (!value.startsWith("/")) return null;
+  if (value.startsWith("//")) return null;
+  return value;
+}
 
+function getReturnTo(givenState: string | null | undefined): string | null {
+  const expectedCsrf = consumeLoginCsrf();
+
+  if (!expectedCsrf || !givenState) {
+    throw new Error("Missing state");
+  }
+
+  const returnTo = verifyState({
+    csrf: expectedCsrf,
+    encoded: givenState,
+  });
+
+  return safeReturnTo(returnTo) ?? null;
+}
+
+export default function CallbackPage() {
+  const { setUser } = useAuth();
   const { updateOrderAnswers } = useCreateOrderContext();
-  const [result, setResult] = useState<Result>(null);
   const navigate = useNavigate();
   const didRun = useRef(false);
 
@@ -21,20 +43,30 @@ export default function CallbackPage() {
     if (didRun.current) return;
     didRun.current = true;
 
-    const loginLambdaUrl = process.env.NEXT_PUBLIC_LOGIN_LAMBDA_ENDPOINT;
-    if (!loginLambdaUrl) {
-      console.error("Missing NEXT_PUBLIC_LOGIN_LAMBDA_ENDPOINT");
+    if (!backendUrl) {
+      console.error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;
     }
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
+    const stateParam = params.get("state");
 
     console.log("Params:", params.toString());
     console.log("Authorization code:", code);
 
     if (!code) return;
 
-    fetch(loginLambdaUrl, {
+    let returnTo: string | null = null;
+    try {
+      returnTo = getReturnTo(stateParam) ?? null;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error("State validation failed:", message);
+      navigate(RoutePath.LoginPage);
+      return;
+    }
+
+    fetch(`${backendUrl}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
@@ -48,24 +80,28 @@ export default function CallbackPage() {
         return res.json();
       })
       .then((data) => {
+        const userData: AuthUser = {
+          sub: data.sub,
+          nhsNumber: data.nhs_number,
+          birthdate: data.birthdate,
+          identityProofingLevel: data.identity_proofing_level,
+          phoneNumber: data.phone_number,
+        };
+
+        setUser(userData);
+
+        // TODO: Remove after refactoring - kept for backward compatibility
         updateOrderAnswers({
-          user: {
-            sub: data.sub,
-            nhsNumber: data.nhs_number,
-            birthdate: data.birthdate,
-            identityProofingLevel: data.identity_proofing_level,
-            phoneNumber: data.phone_number,
-          },
+          user: userData,
         });
       })
       .then(() => {
-        navigate(RoutePath.GetSelfTestKitPage);
+        navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : String(err);
         console.error("Fetch error:", message);
-        setResult({ error: message });
       });
-  }, [updateOrderAnswers, navigate]);
+  }, [setUser, updateOrderAnswers, navigate]);
   return null;
 }

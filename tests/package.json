@@ -2,10 +2,13 @@
   "name": "hometest-service-tests",
   "version": "1.0.0",
   "description": "Playwright test framework for hometest-service",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "build": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "playwright test",
+    "test:chrome": "playwright test --project=chromium",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
@@ -21,14 +24,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.58.0",
-    "@types/node": "^22.19.3",
-    "dotenv": "^17.2.3",
-    "eslint": "^9.39.2",
-    "typescript": "^5.9.3"
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^24.10.13",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^17.3.1",
+    "eslint": "^10.0.1",
+    "globals": "^17.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
   },
   "dependencies": {
-    "@axe-core/playwright": "^4.11.0",
-    "axe-html-reporter": "^2.2.11"
+    "@axe-core/playwright": "^4.11.1",
+    "axe-html-reporter": "^2.2.11",
+    "pg": "^8.18.0",
+    "uuid": "^13.0.0"
   }
 }

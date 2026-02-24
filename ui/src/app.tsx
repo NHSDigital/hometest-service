@@ -3,27 +3,67 @@ import * as React from "react";
 import { JourneyStepNames, RoutePath } from "./lib/models/route-paths";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
+import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
+import CallbackPage from "./routes/CallbackPage";
+import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
+import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
-import LoginPage from "./routes/LoginPage";
-import CallbackPage from "./routes/CallbackPage";
+import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import JourneyLayout from "./layouts/JourneyLayout";
+import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
-import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
-import { setBodyClassName } from "./js/setClassName";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
-import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
-import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
+import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
+import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
+import { requireAuth } from "@/lib/auth/requireAuth";
+import { setBodyClassName } from "./js/setClassName";
 
 const router = createBrowserRouter([
+  // Public routes (must NOT be guarded)
+  {
+    path: RoutePath.LoginPage,
+    element: (
+      <MainLayout>
+        <LoginPage />
+      </MainLayout>
+    ),
+    errorElement: (
+      <MainLayout>
+        <GlobalErrorPage />
+      </MainLayout>
+    ),
+  },
+  {
+    path: RoutePath.CallbackPage,
+    element: (
+      <MainLayout>
+        <JourneyLayout />
+      </MainLayout>
+    ),
+    errorElement: (
+      <MainLayout>
+        <GlobalErrorPage />
+      </MainLayout>
+    ),
+    children: [
+      {
+        index: true,
+        element: <CallbackPage />,
+      },
+    ],
+  },
+
+  // Guarded app (everything else)
   {
     path: "/",
     element: <MainLayout />,
+    loader: requireAuth,
     errorElement: (
       <MainLayout>
         <GlobalErrorPage />
@@ -33,20 +73,6 @@ const router = createBrowserRouter([
       {
         path: RoutePath.HomePage,
         element: <HomePage />,
-      },
-      {
-        path: RoutePath.LoginPage,
-        element: <LoginPage />,
-      },
-      {
-        path: RoutePath.CallbackPage,
-        element: <JourneyLayout />,
-        children: [
-          {
-            index: true,
-            element: <CallbackPage />,
-          },
-        ],
       },
       {
         path: RoutePath.OrderTrackingPage,
@@ -87,6 +113,18 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.BloodSampleGuide,
             element: <BloodSampleGuidePage />,
+          },
+          {
+            path: JourneyStepNames.EnterMobileNumber,
+            element: <EnterMobileNumberPage />,
+          },
+          {
+            path: JourneyStepNames.ConfirmMobileNumber,
+            element: <ConfirmMobileNumberPage />,
+          },
+          {
+            path: JourneyStepNames.CheckYourAnswers,
+            element: <CheckYourAnswersPage />,
           },
         ],
       },

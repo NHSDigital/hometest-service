@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { EnvironmentVariables, availableEnvironments, Environment } from './environment-variables';
 
+export { EnvironmentVariables };
 
 export enum AuthType {
   SANDBOX = 'sandbox'
@@ -17,10 +18,7 @@ export interface ConfigInterface {
   authType: AuthType;
   accessibilityStandards: string;
   reportingOutputDirectory: string;
-  externalLinkSexualHealthClinic: string;
-  externalLinkNearestAE: string;
-  externalLinkHivAidsInfo: string;
-  externalLinkMakeAComplaint: string;
+  // Removed: external links are now constants
   enableTracingOnGlobalSetup: boolean;
 }
 
@@ -69,9 +67,6 @@ export class ConfigFactory {
       authType: AuthType.SANDBOX,
       accessibilityStandards: 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa',
       reportingOutputDirectory: 'tests/testResults',
-      externalLinkSexualHealthClinic: 'https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/',
-      externalLinkNearestAE: 'https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/',
-      externalLinkHivAidsInfo: 'https://www.nhs.uk/conditions/hiv-and-aids/',
       enableTracingOnGlobalSetup: false,
     };
   }
@@ -103,10 +98,6 @@ export class ConfigFactory {
         : undefined,
       accessibilityStandards: process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS],
       reportingOutputDirectory: process.env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY],
-      externalLinkSexualHealthClinic: process.env[EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC],
-      externalLinkNearestAE: process.env[EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE],
-      externalLinkHivAidsInfo: process.env[EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO],
-      externalLinkMakeAComplaint: process.env[EnvironmentVariables.EXTERNAL_LINK_MAKE_COMPLAINT],
     };
   }
 
@@ -162,14 +153,6 @@ class ConfigWrapper {
         return config.accessibilityStandards || 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa';
       case EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY:
         return config.reportingOutputDirectory;
-      case EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC:
-        return config.externalLinkSexualHealthClinic;
-      case EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE:
-        return config.externalLinkNearestAE;
-      case EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO:
-        return config.externalLinkHivAidsInfo;
-      case EnvironmentVariables.EXTERNAL_LINK_MAKE_COMPLAINT:
-        return config.externalLinkMakeAComplaint;
       default:
         throw new Error(`Unknown configuration key: ${key}`);
     }

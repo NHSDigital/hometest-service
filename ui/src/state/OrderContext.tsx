@@ -3,11 +3,11 @@
 // TODO: remove console.logs
 
 import {
+  ReactNode,
   createContext,
+  useCallback,
   useContext,
   useState,
-  useCallback,
-  ReactNode,
 } from "react";
 
 // Data from NHS Login auth response
@@ -17,6 +17,8 @@ export interface AuthUser {
   birthdate: string;
   identityProofingLevel: string;
   phoneNumber: string;
+  givenName: string;
+  familyName: string;
 }
 
 // Address structure
@@ -33,13 +35,36 @@ export interface OrderAnswers {
   // From auth
   user?: AuthUser;
 
-  // From enter-delivery-address
+  // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
+  selectedAddressUPRN?: string;
 
   // Final delivery address
   deliveryAddress?: Address;
+  addressEntryMethod?: 'postcode-search' | 'manual';
+
   comfortableDoingTest?: string;
+
+  // From LA Lookup
+  localAuthority?: {
+    code: string;
+    region: string;
+  };
+
+  supplier?: {
+    id: string;
+    name: string;
+    testCode: string;
+  }[];
+
+  // Mobile number
+  mobileNumber?: string;
+  mobileNumberSource?: 'nhs-login' | 'manual';
+
+  // Consent
+  consentGiven?: boolean;
+  consentTimestamp?: string;
 }
 
 interface CreateOrderContextType {

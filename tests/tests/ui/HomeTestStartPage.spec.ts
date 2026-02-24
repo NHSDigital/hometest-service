@@ -1,6 +1,7 @@
 import { test } from '../../fixtures';
 import { expect } from '@playwright/test';
-import { config, EnvironmentVariables } from '../../configuration';
+
+import { EXTERNAL_LINKS } from '../../../shared/enum/external-links';
 
 
 test.describe.configure({ mode: 'serial' });
@@ -10,13 +11,12 @@ test.describe('HIV Start Test Page', () => {
     await homeTestStartPage.navigate();
   });
 
-
   test('Opening external links', async ({ homeTestStartPage }) => {
     await homeTestStartPage.waitUntilPageLoad();
 
-    const sexualHealthClinicUrl = config.get(EnvironmentVariables.EXTERNAL_LINK_SEXUAL_HEALTH_CLINIC);
-    const nearestAEUrl = config.get(EnvironmentVariables.EXTERNAL_LINK_NEAREST_AE);
-    const hivAidsInfoUrl = config.get(EnvironmentVariables.EXTERNAL_LINK_HIV_AIDS_INFO);
+    const sexualHealthClinicUrl = EXTERNAL_LINKS.SEXUAL_HEALTH_CLINIC;
+    const nearestAEUrl = EXTERNAL_LINKS.NEAREST_AE;
+    const hivAidsInfoUrl = EXTERNAL_LINKS.HIV_AIDS_INFO;
 
     // Test "Find a sexual health clinic" link
     await homeTestStartPage.clickFindClinicLink(sexualHealthClinicUrl);
@@ -38,5 +38,4 @@ test.describe('HIV Start Test Page', () => {
     expect(homeTestStartPage.page.url()).toBe(hivAidsInfoUrl);
     await homeTestStartPage.page.goBack();
   });
-
 });

@@ -1,0 +1,24 @@
+import type { NHSLoginUser } from './utils/users/BaseUser';
+
+/**
+ * Example configuration for local test user.
+ *
+ * To use this file:
+ * 1. Copy this file to users.ts (cp users.ts.example users.ts)
+ * 2. Replace the placeholder values with your actual test user credentials
+ * 3. Set environment variables OTP and GENERIC_PASS before running tests
+ * 4. Run tests with ENV=local to use this configuration
+ *
+ * Note: users.ts is gitignored to protect your credentials
+ */
+export const localUser: NHSLoginUser = {
+  email: 'your-email@example.com',
+  nhsNumber: '9999999999', // Your 10-digit NHS number
+  odsCode: 'YOUR_ODS_CODE', // Your ODS (Organisation Data Service) code
+  age: 49, // User age (must match eligibility criteria)
+  dob: '1964-02-13', // User dob
+  otp: process.env.OTP as unknown as string, // Set via OTP environment variable
+  password: process.env.GENERIC_PASS as unknown as string, // Set via GENERIC_PASS environment variable
+  description: 'eligible user - local environment',
+  patientId: 'your-patient-id-here' // Your patient ID in the system
+};

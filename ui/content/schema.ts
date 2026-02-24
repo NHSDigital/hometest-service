@@ -46,6 +46,13 @@ export interface ValidationMessages {
   comfortableDoingTest: {
     required: string;
   };
+  mobileNumber: {
+    required: string;
+    invalid: string;
+  };
+  consent: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -252,6 +259,25 @@ export interface HowComfortablePrickingFingerContent {
   };
 }
 
+export interface EnterMobilePhoneNumberContent {
+  title: string;
+  description: string;
+  form: {
+    label: string;
+    hint: string;
+  };
+}
+
+export interface ConfirmMobilePhoneNumberContent {
+  title: string;
+  description: string;
+  form: {
+    alternativeLabel: string;
+    alternativeInputLabel: string;
+    alternativeInputHint: string;
+  };
+}
+
 export interface GlobalErrorContent {
   title: string;
   message: string;
@@ -312,6 +338,31 @@ export interface BloodSampleGuideContent {
   }>;
 }
 
+export interface CheckYourAnswersContent {
+  title: string;
+  updateMessage: string;
+  deliveryMessage: string;
+  summaryLabels: {
+    name: string;
+    deliveryAddress: string;
+    comfortableDoingTest: string;
+    mobileNumber: string;
+  };
+  changeLink: string;
+  consent: {
+    legend: string;
+    labelPrefix: string;
+    supplierName: string;
+    labelMiddle: string;
+    termsOfUseText: string;
+    termsOfUseHref: string;
+    labelAnd: string;
+    privacyPolicyText: string;
+    privacyPolicyHref: string;
+  };
+  submitButton: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -323,6 +374,9 @@ export interface PagesContent {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
+  "check-your-answers": CheckYourAnswersContent;
+  "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;

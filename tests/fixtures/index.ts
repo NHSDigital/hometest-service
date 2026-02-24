@@ -1,14 +1,16 @@
-import { mergeTests } from '@playwright/test';
-import { pageObjectFixture } from './pageObjectsFixture';
-import { configurationFixture } from './configurationFixture';
-import { apiFixture } from './apiFixture';
-import { accessibilityFixture } from './accessibilityFixture';
-import { storageStateFixture } from './storageStateFixture';
+import { accessibilityFixture } from "./accessibilityFixture";
+import { apiFixture } from "./apiFixture";
+import { configurationFixture } from "./configurationFixture";
+import { consoleErrorFixture } from "./consoleErrorFixture";
+import { mergeTests } from "@playwright/test";
+import { pageObjectFixture } from "./pageObjectsFixture";
+import { storageStateFixture } from "./storageStateFixture";
 
 export const test = mergeTests(
   pageObjectFixture,
   configurationFixture,
   apiFixture,
   accessibilityFixture,
-  storageStateFixture);
-export { expect } from '@playwright/test';
+  storageStateFixture,
+  consoleErrorFixture,
+);
