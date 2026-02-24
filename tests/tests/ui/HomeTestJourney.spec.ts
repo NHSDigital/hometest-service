@@ -37,7 +37,7 @@ test.describe('HIV Test Order journeys', () => {
     await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress);
   });
 
-  test('Confirm Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, updateMobileNumberPage }) => {
+  test('Confirm Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
@@ -47,10 +47,10 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await updateMobileNumberPage.confirmMobileNumberAndContinue();
+    await confirmAndUpdateMobileNumberPage.confirmMobileNumberAndContinue();
   });
 
-  test('Update Alternatie Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, updateMobileNumberPage }) => {
+  test('Update Alternatie Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
@@ -60,7 +60,7 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await updateMobileNumberPage.fillAlternativeMobileNumberAndContinue(randomAddress);
+    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumberAndContinue(randomAddress);
   });
 
   test('Order test journey by providing address manually', async ({ findAddressPage, enterAddressManuallyPage }) => {
