@@ -18,6 +18,22 @@ export class OrderApiResource extends BaseApiClient {
     return response;
   }
 
+  async getOrder(
+    nhsNumber: string,
+    dateOfBirth: string,
+    orderId: string
+  ): Promise<APIResponse> {
+    const response = await this.get(API_ENDPOINTS.order.get, {
+      params: {
+        nhs_number: nhsNumber,
+        date_of_birth: dateOfBirth,
+        order_id: orderId,
+      },
+    });
+
+    return response;
+  }
+
   validateResponse(response: APIResponse, expectedStatus: number = 201): void {
     this.validateStatus(response, expectedStatus);
   }

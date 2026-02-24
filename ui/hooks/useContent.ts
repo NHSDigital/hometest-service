@@ -1,5 +1,6 @@
 import type {
   BloodSampleGuideContent,
+  CheckYourAnswersContent,
   CommonContent,
   ConfirmMobilePhoneNumberContent,
   EnterAddressManuallyContent,
@@ -24,6 +25,7 @@ export interface UseContentReturn {
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
+  "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
@@ -42,6 +44,7 @@ export const useContent = (): UseContentReturn => {
       content.pages["how-comfortable-pricking-finger"],
     "confirm-mobile-phone-number": content.pages["confirm-mobile-phone-number"],
     "enter-mobile-phone-number": content.pages["enter-mobile-phone-number"],
+    "check-your-answers": content.pages["check-your-answers"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
@@ -77,6 +80,7 @@ export function usePageContent(
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
 export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
+export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -89,7 +93,8 @@ export function usePageContent(
     | "confirm-mobile-phone-number"
     | "global-error"
     | "order-tracking"
-    | "blood-sample-guide",
+    | "blood-sample-guide"
+    | "check-your-answers",
 ) {
   return content.pages[page];
 }
