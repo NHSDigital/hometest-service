@@ -7,3 +7,4 @@ export { OrderStatusPage } from './OrderStatusPage';
 export { HowComfortablePrickingFingerPage } from './HowComfortablePrickingFingerPage';
 export { BloodSampleGuidePage } from './BloodSampleGuidePage';
 export { EnterMobileNumberPage } from './EnterMobileNumberPage';
+export { ConfirmAndUpdateMobileNumberPage } from './ConfirmAndUpdateMobileNumberPage';
