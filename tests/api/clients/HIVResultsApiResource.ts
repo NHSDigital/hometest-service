@@ -1,7 +1,7 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
 import { BaseApiClient } from './BaseApiClient';
 import { API_ENDPOINTS } from '../endpoints';
-import { HIVTestResult, HIVTestResultData } from '../../test-data/HIVTestResultData';
+import { HIVTestResult } from '../../test-data/HIVTestResultData';
 import { headersTestResults } from '../../test-data/HeadersTestResults';
 
 export class HIVResultsApiResource extends BaseApiClient {
@@ -21,6 +21,26 @@ export class HIVResultsApiResource extends BaseApiClient {
 
   validateResponse(response: APIResponse, expectedStatus: number = 200): void {
     this.validateStatus(response, expectedStatus);
+  }
+
+  async getResult(
+    nhsNumber: string,
+    dateOfBirth: string,
+    orderId: string,
+    correlationId: string
+  ): Promise<APIResponse> {
+    const response = await this.get(API_ENDPOINTS.results.get, {
+      params: {
+        nhs_number: nhsNumber,
+        date_of_birth: dateOfBirth,
+        order_id: orderId,
+      },
+      headers: {
+        'X-Correlation-ID': correlationId,
+      },
+    });
+
+    return response;
   }
 
 }

@@ -48,6 +48,7 @@ export interface CreateOrderResult {
   supplier_id: UUID;
   order_uid: UUID;
   status_code: OrderStatusCode;
+  correlation_id: UUID;
 }
 
 
