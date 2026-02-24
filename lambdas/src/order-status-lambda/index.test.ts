@@ -448,7 +448,7 @@ describe("Order Status Lambda Handler", () => {
 
       const body = JSON.parse(result.body);
 
-      expect(body.issue[0].diagnostics).toContain("timestamp");
+      expect(body.issue[0].diagnostics).toContain("lastModified");
     });
   });
 

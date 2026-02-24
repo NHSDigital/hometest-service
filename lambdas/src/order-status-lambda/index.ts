@@ -1,5 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { FHIRTaskSchema } from "../lib/models/fhir/fhir-schemas";
+import {
+  FHIRReferenceSchema,
+  FHIRTaskSchema,
+} from "../lib/models/fhir/fhir-schemas";
 import { FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import {
   createFhirErrorResponse,
@@ -20,9 +23,16 @@ import cors from "@middy/http-cors";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { securityHeaders } from "../lib/http/security-headers";
 import { defaultCorsOptions } from "../login-lambda/cors-configuration";
+import z from "zod";
 
 const commons = new ConsoleCommons();
 const name = "order-status-lambda";
+
+export const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
+  for: FHIRReferenceSchema,
+  basedOn: z.array(FHIRReferenceSchema).max(1),
+  lastModified: z.string().datetime(),
+});
 
 /**
  * Lambda handler for PUT /test-order/status endpoint
@@ -58,7 +68,7 @@ export const lambdaHandler = async (
     );
   }
 
-  const validationResult = FHIRTaskSchema.safeParse(task);
+  const validationResult = orderStatusFHIRTaskSchema.safeParse(task);
 
   if (!validationResult.success) {
     const errorDetails = validationResult.error.issues

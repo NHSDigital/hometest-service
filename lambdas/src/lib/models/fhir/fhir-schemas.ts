@@ -92,11 +92,10 @@ export const FHIRServiceRequestSchema = z.object({
   performer: z.array(FHIRReferenceSchema).optional(),
 });
 
-export const FHIRTaskSchema = z.object({
+export const FHIRTaskSchema = z.looseObject({
   resourceType: z.literal("Task"),
-  id: z.string().optional(),
   identifier: z.array(FHIRIdentifierSchema).optional(),
-  basedOn: z.array(FHIRReferenceSchema).min(1),
+  basedOn: z.array(FHIRReferenceSchema).optional(),
   status: z.enum([
     "draft",
     "requested",
@@ -112,6 +111,7 @@ export const FHIRTaskSchema = z.object({
     "entered-in-error",
   ]),
   intent: z.enum([
+    "unknown",
     "proposal",
     "plan",
     "order",
@@ -123,7 +123,7 @@ export const FHIRTaskSchema = z.object({
   ]),
   statusReason: FHIRCodeableConceptSchema.optional(),
   businessStatus: FHIRCodeableConceptSchema.optional(),
-  for: FHIRReferenceSchema,
+  for: FHIRReferenceSchema.optional(),
   authoredOn: z.string().datetime().optional(),
   lastModified: z.string().datetime().optional(),
   requester: FHIRReferenceSchema.optional(),
