@@ -65,6 +65,9 @@ export interface OrderAnswers {
   // Consent
   consentGiven?: boolean;
   consentTimestamp?: string;
+
+  // Order confirmation
+  orderReferenceNumber?: string;
 }
 
 interface CreateOrderContextType {

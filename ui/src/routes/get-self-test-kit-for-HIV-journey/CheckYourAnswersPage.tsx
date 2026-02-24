@@ -8,6 +8,7 @@ import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
+// TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -85,6 +86,7 @@ export default function CheckYourAnswersPage() {
     console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
     // TODO: Submit order via API
     console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
+    goToStep(JourneyStepNames.OrderSubmitted);
   };
 
   const addressLines = orderAnswers.deliveryAddress

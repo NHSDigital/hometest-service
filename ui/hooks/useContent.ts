@@ -9,6 +9,7 @@ import type {
   GlobalErrorContent,
   HowComfortablePrickingFingerContent,
   NoAddressFoundContent,
+  OrderSubmittedContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
   StartPageContent,
@@ -30,6 +31,7 @@ export interface UseContentReturn {
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "order-submitted": OrderSubmittedContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -48,6 +50,7 @@ export const useContent = (): UseContentReturn => {
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
+    "order-submitted": content.pages["order-submitted"],
   };
 };
 
