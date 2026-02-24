@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
-import { handler } from "./index";
+import { handler, OrderStatusFHIRTask } from "./index";
 import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
@@ -61,7 +61,7 @@ describe("Order Status Lambda Handler", () => {
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
   });
 
-  const validTaskBody: FHIRTask = {
+  const validTaskBody: OrderStatusFHIRTask = {
     resourceType: "Task",
     status: "in-progress",
     intent: "order",
@@ -136,6 +136,9 @@ describe("Order Status Lambda Handler", () => {
         for: {
           reference: `Patient/${MOCK_PATIENT_UID}`,
         },
+        businessStatus: {
+          text: "invalid-business-status",
+        },
       } satisfies Partial<Omit<FHIRTask, "basedOn">>);
 
       const result = await handler(
@@ -155,7 +158,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         basedOn: [{ reference: "invalid-reference" }],
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -208,7 +211,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         for: { reference: "invalid-ref" },
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -226,7 +229,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         for: { reference: "Patient/other-patient" },
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -257,8 +260,10 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 for invalid business status", async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
-        businessStatus: { text: "INVALID_STATUS" },
-      } satisfies Partial<FHIRTask>);
+        businessStatus: {
+          text: "INVALID_STATUS" as unknown as IncomingBusinessStatus,
+        },
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -269,15 +274,14 @@ describe("Order Status Lambda Handler", () => {
 
       const body = JSON.parse(result.body);
 
-      expect(body.issue[0].diagnostics).toContain("Invalid business status");
-      expect(body.issue[0].diagnostics).toContain("INVALID_STATUS");
+      expect(body.issue[0].diagnostics).toContain("businessStatus");
     });
 
     it("should return 400 for missing business status", async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         businessStatus: undefined,
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -288,14 +292,14 @@ describe("Order Status Lambda Handler", () => {
 
       const body = JSON.parse(result.body);
 
-      expect(body.issue[0].diagnostics).toContain("Missing business status");
+      expect(body.issue[0].diagnostics).toContain("businessStatus");
     });
 
     it(`should accept ${IncomingBusinessStatus.DISPATCHED} business status`, async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         businessStatus: { text: IncomingBusinessStatus.DISPATCHED },
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -309,7 +313,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         businessStatus: { text: IncomingBusinessStatus.RECEIVED_AT_LAB },
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -393,7 +397,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         lastModified: mockedLastModifiedTimestamp, // Older than latest
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -415,7 +419,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         lastModified: mockedLastModifiedTimestamp, // Newer than latest
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,
@@ -437,7 +441,7 @@ describe("Order Status Lambda Handler", () => {
 
       mockEvent.body = JSON.stringify({
         ...bodyWithoutLastModified,
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(
         mockEvent as APIGatewayProxyEvent,

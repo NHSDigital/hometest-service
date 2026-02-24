@@ -24,10 +24,3 @@ export const businessStatusMapping: Record<
   [IncomingBusinessStatus.RECEIVED_AT_LAB]:
     AllowedInternalBusinessStatuses.RECEIVED,
 };
-
-/**
- * Validate business status against allowed domain-specific statuses
- */
-export const isValidBusinessStatus = (
-  status: string,
-): status is IncomingBusinessStatus => status in businessStatusMapping;

@@ -113,7 +113,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"resourceType\": \"Task\",\n  \"status\": \"{{valid_status}}\",\n  \"intent\": \"order\",\n  \"basedOn\": [\n    { \"reference\": \"Order/1e3ac65c-4c00-4610-a9e8-9e76a66784eb\" } // changed the order id to be incorrect\n  ],\n  \"for\": {\n    \"reference\": \"Patient/{{patient_uid}}\"\n  },\n  \"businessStatus\": {\n    \"text\": \"{{valid_business_status}}\"\n  },\n  \"authoredOn\": \"2026-02-17T12:50:00Z\"\n}",
+          "raw": "{\n  \"resourceType\": \"Task\",\n  \"status\": \"{{valid_status}}\",\n  \"intent\": \"order\",\n  \"basedOn\": [\n    { \"reference\": \"Order/1e3ac65c-4c00-4610-a9e8-9e76a66784eb\" } // changed the order id to be incorrect\n  ],\n  \"for\": {\n    \"reference\": \"Patient/{{patient_uid}}\"\n  },\n  \"businessStatus\": {\n    \"text\": \"{{valid_business_status}}\"\n  },\n  \"lastModified\": \"2026-02-17T12:50:00Z\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -146,7 +146,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"resourceType\": \"Task\",\n  \"status\": \"{{valid_status}}\",\n  \"intent\": \"{{valid_intent}}\",\n  \"basedOn\": [\n    { \"reference\": \"Order/{{order_uid}}\" }\n  ],\n  \"for\": {\n    \"reference\": \"Patient/91111111-1111-1111-1111-111111111111\" // incorrect patient id\n  },\n  \"businessStatus\": {\n    \"text\": \"{{valid_business_status}}\"\n  },\n  \"authoredOn\": \"2026-02-17T12:50:00Z\"\n}",
+          "raw": "{\n  \"resourceType\": \"Task\",\n  \"status\": \"{{valid_status}}\",\n  \"intent\": \"{{valid_intent}}\",\n  \"basedOn\": [\n    { \"reference\": \"Order/{{order_uid}}\" }\n  ],\n  \"for\": {\n    \"reference\": \"Patient/91111111-1111-1111-1111-111111111111\" // incorrect patient id\n  },\n  \"businessStatus\": {\n    \"text\": \"{{valid_business_status}}\"\n  },\n  \"lastModified\": \"2026-02-17T12:50:00Z\"\n}",
           "options": {
             "raw": {
               "language": "json"

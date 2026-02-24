@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
+  FHIRCodeableConceptSchema,
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
@@ -12,11 +13,7 @@ import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils";
-import {
-  businessStatusMapping,
-  extractIdFromReference,
-  isValidBusinessStatus,
-} from "./utils";
+import { businessStatusMapping, extractIdFromReference } from "./utils";
 import httpErrorHandler from "@middy/http-error-handler";
 import middy from "@middy/core";
 import cors from "@middy/http-cors";
@@ -24,15 +21,21 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import { securityHeaders } from "../lib/http/security-headers";
 import { defaultCorsOptions } from "../login-lambda/cors-configuration";
 import z from "zod";
+import { IncomingBusinessStatus } from "./types";
 
 const commons = new ConsoleCommons();
 const name = "order-status-lambda";
 
-export const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
+const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
   for: FHIRReferenceSchema,
   basedOn: z.array(FHIRReferenceSchema).max(1),
   lastModified: z.string().datetime(),
+  businessStatus: FHIRCodeableConceptSchema.extend({
+    text: z.enum(IncomingBusinessStatus),
+  }),
 });
+
+export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 
 /**
  * Lambda handler for PUT /test-order/status endpoint
@@ -82,13 +85,15 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(400, "invalid", errorDetails, "error");
   }
 
+  const validatedTask = validationResult.data;
+
   try {
     // Extract order ID from Task.basedOn
-    const orderId = extractIdFromReference(task.basedOn[0].reference);
+    const orderId = extractIdFromReference(validatedTask.basedOn[0].reference);
 
     if (!orderId) {
       commons.logError(name, "Invalid order reference format", {
-        reference: task.basedOn[0].reference,
+        reference: validatedTask.basedOn[0].reference,
       });
 
       return createFhirErrorResponse(
@@ -129,11 +134,13 @@ export const lambdaHandler = async (
     }
 
     // Verify patient ownership
-    const patientIdFromTask = extractIdFromReference(task.for.reference);
+    const patientIdFromTask = extractIdFromReference(
+      validatedTask.for.reference,
+    );
 
     if (!patientIdFromTask) {
       commons.logError(name, "Invalid patient reference format", {
-        reference: task.for.reference,
+        reference: validatedTask.for.reference,
       });
 
       return createFhirErrorResponse(
@@ -159,48 +166,8 @@ export const lambdaHandler = async (
       );
     }
 
-    // Validate business status
-    const businessStatus = task.businessStatus?.text;
-
-    if (!businessStatus) {
-      commons.logError(name, "Missing business status");
-
-      return createFhirErrorResponse(
-        400,
-        "invalid",
-        `Missing business status`,
-        "error",
-      );
-    }
-
-    if (!isValidBusinessStatus(businessStatus)) {
-      commons.logError(name, "Invalid business status", {
-        businessStatus: businessStatus,
-      });
-
-      return createFhirErrorResponse(
-        400,
-        "invalid",
-        `Invalid business status: ${businessStatus}`,
-        "error",
-      );
-    }
-
-    const internalBusinessStatus = businessStatusMapping[businessStatus];
-
-    // Timestamp validation
-    const { lastModified } = task;
-
-    if (!lastModified) {
-      commons.logError(name, "Missing timestamp in task", { orderId });
-
-      return createFhirErrorResponse(
-        400,
-        "invalid",
-        "Task must contain either lastModified timestamp",
-        "error",
-      );
-    }
+    const internalBusinessStatus =
+      businessStatusMapping[validatedTask.businessStatus.text];
 
     // Check for idempotency via Correlation ID
     const idempotencyCheck = await orderStatusDb.checkIdempotency(
@@ -214,14 +181,14 @@ export const lambdaHandler = async (
         correlationId,
       });
 
-      return createFhirResponse(200, task);
+      return createFhirResponse(200, validatedTask);
     }
 
     // Process the update
     const updateParams: OrderStatusUpdateParams = {
       orderId,
       statusCode: internalBusinessStatus,
-      createdAt: lastModified,
+      createdAt: validationResult.data.lastModified,
       correlationId,
     };
 
@@ -233,7 +200,7 @@ export const lambdaHandler = async (
       correlationId,
     });
 
-    return createFhirResponse(200, task);
+    return createFhirResponse(200, validatedTask);
   } catch (error) {
     commons.logError(name, "Error processing order status update", {
       error,
