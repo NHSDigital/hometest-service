@@ -6,8 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
-
-// TODO: update to dynamically render supplier based on API (probably stored in state)
+import orderService from "@/lib/services/order-service";
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -32,7 +31,7 @@ function formatUserName(user?: { givenName: string; familyName: string }): strin
 
 export default function CheckYourAnswersPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, setReturnToStep, returnToStep } = useJourneyNavigationContext();
   const { commonContent, "check-your-answers": content } = useContent();
 
   const [consentChecked, setConsentChecked] = useState(false);
@@ -42,19 +41,15 @@ export default function CheckYourAnswersPage() {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
 
     if (field === 'address') {
-      // Route based on how address was entered
       if (orderAnswers.addressEntryMethod === 'manual') {
         goToStep(JourneyStepNames.EnterAddressManually);
       } else {
-        // Default to select address (postcode search flow)
         goToStep(JourneyStepNames.SelectDeliveryAddress);
       }
     } else if (field === 'mobile') {
-      // Route based on mobile number source
       if (orderAnswers.mobileNumberSource === 'manual') {
         goToStep(JourneyStepNames.EnterMobileNumber);
       } else {
-        // NHS Login flow
         goToStep(JourneyStepNames.ConfirmMobileNumber);
       }
     } else if (field === 'comfort') {
@@ -66,7 +61,7 @@ export default function CheckYourAnswersPage() {
     setConsentChecked(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!consentChecked) {
@@ -79,13 +74,59 @@ export default function CheckYourAnswersPage() {
     const consentTimestamp = new Date().toISOString();
     updateOrderAnswers({
       consentGiven: true,
-      consentTimestamp,
-    });
+      consentTimestamp,});
+
+    try {
+      // Hardcoded request for testing
+      const orderRequest = {
+        testCode: "31676001",
+        testDescription: "HIV antigen test",
+        supplierId: "test-supplier-123", // Add a test supplier ID
+        patient: {
+          family: "Doe",
+          given: ["Alex"],
+          text: "Alex Doe",
+          telecom: [
+            { phone: "+447700900000" },
+            { fax: "+441234567890" },
+            { email: "alex.doe@example.com" },
+            { pager: "123456" },
+            { url: "https://alexdoe.example.com" },
+            { sms: "+447700900001" },
+            { other: "Contact via app" }
+          ],
+          address: {
+            line: ["123 Main Street", "Flat 4B"],
+            city: "London",
+            postalCode: "SW1A 1AA",
+            country: "United Kingdom",
+            use: 'home' as const,
+            type: 'postal' as const,
+          },
+          birthDate: "1990-01-01",
+          nhsNumber: "1234567890"
+        },
+        consent: true,
+      };
+
+      const orderResponse = await orderService.submitOrder(orderRequest);
+      console.log("Order router response:", orderResponse);
+
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep("order-confirmation");
+      }
+    } catch (err) {
+      console.error("Failed to submit order:", err);
+      // TODO: Show error to user
+    }
 
     console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
-    // TODO: Submit order via API
-    console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
   };
+
 
   const addressLines = orderAnswers.deliveryAddress
     ? formatAddress(orderAnswers.deliveryAddress)

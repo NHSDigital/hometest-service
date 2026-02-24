@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+import middy from "@middy/core";
+import cors, { Options as CorsOptions } from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { z } from "zod";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
@@ -10,8 +14,11 @@ import { init } from "./init";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { securityHeaders } from "../lib/http/security-headers";
+import { defaultCorsOptions } from "../login-lambda/cors-configuration";
 
 const name = "order-service-lambda";
+
 const {
   transactionService,
   orderStatusService,
@@ -40,9 +47,12 @@ const parseAndValidateRequest = (
   return validationResult.data;
 };
 
-export const handler = async (
+export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
+  context: Context,
 ): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   let correlationId: string;
 
   try {
@@ -62,27 +72,20 @@ export const handler = async (
   });
 
   try {
-    if (event.body === null || event.body === "{}") {
+    if (!event.body || event.body === "{}") {
       return createJsonResponse(400, { message: "Empty body" });
     }
 
     const orderRequest = parseAndValidateRequest(event.body);
 
-    console.info(name, "Order request validated", {
-      correlationId,
-      supplierId: orderRequest.supplierId,
-      testCode: orderRequest.testCode,
-    });
-
-    // Create patient and order in database
-    // ALPHA: no real idempotency check, but repeated requests should throw because of unique constraint on order_status.order_uid, which is generated as a UUID in createPatientAndOrderAndStatus
-    const orderResult = await transactionService.createPatientAndOrderAndStatus(
-      orderRequest.patient.nhsNumber,
-      orderRequest.patient.birthDate,
-      orderRequest.supplierId,
-      orderRequest.testCode,
-      correlationId,
-    );
+    const orderResult =
+      await transactionService.createPatientAndOrderAndStatus(
+        orderRequest.patient.nhsNumber,
+        orderRequest.patient.birthDate,
+        orderRequest.supplierId,
+        orderRequest.testCode,
+        correlationId,
+      );
 
     const orderBody = buildFhirServiceRequest(
       orderRequest,
@@ -96,43 +99,16 @@ export const handler = async (
       order_body: orderBody,
     };
 
-    try {
-      await sqsClient.sendMessage(
-        orderPlacementQueueUrl,
-        JSON.stringify(parsedOrderBody),
-      );
-    } catch (error) {
-      console.error(name, "Failed to enqueue order", {
-        correlationId,
-        error,
-      });
-      return createJsonResponse(500, {
-        message: "Failed to enqueue order",
-      });
-    }
+    await sqsClient.sendMessage(
+      orderPlacementQueueUrl,
+      JSON.stringify(parsedOrderBody),
+    );
 
-    try {
-      await orderStatusService.updateOrderStatus({
-        orderId: orderResult.orderUid,
-        statusCode: OrderStatusCodes.QUEUED,
-        createdAt: new Date().toISOString(),
-        correlationId: correlationId,
-      });
-    } catch (error) {
-      console.error(name, "Failed to update order status", {
-        correlationId,
-        error,
-      });
-      return createJsonResponse(500, {
-        message: "Failed to update order status",
-      });
-    }
-
-    console.info(name, "Order created successfully", {
+    await orderStatusService.updateOrderStatus({
+      orderId: orderResult.orderUid,
+      statusCode: OrderStatusCodes.QUEUED,
+      createdAt: new Date().toISOString(),
       correlationId,
-      orderUid: orderResult.orderUid,
-      orderReference: orderResult.orderReference,
-      patientUid: orderResult.patientUid,
     });
 
     return createJsonResponse(201, {
@@ -142,8 +118,26 @@ export const handler = async (
     });
   } catch (error) {
     console.error(name, "Order request failed", { correlationId, error });
-    return createJsonResponse(400, {
-      message: error instanceof Error ? error.message : "Invalid request",
-    });
+
+    return createJsonResponse(
+      error instanceof Error ? 400 : 500,
+      {
+        message: error instanceof Error ? error.message : "Internal error",
+      },
+    );
   }
 };
+
+const corsOptions: CorsOptions = {
+  ...defaultCorsOptions,
+  headers: [
+    "content-type",
+    "authorization",
+    "x-correlation-id",
+  ].join(","),
+};
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(corsOptions))
+  .use(httpErrorHandler());
