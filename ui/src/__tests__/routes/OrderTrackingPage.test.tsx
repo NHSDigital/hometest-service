@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 
 import OrderTrackingPage from "@/routes/OrderTrackingPage";
-import { Patient } from "@/lib/models/patient";
 import { act } from "react";
 import orderDetailsService from "@/lib/services/order-details-service";
 
