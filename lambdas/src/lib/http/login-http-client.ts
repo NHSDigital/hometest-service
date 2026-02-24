@@ -180,15 +180,7 @@ export class HttpClient {
         },
       });
 
-      throw new Error("Get API call failure", {
-        cause: {
-          details: {
-            httpCode: errDetails.httpCode,
-            responseData: errDetails.responseData,
-            underlyingCause: (error as Error).cause,
-          },
-        },
-      });
+      throw new Error("Get API call failure", { cause: error });
     }
   }
 
