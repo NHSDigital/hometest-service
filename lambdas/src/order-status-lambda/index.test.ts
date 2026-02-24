@@ -1,11 +1,7 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { handler } from "./index";
 import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
-import {
-  IdempotencyCheckResult,
-  OrderStatusCodes,
-  OrderStatusRow,
-} from "../lib/db/order-status-db";
+import { IdempotencyCheckResult } from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
 
@@ -62,11 +58,7 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
 
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
-    mockUpdateOrderStatus.mockResolvedValue({
-      order_uid: MOCK_ORDER_UID,
-      status_code: OrderStatusCodes.COMPLETE,
-      created_at: "2024-01-15T10:00:00Z",
-    } satisfies Partial<OrderStatusRow>);
+    mockUpdateOrderStatus.mockResolvedValue(undefined);
   });
 
   const validTaskBody: FHIRTask = {

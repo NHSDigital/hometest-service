@@ -108,9 +108,7 @@ export class OrderStatusService {
   /**
    * Update order status in the database
    */
-  async updateOrderStatus(
-    params: OrderStatusUpdateParams,
-  ): Promise<OrderStatusRow> {
+  async updateOrderStatus(params: OrderStatusUpdateParams): Promise<void> {
     const { orderId, statusCode, createdAt, correlationId } = params;
 
     const query = `
@@ -119,16 +117,16 @@ export class OrderStatusService {
     `;
 
     try {
-      const result = await this.dbClient.query<
-        OrderStatusRow,
-        [string, string, string, string]
-      >(query, [orderId, statusCode, createdAt, correlationId]);
+      const result = await this.dbClient.query(query, [
+        orderId,
+        statusCode,
+        createdAt,
+        correlationId,
+      ]);
 
       if (result.rowCount === 0) {
         throw new Error("Failed to insert order status");
       }
-
-      return result.rows[0];
     } catch (error) {
       throw new Error(`Failed to update order status for orderId ${orderId}`, {
         cause: error,

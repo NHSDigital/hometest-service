@@ -1,6 +1,5 @@
 import {
   OrderRow,
-  OrderStatusRow,
   OrderStatusCodes,
   OrderStatusService,
   OrderStatusUpdateParams,
@@ -103,36 +102,25 @@ describe("OrderStatusService", () => {
 
   describe("updateOrderStatus", () => {
     it("should insert new order status record", async () => {
-      const mockNewStatus: OrderStatusRow = {
-        status_id: "status-456",
-        order_uid: "550e8400-e29b-41d4-a716-446655440000",
-        order_reference: 100001,
-        status_code: OrderStatusCodes.COMPLETE,
-        created_at: "2024-01-15T11:00:00Z",
-        correlation_id: "corr-123",
-      };
-
-      mockQuery.mockResolvedValue({
-        rows: [mockNewStatus],
-        rowCount: 1,
-      });
-
-      const result = await service.updateOrderStatus({
+      const mockParams: OrderStatusUpdateParams = {
         orderId: "550e8400-e29b-41d4-a716-446655440000",
         statusCode: OrderStatusCodes.COMPLETE,
         createdAt: "2024-01-15T11:00:00Z",
         correlationId: "corr-123",
+      };
+
+      mockQuery.mockResolvedValue({
+        rows: [],
+        rowCount: 1,
       });
 
-      expect(result).toEqual(mockNewStatus);
+      await expect(
+        service.updateOrderStatus(mockParams),
+      ).resolves.toBeUndefined();
+
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),
-        [
-          "550e8400-e29b-41d4-a716-446655440000",
-          OrderStatusCodes.COMPLETE,
-          "2024-01-15T11:00:00Z",
-          "corr-123",
-        ],
+        Object.values(mockParams),
       );
     });
 
