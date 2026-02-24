@@ -188,7 +188,7 @@ export const lambdaHandler = async (
     const updateParams: OrderStatusUpdateParams = {
       orderId,
       statusCode: internalBusinessStatus,
-      createdAt: validationResult.data.lastModified,
+      createdAt: validatedTask.lastModified,
       correlationId,
     };
 
