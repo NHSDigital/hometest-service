@@ -41,6 +41,9 @@
       "mobileNumber": {
         "required": "Enter a UK mobile phone number",
         "invalid": "Enter a UK mobile phone number"
+      },
+      "consent": {
+        "required": "Select if you agree to our partner's terms and conditions and privacy policy"
       }
     },
     "links": {
@@ -327,6 +330,30 @@
           "caption": "Place your blood sample tube into the protective packaging following the kit instructions. Write today's date and the time on the form. Put the form and the sealed bag into the pre-paid postage box. Seal it with the security sticker. Put your sample in a post box as soon as you can."
         }
       ]
+    },
+    "check-your-answers": {
+      "title": "Check your answers before submitting your order",
+      "updateMessage": "We'll update you about your HIV test on the account you use for your NHS login.",
+      "deliveryMessage": "The kit will arrive within 5 working days.",
+      "summaryLabels": {
+        "name": "Name",
+        "deliveryAddress": "Delivery address",
+        "comfortableDoingTest": "Are you comfortable doing the HIV self-test?",
+        "mobileNumber": "What's your mobile phone number?"
+      },
+      "changeLink": "Change",
+      "consent": {
+        "legend": "Your consent",
+        "labelPrefix": "I understand that",
+        "supplierName": "[Supplier]",
+        "labelMiddle": ", a trusted partner of NHS, will provide the free self-test kit. I agree to their",
+        "termsOfUseText": "terms of use",
+        "termsOfUseHref": "supplier-terms-and-conditions",
+        "labelAnd": "and",
+        "privacyPolicyText": "privacy policy",
+        "privacyPolicyHref": "supplier-privacy-policy"
+      },
+      "submitButton": "Submit order"
     }
   }
 }
