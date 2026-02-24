@@ -57,7 +57,7 @@ export class SupplierService {
             order_path,
             oauth_scope
       FROM supplier
-      WHERE supplier_id = $1
+      WHERE supplier_id = $1::uuid
       LIMIT 1;
     `;
 
