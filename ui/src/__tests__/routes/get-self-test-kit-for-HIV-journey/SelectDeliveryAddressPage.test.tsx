@@ -16,31 +16,31 @@ jest.mock('@/state', () => ({
     lookupResultsStatus: mockLookupResultsStatus,
     addresses: [
       {
-        "id": "0000001",
+        "id": "MOCK0000001",
         "buildingNumber": "1",
         "buildingName": "",
         "subBuildingName": "",
-        "address": "1 TEST ROAD, CHECK TOWN, B99 95C",
+        "fullAddress": "1 TEST ROAD, CHECK TOWN, B99 95C",
         "thoroughfare": "TEST ROAD",
         "town": "CHECK TOWN",
         "postcode": "B99 95C"
       },
       {
-        "id": "0000002",
+        "id": "MOCK0000002",
         "buildingNumber": "2",
         "buildingName": "",
         "subBuildingName": "",
-        "address": "2 TEST ROAD, CHECK TOWN, B99 95C",
+        "fullAddress": "2 TEST ROAD, CHECK TOWN, B99 95C",
         "thoroughfare": "TEST ROAD",
         "town": "CHECK TOWN",
         "postcode": "B99 95C"
       },
       {
-        "id": "0000003",
+        "id": "MOCK0000003",
         "buildingNumber": "3",
         "buildingName": "TEST BUILDING",
         "subBuildingName": "FLAT 1",
-        "address": "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
+        "fullAddress": "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
         "thoroughfare": "TEST ROAD",
         "town": "CHECK TOWN",
         "postcode": "B99 95C"
@@ -224,7 +224,7 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      await screen.findByText(/3 POST OFFICE COTTAGE/i);
+      await screen.findByText(/1 TEST ROAD/i);
     });
   });
 
