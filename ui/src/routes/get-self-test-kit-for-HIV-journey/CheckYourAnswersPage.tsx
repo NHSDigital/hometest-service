@@ -7,8 +7,6 @@ import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
-// TODO: update to dynamically render supplier based on API (probably stored in state)
-
 function formatAddress(address: {
   addressLine1?: string;
   addressLine2?: string;
@@ -218,7 +216,7 @@ export default function CheckYourAnswersPage() {
               checked={consentChecked}
               onChange={handleConsentChange}
             >
-              {content.consent.labelPrefix} {content.consent.supplierName}{content.consent.labelMiddle}{" "}
+              {content.consent.label.replace('{supplier}', orderAnswers.supplier?.[0]?.name || '[Supplier]')}{" "}
               <a href={content.consent.termsOfUseHref}>{content.consent.termsOfUseText}</a>{" "}
               {content.consent.labelAnd}{" "}
               <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.

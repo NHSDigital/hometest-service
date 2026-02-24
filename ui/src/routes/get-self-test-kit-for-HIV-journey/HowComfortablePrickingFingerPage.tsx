@@ -7,8 +7,6 @@ import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 
-// TODO: update to dynamically render supplier based on API (probably stored in state)
-
 export default function HowComfortablePrickingFingerPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
@@ -125,7 +123,11 @@ export default function HowComfortablePrickingFingerPage() {
           error={optionError || undefined}
           onChange={handleRadioChange}
         >
-          <Radios.Radio value="Yes" hint={content.options.yes.hint} checked={selectedOption === "Yes"}>
+          <Radios.Radio
+            value="Yes"
+            hint={content.options.yes.hint.replace('{supplier}', orderAnswers.supplier?.[0]?.name || '[Supplier]')}
+            checked={selectedOption === "Yes"}
+          >
             {content.options.yes.text}
           </Radios.Radio>
           <Radios.Radio value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>

@@ -332,9 +332,7 @@ export interface CheckYourAnswersContent {
   changeLink: string;
   consent: {
     legend: string;
-    labelPrefix: string;
-    supplierName: string;
-    labelMiddle: string;
+    label: string;
     termsOfUseText: string;
     termsOfUseHref: string;
     labelAnd: string;
