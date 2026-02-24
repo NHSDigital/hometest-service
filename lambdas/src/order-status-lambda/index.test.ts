@@ -9,7 +9,7 @@ const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
-const mockUpdateOrderStatus = jest.fn();
+const mockAddOrderStatusUpdate = jest.fn();
 
 jest.mock("../lib/utils", () => ({
   ...jest.requireActual("../lib/utils"),
@@ -22,7 +22,7 @@ jest.mock("../lib/db/order-status-db", () => ({
   OrderStatusService: jest.fn().mockImplementation(() => ({
     getPatientIdFromOrder: mockGetPatientIdFromOrder,
     checkIdempotency: mockCheckIdempotency,
-    updateOrderStatus: mockUpdateOrderStatus,
+    addOrderStatusUpdate: mockAddOrderStatusUpdate,
   })),
 }));
 
@@ -58,7 +58,7 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
 
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
-    mockUpdateOrderStatus.mockResolvedValue(undefined);
+    mockAddOrderStatusUpdate.mockResolvedValue(undefined);
   });
 
   const validTaskBody: FHIRTask = {
@@ -358,7 +358,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+      expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           correlationId: newCorrelationId,
         }),
@@ -402,7 +402,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+      expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           createdAt: mockedLastModifiedTimestamp,
         }),
@@ -424,7 +424,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+      expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           createdAt: mockedLastModifiedTimestamp,
         }),
@@ -476,7 +476,7 @@ describe("Order Status Lambda Handler", () => {
 
       await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
+      expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           orderId: MOCK_ORDER_UID,
           statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],

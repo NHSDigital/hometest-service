@@ -215,7 +215,7 @@ export const lambdaHandler = async (
       correlationId,
     };
 
-    await orderStatusDb.updateOrderStatus(updateParams);
+    await orderStatusDb.addOrderStatusUpdate(updateParams);
 
     commons.logInfo(name, "Order status updated successfully", {
       orderId,

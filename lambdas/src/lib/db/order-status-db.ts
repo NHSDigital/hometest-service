@@ -106,9 +106,9 @@ export class OrderStatusService {
   }
 
   /**
-   * Update order status in the database
+   * Add a new order status update to the database
    */
-  async updateOrderStatus(params: OrderStatusUpdateParams): Promise<void> {
+  async addOrderStatusUpdate(params: OrderStatusUpdateParams): Promise<void> {
     const { orderId, statusCode, createdAt, correlationId } = params;
 
     const query = `

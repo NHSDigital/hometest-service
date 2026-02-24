@@ -115,7 +115,7 @@ describe("OrderStatusService", () => {
       });
 
       await expect(
-        service.updateOrderStatus(mockParams),
+        service.addOrderStatusUpdate(mockParams),
       ).resolves.toBeUndefined();
 
       expect(mockQuery).toHaveBeenCalledWith(
@@ -128,7 +128,7 @@ describe("OrderStatusService", () => {
       mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
       await expect(
-        service.updateOrderStatus({
+        service.addOrderStatusUpdate({
           orderId: "order-123",
           statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
@@ -144,7 +144,7 @@ describe("OrderStatusService", () => {
       });
 
       await expect(
-        service.updateOrderStatus({
+        service.addOrderStatusUpdate({
           orderId: "order-123",
           statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",

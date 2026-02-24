@@ -112,7 +112,7 @@ export const handler = async (
     }
 
     try {
-      await orderStatusService.updateOrderStatus({
+      await orderStatusService.addOrderStatusUpdate({
         orderId: orderResult.orderUid,
         statusCode: OrderStatusCodes.QUEUED,
         createdAt: new Date().toISOString(),
