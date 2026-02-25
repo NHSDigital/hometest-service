@@ -37,32 +37,19 @@ test.describe('Order Status Update API', () => {
   });
 
   test.beforeEach(async () => {
-    orderUid = randomUUID();
-    patientUid = randomUUID();
     nhsNumber = `99${faker.number.int({ min: 100000000, max: 999999999 })}`;
     birthDate = faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toISOString().split('T')[0];
   });
 
   test.beforeEach(async ({ testOrderDb }) => {
-    await testOrderDb.insertPatientMapping({
-      patientUid,
-      nhsNumber,
-      birthDate,
-    });
-
-    await testOrderDb.insertTestOrder({
-      orderUid,
-      supplierId,
-      patientUid,
-      testCode,
-      originator,
-    });
+    patientUid = await testOrderDb.upsertPatient(nhsNumber,birthDate);
+    orderUid = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
   });
 
   test.afterEach(async ({ testOrderDb }) => {
     await testOrderDb.deleteOrderStatusByUid(orderUid);
     await testOrderDb.deleteOrderByUid(orderUid);
-    await testOrderDb.deletePatientMappingByUid(patientUid);
+    await testOrderDb.deletePatientByNHSandDOB(nhsNumber, birthDate);
   });
 
   for (const { businessStatus, expectedStatusCode } of businessStatusCases) {
