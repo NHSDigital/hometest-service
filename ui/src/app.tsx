@@ -22,6 +22,7 @@ import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journe
 import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
+import TestResultsPage from "./routes/TestResultsPage";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: RoutePath.OrderTrackingPage,
         element: <OrderTrackingPage />,
+      },
+      {
+        path: RoutePath.TestResultsPage,
+        element: <TestResultsPage />,
       },
       {
         path: RoutePath.GetSelfTestKitPage,

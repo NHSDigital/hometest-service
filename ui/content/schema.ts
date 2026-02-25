@@ -284,13 +284,18 @@ export interface GlobalErrorContent {
 }
 
 export interface OrderTrackingContent {
-  title: string;
   error: {
     title: string;
     orderNotFound: string;
     orderIdRequired: string;
   };
-  loading: string;
+}
+
+export interface TestResultsContent {
+  error: {
+    title: string;
+    orderIdRequired: string;
+  };
 }
 
 export interface BloodSampleGuideContent {
@@ -360,6 +365,7 @@ export interface PagesContent {
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "test-results": TestResultsContent;
   "blood-sample-guide": BloodSampleGuideContent;
 }
 

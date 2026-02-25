@@ -12,6 +12,7 @@ import type {
   OrderTrackingContent,
   SelectDeliveryAddressContent,
   StartPageContent,
+  TestResultsContent,
 } from "@/content/schema";
 
 import { content } from "@/content/ContentService";
@@ -30,6 +31,7 @@ export interface UseContentReturn {
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "test-results": TestResultsContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -48,6 +50,7 @@ export const useContent = (): UseContentReturn => {
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
+    "test-results": content.pages["test-results"]
   };
 };
 
@@ -81,6 +84,7 @@ export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
 export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
 export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
+export function usePageContent(page: "test-results"): TestResultsContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -94,7 +98,8 @@ export function usePageContent(
     | "global-error"
     | "order-tracking"
     | "blood-sample-guide"
-    | "check-your-answers",
+    | "check-your-answers"
+    | "test-results",
 ) {
   return content.pages[page];
 }
