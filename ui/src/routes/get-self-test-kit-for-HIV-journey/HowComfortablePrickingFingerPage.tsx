@@ -10,11 +10,11 @@ import PageLayout from "@/layouts/PageLayout";
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 
 export default function HowComfortablePrickingFingerPage() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
-  const [selectedOption, setSelectedOption] = useState<string>("");
+  const [selectedOption, setSelectedOption] = useState<string>(orderAnswers.comfortableDoingTest || "");
   const [optionError, setOptionError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,13 +34,17 @@ export default function HowComfortablePrickingFingerPage() {
     console.log("[HowComfortablePrickingFingerPage] comfortableDoingTest:", orderAnswers);
 
     if (selectedOption === "Yes") {
-      if (orderAnswers.user?.phoneNumber) {
-        goToStep(JourneyStepNames.ConfirmMobileNumber);
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else if (orderAnswers.user?.phoneNumber) {
+          goToStep(JourneyStepNames.ConfirmMobileNumber);
       } else {
         goToStep(JourneyStepNames.EnterMobileNumber);
       }
     } else {
-      // goToStep("visit-nearest-clinic");
+      // goToStep(JourneyStepNames.VisitNearestClinic);
     }
   };
 
@@ -55,7 +59,7 @@ export default function HowComfortablePrickingFingerPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("enter-delivery-address");
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
         }
       }}>
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
@@ -102,7 +106,7 @@ export default function HowComfortablePrickingFingerPage() {
             href="blood-sample-guide"
             onClick={(e) => {
               e.preventDefault();
-              goToStep("blood-sample-guide");
+              goToStep(JourneyStepNames.BloodSampleGuide);
             }}
           >
             {commonContent.links.bloodSampleGuide.text}
@@ -121,10 +125,10 @@ export default function HowComfortablePrickingFingerPage() {
           error={optionError || undefined}
           onChange={handleRadioChange}
         >
-          <Radios.Radio value="Yes" hint={content.options.yes.hint}>
+          <Radios.Radio value="Yes" hint={content.options.yes.hint} checked={selectedOption === "Yes"}>
             {content.options.yes.text}
           </Radios.Radio>
-          <Radios.Radio value="No" hint={content.options.no.hint}>
+          <Radios.Radio value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>
             {content.options.no.text}
           </Radios.Radio>
         </Radios>
