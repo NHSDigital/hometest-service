@@ -18,7 +18,7 @@ export class TestOrderDbClient extends BaseDbClient {
       FROM test_order t
       JOIN supplier s ON s.supplier_id = t.supplier_id
       JOIN patient_mapping p ON p.patient_uid = t.patient_uid
-      WHERE t.order_uid = $1
+      WHERE t.order_uid = $1::uuid
     `, [orderUid]);
     return rows[0];
   }
@@ -26,7 +26,7 @@ export class TestOrderDbClient extends BaseDbClient {
   async deleteOrderByUid(orderUid: string): Promise<void> {
     await this.query(`
       DELETE FROM test_order
-      WHERE order_uid = $1
+      WHERE order_uid = $1::uuid
     `, [orderUid]);
   }
 
@@ -40,7 +40,7 @@ export class TestOrderDbClient extends BaseDbClient {
     // Check if patient exists in the database
     const findPatient = await this.query<PatientMapping>(`
       SELECT patient_uid
-      FROM hometest.patient_mapping
+      FROM patient_mapping
       WHERE nhs_number = $1
       LIMIT 1
     `, [nhs_number]);
@@ -50,16 +50,16 @@ export class TestOrderDbClient extends BaseDbClient {
       const patient_uid: UUID = findPatient[0].patient_uid;
 
       await this.query(`
-        UPDATE hometest.patient_mapping
+        UPDATE patient_mapping
         SET birth_date = $1::date
-        WHERE patient_uid = $2
+        WHERE patient_uid = $2::uuid
       `, [birth_date, patient_uid]);
       return patient_uid;
     }
 
     // Patient doesn't exist, insert new patient
     const addPatient = await this.query<{ patient_uid: UUID }>(`
-      INSERT INTO hometest.patient_mapping (nhs_number, birth_date)
+      INSERT INTO patient_mapping (nhs_number, birth_date)
       VALUES ($1, $2::date)
       RETURNING patient_uid
     `, [nhs_number, birth_date]);
@@ -69,7 +69,7 @@ export class TestOrderDbClient extends BaseDbClient {
  async getSupplierIdByName(supplier_name: string): Promise<UUID> {
  const rows = await this.query<Supplier>(`
   SELECT supplier_id
-  FROM hometest.supplier
+  FROM supplier
   WHERE supplier_name = $1
   LIMIT 1
  `,  [supplier_name]);
@@ -84,7 +84,7 @@ export class TestOrderDbClient extends BaseDbClient {
  originator = 'automatic-test'
  ): Promise<UUID> {
  const rows = await this.query<TestOrder>(`
-  INSERT INTO hometest.test_order (supplier_id, patient_uid, test_code, originator)
+  INSERT INTO test_order (supplier_id, patient_uid, test_code, originator)
   VALUES ($1, $2, $3, $4)
   RETURNING order_uid
  `, [supplier_id, patient_uid, test_code, originator]);
@@ -93,7 +93,7 @@ export class TestOrderDbClient extends BaseDbClient {
 
  async insertOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<void> {
  const sql = `
-  INSERT INTO hometest.order_status (order_uid, status_code)
+  INSERT INTO order_status (order_uid, status_code)
   VALUES ($1, $2)
  `;
  await this.query(sql, [order_uid, status_code]);
@@ -101,9 +101,9 @@ export class TestOrderDbClient extends BaseDbClient {
 
  async updateOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<void> {
  await this.query<Supplier>(`
-  UPDATE hometest.order_status
+  UPDATE order_status
   SET status_code = $2
-  WHERE order_uid = $1
+  WHERE order_uid = $1::uuid
  `, [order_uid, status_code])
 
 }
@@ -133,22 +133,22 @@ export class TestOrderDbClient extends BaseDbClient {
 
  async deletePatientByNHSandDOB(nhs_number: string, birth_date: string): Promise<void> {
     await this.query(`
-      DELETE FROM hometest.patient_mapping
+      DELETE FROM patient_mapping
       WHERE nhs_number = $1 AND birth_date = $2::date
     `, [nhs_number, birth_date]);
   }
 
   async deleteOrderStatusByUid(orderUid: string): Promise<void> {
     await this.query(`
-      DELETE FROM hometest.order_status
-      WHERE order_uid = $1
+      DELETE FROM order_status
+      WHERE order_uid = $1::uuid
     `, [orderUid]);
   }
 
   async deleteOrderByPatientUid(patientUid: string): Promise<void> {
     await this.query(`
-      DELETE FROM hometest.test_order
-      WHERE patient_uid = $1
+      DELETE FROM test_order
+      WHERE patient_uid = $1::uuid
     `, [patientUid]);
   }
   }
