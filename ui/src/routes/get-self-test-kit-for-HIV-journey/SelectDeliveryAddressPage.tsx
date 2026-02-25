@@ -12,8 +12,8 @@ export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
-
-  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN ||  "");
+  const { addresses } = usePostcodeLookup();
+  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressId ||  "");
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +59,7 @@ export default function SelectDeliveryAddressPage() {
           postcode: selected.postcode,
         },
         addressEntryMethod: 'postcode-search',
-        selectedAddressUPRN: selected.DPA.UPRN,
+        selectedAddressId: selected.id,
         localAuthority: {
           code: laResponse.localAuthority.localAuthorityCode,
           region: laResponse.localAuthority.region,

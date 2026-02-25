@@ -18,7 +18,7 @@ export class PostcodeLookupService {
       const response = await this.client.lookupPostcode(normalizedPostcode);
       return response;
     } catch (error) {
-      throw new Error(`Failed to lookup postcode: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to lookup postcode: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
     }
   }
 

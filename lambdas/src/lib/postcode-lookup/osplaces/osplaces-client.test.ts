@@ -1,15 +1,21 @@
 import { OSPlacesClient } from './osplaces-client';
 import { PostcodeLookupClientConfig } from '../../models/postcode-lookup-client-config';
-import axios from 'axios';
+import { FetchHttpClient, HttpError } from '../../http/http-client';
 import { OSPlacesResponse } from './models/osplaces-response';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+jest.mock('../../http/http-client', () => {
+  const actual = jest.requireActual<typeof import('../../http/http-client')>('../../http/http-client');
+  return {
+    ...actual,
+    FetchHttpClient: jest.fn(),
+  };
+});
+const MockFetchHttpClient = FetchHttpClient as jest.MockedClass<typeof FetchHttpClient>;
 
 describe('OSPlacesClient', () => {
   let client: OSPlacesClient;
   let config: PostcodeLookupClientConfig;
-  let mockAxiosInstance: any;
+  let mockHttpClient: jest.Mocked<FetchHttpClient>;
 
   beforeEach(() => {
     config = {
@@ -24,11 +30,13 @@ describe('OSPlacesClient', () => {
       retryBackoffFactor: 2,
     };
 
-    mockAxiosInstance = {
+    mockHttpClient = {
       get: jest.fn(),
-    };
+      post: jest.fn(),
+      postRaw: jest.fn(),
+    } as unknown as jest.Mocked<FetchHttpClient>;
 
-    mockedAxios.create.mockReturnValue(mockAxiosInstance);
+    MockFetchHttpClient.mockImplementation(() => mockHttpClient);
 
     client = new OSPlacesClient(config);
   });
@@ -91,15 +99,11 @@ describe('OSPlacesClient', () => {
         ],
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockResponse });
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       const result = await client.lookupPostcode('SW1A 2AA');
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/find', {
-        params: {
-          query: 'SW1A2AA',
-        },
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith('http://localhost/find?query=SW1A2AA&key=test-api-key');
 
       expect(result).toEqual({
         postcode: 'SW1A 2AA',
@@ -153,7 +157,7 @@ describe('OSPlacesClient', () => {
         results: [],
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockResponse });
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       const result = await client.lookupPostcode('INVALID');
 
@@ -164,30 +168,24 @@ describe('OSPlacesClient', () => {
       });
     });
 
-    it('should return error status when API returns 404', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 404,
-        },
-      };
+    it('should return not_found status when API returns 404', async () => {
+      const httpError = new HttpError('HTTP GET request failed with status: 404', 404);
 
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
-      mockedAxios.isAxiosError.mockReturnValue(true);
+      mockHttpClient.get.mockRejectedValue(httpError);
 
       const result = await client.lookupPostcode('NOTFOUND');
 
       expect(result).toEqual({
         postcode: 'NOTFOUND',
         addresses: [],
-        status: 'error',
+        status: 'not_found',
       });
     });
 
     it('should throw error when API call fails with non-404 error', async () => {
-      const axiosError = new Error('Network error');
+      const networkError = new Error('Network error');
 
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
+      mockHttpClient.get.mockRejectedValue(networkError);
 
       await expect(client.lookupPostcode('SW1A 2AA')).rejects.toThrow(
         'Failed to lookup postcode: Network error'
@@ -211,15 +209,11 @@ describe('OSPlacesClient', () => {
         results: [],
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockResponse });
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       await client.lookupPostcode('SW1A  2AA');
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/find', {
-        params: {
-          query: 'SW1A2AA',
-        },
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith('http://localhost/find?query=SW1A2AA&key=test-api-key');
     });
   });
 });
