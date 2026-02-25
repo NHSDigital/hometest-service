@@ -1,0 +1,51 @@
+{
+  "info": {
+    "_postman_id": "486864e3-2764-47ef-8e2e-2fe3bef2f099",
+    "name": "OS Places",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "5850610"
+  },
+  "item": [
+    {
+      "name": "Find",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "key",
+            "value": "<api-key>",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://api.os.uk/search/places/v1/find",
+          "protocol": "https",
+          "host": [
+            "api",
+            "os",
+            "uk"
+          ],
+          "path": [
+            "search",
+            "places",
+            "v1",
+            "find"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "query",
+              "value": "<postcode>",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
