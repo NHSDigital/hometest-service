@@ -7,6 +7,7 @@ import type {
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
   GlobalErrorContent,
+  HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
   NoAddressFoundContent,
   OrderTrackingContent,
@@ -15,6 +16,21 @@ import type {
 } from "@/content/schema";
 
 import { content } from "@/content/ContentService";
+
+export const PageKeys = {
+  GetSelfTest: "get-self-test-kit-for-HIV",
+  EnterDeliveryAddress: "enter-delivery-address",
+  EnterAddressManually: "enter-address-manually",
+  NoAddressFound: "no-address-found",
+  SelectDeliveryAddress: "select-delivery-address",
+  ComfortablePricking: "how-comfortable-pricking-finger",
+  BloodSampleGuide: "blood-sample-guide",
+  GlobalError: "global-error",
+  OrderTracking: "order-tracking",
+  HomeTestPolicy: "home-test-privacy-policy",
+} as const;
+
+export type PageKey = (typeof PageKeys)[keyof typeof PageKeys];
 
 export interface UseContentReturn {
   commonContent: CommonContent;
@@ -30,6 +46,7 @@ export interface UseContentReturn {
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -48,6 +65,7 @@ export const useContent = (): UseContentReturn => {
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
+    "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
   };
 };
 
@@ -81,6 +99,7 @@ export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
 export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
 export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
+export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -94,7 +113,8 @@ export function usePageContent(
     | "global-error"
     | "order-tracking"
     | "blood-sample-guide"
-    | "check-your-answers",
+    | "check-your-answers"
+    | "home-test-privacy-policy",
 ) {
   return content.pages[page];
 }
