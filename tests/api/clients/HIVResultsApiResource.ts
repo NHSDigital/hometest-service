@@ -3,6 +3,7 @@ import { BaseApiClient } from './BaseApiClient';
 import { API_ENDPOINTS } from '../endpoints';
 import { HIVTestResult } from '../../test-data/HIVTestResultData';
 import { headersTestResults } from '../../test-data/HeadersTestResults';
+import { createGetResultParams, createGetResultHeaders } from '../../test-data/GetResultRequestParams';
 
 export class HIVResultsApiResource extends BaseApiClient {
   constructor(request: APIRequestContext) {
@@ -24,23 +25,14 @@ export class HIVResultsApiResource extends BaseApiClient {
   }
 
   async getResult(
-    nhsNumber: string,
-    dateOfBirth: string,
-    orderId: string,
-    correlationId: string
-  ): Promise<APIResponse> {
-    const response = await this.get(API_ENDPOINTS.results.get, {
-      params: {
-        nhs_number: nhsNumber,
-        date_of_birth: dateOfBirth,
-        order_id: orderId,
-      },
-      headers: {
-        'X-Correlation-ID': correlationId,
-      },
-    });
-
-    return response;
-  }
+  params: ReturnType<typeof createGetResultParams>,
+  headers: ReturnType<typeof createGetResultHeaders>
+): Promise<APIResponse> {
+  const response = await this.get(API_ENDPOINTS.results.get, {
+    params,
+    headers,
+  });
+  return response;
+}
 
 }

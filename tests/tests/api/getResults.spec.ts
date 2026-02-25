@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
 import { TestOrderDbClient } from '../../db/TestOrderDbClient';
 import { TestResultDbClient } from '../../db/TestResultDbClient';
+import { createGetResultHeaders, createGetResultParams } from '../../test-data/GetResultRequestParams';
 
 let orderId: string;
 let patientId: string;
@@ -41,12 +42,9 @@ test.describe('GET Result API @api', () => {
     await resultDbClient.insertStatusResult(orderId, 'RESULT_AVAILABLE', correlationId);
 
     //Make GET request for result status
-    const response = await hivResultsApi.getResult(
-      testedUser.nhsNumber,
-      testedUser.dob,
-      orderId,
-      correlationId
-    );
+    const params = createGetResultParams(testedUser.nhsNumber, testedUser.dob, orderId);
+    const headers = createGetResultHeaders(correlationId);
+    const response = await hivResultsApi.getResult(params, headers);
 
     hivResultsApi.validateResponse(response, 200);
     const responseBody = await response.json();

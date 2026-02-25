@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures';
 import { TestOrderDbClient } from '../../db/TestOrderDbClient';
+import { createGetOrderParams } from '../../test-data/GetOrderRequestParams';
 
 let orderId: string;
 let patientId: string;
@@ -34,11 +35,8 @@ test.describe('GET Order API @api', () => {
     }
 
     // Make GET request for ORDER_RECEIVED status
-    let response = await orderApi.getOrder(
-      testedUser.nhsNumber,
-      testedUser.dob,
-      orderId
-    );
+    const params = createGetOrderParams(testedUser.nhsNumber, testedUser.dob, orderId);
+    let response = await orderApi.getOrder(params);
 
 
     orderApi.validateResponse(response, 200);
@@ -55,11 +53,7 @@ test.describe('GET Order API @api', () => {
     await dbClient.updateOrderStatus(orderId, 'DISPATCHED');
 
     // Make GET request again
-    response = await orderApi.getOrder(
-      testedUser.nhsNumber,
-      testedUser.dob,
-      orderId
-    );
+    response = await orderApi.getOrder(params);
 
     // Confirm the status is DISPATCHED
     orderApi.validateResponse(response, 200);
@@ -75,11 +69,7 @@ test.describe('GET Order API @api', () => {
     await dbClient.updateOrderStatus(orderId, 'RECEIVED');
 
     // Make GET request again
-    response = await orderApi.getOrder(
-      testedUser.nhsNumber,
-      testedUser.dob,
-      orderId
-    );
+    response = await orderApi.getOrder(params);
 
     // Confirm the status is RECEIVED
     orderApi.validateResponse(response, 200);
@@ -95,11 +85,7 @@ test.describe('GET Order API @api', () => {
     await dbClient.updateOrderStatus(orderId, 'COMPLETE');
 
     // Make GET request again
-    response = await orderApi.getOrder(
-      testedUser.nhsNumber,
-      testedUser.dob,
-      orderId
-    );
+    response = await orderApi.getOrder(params);
 
     // Confirm the status is COMPLETE
     orderApi.validateResponse(response, 200);
