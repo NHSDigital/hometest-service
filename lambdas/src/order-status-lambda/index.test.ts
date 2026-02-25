@@ -39,24 +39,14 @@ const MOCK_BUSINESS_STATUS = IncomingBusinessStatus.DISPATCHED;
 
 describe("Order Status Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
-  let _mockContext: Partial<Context>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockEvent = {
-      httpMethod: "PUT",
-      path: "/test-order/status",
-      body: null,
-      headers: {},
-    };
-    _mockContext = {};
+    mockEvent = {};
 
-    // Default mock values
     mockGetCorrelationIdFromEventHeaders.mockReturnValue(MOCK_CORRELATION_ID);
-
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
-
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
   });

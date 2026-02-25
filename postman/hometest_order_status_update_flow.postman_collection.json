@@ -10,7 +10,7 @@
     {
       "name": "success",
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
@@ -43,7 +43,7 @@
     {
       "name": "incorrect business status (400)",
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
@@ -76,7 +76,7 @@
     {
       "name": "missing business status (400)",
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
@@ -109,7 +109,7 @@
     {
       "name": "order not found (404)",
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
@@ -142,7 +142,7 @@
     {
       "name": "patient mismatch (400)",
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
@@ -188,7 +188,7 @@
         }
       ],
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [
           {
             "key": "X-Correlation-ID",
@@ -243,7 +243,7 @@
         }
       ],
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",

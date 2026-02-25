@@ -38,8 +38,8 @@ const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
 export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 
 /**
- * Lambda handler for PUT /test-order/status endpoint
- * Updates the status of an existing test order using FHIR Task resource
+ * Lambda handler for POST /test-order/status endpoint
+ * Adds a status record for a given order based on the incoming FHIR Task resource
  */
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
@@ -88,7 +88,6 @@ export const lambdaHandler = async (
   const validatedTask = validationResult.data;
 
   try {
-    // Extract order ID from Task.basedOn
     const orderId = extractIdFromReference(validatedTask.basedOn[0].reference);
 
     if (!orderId) {
@@ -166,9 +165,6 @@ export const lambdaHandler = async (
       );
     }
 
-    const internalBusinessStatus =
-      businessStatusMapping[validatedTask.businessStatus.text];
-
     // Check for idempotency via Correlation ID
     const idempotencyCheck = await orderStatusDb.checkIdempotency(
       orderId,
@@ -185,20 +181,20 @@ export const lambdaHandler = async (
     }
 
     // Process the update
-    const updateParams: OrderStatusUpdateParams = {
+    const statusOrderUpdateParams: OrderStatusUpdateParams = {
       orderId,
-      statusCode: internalBusinessStatus,
+      statusCode: businessStatusMapping[validatedTask.businessStatus.text],
       createdAt: validatedTask.lastModified,
       correlationId,
     };
 
-    await orderStatusDb.addOrderStatusUpdate(updateParams);
+    await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
 
-    commons.logInfo(name, "Order status updated successfully", {
-      orderId,
-      statusCode: internalBusinessStatus,
-      correlationId,
-    });
+    commons.logInfo(
+      name,
+      "Order status update added successfully",
+      statusOrderUpdateParams,
+    );
 
     return createFhirResponse(200, validatedTask);
   } catch (error) {

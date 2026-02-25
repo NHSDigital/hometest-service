@@ -385,7 +385,7 @@ module "order_status_lambda" {
   api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
   api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
   api_path                      = "test-order/status"
-  http_method                   = "PUT"
+  http_method                   = "POST"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
