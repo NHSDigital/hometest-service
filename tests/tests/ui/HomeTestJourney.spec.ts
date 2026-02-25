@@ -1,9 +1,11 @@
 import { test } from '../../fixtures';
 import { expect } from '@playwright/test';
 import { AddressModel } from '../../models';
+import { PersonalDetailsModel } from '../../models/PersonalDetails';
 
 test.describe.configure({ mode: 'serial' });
 const randomAddress = AddressModel.getRandomAddress();
+const randomMobileNumber = PersonalDetailsModel.getRandomPersonalDetails();
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
@@ -34,7 +36,7 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await enterMobileNumberPage.fillMobileNumberAndContinue(randomAddress);
+    await enterMobileNumberPage.fillMobileNumberAndContinue(randomMobileNumber);
   });
 
   test('Confirm Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage }) => {
@@ -60,7 +62,7 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumberAndContinue(randomAddress);
+    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumberAndContinue(randomMobileNumber);
   });
 
   test('Order test journey by providing address manually', async ({ findAddressPage, enterAddressManuallyPage }) => {

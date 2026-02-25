@@ -13,7 +13,7 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
         super(page);
         this.confirmMobileNumber = page.locator('#phone-confirmation-1--label');
         this.useAnotherMobileNumber = page.locator('#phone-confirmation-2--label');
-        this.mobileNumberInput = page.locator('#mobile-number');
+        this.mobileNumberInput = page.locator('#alternative-mobile-number');
         this.continueButton = page.getByRole('button', { name: 'Continue' });
     }
 
