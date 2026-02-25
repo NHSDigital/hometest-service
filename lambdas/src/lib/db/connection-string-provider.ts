@@ -1,4 +1,7 @@
-import {retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable} from "../utils";
+import {
+  retrieveMandatoryEnvVariable,
+  retrieveOptionalEnvVariable,
+} from "../utils";
 
 export interface ConnectionStringProvider {
   getConnectionString(): Promise<string>;
@@ -17,7 +20,10 @@ export interface ConnectionConfig {
   ssl?: boolean;
 }
 
-export function postgresConnection(config: ConnectionConfig, secretsClient: SecretsClient): ConnectionStringProvider {
+export function postgresConnection(
+  config: ConnectionConfig,
+  secretsClient: SecretsClient,
+): ConnectionStringProvider {
   let connectionStringPromise: Promise<string> | null = null;
 
   return {
@@ -29,11 +35,19 @@ export function postgresConnection(config: ConnectionConfig, secretsClient: Secr
     },
     getSslEnabled(): boolean {
       return config.ssl !== false;
-    }
+    },
   };
 }
 
-export function postgresFromEnv(secretsClient: SecretsClient): ConnectionStringProvider {
+/*
+  ALPHA: This function retrieves the ssl variable, which is actually consumed by the db-client, but it is not used by the connection string provider.
+  This is because the connection string provider is only responsible for providing the connection string,
+  and the ssl variable is used by the db-client to determine whether to use SSL when connecting to the database.
+  In the future, we may want to refactor this code to separate the concerns more clearly, but for now, this is how it is implemented.
+*/
+export function postgresFromEnv(
+  secretsClient: SecretsClient,
+): ConnectionStringProvider {
   const config: ConnectionConfig = {
     username: retrieveMandatoryEnvVariable("DB_USERNAME"),
     address: retrieveMandatoryEnvVariable("DB_ADDRESS"),
@@ -41,7 +55,7 @@ export function postgresFromEnv(secretsClient: SecretsClient): ConnectionStringP
     database: retrieveMandatoryEnvVariable("DB_NAME"),
     schema: retrieveOptionalEnvVariable("DB_SCHEMA"),
     passwordSecretName: retrieveMandatoryEnvVariable("DB_SECRET_NAME"),
-    ssl: retrieveOptionalEnvVariable("DB_SSL", "true") === "true"
+    ssl: retrieveOptionalEnvVariable("DB_SSL", "true") === "true",
   };
 
   return postgresConnection(config, secretsClient);
@@ -49,7 +63,7 @@ export function postgresFromEnv(secretsClient: SecretsClient): ConnectionStringP
 
 async function buildConnectionString(
   config: ConnectionConfig,
-  secretsClient: SecretsClient
+  secretsClient: SecretsClient,
 ): Promise<string> {
   const password = await secretsClient.getSecretValue(
     config.passwordSecretName,
@@ -57,7 +71,7 @@ async function buildConnectionString(
   );
 
   const username = encodeURIComponent(config.username);
-  const sanitisedPassword = password.trim().replace(/^["']|["']$/g, '');
+  const sanitisedPassword = password.trim().replace(/^["']|["']$/g, "");
   const encodedPassword = encodeURIComponent(sanitisedPassword);
   const address = config.address;
   const port = config.port;
@@ -71,5 +85,5 @@ async function buildConnectionString(
     queryParams.push(`options=${schemaOption}`);
   }
 
-  return queryParams.length > 0 ? `${base}?${queryParams.join('&')}` : base;
+  return queryParams.length > 0 ? `${base}?${queryParams.join("&")}` : base;
 }

@@ -106,6 +106,7 @@ export class OrderStatusService {
     }
   }
 
+  // ALPHA: should this method not perform an idempotency check before inserting a new status? Or should that be the responsibility of the caller to check before calling this method?
   /**
    * Update order status in the database
    */
