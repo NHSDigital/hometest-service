@@ -1,0 +1,34 @@
+Error: page.waitForURL: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for navigation to "**/get-self-test-kit-for-HIV" until "load"
+  navigated to "https://access.sandpit.signin.nhs.uk/authcode"
+  navigated to "http://localhost:3000/callback?code=96618467-8e99-443f-8a9f-5717647cd905&state=eyJjc3JmIjoiMzVlOTlmMDQ2MTFkNGQ2YTUzNTIzYmVlMTBmNWJjZjEiLCJyZXR1cm5UbyI6Ii8ifQ"
+  navigated to "http://localhost:3000/callback?code=96618467-8e99-443f-8a9f-5717647cd905&state=eyJjc3JmIjoiMzVlOTlmMDQ2MTFkNGQ2YTUzNTIzYmVlMTBmNWJjZjEiLCJyZXR1cm5UbyI6Ii8ifQ"
+  navigated to "http://localhost:3000/callback?code=96618467-8e99-443f-8a9f-5717647cd905&state=eyJjc3JmIjoiMzVlOTlmMDQ2MTFkNGQ2YTUzNTIzYmVlMTBmNWJjZjEiLCJyZXR1cm5UbyI6Ii8ifQ"
+============================================================
+
+Stack trace:
+page.waitForURL: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for navigation to "**/get-self-test-kit-for-HIV" until "load"
+  navigated to "https://access.sandpit.signin.nhs.uk/authcode"
+  navigated to "http://localhost:3000/callback?code=96618467-8e99-443f-8a9f-5717647cd905&state=eyJjc3JmIjoiMzVlOTlmMDQ2MTFkNGQ2YTUzNTIzYmVlMTBmNWJjZjEiLCJyZXR1cm5UbyI6Ii8ifQ"
+  navigated to "http://localhost:3000/callback?code=96618467-8e99-443f-8a9f-5717647cd905&state=eyJjc3JmIjoiMzVlOTlmMDQ2MTFkNGQ2YTUzNTIzYmVlMTBmNWJjZjEiLCJyZXR1cm5UbyI6Ii8ifQ"
+  navigated to "http://localhost:3000/callback?code=96618467-8e99-443f-8a9f-5717647cd905&state=eyJjc3JmIjoiMzVlOTlmMDQ2MTFkNGQ2YTUzNTIzYmVlMTBmNWJjZjEiLCJyZXR1cm5UbyI6Ii8ifQ"
+============================================================
+    at NhsLoginHelper.fillNhsLoginFormsAndWaitForStartPage (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NhsLoginHelper.ts:34:16)
+    at NhsLoginHelper.loginNhsUser (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NhsLoginHelper.ts:39:3)
+    at SandBoxUserManager.loginWorkerUser (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/utils/users/SandBoxUserManager.ts:75:12)
+    at SandBoxUserManager.loginWorkerUsers (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/utils/users/BaseUserManager.ts:190:9)
+    at globalSetup (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/global-setup.ts:12:3)
+
+Network errors:
+[
+  {
+    "url": "http://localhost:4566/_aws/execute-api/z5t5jcffbh/local/session",
+    "status": 401,
+    "statusText": "UNAUTHORIZED",
+    "method": "GET",
+    "timestamp": "2026-02-23T10:19:15.802Z"
+  }
+]

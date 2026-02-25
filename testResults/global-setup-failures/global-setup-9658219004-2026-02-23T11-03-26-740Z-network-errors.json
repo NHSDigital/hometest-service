@@ -1,0 +1,16 @@
+[
+  {
+    "url": "http://localhost:4566/_aws/execute-api/qulpm3x9ou/local/session",
+    "status": 401,
+    "statusText": "UNAUTHORIZED",
+    "method": "GET",
+    "timestamp": "2026-02-23T11:02:55.835Z"
+  },
+  {
+    "url": "https://api.sandpit.signin.nhs.uk/login/user-sign-in",
+    "status": 429,
+    "statusText": "",
+    "method": "POST",
+    "timestamp": "2026-02-23T11:02:57.914Z"
+  }
+]

@@ -1,0 +1,29 @@
+Error: page.waitForResponse: Target page, context or browser has been closed
+
+Stack trace:
+page.waitForResponse: Target page, context or browser has been closed
+    at CodeSecurityPage.waitForOtpTrigger (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NHSLogin/CodeSecurityPage.ts:38:21)
+    at CodeSecurityPage.fillAuthOneTimePasswordAndClickContinue (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NHSLogin/CodeSecurityPage.ts:28:16)
+    at NhsLoginHelper.fillNhsLoginFormsAndWaitForStartPage (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NhsLoginHelper.ts:31:28)
+    at NhsLoginHelper.loginNhsUser (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NhsLoginHelper.ts:39:3)
+    at SandBoxUserManager.loginWorkerUser (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/utils/users/SandBoxUserManager.ts:75:12)
+    at SandBoxUserManager.loginWorkerUsers (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/utils/users/BaseUserManager.ts:190:9)
+    at globalSetup (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/global-setup.ts:10:3)
+
+Network errors:
+[
+  {
+    "url": "http://localhost:4566/_aws/execute-api/qulpm3x9ou/local/session",
+    "status": 401,
+    "statusText": "UNAUTHORIZED",
+    "method": "GET",
+    "timestamp": "2026-02-23T11:04:30.341Z"
+  },
+  {
+    "url": "https://api.sandpit.signin.nhs.uk/login/user-sign-in",
+    "status": 429,
+    "statusText": "",
+    "method": "POST",
+    "timestamp": "2026-02-23T11:04:32.277Z"
+  }
+]

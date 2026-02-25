@@ -1,0 +1,18 @@
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+Call log:
+[2m  - navigating to "http://localhost:3000/", waiting until "load"[22m
+
+
+Stack trace:
+page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+Call log:
+[2m  - navigating to "http://localhost:3000/", waiting until "load"[22m
+
+    at NhsLoginHelper.fillNhsLoginFormsAndWaitForStartPage (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NhsLoginHelper.ts:23:16)
+    at NhsLoginHelper.loginNhsUser (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/page-objects/NhsLoginHelper.ts:39:14)
+    at SandBoxUserManager.loginWorkerUser (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/utils/users/SandBoxUserManager.ts:75:30)
+    at SandBoxUserManager.loginWorkerUsers (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/utils/users/BaseUserManager.ts:190:20)
+    at globalSetup (/Users/ravikumar/Documents/Ravi_Dev/hometest-service/tests/global-setup.ts:10:3)
+
+Network errors:
+[]

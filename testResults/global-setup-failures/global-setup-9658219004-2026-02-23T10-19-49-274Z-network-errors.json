@@ -1,0 +1,9 @@
+[
+  {
+    "url": "http://localhost:4566/_aws/execute-api/z5t5jcffbh/local/session",
+    "status": 401,
+    "statusText": "UNAUTHORIZED",
+    "method": "GET",
+    "timestamp": "2026-02-23T10:19:15.802Z"
+  }
+]
