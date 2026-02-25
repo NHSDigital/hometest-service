@@ -49,7 +49,8 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await confirmAndUpdateMobileNumberPage.confirmMobileNumberAndContinue();
+    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
+    await confirmAndUpdateMobileNumberPage.clickContinue();
   });
 
   test('Update Alternatie Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage }) => {
@@ -62,7 +63,8 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumberAndContinue(randomMobileNumber);
+    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(randomMobileNumber);
+    await confirmAndUpdateMobileNumberPage.clickContinue();
   });
 
   test('Order test journey by providing address manually', async ({ findAddressPage, enterAddressManuallyPage }) => {

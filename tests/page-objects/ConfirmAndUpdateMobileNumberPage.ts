@@ -17,14 +17,16 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
         this.continueButton = page.getByRole('button', { name: 'Continue' });
     }
 
-    async fillAlternativeMobileNumberAndContinue(randomEntry: PersonalDetailsModel): Promise<void> {
+    async fillAlternativeMobileNumber(randomEntry: PersonalDetailsModel): Promise<void> {
         await this.useAnotherMobileNumber.check();
-        await this.mobileNumberInput.fill(randomEntry.mobileNumber);
-        await this.continueButton.click();
+        await this.mobileNumberInput.fill(randomEntry.mobileNumber);      
     }
 
-    async confirmMobileNumberAndContinue(): Promise<void> {
-        await this.confirmMobileNumber.check();
+    async selectConfirmMobileNumber(): Promise<void> {
+        await this.confirmMobileNumber.check();        
+    }
+
+     async clickContinue(): Promise<void> {
         await this.continueButton.click();
     }
 }
