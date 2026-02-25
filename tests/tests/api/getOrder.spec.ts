@@ -49,13 +49,10 @@ test.describe('GET Order API @api', () => {
     expect(OrderStatus).toBe('ORDER_RECEIVED');
     console.log('Confirmed status: ORDER_RECEIVED');
 
-    // Update the status to DISPATCHED
     await dbClient.updateOrderStatus(orderId, 'DISPATCHED');
 
-    // Make GET request again
     response = await orderApi.getOrder(params);
 
-    // Confirm the status is DISPATCHED
     orderApi.validateResponse(response, 200);
     responseBody = await response.json();
     OrderStatus = responseBody.entry[0].resource.extension[0]
@@ -63,15 +60,13 @@ test.describe('GET Order API @api', () => {
       .coding[0]
       .code;
     expect(OrderStatus).toBe('DISPATCHED');
+
     console.log('Confirmed status: DISPATCHED');
 
-    // Update the status to RECEIVED
     await dbClient.updateOrderStatus(orderId, 'RECEIVED');
 
-    // Make GET request again
     response = await orderApi.getOrder(params);
 
-    // Confirm the status is RECEIVED
     orderApi.validateResponse(response, 200);
     responseBody = await response.json();
     OrderStatus = responseBody.entry[0].resource.extension[0]
@@ -81,13 +76,10 @@ test.describe('GET Order API @api', () => {
     expect(OrderStatus).toBe('RECEIVED');
     console.log('Confirmed status: RECEIVED');
 
-    // Update the status to COMPLETE
     await dbClient.updateOrderStatus(orderId, 'COMPLETE');
 
-    // Make GET request again
     response = await orderApi.getOrder(params);
 
-    // Confirm the status is COMPLETE
     orderApi.validateResponse(response, 200);
     responseBody = await response.json();
     OrderStatus = responseBody.entry[0].resource.extension[0]

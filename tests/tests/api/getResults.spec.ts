@@ -11,7 +11,7 @@ const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
 
 test.describe('GET Result API @api', () => {
-  test.beforeAll('Connect to the database and create a patient, order, and initial order status', async ({ testedUser }) => {
+  test.beforeAll('Connect to the database and create a patient, order, initial order status and result status', async ({ testedUser }) => {
     await dbClient.connect();
     await resultDbClient.connect();
     console.log('Tested user:', JSON.stringify(testedUser, null, 2));
@@ -32,6 +32,8 @@ test.describe('GET Result API @api', () => {
     patientId = result.patient_uid;
     correlationId = result.correlation_id;
     console.log(`Created test order with ID: ${orderId}`);
+
+    await resultDbClient.insertStatusResult(orderId, 'RESULT_AVAILABLE', correlationId);
   });
 
   test('should retrieve the result and confirm the correct result status', async ({ hivResultsApi, testedUser }) => {
@@ -39,9 +41,6 @@ test.describe('GET Result API @api', () => {
       throw new Error('Test user must have nhsNumber and dob');
     }
 
-    await resultDbClient.insertStatusResult(orderId, 'RESULT_AVAILABLE', correlationId);
-
-    //Make GET request for result status
     const params = createGetResultParams(testedUser.nhsNumber, testedUser.dob, orderId);
     const headers = createGetResultHeaders(correlationId);
     const response = await hivResultsApi.getResult(params, headers);
@@ -49,10 +48,10 @@ test.describe('GET Result API @api', () => {
     hivResultsApi.validateResponse(response, 200);
     const responseBody = await response.json();
     console.log('The response received: ' + JSON.stringify(responseBody, null, 2));
-    const ResultStatus = responseBody.interpretation[0]
+    const resultStatus = responseBody.interpretation[0]
       .coding[0]
       .display;
-    expect(ResultStatus).toBe('Normal');
+    expect(resultStatus).toBe('Normal');
     console.log('Confirmed status: Normal');
   })
 
