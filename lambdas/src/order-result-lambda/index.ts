@@ -51,7 +51,7 @@ async function updateDatabase(identifiers: Identifiers, interpretationCode: Inte
   }
 
   if (interpretationCode === InterpretationCode.Abnormal) {
-    await orderService.updateResultStatus(identifiers.orderUid, ResultStatus.Result_Withheld, identifiers.correlationId);
+    await orderService.updateOrderStatusAndResultStatus(identifiers.orderUid, orderReference, OrderStatus.Received, ResultStatus.Result_Withheld, identifiers.correlationId);
   }
 }
 

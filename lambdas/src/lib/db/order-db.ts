@@ -60,17 +60,4 @@ export class OrderService {
             throw error;
         }
     }
-
-    async updateResultStatus(orderUid: string, resultStatus: ResultStatus, correlationId: string): Promise<void> {
-        const query = `
-            INSERT INTO hometest.result_status (order_uid, status, correlation_id)
-                VALUES ($1, $2, $3)
-        `;
-        try {
-            await this.dbClient.query(query, [orderUid, resultStatus, correlationId]);
-        } catch (error) {
-            this.commons.logError('order-db', 'Failed to update result status', { error, orderUid });
-            throw error;
-        }
-    }
 }

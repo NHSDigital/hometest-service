@@ -11,7 +11,6 @@ const initSingleton = {
   orderService: {
     retrieveOrderDetails: jest.fn(),
     updateOrderStatusAndResultStatus: jest.fn(),
-    updateResultStatus: jest.fn(),
   },
 }
 
@@ -83,7 +82,6 @@ describe('order-result-lambda handler', () => {
     validateDBDataMock.mockResolvedValue({ isValid: true, isIdempotent: false });
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
-    orderService.updateResultStatus.mockResolvedValue(undefined);
   });
 
   it('returns 201 and resource on success', async () => {
@@ -134,11 +132,13 @@ describe('order-result-lambda handler', () => {
     );
   });
 
-  it('calls updateResultStatus for interpretation code abnormal with result withheld', async () => {
+  it('calls updateOrderStatusAndResultStatus for interpretation code abnormal with result withheld', async () => {
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Abnormal);
     await handler(event as APIGatewayProxyEvent);
-    expect(orderService.updateResultStatus).toHaveBeenCalledWith(
+    expect(orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
       identifiers.orderUid,
+      testOrderResult.order_reference,
+      OrderStatus.Received,
       ResultStatus.Result_Withheld,
       identifiers.correlationId
     );

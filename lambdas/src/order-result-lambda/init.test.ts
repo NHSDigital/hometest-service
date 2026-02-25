@@ -29,7 +29,7 @@ describe("order-result-lambda init", () => {
 
   it("should construct ConsoleCommons and OrderService with PostgresDbClient", () => {
     const dbClientInstance = { query: jest.fn(), close: jest.fn() };
-    const orderServiceInstance = { updateOrderStatusAndResultStatus: jest.fn(), updateResultStatus: jest.fn(), retrieveOrderDetails: jest.fn() };
+    const orderServiceInstance = { updateOrderStatusAndResultStatus: jest.fn(), retrieveOrderDetails: jest.fn() };
     const consoleCommonsInstance = { logInfo: jest.fn(), logError: jest.fn() };
 
     process.env.DATABASE_URL = "postgres://user:pass@host:5432/db";
