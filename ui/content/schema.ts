@@ -293,6 +293,25 @@ export interface OrderTrackingContent {
   loading: string;
 }
 
+export interface PrivacyPolicySubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface PrivacyPolicySection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: PrivacyPolicySubsection[];
+}
+
+export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
+}
+
 export interface BloodSampleGuideContent {
   title: string;
   whatsInKit: {
@@ -376,6 +395,7 @@ export interface PagesContent {
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "order-submitted": OrderSubmittedContent;
 }
