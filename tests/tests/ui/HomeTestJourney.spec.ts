@@ -53,7 +53,7 @@ test.describe('HIV Test Order journeys', () => {
     await confirmAndUpdateMobileNumberPage.clickContinue();
   });
 
-  test('Update Alternatie Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage }) => {
+  test('Update Alternative Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
