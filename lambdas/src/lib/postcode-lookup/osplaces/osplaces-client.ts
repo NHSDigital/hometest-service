@@ -1,38 +1,26 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import https from 'https';
+import { FetchHttpClient, HttpError } from "../../http/http-client";
 import { OSPlacesResponse } from './models/osplaces-response';
 import { PostcodeLookupClientConfig } from 'src/lib/models/postcode-lookup-client-config';
 import { PostcodeLookupClient } from '../postcode-lookup-client-interface';
-import { PostcodeLookupResponse } from '../models/postcode-lookup-response';
-import { Address } from '../models/address';
+import { Address, PostcodeLookupResponse } from '../models/postcode-lookup-response';
 
 export class OSPlacesClient implements PostcodeLookupClient {
-  private readonly client: AxiosInstance;
+  private readonly client: FetchHttpClient;
   private readonly config: PostcodeLookupClientConfig;
 
   constructor(config: PostcodeLookupClientConfig) {
     this.config = config;
-    this.client = axios.create({
-      baseURL: config.baseUrl,
-      timeout: config.timeoutMs,
-      headers: {
-        "key": this.config.credentials.apiKey,
-      },
-      httpsAgent: new https.Agent({
-        rejectUnauthorized: this.config.rejectUnauthorized
-      })
-    });
+    this.client = new FetchHttpClient({ rejectUnauthorized: config.rejectUnauthorized });
   }
 
   async lookupPostcode(postcode: string): Promise<PostcodeLookupResponse> {
     try {
-      const response: AxiosResponse<OSPlacesResponse> = await this.client.get('/find', {
-        params: {
-          query: postcode.replace(/\s+/g, ''),
-        }
-      });
+      const url = new URL(this.config.baseUrl + '/find', this.config.baseUrl);
+      url.searchParams.append('query', postcode.replace(/\s+/g, ''));
+      url.searchParams.append('key', this.config.credentials.apiKey);
+      const response = await this.client.get<OSPlacesResponse>(url.toString());
 
-      if (!response.data.results || response.data.results.length === 0) {
+      if (!response.results || response.results.length === 0) {
         return {
           postcode,
           addresses: [],
@@ -42,18 +30,18 @@ export class OSPlacesClient implements PostcodeLookupClient {
 
       return {
         postcode,
-        addresses: response.data.results.map((result) => this.mapToAddress(result.DPA)),
+        addresses: response.results.map((result) => this.mapToAddress(result.DPA)),
         status: 'found',
       };
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
+      if (error instanceof HttpError && error.status === 404) {
         return {
           postcode,
           addresses: [],
-          status: 'error',
+          status: 'not_found',
         };
       }
-      throw new Error(`Failed to lookup postcode: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to lookup postcode: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
     }
   }
 
@@ -80,6 +68,10 @@ export class OSPlacesClient implements PostcodeLookupClient {
 
     addressLines = [ ...new Set(addressLines) ];
     addressLines = addressLines.filter(item => item);
+
+    if (addressLines.length === 0) {
+      throw new Error(`Invalid address data for UPRN ${dpa.UPRN} and Postcode ${dpa.POSTCODE}: No valid address lines could be constructed`);
+    }
 
     return {
       id: dpa.UPRN,

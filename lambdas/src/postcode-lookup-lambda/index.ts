@@ -2,7 +2,7 @@ import {
   type APIGatewayProxyEvent,
   type APIGatewayProxyResult
 } from 'aws-lambda';
-import { defaultCorsOptions } from './cors-configuration';
+import { defaultCorsOptions } from '../lib/security/cors-configuration';
 import { init } from './init';
 import middy from '@middy/core';
 import cors from '@middy/http-cors';
