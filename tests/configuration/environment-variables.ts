@@ -15,5 +15,5 @@ export enum EnvironmentVariables {
   DB_PASSWORD = 'DB_PASSWORD',
 }
 
-export const availableEnvironments = ['local','dev'] as const;
+export const availableEnvironments = ['local', 'dev'] as const;
 export type Environment = typeof availableEnvironments[number];
