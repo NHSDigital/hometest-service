@@ -1,10 +1,12 @@
 import { usePageContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
+import { RoutePath } from "@/lib/models/route-paths";
 import { Patient } from "@/lib/models/patient";
+import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
+import { useTestResultsQuery } from "@/lib/queries/test-results-query";
 import { useAuth } from "@/state/AuthContext";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import orderDetailsService from "@/lib/services/order-details-service";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { OrderStatusHeader } from "@/components/order-status";
 
@@ -20,18 +22,37 @@ function TestResultsContent({
   orderId: string;
   patient: Patient;
 }) {
-  const { data: order } = useQuery({
-    queryKey: ["orderStatus", orderId, patient.nhsNumber],
-    queryFn: () => orderDetailsService.get(orderId, patient),
-  });
+  const navigate = useNavigate();
+  const trackingPath = RoutePath.OrderTrackingPage.replace(":orderId", orderId);
+
+  const { data: order, isPending: isOrderPending } = useOrderStatusQuery(
+    orderId,
+    patient,
+  );
+
+  const { data: result, isPending: isResultPending } = useTestResultsQuery(
+    orderId,
+    patient,
+  );
+
+  useEffect(() => {
+    if (result === null) {
+      navigate(trackingPath, { replace: true });
+    }
+  }, [navigate, result, trackingPath]);
+
+  if (isOrderPending || isResultPending || result === null) {
+    return null;
+  }
 
   if (!order) {
-    throw new Error("zzz");
+    throw new Error("Unable to load test results");
   }
 
   return (
     <>
       <OrderStatusHeader order={order} />
+      {`Result id: ${result?.id}`}
     </>
   );
 }

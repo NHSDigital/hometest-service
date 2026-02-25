@@ -4,11 +4,10 @@ import { AboutService } from "@/components/AboutService";
 import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
-import orderDetailsService from "@/lib/services/order-details-service";
+import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
 import { useAuth } from "@/state/AuthContext";
 import { useContent } from "@/hooks";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 function isValidGuid(value: string): boolean {
@@ -23,10 +22,7 @@ function OrderContent({
   orderId: string;
   patient: Patient;
 }) {
-  const { data: order } = useQuery({
-    queryKey: ["orderStatus", orderId, patient.nhsNumber],
-    queryFn: () => orderDetailsService.get(orderId, patient),
-  });
+  const { data: order } = useOrderStatusQuery(orderId, patient);
   const { "order-tracking": content } = useContent();
 
   if (!order) {

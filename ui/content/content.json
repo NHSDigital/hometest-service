@@ -238,8 +238,14 @@
         "title": "There is a problem",
         "orderNotFound": "We could not find this order.",
         "orderIdRequired": "Order ID is required."
-      },
-      "loading": "Loading your order details..."
+      }
+    },
+    "test-results": {
+      "title": "Test resulsts",
+      "error": {
+        "title": "There is a problem",
+        "orderIdRequired": "Order ID is required."
+      }
     },
     "blood-sample-guide": {
       "title": "Blood sample step-by-step guide",
