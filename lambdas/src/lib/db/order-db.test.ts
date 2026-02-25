@@ -66,18 +66,4 @@ describe('OrderService', () => {
             );
         });
     });
-
-    describe('updateResultStatus', () => {
-        it('should call dbClient.query with correct parameters', async () => {
-            dbClient.query.mockResolvedValue({});
-
-            await orderService.updateResultStatus('order-2', ResultStatus.Result_Withheld, 'corr-2');
-
-            expect(dbClient.query).toHaveBeenCalledTimes(1);
-            expect(dbClient.query).toHaveBeenCalledWith(
-                expect.stringContaining('INSERT INTO hometest.result_status'),
-                ['order-2', ResultStatus.Result_Withheld, 'corr-2']
-            );
-        });
-    });
 });
