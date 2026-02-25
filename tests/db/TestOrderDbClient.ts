@@ -41,21 +41,16 @@ export class TestOrderDbClient extends BaseDbClient {
     ]);
   }
 
-  async insertOrderStatus(params: {
-    orderUid: string;
-    statusCode: string;
-    createdAt: string;
-    correlationId: string;
-  }): Promise<void> {
-    await this.query(`
-      INSERT INTO hometest.order_status (order_uid, status_code, created_at, correlation_id)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      params.orderUid,
-      params.statusCode,
-      params.createdAt,
-      params.correlationId,
-    ]);
+  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<{ status_code: string } | undefined> {
+    const rows = await this.query<{ status_code: string }>(`
+      SELECT status_code
+      FROM hometest.order_status
+      WHERE order_uid = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [orderUid]);
+
+    return rows[0];
   }
 
   async getOrderByUid(orderUid: string): Promise<TestOrderRow | undefined> {
