@@ -17,7 +17,6 @@ export default function HowComfortablePrickingFingerPage() {
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
