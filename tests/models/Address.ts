@@ -32,4 +32,3 @@ export class AddressModel implements Address {
     return new AddressModel(addressData[randomIndex]);
   }
 }
-
