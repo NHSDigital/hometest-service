@@ -33,6 +33,11 @@ export class PostgresDbClient implements DBClient {
   ): Promise<Pool> {
     const connectionString =
       await connectionStringProvider.getConnectionString();
+    /*
+      ALPHA: The ssl variable is retrieved from the connection string provider, but it is not used by the connection string provider itself.
+      This is because the connection string provider is only responsible for providing the connection string, and the ssl variable is used by the db-client to determine whether to use SSL when connecting to the database.
+      In the future, we may want to refactor this code to separate the concerns more clearly, but for now, this is how it is implemented.
+    */
     const sslEnabled = connectionStringProvider.getSslEnabled();
 
     return new Pool({
@@ -40,9 +45,11 @@ export class PostgresDbClient implements DBClient {
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
-      ssl: sslEnabled ? {
-        rejectUnauthorized: false,
-      } : false,
+      ssl: sslEnabled
+        ? {
+            rejectUnauthorized: false,
+          }
+        : false,
     });
   }
 
