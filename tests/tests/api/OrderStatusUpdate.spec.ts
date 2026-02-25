@@ -58,11 +58,11 @@ test.describe('Order Status Update API', () => {
     });
   });
 
-  // test.afterEach(async ({ testOrderDb }) => {
-  //   await testOrderDb.deleteOrderStatusByUid(orderUid);
-  //   await testOrderDb.deleteOrderByUid(orderUid);
-  //   await testOrderDb.deletePatientMappingByUid(patientUid);
-  // });
+  test.afterEach(async ({ testOrderDb }) => {
+    await testOrderDb.deleteOrderStatusByUid(orderUid);
+    await testOrderDb.deleteOrderByUid(orderUid);
+    await testOrderDb.deletePatientMappingByUid(patientUid);
+  });
 
   for (const { businessStatus, expectedStatusCode } of businessStatusCases) {
     test(`success (200) persists ${businessStatus} status`, async ({ orderStatusApi, testOrderDb }) => {
