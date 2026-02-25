@@ -25,6 +25,7 @@ export interface OrderPayload {
   testDescription: string;
   supplierId: string;
   patient: OrderPatient;
+  consent: boolean;
 }
 
 export class OrderTestData {
@@ -53,6 +54,7 @@ export class OrderTestData {
       birthDate: '1990-06-15',
       nhsNumber: '9000000001',
     },
+    consent: true,
   };
 
   static getDefaultOrder(): OrderPayload {
