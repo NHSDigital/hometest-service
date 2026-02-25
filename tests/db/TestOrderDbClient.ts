@@ -58,12 +58,12 @@ export class TestOrderDbClient extends BaseDbClient {
     }
 
     // Patient doesn't exist, insert new patient
-    const addPatient = await this.query<{ patient_uid: UUID }>(`
+    const rows = await this.query<{ patient_uid: UUID }>(`
       INSERT INTO hometest.patient_mapping (nhs_number, birth_date)
       VALUES ($1, $2::date)
       RETURNING patient_uid
     `, [nhs_number, birth_date]);
-    return addPatient[0].patient_uid;
+    return rows[0].patient_uid;
   }
 
  async getSupplierIdByName(supplier_name: string): Promise<UUID> {
@@ -92,12 +92,12 @@ export class TestOrderDbClient extends BaseDbClient {
  }
 
  async insertOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<UUID> {
- const sql = await this.query<CreateOrderResult>(`
+ const rows = await this.query<CreateOrderResult>(`
   INSERT INTO hometest.order_status (order_uid, status_code)
   VALUES ($1, $2)
   RETURNING correlation_id
  `, [order_uid, status_code]);
- return sql[0].correlation_id as UUID;
+ return rows[0].correlation_id as UUID;
  }
 
  async updateOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<void> {

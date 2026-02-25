@@ -10,7 +10,7 @@ const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
 
 test.describe('GET Result API @api', () => {
-  test.beforeAll(async ({ testedUser }) => {
+  test.beforeAll('Connect to the database and create a patient, order, and initial order status', async ({ testedUser }) => {
     await dbClient.connect();
     await resultDbClient.connect();
     console.log('Tested user:', JSON.stringify(testedUser, null, 2));
@@ -59,7 +59,7 @@ test.describe('GET Result API @api', () => {
   })
 
 
-  test.afterAll(async ({ testedUser }) => {
+  test.afterAll('Delete result status,order status, order, and patient records from the database and disconnect', async ({ testedUser }) => {
     if (!testedUser.nhsNumber || !testedUser.dob) {
       throw new Error(`Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`);
     }

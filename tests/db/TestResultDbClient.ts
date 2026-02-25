@@ -5,11 +5,11 @@ import { ResultStatus } from '../models/TestResult';
 export class TestResultDbClient extends BaseDbClient {
 
   async insertStatusResult(order_uid: UUID, status: ResultStatus, correlation_id: UUID): Promise<void> {
-    const sql = `
+    const rows = `
       INSERT INTO hometest.result_status (order_uid, status, correlation_id)
       VALUES ($1, $2, $3)
     `;
-    await this.query(sql, [order_uid, status, correlation_id]);
+    await this.query(rows, [order_uid, status, correlation_id]);
   }
 
   async deleteResultStatusByUid(orderUid: string): Promise<void> {
