@@ -3,7 +3,7 @@ import { PostcodeLookupService } from '../lib/postcode-lookup/postcode-lookup-se
 import { OSPlacesClient } from '../lib/postcode-lookup/osplaces/osplaces-client';
 import { StubPostcodeLookupClient } from '../lib/postcode-lookup/stub/stub-client';
 import { PostcodeLookupClient } from '../lib/postcode-lookup/postcode-lookup-client-interface';
-import { PostcodeLookupEnvVariables } from './postcode-lookuo-env-variables';
+import { PostcodeLookupEnvVariables } from './postcode-lookup-env-variables';
 import { PostcodeLookupDependencies } from './postcode-lookup-dependencies';
 import { AwsSecretsClient } from '../lib/secrets/secrets-manager-client';
 import { PostcodeLookupClientConfig } from '../lib/models/postcode-lookup-client-config';

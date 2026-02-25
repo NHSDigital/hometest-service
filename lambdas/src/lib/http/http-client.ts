@@ -1,3 +1,5 @@
+import { Agent } from 'undici';
+
 export interface HttpClient {
   get<T>(
     url: string,
@@ -29,6 +31,14 @@ export class HttpError extends Error {
 }
 
 export class FetchHttpClient implements HttpClient {
+  private readonly dispatcher?: Agent;
+
+  constructor(options?: { rejectUnauthorized?: boolean }) {
+    if (options?.rejectUnauthorized === false) {
+      this.dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
+    }
+  }
+
   async get<T>(url: string, headers?: Record<string, string>): Promise<T> {
     const response = await fetch(url, {
       method: "GET",
@@ -36,6 +46,7 @@ export class FetchHttpClient implements HttpClient {
         Accept: "application/json",
         ...headers,
       },
+      ...(this.dispatcher ? ({ dispatcher: this.dispatcher } as unknown as RequestInit) : {}),
     });
 
     if (!response.ok) {
@@ -64,6 +75,7 @@ export class FetchHttpClient implements HttpClient {
         ...headers,
       },
       body: typeof body === "string" ? body : JSON.stringify(body),
+      ...(this.dispatcher ? ({ dispatcher: this.dispatcher } as unknown as RequestInit) : {}),
     });
 
     if (!response.ok) {
@@ -92,6 +104,7 @@ export class FetchHttpClient implements HttpClient {
         ...headers,
       },
       body: typeof body === "string" ? body : JSON.stringify(body),
+      ...(this.dispatcher ? ({ dispatcher: this.dispatcher } as unknown as RequestInit) : {}),
     });
 
     if (!response.ok) {
