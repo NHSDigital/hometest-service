@@ -1,16 +1,7 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
 import { BaseApiClient } from './BaseApiClient';
 import { API_ENDPOINTS } from '../endpoints';
-
-export interface OrderStatusTaskPayload {
-  resourceType: 'Task';
-  status: string;
-  intent: string;
-  basedOn: Array<{ reference: string }>;
-  for: { reference: string };
-  businessStatus?: { text: string };
-  lastModified?: string;
-}
+import { OrderStatusTaskPayload } from '../../test-data/OrderStatusTypes';
 
 export class OrderStatusApiResource extends BaseApiClient {
   constructor(request: APIRequestContext) {

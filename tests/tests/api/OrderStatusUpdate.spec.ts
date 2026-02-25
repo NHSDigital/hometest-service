@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { test, expect } from '../../fixtures/IntegrationFixture';
-import { OrderStatusTaskPayload } from '../../api/clients/OrderStatusApiResource';
+import { OrderStatusTaskPayload } from '../../test-data/OrderStatusTypes';
+import { faker } from '@faker-js/faker';
 
 const supplierId = 'c1a2b3c4-1234-4def-8abc-123456789abc';
 const testCode = '31676001';
@@ -22,6 +23,7 @@ test.describe('Order Status Update API', () => {
   let orderUid: string;
   let patientUid: string;
   let nhsNumber: string;
+  let birthDate: string;
 
   const buildTaskPayload = (overrides: Partial<OrderStatusTaskPayload> = {}): OrderStatusTaskPayload => ({
     resourceType: 'Task',
@@ -34,15 +36,14 @@ test.describe('Order Status Update API', () => {
     ...overrides,
   });
 
-  test.beforeEach(async ({ testOrderDb }) => {
+  test.beforeEach(async () => {
     orderUid = randomUUID();
     patientUid = randomUUID();
-    nhsNumber = `99${Math.floor(Math.random() * 1_000_000_000)}`;
+    nhsNumber = `99${faker.number.int({ min: 100000000, max: 999999999 })}`;
+    birthDate = faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toISOString().split('T')[0];
+  });
 
-    const randomMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-    const randomDay = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
-    const birthDate = `1988-${randomMonth}-${randomDay}`;
-
+  test.beforeEach(async ({ testOrderDb }) => {
     await testOrderDb.insertPatientMapping({
       patientUid,
       nhsNumber,
