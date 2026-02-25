@@ -40,6 +40,11 @@ export class PostgresDbClient implements DBClient {
     */
     const sslEnabled = connectionStringProvider.getSslEnabled();
 
+    /*
+      ALPHA: we should always reject unauthorized SSL connections, unless disabling ssl entirely for local development.
+      Once deployed, we should ensure that SSL is enabled, and if it is, we should reject unauthorized connections.
+      This requires downloading the Aurora certificate and including it properly in the connection configuration.
+    */
     return new Pool({
       connectionString,
       max: 5,
