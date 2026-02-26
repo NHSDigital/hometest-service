@@ -11,6 +11,10 @@ export class FindAddressPage extends BasePage {
   readonly buildingNoErrorMessage: Locator;
   readonly enterAddressManuallyLink: Locator;
 
+  private postcode: string | null = null
+  private addressline1: string | null = null
+
+
   constructor(page: Page) {
     super(page);
     this.postcodeInput = page.locator('#postcode');
@@ -23,8 +27,10 @@ export class FindAddressPage extends BasePage {
   }
 
   async fillPostCodeAndAddressAndContinue(randomEntry: AddressModel): Promise<void> {
-    await this.postcodeInput.fill(randomEntry.postcode);
-    await this.numNameInput.fill(randomEntry.addressline1);
+    this.postcode = randomEntry.postcode;
+    this.addressline1 = randomEntry.addressline1;
+    await this.postcodeInput.fill(this.postcode);
+    await this.numNameInput.fill(this.addressline1);
     await this.continueButton.click();
   }
 
@@ -36,6 +42,12 @@ export class FindAddressPage extends BasePage {
     const postcodeValue = await this.postcodeInput.inputValue();
     const firstLineAddressValue = await this.numNameInput.inputValue();
     return { postcode: postcodeValue, firstLineAddress: firstLineAddressValue };
+  }
+
+  async getPostcodeAndAddressInputValues(): Promise<{ filledPostcode: string, filledFirstLineAddress: string }> {
+    const postcodeValue = this.postcode ?? '';
+    const firstLineAddressValue = this.addressline1 ?? '';
+    return { filledPostcode: postcodeValue, filledFirstLineAddress: firstLineAddressValue };
   }
 
 }

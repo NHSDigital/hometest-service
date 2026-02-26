@@ -1,3 +1,5 @@
+import { PrivacyPolicyPage } from './PrivacyPolicyPage';
+
 export { BasePage } from './BasePage';
 export { HomeTestStartPage } from './HomeTestStartPage';
 export { FindAddressPage } from './FindAddressPage';
@@ -8,3 +10,5 @@ export { HowComfortablePrickingFingerPage } from './HowComfortablePrickingFinger
 export { PrivacyPolicyPage } from './PrivacyPolicyPage';
 export { BloodSampleGuidePage } from './BloodSampleGuidePage';
 export { EnterMobileNumberPage } from './EnterMobileNumberPage';
+export { ConfirmAndUpdateMobileNumberPage } from './ConfirmAndUpdateMobileNumberPage';
+export { CheckYourAnswersPage } from './CheckYourAnswersPage';

@@ -29,7 +29,7 @@ test.describe('HIV Test Order journeys', () => {
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
-   test('Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, enterMobileNumberPage }) => {
+  test('Mobile number test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, enterMobileNumberPage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
@@ -73,7 +73,7 @@ test.describe('HIV Test Order journeys', () => {
     expect(newTab.url()).toBe(makeAComplaintUrl);
   });
 
-  test('Check the guide to giving blood samples', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, bloodSampleGuidePage}) => {
+  test('Check the guide to giving blood samples', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, bloodSampleGuidePage }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
@@ -84,4 +84,23 @@ test.describe('HIV Test Order journeys', () => {
     await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();
     await expect(bloodSampleGuidePage.headerText).toHaveText("Blood sample step-by-step guide");
   });
+
+  test('Submit Order Test', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage, confirmAndUpdateMobileNumberPage, checkYourAnswersPage }) => {
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await selectDeliveryAddressPage.selectAddressAndContinue();
+    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
+    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
+    const expectedMobileNumber = await checkYourAnswersPage.getMobileNumber();
+    await confirmAndUpdateMobileNumberPage.clickContinue();
+    const { actualPostcode, actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumber();
+    const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
+    console.log("Extracted postcode:", actualPostcode);
+    console.log("Extracted mobile number:", actualMobileNumber);
+    expect(actualMobileNumber).toBe(expectedMobileNumber);
+    expect(actualPostcode).toBe(filledPostcode);
+    await checkYourAnswersPage.selectConsentCheckbox();
+    await checkYourAnswersPage.clickSubmitOrder();
+  });
+
+
 });
