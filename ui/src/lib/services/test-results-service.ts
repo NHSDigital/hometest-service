@@ -1,5 +1,6 @@
-import { OperationOutcome } from "fhir/r4";
+import { Observation, OperationOutcome } from "fhir/r4";
 
+import { FhirUtils } from "@/lib/utils/fhir-utils";
 import { Patient } from "@/lib/models/patient";
 import { TestResult } from "@/lib/models/test-result";
 import { backendUrl } from "@/settings";
@@ -24,8 +25,12 @@ class TestResultsService {
       throw new Error(errorMessage);
     }
 
-    const observation: { id?: string } = await response.json();
-    return { id: observation.id ?? "" };
+    const observation: Observation = await response.json();
+
+    return {
+      id: observation.id ?? "",
+      isNormal: FhirUtils.isNormalObservationResult(observation),
+    };
   }
 
   private async getResultFromApi(
@@ -41,7 +46,7 @@ class TestResultsService {
       method: "GET",
       headers: {
         Accept: "application/fhir+json",
-        "x-correlation-id": crypto.randomUUID(),
+        "X-Correlation-ID": crypto.randomUUID(),
       },
     });
   }

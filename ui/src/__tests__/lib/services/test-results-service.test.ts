@@ -23,7 +23,21 @@ describe("TestResultsService", () => {
   });
 
   it("calls /results with order status query params and x-correlation-id", async () => {
-    const mockObservation = { resourceType: "Observation", id: "obs-1" };
+    const mockObservation = {
+      resourceType: "Observation",
+      id: "obs-1",
+      interpretation: [
+        {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              code: "N",
+            },
+          ],
+        },
+      ],
+    };
     mockFetch.mockResolvedValueOnce({
       status: 200,
       json: async () => mockObservation,
@@ -31,14 +45,14 @@ describe("TestResultsService", () => {
 
     const result = await testResultsService.get(orderId, patient);
 
-    expect(result).toEqual({ id: "obs-1" });
+    expect(result).toEqual({ id: "obs-1", isNormal: true });
     expect(mockFetch).toHaveBeenCalledWith(
       `http://mock-backend/results?nhs_number=${patient.nhsNumber}&date_of_birth=${patient.dateOfBirth}&order_id=${orderId}`,
       {
         method: "GET",
         headers: {
           Accept: "application/fhir+json",
-          "x-correlation-id": correlationId,
+          "X-Correlation-ID": correlationId,
         },
       },
     );
@@ -53,5 +67,32 @@ describe("TestResultsService", () => {
     const result = await testResultsService.get(orderId, patient);
 
     expect(result).toBeNull();
+  });
+
+  it("returns isNormal false when interpretation is not normal", async () => {
+    const mockObservation = {
+      resourceType: "Observation",
+      id: "obs-2",
+      interpretation: [
+        {
+          coding: [
+            {
+              system:
+                "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              code: "A",
+            },
+          ],
+        },
+      ],
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      status: 200,
+      json: async () => mockObservation,
+    });
+
+    const result = await testResultsService.get(orderId, patient);
+
+    expect(result).toEqual({ id: "obs-2", isNormal: false });
   });
 });

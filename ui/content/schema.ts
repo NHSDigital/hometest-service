@@ -292,9 +292,36 @@ export interface OrderTrackingContent {
 }
 
 export interface TestResultsContent {
+  title: string;
   error: {
     title: string;
     orderIdRequired: string;
+  };
+  negativeResult: {
+    header: string;
+    sectionAriaLabel: string;
+    yourResultHeading: string;
+    result: string;
+    summary: string;
+    windowPeriodAdvice: string;
+    contactSupplierPrefix: string;
+    contactSupplier: string;
+    gpSharing: string;
+    nextStepsHeading: string;
+    nextStepsAdvice: string;
+  };
+  moreOptionsAndInformation: {
+    heading: string;
+    fullCheckPrefix: string;
+    fullCheckLink: string;
+    prepLink: string;
+    prepAdvice: string;
+    clinicLink: string;
+    learnMoreHIV: string;
+  };
+  medicalAbbreviationsHelp: {
+    intro: string;
+    linkText: string;
   };
 }
 

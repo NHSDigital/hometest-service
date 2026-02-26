@@ -391,6 +391,7 @@ module "get_results_lambda" {
   enable_cors        = true
   cors_allow_origin  = "http://localhost:3000"
   cors_allow_methods = ["GET", "OPTIONS"]
+  cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-ID"]
 
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"

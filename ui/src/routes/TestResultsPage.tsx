@@ -1,63 +1,115 @@
-import { usePageContent } from "@/hooks";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { NegativeTestResult } from "@/components/test-results/NegativeTestResult";
 import PageLayout from "@/layouts/PageLayout";
-import { RoutePath } from "@/lib/models/route-paths";
 import { Patient } from "@/lib/models/patient";
-import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
-import { useTestResultsQuery } from "@/lib/queries/test-results-query";
+import { RoutePath } from "@/lib/models/route-paths";
+import { isValidGuid } from "@/lib/utils/guid";
 import { useAuth } from "@/state/AuthContext";
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { z } from "zod";
-import { OrderStatusHeader } from "@/components/order-status";
-
-function isValidGuid(value: string): boolean {
-  const result = z.uuid().safeParse(value);
-  return result.success;
-}
+import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
+import { usePageContent } from "@/hooks";
+import { useTestResultsQuery } from "@/lib/queries/test-results-query";
 
 function TestResultsContent({
   orderId,
   patient,
+  order,
+  redirectToTracking,
 }: {
   orderId: string;
   patient: Patient;
+  order: OrderDetails;
+  redirectToTracking: () => void;
 }) {
-  const navigate = useNavigate();
-  const trackingPath = RoutePath.OrderTrackingPage.replace(":orderId", orderId);
+  const {
+    data: result,
+    isPending: isLoading,
+    error: resultError,
+  } = useTestResultsQuery(orderId, patient);
 
-  const { data: order, isPending: isOrderPending } = useOrderStatusQuery(
-    orderId,
-    patient,
-  );
-
-  const { data: result, isPending: isResultPending } = useTestResultsQuery(
-    orderId,
-    patient,
-  );
+  const shouldRedirectToTracking =
+    !resultError && (result === null || (result != null && !result.isNormal));
 
   useEffect(() => {
-    if (result === null) {
-      navigate(trackingPath, { replace: true });
+    if (!isLoading && shouldRedirectToTracking) {
+      redirectToTracking();
     }
-  }, [navigate, result, trackingPath]);
+  }, [isLoading, redirectToTracking, shouldRedirectToTracking]);
 
-  if (isOrderPending || isResultPending || result === null) {
+  if (isLoading) {
+    return null;
+  }
+
+  if (resultError) {
+    throw resultError;
+  }
+
+  if (shouldRedirectToTracking) {
+    return null;
+  }
+
+  if (!result) {
+    throw new Error("Unable to load test results");
+  }
+
+  return <NegativeTestResult order={order} />;
+}
+
+function OrderDetailsContent({
+  orderId,
+  patient,
+  redirectToTracking,
+}: {
+  orderId: string;
+  patient: Patient;
+  redirectToTracking: () => void;
+}) {
+  const {
+    data: order,
+    isPending: isOrderLoading,
+    error: orderError,
+  } = useOrderStatusQuery(orderId, patient);
+  const isOrderNotFound = order === null;
+  const isOrderComplete = order?.status === OrderStatus.COMPLETE;
+  const shouldRedirectToTracking =
+    !orderError && (isOrderNotFound || (order != null && !isOrderComplete));
+
+  useEffect(() => {
+    if (!isOrderLoading && shouldRedirectToTracking) {
+      redirectToTracking();
+    }
+  }, [isOrderLoading, redirectToTracking, shouldRedirectToTracking]);
+
+  if (isOrderLoading) {
+    return null;
+  }
+
+  if (orderError) {
+    throw orderError;
+  }
+
+  if (shouldRedirectToTracking) {
     return null;
   }
 
   if (!order) {
-    throw new Error("Unable to load test results");
+    throw new Error("Unable to load order details");
   }
 
   return (
-    <>
-      <OrderStatusHeader order={order} />
-      {`Result id: ${result?.id}`}
-    </>
+    <TestResultsContent
+      orderId={orderId}
+      patient={patient}
+      order={order}
+      redirectToTracking={redirectToTracking}
+    />
   );
 }
 
 export default function TestResultsPage() {
+  const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
   const content = usePageContent("test-results");
@@ -78,9 +130,18 @@ export default function TestResultsPage() {
     dateOfBirth: user!.birthdate,
   };
 
+  const trackingPath = RoutePath.OrderTrackingPage.replace(":orderId", orderId);
+  const redirectToTracking = () => {
+    navigate(trackingPath, { replace: true });
+  };
+
   return (
     <PageLayout>
-      <TestResultsContent orderId={orderId} patient={patient} />
+      <OrderDetailsContent
+        orderId={orderId}
+        patient={patient}
+        redirectToTracking={redirectToTracking}
+      />
     </PageLayout>
   );
 }

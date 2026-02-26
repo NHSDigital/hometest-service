@@ -4,16 +4,11 @@ import { AboutService } from "@/components/AboutService";
 import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
-import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
+import { isValidGuid } from "@/lib/utils/guid";
 import { useAuth } from "@/state/AuthContext";
-import { useContent } from "@/hooks";
+import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
+import { usePageContent } from "@/hooks";
 import { useParams } from "react-router-dom";
-import { z } from "zod";
-
-function isValidGuid(value: string): boolean {
-  const result = z.uuid().safeParse(value);
-  return result.success;
-}
 
 function OrderContent({
   orderId,
@@ -23,7 +18,7 @@ function OrderContent({
   patient: Patient;
 }) {
   const { data: order } = useOrderStatusQuery(orderId, patient);
-  const { "order-tracking": content } = useContent();
+  const content = usePageContent("order-tracking");
 
   if (!order) {
     return (
@@ -45,7 +40,7 @@ function OrderContent({
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
-  const { "order-tracking": content } = useContent();
+  const content = usePageContent("order-tracking");
 
   if (!orderId || !isValidGuid(orderId)) {
     return (
