@@ -1,20 +1,18 @@
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { postgresFromUrl } from "../lib/db/connection-string-provider";
-import { retrieveOptionalEnvVariable } from "../lib/utils";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 
 export interface Environment {
   orderDbClient: OrderDbClient;
 }
 
 export function init(): Environment {
-  const databaseUrl = process.env.DATABASE_URL!;
-  const sslEnabled = retrieveOptionalEnvVariable("DB_SSL", "true") === "true";
+  const awsRegion =
+    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const secretsClient = new AwsSecretsClient(awsRegion);
 
-  const dbClient = new PostgresDbClient(postgresFromUrl(databaseUrl), {
-    enabled: sslEnabled,
-    rejectUnauthorized: sslEnabled,
-  });
+  const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderDbClient = new OrderDbClient(dbClient);
 
   return {

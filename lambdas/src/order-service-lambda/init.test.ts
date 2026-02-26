@@ -4,7 +4,7 @@ import { OrderStatusService } from "../lib/db/order-status-db";
 import { TransactionService } from "../lib/db/transaction-db-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { postgresFromEnv } from "../lib/db/connection-string-provider";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
 
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
@@ -12,7 +12,7 @@ jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/transaction-db-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/secrets/secrets-manager-client");
-jest.mock("../lib/db/connection-string-provider");
+jest.mock("../lib/db/db-config");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -28,8 +28,12 @@ describe("init", () => {
       "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
   };
 
-  const mockConnectionStringProvider = {
-    getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
+  const mockConfig = {
+    user: "test-user",
+    host: "test-host",
+    port: 5432,
+    database: "test-db",
+    password: jest.fn().mockResolvedValue("test-password"),
   };
 
   beforeEach(() => {
@@ -39,7 +43,7 @@ describe("init", () => {
     // Set default mock environment variables
     Object.assign(process.env, mockEnvVariables);
 
-    (postgresFromEnv as jest.Mock).mockReturnValue(mockConnectionStringProvider);
+    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockConfig);
   });
 
   afterEach(() => {
@@ -97,8 +101,7 @@ describe("init", () => {
       init();
 
       expect(PostgresDbClient).toHaveBeenCalledWith(
-        mockConnectionStringProvider,
-        { enabled: true, rejectUnauthorized: true }
+        mockConfig
       );
     });
 
@@ -189,8 +192,7 @@ describe("init", () => {
       // PostgresDbClient should be created with an AwsSecretsClient
       expect(PostgresDbClient).toHaveBeenCalledTimes(1);
       expect(PostgresDbClient).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object),
+        expect.any(Object)
       );
 
       // OrderStatusService should be created with a PostgresDbClient

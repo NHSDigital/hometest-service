@@ -13,16 +13,18 @@ jest.mock("pg", () => {
 describe("PostgresDbClient", () => {
   let client: PostgresDbClient;
   let mockPool: jest.Mocked<Pool>;
-  const connectionStringProvider = {
-    getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
-  };
 
-  beforeEach(async () => {
-    client = new PostgresDbClient(connectionStringProvider, {
-      enabled: false,
-    });
-    await (client as any).poolPromise;
-    mockPool = await (client as any).poolPromise;
+  beforeEach(() => {
+    client = new PostgresDbClient(
+      {
+        user: "test-user",
+        host: "test-host",
+        port: 5432,
+        database: "test-db",
+        password: "test-password",
+      }
+    );
+    mockPool = (client as any).pool;
   });
 
   afterEach(() => {
