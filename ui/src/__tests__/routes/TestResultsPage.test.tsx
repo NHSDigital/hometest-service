@@ -159,7 +159,9 @@ describe("TestResultsPage", () => {
   });
 
   it("redirects to order tracking page when order is not complete", async () => {
-    (orderDetailsService.get as jest.Mock).mockResolvedValue(mockIncompleteOrder);
+    (orderDetailsService.get as jest.Mock).mockResolvedValue(
+      mockIncompleteOrder,
+    );
     (testResultsService.get as jest.Mock).mockResolvedValue(mockResult);
 
     await act(async () => {
