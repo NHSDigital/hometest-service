@@ -196,7 +196,7 @@ export const lambdaHandler = async (
       statusOrderUpdateParams,
     );
 
-    return createFhirResponse(200, validatedTask);
+    return createFhirResponse(201, validatedTask);
   } catch (error) {
     commons.logError(name, "Error processing order status update", {
       error,

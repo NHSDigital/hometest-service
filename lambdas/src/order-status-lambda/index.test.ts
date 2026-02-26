@@ -192,7 +192,7 @@ describe("Order Status Lambda Handler", () => {
       );
 
       expect(mockGetPatientIdFromOrder).toHaveBeenCalledWith(MOCK_ORDER_UID);
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
     });
   });
 
@@ -242,7 +242,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
     });
   });
 
@@ -296,7 +296,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
     });
 
     it(`should accept ${IncomingBusinessStatus.RECEIVED_AT_LAB} business status`, async () => {
@@ -310,7 +310,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
     });
   });
 
@@ -350,7 +350,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -394,7 +394,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -416,7 +416,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -447,7 +447,7 @@ describe("Order Status Lambda Handler", () => {
   });
 
   describe("Successful Update", () => {
-    it("should return 200 OK with updated Task when all validations pass", async () => {
+    it("should return 201 OK with updated Task when all validations pass", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(
@@ -455,7 +455,7 @@ describe("Order Status Lambda Handler", () => {
         {} as Context,
       );
 
-      expect(result.statusCode).toBe(200);
+      expect(result.statusCode).toBe(201);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
 
       const body = JSON.parse(result.body);
