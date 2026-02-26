@@ -373,24 +373,29 @@ module "get_order_lambda" {
   }
 }
 
-module "order_status_lambda" {
+module "get_results_lambda" {
   source = "./modules/lambda"
 
   project_name                  = var.project_name
-  function_name                 = "order-status"
-  zip_path                      = "${path.module}/../../lambdas/dist/order-status-lambda.zip"
+  function_name                 = "get-results"
+  zip_path                      = "${path.module}/../../lambdas/dist/get-results-lambda.zip"
   lambda_role_arn               = aws_iam_role.lambda_role.arn
   environment                   = var.environment
   api_gateway_id                = aws_api_gateway_rest_api.api.id
   api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
   api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "test-order/status"
-  http_method                   = "POST"
+  api_path                      = "results"
+  http_method                   = "GET"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  enable_cors        = true
+  cors_allow_origin  = "http://localhost:3000"
+  cors_allow_methods = ["GET", "OPTIONS"]
 
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"
     DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    ALLOW_ORIGIN = "http://localhost:3000"
   }
 }
 
