@@ -12,12 +12,16 @@ describe("generateReadableError", () => {
         const result = schema.safeParse({ orderUID: 123, code: 456, arrayStuff: [2] });
 
         expect(result.success).toBe(false);
-        const readable = generateReadableError(result.error!);
-        expect(typeof readable).toBe("string");
-        expect(readable.length).toBeGreaterThan(0);
-        expect(readable).toContain("orderUID:");
-        expect(readable).toContain("code:");
-        expect(readable).toContain("arrayStuff.0:");
+        if (result.error) {
+            // optional expects inside if statement because Sonarqube
+            // doesn't like us telling typescript that we know result.error is defined
+            const readable = generateReadableError(result.error);
+            expect(typeof readable).toBe("string");
+            expect(readable.length).toBeGreaterThan(0);
+            expect(readable).toContain("orderUID:");
+            expect(readable).toContain("code:");
+            expect(readable).toContain("arrayStuff.0:");
+        }
 
     });
 
@@ -39,9 +43,11 @@ describe("generateReadableError", () => {
         const result = schema.safeParse({ user: { name: 123, age: "not-a-number" } });
 
         expect(result.success).toBe(false);
-        const readable = generateReadableError(result.error!);
-        expect(readable).toContain("user.name:");
-        expect(readable).toContain("user.age:");
+        if (result.error) {
+            const readable = generateReadableError(result.error);
+            expect(readable).toContain("user.name:");
+            expect(readable).toContain("user.age:");
+        }
     });
 
     it("should handle array of objects errors", () => {
@@ -52,8 +58,10 @@ describe("generateReadableError", () => {
         const result = schema.safeParse({ items: [{ id: 1 }, { id: 2 }] });
 
         expect(result.success).toBe(false);
-        const readable = generateReadableError(result.error!);
-        expect(readable).toContain("items.0.id:");
-        expect(readable).toContain("items.1.id:");
+        if (result.error) {
+            const readable = generateReadableError(result.error);
+            expect(readable).toContain("items.0.id:");
+            expect(readable).toContain("items.1.id:");
+        }
     });
 });
