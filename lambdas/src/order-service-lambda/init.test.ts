@@ -8,11 +8,17 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import {
   setupEnvironment,
   restoreEnvironment,
+  testMissingEnvVars,
+  testEmptyEnvVars,
 } from "../lib/test-utils/environment-test-helpers";
 import {
   runAwsRegionTests,
   testPostgresDbClientConfig,
 } from "../lib/test-utils/aws-region-test-helpers";
+import {
+  testServiceReceivesDbClient,
+  testComponentCreationOrder,
+} from "../lib/test-utils/component-integration-helpers";
 
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
@@ -117,74 +123,39 @@ describe("init", () => {
   });
 
   describe("missing environment variables", () => {
-    it.each([
-      ["ORDER_PLACEMENT_QUEUE_URL"],
-    ])("should throw error when %s is missing", (envVar) => {
-      delete process.env[envVar];
-
-      expect(() => init()).toThrow(
-        `Missing value for an environment variable ${envVar}`,
-      );
+    testMissingEnvVars({
+      envVars: ["ORDER_PLACEMENT_QUEUE_URL"],
+      testFn: init,
     });
   });
 
   describe("empty environment variables", () => {
-    it.each([
-      ["ORDER_PLACEMENT_QUEUE_URL"],
-    ])("should throw error when %s is empty string", (envVar) => {
-      process.env[envVar] = "";
-
-      expect(() => init()).toThrow(
-        `Missing value for an environment variable ${envVar}`,
-      );
+    testEmptyEnvVars({
+      envVars: ["ORDER_PLACEMENT_QUEUE_URL"],
+      testFn: init,
     });
   });
 
   describe("integration of components", () => {
     it("should pass a PostgresDbClient instance to OrderStatusService", () => {
-      init();
-
-      const orderStatusServiceCalls = (OrderStatusService as jest.Mock).mock
-        .calls;
-      expect(orderStatusServiceCalls[0][0]).toBeInstanceOf(PostgresDbClient);
+      testServiceReceivesDbClient(init, OrderStatusService as jest.Mock, PostgresDbClient, false);
     });
 
     it("should pass a PostgresDbClient instance to TransactionService", () => {
-      init();
-
-      const transactionServiceCalls = (TransactionService as jest.Mock).mock
-        .calls;
-      expect(transactionServiceCalls[0][0].dbClient).toBeInstanceOf(
-        PostgresDbClient,
-      );
+      testServiceReceivesDbClient(init, TransactionService as jest.Mock, PostgresDbClient, true);
     });
 
     it("should create components in the correct order", () => {
-      init();
-
-      // AwsSecretsClient should be created first
-      expect(AwsSecretsClient).toHaveBeenCalledTimes(1);
-
-      // PostgresDbClient should be created with an AwsSecretsClient
-      expect(PostgresDbClient).toHaveBeenCalledTimes(1);
-      expect(PostgresDbClient).toHaveBeenCalledWith(
-        expect.any(Object)
-      );
-
-      // OrderStatusService should be created with a PostgresDbClient
-      expect(OrderStatusService).toHaveBeenCalledTimes(1);
-      expect(OrderStatusService).toHaveBeenCalledWith(
-        expect.any(PostgresDbClient),
-      );
-
-      // TransactionService should be created with a PostgresDbClient
-      expect(TransactionService).toHaveBeenCalledTimes(1);
-      expect(TransactionService).toHaveBeenCalledWith({
-        dbClient: expect.any(PostgresDbClient),
+      testComponentCreationOrder({
+        initFn: init,
+        components: [
+          { mock: AwsSecretsClient as jest.Mock },
+          { mock: PostgresDbClient as jest.Mock, calledWith: expect.any(Object) },
+          { mock: OrderStatusService as jest.Mock, calledWith: expect.any(PostgresDbClient) },
+          { mock: TransactionService as jest.Mock, calledWith: { dbClient: expect.any(PostgresDbClient) } },
+          { mock: AWSSQSClient as jest.Mock },
+        ],
       });
-
-      // AWSSQSClient should be created
-      expect(AWSSQSClient).toHaveBeenCalledTimes(1);
     });
   });
 });

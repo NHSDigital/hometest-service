@@ -12,6 +12,10 @@ import {
   runAwsRegionTests,
   testPostgresDbClientConfig,
 } from "../lib/test-utils/aws-region-test-helpers";
+import {
+  testServiceReceivesDbClient,
+  testComponentCreationOrder,
+} from "../lib/test-utils/component-integration-helpers";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
@@ -94,30 +98,17 @@ describe("init", () => {
 
   describe("integration of components", () => {
     it("should pass a PostgresDbClient instance to SupplierService", () => {
-      init();
-
-      const supplierServiceCalls = (SupplierService as jest.Mock).mock.calls;
-      expect(supplierServiceCalls[0][0].dbClient).toBeInstanceOf(
-        PostgresDbClient,
-      );
+      testServiceReceivesDbClient(init, SupplierService as jest.Mock, PostgresDbClient, true);
     });
 
     it("should create components in the correct order", () => {
-      init();
-
-      // AwsSecretsClient should be created first
-      expect(AwsSecretsClient).toHaveBeenCalledTimes(1);
-
-      // PostgresDbClient should be created with an AwsSecretsClient
-      expect(PostgresDbClient).toHaveBeenCalledTimes(1);
-      expect(PostgresDbClient).toHaveBeenCalledWith(
-        expect.any(Object)
-      );
-
-      // SupplierService should be created with a PostgresDbClient
-      expect(SupplierService).toHaveBeenCalledTimes(1);
-      expect(SupplierService).toHaveBeenCalledWith({
-        dbClient: expect.any(PostgresDbClient),
+      testComponentCreationOrder({
+        initFn: init,
+        components: [
+          { mock: AwsSecretsClient as jest.Mock },
+          { mock: PostgresDbClient as jest.Mock, calledWith: expect.any(Object) },
+          { mock: SupplierService as jest.Mock, calledWith: { dbClient: expect.any(PostgresDbClient) } },
+        ],
       });
     });
   });
