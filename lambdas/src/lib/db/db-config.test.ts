@@ -1,6 +1,6 @@
 import { postgresConfig, postgresConfigFromEnv } from "./db-config";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   setupEnvironment,
   restoreEnvironment,
@@ -122,7 +122,7 @@ describe("db-config", () => {
         port: "5432",
         database,
         schema,
-        passwordSecretName: "postgres-db-password",
+        passwordSecretName: "postgres-db-pword",
         secretsClient,
         sslEnabled: false,
       });
@@ -141,7 +141,7 @@ describe("db-config", () => {
       )();
 
       expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
-        "postgres-db-password",
+        "postgres-db-pword",
         { jsonKey: "password" },
       );
       expect(resolvedPassword).toEqual(expectedPword);
@@ -217,7 +217,7 @@ describe("db-config", () => {
         address: "localhost",
         port: "5432",
         database: "testdb",
-        passwordSecretName: "postgres-db-password",
+        passwordSecretName: "postgres-db-pword",
         secretsClient,
         sslEnabled: false,
       });
@@ -231,7 +231,7 @@ describe("db-config", () => {
         address: "localhost",
         port: "5432",
         database: "testdb",
-        passwordSecretName: "postgres-db-password",
+        passwordSecretName: "postgres-db-pword",
         secretsClient,
         sslEnabled: true,
       });
