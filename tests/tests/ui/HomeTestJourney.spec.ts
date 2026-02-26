@@ -94,8 +94,6 @@ test.describe('HIV Test Order journeys', () => {
     await confirmAndUpdateMobileNumberPage.clickContinue();
     const { actualPostcode, actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumber();
     const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
-    console.log("Extracted postcode:", actualPostcode);
-    console.log("Extracted mobile number:", actualMobileNumber);
     expect(actualMobileNumber).toBe(expectedMobileNumber);
     expect(actualPostcode).toBe(filledPostcode);
     await checkYourAnswersPage.selectConsentCheckbox();
