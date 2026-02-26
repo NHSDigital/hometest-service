@@ -1,4 +1,6 @@
 import { Pool } from "pg";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { ConnectionStringProvider } from "./connection-string-provider";
 
 /**
@@ -18,43 +20,55 @@ export interface DBClient {
   close(): Promise<void>;
 }
 
+export interface SslConfig {
+  enabled: boolean;
+  rejectUnauthorized?: boolean;
+}
+
 /**
  * Concrete implementation using pg.Pool
  */
 export class PostgresDbClient implements DBClient {
   private readonly poolPromise: Promise<Pool>;
 
-  constructor(connectionStringProvider: ConnectionStringProvider) {
-    this.poolPromise = this.createPool(connectionStringProvider);
+  constructor(
+    connectionStringProvider: ConnectionStringProvider,
+    sslConfig: SslConfig = { enabled: true, rejectUnauthorized: true }
+  ) {
+    this.poolPromise = this.createPool(connectionStringProvider, sslConfig);
   }
 
   private async createPool(
     connectionStringProvider: ConnectionStringProvider,
+    sslConfig: SslConfig,
   ): Promise<Pool> {
     const connectionString =
       await connectionStringProvider.getConnectionString();
-    /*
-      ALPHA: The ssl variable is retrieved from the connection string provider, but it is not used by the connection string provider itself.
-      This is because the connection string provider is only responsible for providing the connection string, and the ssl variable is used by the db-client to determine whether to use SSL when connecting to the database.
-      In the future, we may want to refactor this code to separate the concerns more clearly, but for now, this is how it is implemented.
-    */
-    const sslEnabled = connectionStringProvider.getSslEnabled();
 
-    /*
-      ALPHA: we should always reject unauthorized SSL connections, unless disabling ssl entirely for local development.
-      Once deployed, we should ensure that SSL is enabled, and if it is, we should reject unauthorized connections.
-      This requires downloading the Aurora certificate and including it properly in the connection configuration.
-    */
+    let ssl: false | { rejectUnauthorized: boolean; ca?: string } = false;
+    if (sslConfig.enabled) {
+      if (sslConfig.rejectUnauthorized !== false) {
+        // Use strict SSL with AWS RDS certificate
+        const certPath = join(__dirname, "../../certs/eu-west-2-bundle.pem");
+        const ca = readFileSync(certPath, "utf-8");
+        ssl = {
+          rejectUnauthorized: true,
+          ca,
+        };
+      } else {
+        // SSL enabled but not verifying certificates (for development)
+        ssl = {
+          rejectUnauthorized: false,
+        };
+      }
+    }
+
     return new Pool({
       connectionString,
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
-      ssl: sslEnabled
-        ? {
-            rejectUnauthorized: false,
-          }
-        : false,
+      ssl,
     });
   }
 

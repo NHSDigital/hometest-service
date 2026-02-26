@@ -31,10 +31,12 @@ describe("PostgresDbClient Integration Tests", () => {
           database: connectionUri.pathname.replace("/", ""),
           schema: "public",
           passwordSecretName: "postgres-db-password",
-          ssl: false, // Disable SSL for test container
         },
         secretsClient,
-      )
+      ),
+      {
+        enabled: false,
+      }
     );
 
     // Create a test table

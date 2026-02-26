@@ -4,6 +4,7 @@ import { LaLookupService } from "./la-lookup";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresFromEnv } from "../lib/db/connection-string-provider";
+import { retrieveOptionalEnvVariable } from "../lib/utils";
 
 export interface Environment {
   commons: Commons;
@@ -16,7 +17,11 @@ export function init(): Environment {
   const awsRegion =
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
   const secretsClient = new AwsSecretsClient(awsRegion);
-  const dbClient = new PostgresDbClient(postgresFromEnv(secretsClient));
+  const sslEnabled = retrieveOptionalEnvVariable("DB_SSL", "true") === "true";
+  const dbClient = new PostgresDbClient(postgresFromEnv(secretsClient), {
+    enabled: sslEnabled,
+    rejectUnauthorized: sslEnabled,
+  });
   const supplierDb = new SupplierService({ dbClient });
   const laLookupService = new LaLookupService();
 

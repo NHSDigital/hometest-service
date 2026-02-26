@@ -3,6 +3,7 @@ import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresFromEnv } from "../lib/db/connection-string-provider";
+import { retrieveOptionalEnvVariable } from "../lib/utils";
 
 export interface Environment {
   httpClient: FetchHttpClient;
@@ -16,7 +17,11 @@ export function init(): Environment {
 
   const httpClient = new FetchHttpClient();
   const secretsClient = new AwsSecretsClient(awsRegion);
-  const dbClient = new PostgresDbClient(postgresFromEnv(secretsClient));
+  const sslEnabled = retrieveOptionalEnvVariable("DB_SSL", "true") === "true";
+  const dbClient = new PostgresDbClient(postgresFromEnv(secretsClient), {
+    enabled: sslEnabled,
+    rejectUnauthorized: sslEnabled,
+  });
   const supplierDb = new SupplierService({ dbClient });
 
   return {

@@ -81,7 +81,10 @@ describe("eligibility-lookup-lambda init", () => {
     const result = init();
 
     expect(mockConsoleCommons).toHaveBeenCalled();
-    expect(mockPostgresDbClient).toHaveBeenCalledWith(mockConnectionStringProvider);
+    expect(mockPostgresDbClient).toHaveBeenCalledWith(
+      mockConnectionStringProvider,
+      { enabled: true, rejectUnauthorized: true }
+    );
     expect(mockSupplierService).toHaveBeenCalledWith({ dbClient: dbClientInstance });
     expect(mockLaLookupService).toHaveBeenCalled();
 

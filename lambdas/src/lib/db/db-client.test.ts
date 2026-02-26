@@ -15,11 +15,12 @@ describe("PostgresDbClient", () => {
   let mockPool: jest.Mocked<Pool>;
   const connectionStringProvider = {
     getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
-    getSslEnabled: jest.fn().mockReturnValue(true),
   };
 
   beforeEach(async () => {
-    client = new PostgresDbClient(connectionStringProvider);
+    client = new PostgresDbClient(connectionStringProvider, {
+      enabled: false,
+    });
     await (client as any).poolPromise;
     mockPool = await (client as any).poolPromise;
   });
