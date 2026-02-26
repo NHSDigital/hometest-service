@@ -1,6 +1,7 @@
 export const API_ENDPOINTS = {
   results: {
     base: '/result',
+    get: '/results',
   },
   users: {
     base: '/users',

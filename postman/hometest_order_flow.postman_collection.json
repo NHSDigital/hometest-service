@@ -28,7 +28,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  },\n  \"consent\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"

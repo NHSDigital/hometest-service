@@ -44,8 +44,13 @@ output "order_router_endpoint" {
 }
 
 output "get_order_endpoint" {
-  description = "Get Order  Lambda endpoint"
+  description = "Get Order Lambda endpoint"
   value       = module.get_order_lambda.localstack_endpoint_url
+}
+
+output "get_results_endpoint" {
+  description = "Get Results Lambda endpoint"
+  value       = module.get_results_lambda.localstack_endpoint_url
 }
 
 output "login_endpoint" {

@@ -1,4 +1,4 @@
-import { Locator, Page} from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
 import { BasePage } from './BasePage';
 
@@ -9,6 +9,7 @@ export class HomeTestStartPage extends BasePage {
   readonly nearestSexualHealthClinicLink: Locator;
   readonly learnMoreHIVAidsLink: Locator;
   readonly startNowBtn: Locator;
+  readonly privacyPolicyLink: Locator;
   readonly bloodSampleGuideLink: Locator;
 
   constructor(page: Page) {
@@ -20,6 +21,7 @@ export class HomeTestStartPage extends BasePage {
     this.startNowBtn = page.getByRole('button', { name: 'Start now' });
     this.bloodSampleGuideLink = page.getByRole('link', { name: 'Blood sample step-by-step guide' });
     this.config = ConfigFactory.getConfig();
+    this.privacyPolicyLink = page.getByRole('link', { name: 'privacy policy' });
   }
 
   async navigate(): Promise<void> {
@@ -48,6 +50,10 @@ export class HomeTestStartPage extends BasePage {
 
   async clickStartNowButton(): Promise<void> {
     await this.startNowBtn.click();
+  }
+
+  async clickPrivacyPolicyLink(): Promise<void> {
+    await this.privacyPolicyLink.click();
   }
 
   async clickBloodSampleGuideLink(): Promise<void> {
