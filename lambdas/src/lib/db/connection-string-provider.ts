@@ -5,7 +5,6 @@ import {
 
 export interface ConnectionStringProvider {
   getConnectionString(): Promise<string>;
-  getSslEnabled(): boolean;
 }
 
 import type { SecretsClient } from "../secrets/secrets-manager-client";
@@ -17,7 +16,6 @@ export interface ConnectionConfig {
   database: string;
   schema?: string;
   passwordSecretName: string;
-  ssl?: boolean;
 }
 
 export function postgresConnection(
@@ -33,18 +31,9 @@ export function postgresConnection(
       }
       return connectionStringPromise;
     },
-    getSslEnabled(): boolean {
-      return config.ssl !== false;
-    },
   };
 }
 
-/*
-  ALPHA: This function retrieves the ssl variable, which is actually consumed by the db-client, but it is not used by the connection string provider.
-  This is because the connection string provider is only responsible for providing the connection string,
-  and the ssl variable is used by the db-client to determine whether to use SSL when connecting to the database.
-  In the future, we may want to refactor this code to separate the concerns more clearly, but for now, this is how it is implemented.
-*/
 export function postgresFromEnv(
   secretsClient: SecretsClient,
 ): ConnectionStringProvider {
@@ -55,10 +44,22 @@ export function postgresFromEnv(
     database: retrieveMandatoryEnvVariable("DB_NAME"),
     schema: retrieveOptionalEnvVariable("DB_SCHEMA"),
     passwordSecretName: retrieveMandatoryEnvVariable("DB_SECRET_NAME"),
-    ssl: retrieveOptionalEnvVariable("DB_SSL", "true") === "true",
   };
 
   return postgresConnection(config, secretsClient);
+}
+
+export function postgresFromUrl(connectionString: string): ConnectionStringProvider {
+  let connectionStringPromise: Promise<string> | null = null;
+
+  return {
+    async getConnectionString(): Promise<string> {
+      if (!connectionStringPromise) {
+        connectionStringPromise = Promise.resolve(connectionString);
+      }
+      return connectionStringPromise;
+    },
+  };
 }
 
 async function buildConnectionString(

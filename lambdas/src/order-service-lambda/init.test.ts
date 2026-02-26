@@ -96,7 +96,10 @@ describe("init", () => {
 
       init();
 
-      expect(PostgresDbClient).toHaveBeenCalledWith(mockConnectionStringProvider);
+      expect(PostgresDbClient).toHaveBeenCalledWith(
+        mockConnectionStringProvider,
+        { enabled: true, rejectUnauthorized: true }
+      );
     });
 
     it("should create OrderStatusService with PostgresDbClient instance", () => {
@@ -186,6 +189,7 @@ describe("init", () => {
       // PostgresDbClient should be created with an AwsSecretsClient
       expect(PostgresDbClient).toHaveBeenCalledTimes(1);
       expect(PostgresDbClient).toHaveBeenCalledWith(
+        expect.any(Object),
         expect.any(Object),
       );
 
