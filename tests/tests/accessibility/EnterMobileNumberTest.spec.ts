@@ -1,16 +1,11 @@
 import { expect } from '@playwright/test';
 import { test } from '../../fixtures/CombinedTestFixture';
 import { Address } from '../../models/Address';
-import { PersonalDetails } from '../../models/PersonalDetails';
 
 const deliveryAddress: Address = {
   postcode: 'TN37 7PT',
   addressLine1: '775 The Ridge',
   townCity: 'Saint Leonards-on-sea'
-};
-
-const personalDetails: PersonalDetails = {
-  mobileNumber: '00447921713191'
 };
 
 test(
@@ -33,11 +28,12 @@ test(
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await enterMobileNumberPage.fillMobileNumberAndContinue(personalDetails);
-    const accessErrors = await accessibility.runAccessibilityCheck(
+    await enterMobileNumberPage.waitUntilPageLoad();
+    await enterMobileNumberPage.clickUseAnotherNumber();
+    const postInputAccessErrors = await accessibility.runAccessibilityCheck(
       enterMobileNumberPage.page,
-      'Enter Mobile Number Page'
+      'Enter Mobile Number Page - After Input'
     );
-    expect(accessErrors).toHaveLength(0);
+    expect(postInputAccessErrors).toHaveLength(0);
   }
 );

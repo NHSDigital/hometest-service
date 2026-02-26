@@ -2,8 +2,11 @@
 node_modules/
 
 # Test results
-/test-results*
-/testResults*
+/testResults/
+/testResults/*
+
+# Session cache
+.session-cache/
 
 # Playwright
 /playwright-report/

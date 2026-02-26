@@ -1,18 +1,23 @@
 import { test } from '../../fixtures/CombinedTestFixture';
 import { expect } from '@playwright/test';
 import { type Address } from '../../models/Address';
+import { type PersonalDetails } from '../../models/PersonalDetails';
 
 const deliveryAddress: Address = {
   postcode: 'TN37 7PT',
   addressLine1: '775 The Ridge',
-  townCity: 'Saint Leonards-on-sea',
+  townCity: 'Saint Leonards-on-sea'
+};
+
+const personalDetails: PersonalDetails = {
+  mobileNumber: '447771900900'
 };
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
     await expect(homeTestStartPage.headerText).toHaveText(
-      'Get a self-test kit for HIV',
+      'Get a self-test kit for HIV'
     );
     await homeTestStartPage.clickStartNowButton();
   });
@@ -21,7 +26,7 @@ test.describe('HIV Test Order journeys', () => {
     homeTestStartPage,
     findAddressPage,
     selectDeliveryAddressPage,
-    howComfortablePrickingFingerPage,
+    howComfortablePrickingFingerPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
@@ -32,7 +37,7 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
-      "This is what you'll need to do to give a blood sample",
+      "This is what you'll need to do to give a blood sample"
     );
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
@@ -42,7 +47,7 @@ test.describe('HIV Test Order journeys', () => {
     findAddressPage,
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
-    enterMobileNumberPage,
+    enterMobileNumberPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
@@ -53,15 +58,17 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
-      "This is what you'll need to do to give a blood sample",
+      "This is what you'll need to do to give a blood sample"
     );
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await enterMobileNumberPage.fillMobileNumberAndContinue(deliveryAddress);
+    await enterMobileNumberPage.fillAlternativeMobileNumberAndContinue(
+      personalDetails
+    );
   });
 
   test('Order test journey by providing address manually', async ({
     findAddressPage,
-    enterAddressManuallyPage,
+    enterAddressManuallyPage
   }) => {
     await findAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillAddressAndContinue(deliveryAddress);
@@ -69,7 +76,7 @@ test.describe('HIV Test Order journeys', () => {
 
   test('Order test journey by providing address manually from select delivery address page', async ({
     findAddressPage,
-    enterAddressManuallyPage,
+    enterAddressManuallyPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
     await findAddressPage.clickEnterAddressManuallyLink();
@@ -79,7 +86,7 @@ test.describe('HIV Test Order journeys', () => {
   test('Choose to goto Sexual health clinic instead', async ({
     findAddressPage,
     selectDeliveryAddressPage,
-    howComfortablePrickingFingerPage,
+    howComfortablePrickingFingerPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
@@ -90,7 +97,7 @@ test.describe('HIV Test Order journeys', () => {
     findAddressPage,
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
-    bloodSampleGuidePage,
+    bloodSampleGuidePage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
@@ -102,7 +109,7 @@ test.describe('HIV Test Order journeys', () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();
     await expect(bloodSampleGuidePage.headerText).toHaveText(
-      'Blood sample step-by-step guide',
+      'Blood sample step-by-step guide'
     );
   });
 });
