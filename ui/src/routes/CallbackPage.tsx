@@ -1,6 +1,7 @@
 "use client";
 
-import { AuthUser, useAuth } from "@/state/AuthContext";
+import { useAuth } from "@/state/AuthContext";
+import { mapAuthUser } from "@/lib/auth/mapAuthUser";
 import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
 import { useEffect, useRef } from "react";
 
@@ -80,13 +81,7 @@ export default function CallbackPage() {
         return res.json();
       })
       .then((data) => {
-        const userData: AuthUser = {
-          sub: data.sub,
-          nhsNumber: data.nhs_number,
-          birthdate: data.birthdate,
-          identityProofingLevel: data.identity_proofing_level,
-          phoneNumber: data.phone_number,
-        };
+        const userData = mapAuthUser(data);
 
         setUser(userData);
 

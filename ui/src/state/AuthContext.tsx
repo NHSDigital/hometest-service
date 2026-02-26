@@ -14,6 +14,8 @@ export interface AuthUser {
   birthdate: string;
   identityProofingLevel: string;
   phoneNumber: string;
+  givenName: string;
+  familyName: string;
 }
 
 interface AuthContextType {
