@@ -6,10 +6,9 @@ import { useContent } from "@/hooks";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { Link } from "react-router-dom";
 import PageLayout from "@/layouts/PageLayout";
-import { useEffect } from "react";
 
 export default function GetSelfTestKitPage() {
-  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { updateOrderAnswers } = useCreateOrderContext();
   const { goToStep } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
