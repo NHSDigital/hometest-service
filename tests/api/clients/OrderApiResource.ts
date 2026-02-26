@@ -3,6 +3,7 @@ import { BaseApiClient } from './BaseApiClient';
 import { API_ENDPOINTS } from '../endpoints';
 import { OrderPayload } from '../../test-data/OrderTestData';
 import { HeadersOrder } from '../../test-data/HeadersOrder';
+import { createGetOrderParams } from '../../test-data/GetOrderRequestParams';
 
 export class OrderApiResource extends BaseApiClient {
   constructor(request: APIRequestContext) {
@@ -18,17 +19,11 @@ export class OrderApiResource extends BaseApiClient {
     return response;
   }
 
-  async getOrder(
-    nhsNumber: string,
-    dateOfBirth: string,
-    orderId: string
+    async getOrder(
+    params: ReturnType<typeof createGetOrderParams>
   ): Promise<APIResponse> {
     const response = await this.get(API_ENDPOINTS.order.get, {
-      params: {
-        nhs_number: nhsNumber,
-        date_of_birth: dateOfBirth,
-        order_id: orderId,
-      },
+      params,
     });
 
     return response;
