@@ -122,7 +122,7 @@ describe("db-config", () => {
         port: "5432",
         database,
         schema,
-        passwordSecretName: "postgres-db-pword",
+        passwordSecretName: "postgres-db",
         secretsClient,
         sslEnabled: false,
       });
@@ -141,7 +141,7 @@ describe("db-config", () => {
       )();
 
       expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
-        "postgres-db-pword",
+        "postgres-db",
         { jsonKey: "password" },
       );
       expect(resolvedPassword).toEqual(expectedPword);
@@ -217,7 +217,7 @@ describe("db-config", () => {
         address: "localhost",
         port: "5432",
         database: "testdb",
-        passwordSecretName: "postgres-db-pword",
+        passwordSecretName: "postgres-db",
         secretsClient,
         sslEnabled: false,
       });
@@ -231,7 +231,7 @@ describe("db-config", () => {
         address: "localhost",
         port: "5432",
         database: "testdb",
-        passwordSecretName: "postgres-db-pword",
+        passwordSecretName: "postgres-db",
         secretsClient,
         sslEnabled: true,
       });

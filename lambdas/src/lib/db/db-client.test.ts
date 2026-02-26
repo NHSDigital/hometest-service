@@ -21,7 +21,7 @@ describe("PostgresDbClient", () => {
         host: "test-host",
         port: 5432,
         database: "test-db",
-        password: "test-pword",
+        password: "test-",
       }
     );
     mockPool = (client as any).pool;
