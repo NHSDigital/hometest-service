@@ -131,14 +131,14 @@ export default function CheckYourAnswersPage() {
       <SummaryList>
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
-          <SummaryList.Value data-testid="nameValue">
+          <SummaryList.Value id="name-value">
             {formatUserName(orderAnswers.user)}
           </SummaryList.Value>
         </SummaryList.Row>
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.deliveryAddress}</SummaryList.Key>
-          <SummaryList.Value data-testid="deliveryAddressValue">
+          <SummaryList.Value id="delivery-address-value">
             {addressLines.map((line, index) => (
               <span key={index}>
                 {line}
@@ -164,7 +164,7 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.comfortableDoingTest}</SummaryList.Key>
-          <SummaryList.Value data-testid="comfortableDoingTestValue">
+          <SummaryList.Value id="comfortable-doing-test-value">
             {orderAnswers.comfortableDoingTest === "Yes"
               ? "Yes I'm comfortable, send me the kit"
               : orderAnswers.comfortableDoingTest}
@@ -187,7 +187,7 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.mobileNumber}</SummaryList.Key>
-          <SummaryList.Value data-testid="mobileNumberValue">{orderAnswers.mobileNumber}</SummaryList.Value>
+          <SummaryList.Value id="mobile-number-value">{orderAnswers.mobileNumber}</SummaryList.Value>
           <SummaryList.Actions>
             <a
               href="#"
