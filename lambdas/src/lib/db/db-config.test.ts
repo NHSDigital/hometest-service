@@ -1,7 +1,10 @@
 import { postgresConfig, postgresConfigFromEnv } from "./db-config";
 import { readFileSync } from "fs";
 import { join } from "path";
-
+import {
+  setupEnvironment,
+  restoreEnvironment,
+} from "../test-utils/environment-test-helpers";
 describe("db-config", () => {
   const mockEnvVariables = {
     DB_USERNAME: "test-username",
@@ -111,18 +114,16 @@ describe("db-config", () => {
       expectedOptions,
     }) => {
       secretsClient.getSecretValue.mockResolvedValue(password);
-      const config = postgresConfig(
-        {
-          username,
-          address,
-          port: "5432",
-          database,
-          schema,
-          passwordSecretName: "postgres-db-password",
-          secretsClient,
-          sslEnabled: false,
-        }
-      );
+      const config = postgresConfig({
+        username,
+        address,
+        port: "5432",
+        database,
+        schema,
+        passwordSecretName: "postgres-db-password",
+        secretsClient,
+        sslEnabled: false,
+      });
 
       expect(config.user).toEqual(username);
       expect(config.host).toEqual(address);
@@ -133,7 +134,9 @@ describe("db-config", () => {
 
       // Test password function
       expect(typeof config.password).toBe("function");
-      const resolvedPassword = await (config.password as () => Promise<string>)();
+      const resolvedPassword = await (
+        config.password as () => Promise<string>
+      )();
 
       expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
         "postgres-db-password",
@@ -146,12 +149,11 @@ describe("db-config", () => {
   describe("Environment variables", () => {
     let originalEnv: NodeJS.ProcessEnv;
     beforeEach(() => {
-      originalEnv = { ...process.env };
-      Object.assign(process.env, mockEnvVariables);
+      originalEnv = setupEnvironment(mockEnvVariables);
     });
 
     afterEach(() => {
-      process.env = originalEnv;
+      restoreEnvironment(originalEnv);
     });
 
     describe("missing environment variables", () => {

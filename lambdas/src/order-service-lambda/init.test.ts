@@ -5,6 +5,14 @@ import { TransactionService } from "../lib/db/transaction-db-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import {
+  setupEnvironment,
+  restoreEnvironment,
+} from "../lib/test-utils/environment-test-helpers";
+import {
+  runAwsRegionTests,
+  testPostgresDbClientConfig,
+} from "../lib/test-utils/aws-region-test-helpers";
 
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
@@ -15,7 +23,7 @@ jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/db/db-config");
 
 describe("init", () => {
-  const originalEnv = process.env;
+  let originalEnv: NodeJS.ProcessEnv;
 
   const mockEnvVariables = {
     DB_USERNAME: "test-username",
@@ -38,17 +46,12 @@ describe("init", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset process.env to a clean state
-    process.env = { ...originalEnv };
-    // Set default mock environment variables
-    Object.assign(process.env, mockEnvVariables);
-
+    originalEnv = setupEnvironment(mockEnvVariables);
     (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockConfig);
   });
 
   afterEach(() => {
-    // Restore original env
-    process.env = originalEnv;
+    restoreEnvironment(originalEnv);
   });
 
   describe("successful initialization", () => {
@@ -69,40 +72,13 @@ describe("init", () => {
       );
     });
 
-    it("should create AwsSecretsClient with AWS_REGION when set", () => {
-      process.env.AWS_REGION = "us-east-1";
-
-      init();
-
-      expect(AwsSecretsClient).toHaveBeenCalledWith("us-east-1");
-    });
-
-    it("should create AwsSecretsClient with AWS_DEFAULT_REGION when AWS_REGION is not set", () => {
-      delete process.env.AWS_REGION;
-      process.env.AWS_DEFAULT_REGION = "us-west-2";
-
-      init();
-
-      expect(AwsSecretsClient).toHaveBeenCalledWith("us-west-2");
-    });
-
-    it("should default to eu-west-2 when neither AWS_REGION nor AWS_DEFAULT_REGION is set", () => {
-      delete process.env.AWS_REGION;
-      delete process.env.AWS_DEFAULT_REGION;
-
-      init();
-
-      expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+    runAwsRegionTests({
+      initFn: init,
+      mockConstructor: AwsSecretsClient as jest.Mock,
     });
 
     it("should create PostgresDbClient with correct configuration", () => {
-      process.env.AWS_REGION = "eu-west-2";
-
-      init();
-
-      expect(PostgresDbClient).toHaveBeenCalledWith(
-        mockConfig
-      );
+      testPostgresDbClientConfig(init, PostgresDbClient as jest.Mock, mockConfig);
     });
 
     it("should create OrderStatusService with PostgresDbClient instance", () => {
