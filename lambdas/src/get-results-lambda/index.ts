@@ -7,7 +7,7 @@ import {
 import { ObservationValidation } from "../lib/validators/observation-validation";
 import cors from "@middy/http-cors";
 import { defaultCorsOptions } from "../lib/security/cors-configuration";
-import { getCorrelationIdFromEventHeaders } from "../lib/utils";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { getResultsQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";

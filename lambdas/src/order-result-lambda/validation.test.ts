@@ -1,4 +1,4 @@
-import { InterpretationCode, orderResultFHIRObservationSchema } from './index';
+import { InterpretationCode, orderResultFHIRObservationSchema } from './models';
 import { ConsoleCommons } from '../lib/commons';
 import * as validation from './validation';
 import * as utils from '../lib/utils/utils';
@@ -15,7 +15,7 @@ describe('validation', () => {
             logError: jest.fn(),
             logInfo: jest.fn(),
             logDebug: jest.fn(),
-        }
+        };
         commons.logError.mockReset();
         commons.logInfo.mockReset();
         commons.logDebug.mockReset();

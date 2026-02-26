@@ -1,49 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { z } from 'zod';
 import { createFhirErrorResponse, createFhirResponse, ErrorStatusCode } from '../lib/fhir-response';
 import { init } from './init';
 import { OrderResultSummary } from '../lib/db/order-db';
-import { FHIRObservationSchema, FHIRReferenceSchema, FHIRCodeableConceptSchema } from '../lib/models/fhir/fhir-schemas';
 import { OrderStatus, ResultStatus } from '../lib/types/status';
 import { extractAndValidateObservationFields, extractInterpretationCodeFromFHIRObservation, validateDBData } from './validation';
+import { Identifiers, InterpretationCode } from './models';
 
 const { commons, orderService } = init();
-
-// Apply business logic specific to order results on top of schema:
-// remove optionality for fields we require and only accept status of 'final'
-const orderResultInterpretationCodingSchema = FHIRCodeableConceptSchema.extend({
-  coding: z.array(
-    z.object({
-      code: z.enum(['N', 'A']),
-    })
-  ).min(1),
-})
-
-export const orderResultFHIRObservationSchema = FHIRObservationSchema.extend({
-  basedOn: z.array(FHIRReferenceSchema),
-  status: z.literal('final'),
-  subject: FHIRReferenceSchema,
-  performer: z.array(FHIRReferenceSchema),
-  valueCodeableConcept: FHIRCodeableConceptSchema,
-  interpretation: z.array(orderResultInterpretationCodingSchema),
-})
-
-export enum InterpretationCode {
-  Normal = 'N',
-  Abnormal = 'A',
-}
-
-export const resultCodeMapping: { [key in InterpretationCode ]: string } = {
-  [InterpretationCode.Normal]: ResultStatus.Result_Available,
-  [InterpretationCode.Abnormal]: ResultStatus.Result_Withheld,
-};
-
-export interface Identifiers {
-  orderUid: string;
-  patientId: string;
-  supplierId: string;
-  correlationId: string;
-}
 
 async function updateDatabase(identifiers: Identifiers, interpretationCode: InterpretationCode, orderReference: string): Promise<void> {
   if (interpretationCode === InterpretationCode.Normal) {

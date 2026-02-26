@@ -1,5 +1,5 @@
 import { Observation } from 'fhir/r4';
-import { orderResultFHIRObservationSchema, Identifiers, resultCodeMapping, InterpretationCode } from './index';
+import { Identifiers, resultCodeMapping, InterpretationCode, orderResultFHIRObservationSchema } from './models';
 import { ConsoleCommons } from '../lib/commons';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { getCorrelationIdFromEventHeaders, isUUID } from '../lib/utils/utils';
