@@ -5,6 +5,7 @@ export enum RoutePath {
   GetSelfTestKitPage = "/get-self-test-kit-for-HIV",
   OrderTrackingPage = "/orders/:orderId/tracking",
   TestResultsPage = "/orders/:orderId/results",
+  HomeTestPrivacyPolicyPage = "/home-test-privacy-policy",
 }
 
 export enum JourneyStepNames {

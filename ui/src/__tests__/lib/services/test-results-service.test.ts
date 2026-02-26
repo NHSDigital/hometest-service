@@ -22,7 +22,7 @@ describe("TestResultsService", () => {
     jest.restoreAllMocks();
   });
 
-  it("calls /result with order status query params and x-correlation-id", async () => {
+  it("calls /results with order status query params and x-correlation-id", async () => {
     const mockObservation = { resourceType: "Observation", id: "obs-1" };
     mockFetch.mockResolvedValueOnce({
       status: 200,
@@ -33,7 +33,7 @@ describe("TestResultsService", () => {
 
     expect(result).toEqual({ id: "obs-1" });
     expect(mockFetch).toHaveBeenCalledWith(
-      `http://mock-backend/result?nhs_number=${patient.nhsNumber}&date_of_birth=${patient.dateOfBirth}&order_id=${orderId}`,
+      `http://mock-backend/results?nhs_number=${patient.nhsNumber}&date_of_birth=${patient.dateOfBirth}&order_id=${orderId}`,
       {
         method: "GET",
         headers: {

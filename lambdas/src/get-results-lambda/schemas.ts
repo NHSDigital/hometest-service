@@ -11,7 +11,7 @@ export const getResultsQueryParamsSchema = z.looseObject({
   date_of_birth: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date of birth must be in yyyy-mm-dd format")
-    .refine((val) => !isNaN(Date.parse(val)), {
+    .refine((val) => !Number.isNaN(Date.parse(val)), {
       message: "Date of birth must be a valid date",
     })
     .transform((val) => new Date(val)),

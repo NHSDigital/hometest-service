@@ -5,5 +5,6 @@ export { EnterAddressManuallyPage } from './EnterAddressManuallyPage';
 export { SelectDeliveryAddressPage } from './SelectDeliveryAddressPage';
 export { OrderStatusPage } from './OrderStatusPage';
 export { HowComfortablePrickingFingerPage } from './HowComfortablePrickingFingerPage';
+export { PrivacyPolicyPage } from './PrivacyPolicyPage';
 export { BloodSampleGuidePage } from './BloodSampleGuidePage';
 export { EnterMobileNumberPage } from './EnterMobileNumberPage';
