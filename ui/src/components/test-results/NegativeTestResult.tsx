@@ -10,7 +10,9 @@ interface NegativeTestResultProps {
   order: OrderDetails;
 }
 
-export function NegativeTestResult({ order }: NegativeTestResultProps) {
+export function NegativeTestResult({
+  order,
+}: Readonly<NegativeTestResultProps>) {
   const content = usePageContent("test-results").negativeResult;
   const contactSupplierText = content.contactSupplier.replace(
     "{supplier}",

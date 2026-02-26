@@ -7,7 +7,7 @@ interface MoreOptionsAndInformationProps {
 
 export function MoreOptionsAndInformation({
   supplier,
-}: MoreOptionsAndInformationProps) {
+}: Readonly<MoreOptionsAndInformationProps>) {
   const content = usePageContent("test-results").moreOptionsAndInformation;
   const fullCheckLinkText = content.fullCheckLink.replace(
     "{supplier}",
