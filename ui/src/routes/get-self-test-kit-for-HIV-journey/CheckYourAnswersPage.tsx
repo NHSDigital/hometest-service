@@ -131,14 +131,14 @@ export default function CheckYourAnswersPage() {
       <SummaryList>
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
-          <SummaryList.Value>
+          <SummaryList.Value data-testid="nameValue">
             {formatUserName(orderAnswers.user)}
           </SummaryList.Value>
         </SummaryList.Row>
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.deliveryAddress}</SummaryList.Key>
-          <SummaryList.Value>
+          <SummaryList.Value data-testid="deliveryAddressValue">
             {addressLines.map((line, index) => (
               <span key={index}>
                 {line}
@@ -164,7 +164,7 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.comfortableDoingTest}</SummaryList.Key>
-          <SummaryList.Value>
+          <SummaryList.Value data-testid="comfortableDoingTestValue">
             {orderAnswers.comfortableDoingTest === "Yes"
               ? "Yes I'm comfortable, send me the kit"
               : orderAnswers.comfortableDoingTest}
@@ -187,7 +187,7 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.mobileNumber}</SummaryList.Key>
-          <SummaryList.Value>{orderAnswers.mobileNumber}</SummaryList.Value>
+          <SummaryList.Value data-testid="mobileNumberValue">{orderAnswers.mobileNumber}</SummaryList.Value>
           <SummaryList.Actions>
             <a
               href="#"
