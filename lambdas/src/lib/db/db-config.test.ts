@@ -4,6 +4,8 @@ import { join } from "path";
 import {
   setupEnvironment,
   restoreEnvironment,
+  testMissingEnvVars,
+  testEmptyEnvVars,
 } from "../test-utils/environment-test-helpers";
 describe("db-config", () => {
   const mockEnvVariables = {
@@ -157,34 +159,28 @@ describe("db-config", () => {
     });
 
     describe("missing environment variables", () => {
-      it.each([
-        ["DB_USERNAME"],
-        ["DB_ADDRESS"],
-        ["DB_PORT"],
-        ["DB_NAME"],
-        ["DB_SECRET_NAME"],
-      ])("should throw error when %s is missing", (envVar: string) => {
-        delete process.env[envVar];
-
-        expect(() => postgresConfigFromEnv(secretsClient)).toThrow(
-          `Missing value for an environment variable ${envVar}`,
-        );
+      testMissingEnvVars({
+        envVars: [
+          "DB_USERNAME",
+          "DB_ADDRESS",
+          "DB_PORT",
+          "DB_NAME",
+          "DB_SECRET_NAME",
+        ],
+        testFn: () => postgresConfigFromEnv(secretsClient),
       });
     });
 
     describe("empty environment variables", () => {
-      it.each([
-        ["DB_USERNAME"],
-        ["DB_ADDRESS"],
-        ["DB_PORT"],
-        ["DB_NAME"],
-        ["DB_SECRET_NAME"],
-      ])("should throw error when %s is empty", (envVar: string) => {
-        process.env[envVar] = "";
-
-        expect(() => postgresConfigFromEnv(secretsClient)).toThrow(
-          `Missing value for an environment variable ${envVar}`,
-        );
+      testEmptyEnvVars({
+        envVars: [
+          "DB_USERNAME",
+          "DB_ADDRESS",
+          "DB_PORT",
+          "DB_NAME",
+          "DB_SECRET_NAME",
+        ],
+        testFn: () => postgresConfigFromEnv(secretsClient),
       });
     });
 
