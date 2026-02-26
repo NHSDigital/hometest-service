@@ -8,7 +8,6 @@ import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 import { getDisplayName } from "@/lib/utils/displayUserName";
 
-// TODO: update to dynamically render supplier based on API (probably stored in state)
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
 // Alpha: ToDo - replace test users name with actual name from NHS Login once available (currently mocked in AuthContext for testing purposes)
 
@@ -36,6 +35,8 @@ export default function CheckYourAnswersPage() {
 
   const [consentChecked, setConsentChecked] = useState(false);
   const [consentError, setConsentError] = useState<string | null>(null);
+
+  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
   const handleChangeClick = (field: 'address' | 'mobile' | 'comfort') => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
@@ -218,7 +219,7 @@ export default function CheckYourAnswersPage() {
               checked={consentChecked}
               onChange={handleConsentChange}
             >
-              {content.consent.labelPrefix} {content.consent.supplierName}{content.consent.labelMiddle}{" "}
+              {content.consent.label.replace('{supplier}', supplierName)}{" "}
               <a href={content.consent.termsOfUseHref}>{content.consent.termsOfUseText}</a>{" "}
               {content.consent.labelAnd}{" "}
               <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.
