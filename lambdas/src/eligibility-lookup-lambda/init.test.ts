@@ -3,7 +3,7 @@ const mockSupplierService = jest.fn();
 const mockLaLookupService = jest.fn();
 const mockConsoleCommons = jest.fn();
 const mockAwsSecretsClient = jest.fn();
-const mockPostgresFromEnv = jest.fn();
+const mockPostgresConfigFromEnv = jest.fn();
 
 jest.mock("../lib/db/db-client", () => ({
   PostgresDbClient: mockPostgresDbClient,
@@ -25,8 +25,8 @@ jest.mock("../lib/commons", () => ({
   ConsoleCommons: mockConsoleCommons,
 }));
 
-jest.mock("../lib/db/connection-string-provider", () => ({
-  postgresFromEnv: mockPostgresFromEnv,
+jest.mock("../lib/db/db-config", () => ({
+  postgresConfigFromEnv: mockPostgresConfigFromEnv,
 }));
 
 // import remains here to avoid hoisting issues with jest.mock
@@ -71,19 +71,26 @@ describe("eligibility-lookup-lambda init", () => {
     process.env.DB_SCHEMA = "hometest";
     process.env.DB_SECRET_NAME = "postgres-db-password";
 
+    const mockConfig = {
+      user: "test-user",
+      host: "test-host",
+      port: 5432,
+      database: "test-db",
+      password: jest.fn().mockResolvedValue("test-password"),
+    };
+
     mockPostgresDbClient.mockImplementation(() => dbClientInstance);
     mockSupplierService.mockImplementation(() => supplierServiceInstance);
     mockLaLookupService.mockImplementation(() => laLookupServiceInstance);
     mockConsoleCommons.mockImplementation(() => commonsInstance);
     mockAwsSecretsClient.mockImplementation(() => secretsClientInstance);
-    mockPostgresFromEnv.mockReturnValue(mockConnectionStringProvider);
+    mockPostgresConfigFromEnv.mockReturnValue(mockConfig);
 
     const result = init();
 
     expect(mockConsoleCommons).toHaveBeenCalled();
     expect(mockPostgresDbClient).toHaveBeenCalledWith(
-      mockConnectionStringProvider,
-      { enabled: true, rejectUnauthorized: true }
+      mockConfig
     );
     expect(mockSupplierService).toHaveBeenCalledWith({ dbClient: dbClientInstance });
     expect(mockLaLookupService).toHaveBeenCalled();

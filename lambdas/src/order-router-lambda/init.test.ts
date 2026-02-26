@@ -3,14 +3,14 @@ import { FetchHttpClient } from "../lib/http/http-client";
 import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import {postgresFromEnv} from "../lib/db/connection-string-provider";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
-jest.mock("../lib/db/connection-string-provider");
+jest.mock("../lib/db/db-config");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -24,8 +24,12 @@ describe("init", () => {
     DB_SECRET_NAME: "test-secret-name",
   };
 
-  const mockConnectionStringProvider = {
-    getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
+  const mockConfig = {
+    user: "test-user",
+    host: "test-host",
+    port: 5432,
+    database: "test-db",
+    password: jest.fn().mockResolvedValue("test-password"),
   };
 
   beforeEach(() => {
@@ -35,7 +39,7 @@ describe("init", () => {
     // Set default mock environment variables
     Object.assign(process.env, mockEnvVariables);
 
-    (postgresFromEnv as jest.Mock).mockReturnValue(mockConnectionStringProvider);
+    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockConfig);
   });
 
   afterEach(() => {
@@ -89,8 +93,7 @@ describe("init", () => {
       init();
 
       expect(PostgresDbClient).toHaveBeenCalledWith(
-        mockConnectionStringProvider,
-        { enabled: true, rejectUnauthorized: true }
+        mockConfig
       );
     });
 
@@ -132,8 +135,7 @@ describe("init", () => {
       // PostgresDbClient should be created with an AwsSecretsClient
       expect(PostgresDbClient).toHaveBeenCalledTimes(1);
       expect(PostgresDbClient).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object),
+        expect.any(Object)
       );
 
       // SupplierService should be created with a PostgresDbClient

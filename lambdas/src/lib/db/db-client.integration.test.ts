@@ -1,14 +1,9 @@
 import { PostgresDbClient } from "./db-client";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { postgresConnection } from "./connection-string-provider";
 
 describe("PostgresDbClient Integration Tests", () => {
   let container: StartedPostgreSqlContainer;
   let client: PostgresDbClient;
-  const secretsClient = {
-    getSecretValue: jest.fn(),
-    getSecretString: jest.fn(),
-  };
 
   beforeAll(async () => {
     // Start a real PostgreSQL container
@@ -19,23 +14,15 @@ describe("PostgresDbClient Integration Tests", () => {
       .start();
 
     const connectionUri = new URL(container.getConnectionUri());
-    const password = decodeURIComponent(connectionUri.password);
-    secretsClient.getSecretValue.mockResolvedValue(password);
 
     client = new PostgresDbClient(
-      postgresConnection(
-        {
-          username: decodeURIComponent(connectionUri.username),
-          address: connectionUri.hostname,
-          port: connectionUri.port,
-          database: connectionUri.pathname.replace("/", ""),
-          schema: "public",
-          passwordSecretName: "postgres-db-password",
-        },
-        secretsClient,
-      ),
       {
-        enabled: false,
+        user: decodeURIComponent(connectionUri.username),
+        host: connectionUri.hostname,
+        port: parseInt(connectionUri.port, 10),
+        database: connectionUri.pathname.replace("/", ""),
+        password: decodeURIComponent(connectionUri.password),
+        options: "-c search_path=public",
       }
     );
 

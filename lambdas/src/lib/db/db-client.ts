@@ -1,7 +1,4 @@
-import { Pool } from "pg";
-import { readFileSync } from "fs";
-import { join } from "path";
-import { ConnectionStringProvider } from "./connection-string-provider";
+import { Pool, ClientConfig } from "pg";
 
 /**
  * A library-agnostic representation of a database result.
@@ -20,68 +17,30 @@ export interface DBClient {
   close(): Promise<void>;
 }
 
-export interface SslConfig {
-  enabled: boolean;
-  rejectUnauthorized?: boolean;
-}
-
 /**
  * Concrete implementation using pg.Pool
  */
 export class PostgresDbClient implements DBClient {
-  private readonly poolPromise: Promise<Pool>;
+  private readonly pool: Pool;
 
-  constructor(
-    connectionStringProvider: ConnectionStringProvider,
-    sslConfig: SslConfig = { enabled: true, rejectUnauthorized: true }
-  ) {
-    this.poolPromise = this.createPool(connectionStringProvider, sslConfig);
+  constructor(config: ClientConfig) {
+    this.pool = this.createPool(config);
   }
 
-  private async createPool(
-    connectionStringProvider: ConnectionStringProvider,
-    sslConfig: SslConfig,
-  ): Promise<Pool> {
-    const connectionString =
-      await connectionStringProvider.getConnectionString();
-
-    let ssl: false | { rejectUnauthorized: boolean; ca?: string } = false;
-    if (sslConfig.enabled) {
-      if (sslConfig.rejectUnauthorized !== false) {
-        // Use strict SSL with AWS RDS certificate
-        const certPath = join(__dirname, "../../certs/eu-west-2-bundle.pem");
-        const ca = readFileSync(certPath, "utf-8");
-        ssl = {
-          rejectUnauthorized: true,
-          ca,
-        };
-      } else {
-        // SSL enabled but not verifying certificates (for development)
-        ssl = {
-          rejectUnauthorized: false,
-        };
-      }
-    }
-
+  private createPool(config: ClientConfig): Pool {
     return new Pool({
-      connectionString,
+      ...config,
       max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 60000,
-      ssl,
     });
-  }
-
-  private async getPool(): Promise<Pool> {
-    return this.poolPromise;
   }
 
   async query<T = any, I extends any[] = any[]>(
     text: string,
     values?: I,
   ): Promise<DbResult<T>> {
-    const pool = await this.getPool();
-    const result = await pool.query(text, values as any[]);
+    const result = await this.pool.query(text, values as any[]);
     return {
       rows: result.rows as T[],
       rowCount: result.rowCount,
@@ -89,8 +48,7 @@ export class PostgresDbClient implements DBClient {
   }
 
   async withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T> {
-    const pool = await this.getPool();
-    const client = await pool.connect();
+    const client = await this.pool.connect();
     const txClient: DBClient = {
       query: async <Q = any, I extends any[] = any[]>(
         text: string,
@@ -125,7 +83,6 @@ export class PostgresDbClient implements DBClient {
   }
 
   async close(): Promise<void> {
-    const pool = await this.getPool();
-    await pool.end();
+    await this.pool.end();
   }
 }
