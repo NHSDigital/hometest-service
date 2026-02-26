@@ -45,7 +45,7 @@ export const lambdaHandler = async (
     dateOfBirth,
   );
 
-  if (!testResult || testResult.status !== "RESULT_AVAILABLE") {
+  if (testResult?.status !== "RESULT_AVAILABLE") {
     return createFhirErrorResponse(
       404,
       "not-found",
