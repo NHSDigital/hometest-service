@@ -9,17 +9,7 @@ import {
   useContext,
   useState,
 } from "react";
-
-// Data from NHS Login auth response
-export interface AuthUser {
-  sub: string;
-  nhsNumber: string;
-  birthdate: string;
-  identityProofingLevel: string;
-  phoneNumber: string;
-  givenName: string;
-  familyName: string;
-}
+import { AuthUser } from "./AuthContext";
 
 // Address structure
 export interface Address {
@@ -33,6 +23,7 @@ export interface Address {
 // Order state
 export interface OrderAnswers {
   // From auth
+  // todo: replace with AuthCondext
   user?: AuthUser;
 
   // Address and LA lookup info
