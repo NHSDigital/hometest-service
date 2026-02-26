@@ -44,9 +44,6 @@ cdk.context.json
 private_key.pem
 public_key.pem
 
-# Allow AWS public CA bundle for Aurora connectivity
-!lambdas/src/certs/eu-west-2-bundle.pem
-
 # https://github.com/github/gitignore/blob/main/Terraform.gitignore
 
 # Local .terraform directories

@@ -16,7 +16,8 @@
     "package": "npx tsx scripts/package.ts",
     "local:deploy": "npm --prefix ../ run local:deploy",
     "local:terraform:apply": "npm --prefix ../ run local:terraform:apply",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "update-rds-cert": "ts-node scripts/update-rds-cert.ts"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.995.0",
