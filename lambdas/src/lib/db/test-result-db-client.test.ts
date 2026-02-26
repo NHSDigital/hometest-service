@@ -112,11 +112,11 @@ describe("TestResultDbClient", () => {
             (
               SELECT os.status_code = 'COMPLETE'
               FROM hometest.order_status os
-              WHERE os.order_uid = $1
+              WHERE os.order_uid = $1::uuid
               ORDER BY os.created_at DESC
               LIMIT 1
             ) AND
-            o.order_uid = $1 AND
+            o.order_uid = $1::uuid AND
             p.nhs_number = $2 AND
             p.birth_date = $3::date
         ORDER BY rs.created_at DESC
