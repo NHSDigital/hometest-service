@@ -6,10 +6,8 @@ import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/s
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
-import { getDisplayName } from "@/lib/utils/displayUserName";
 
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
-// Alpha: ToDo - replace test users name with actual name from NHS Login once available (currently mocked in AuthContext for testing purposes)
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -25,6 +23,14 @@ function formatAddress(address: {
     address.postTown,
     address.postcode,
   ].filter((line): line is string => Boolean(line));
+}
+
+function formatUserName(user?: { givenName: string; familyName: string } | null): string {
+  if (!user) return "";
+  if (user.givenName && user.familyName) {
+    return `${user.givenName} ${user.familyName}`;
+  }
+  return user.familyName || "";
 }
 
 export default function CheckYourAnswersPage() {
@@ -133,7 +139,7 @@ export default function CheckYourAnswersPage() {
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
           <SummaryList.Value>
-            {getDisplayName(user)}
+            {formatUserName(user)}
           </SummaryList.Value>
         </SummaryList.Row>
 
