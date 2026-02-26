@@ -1,6 +1,6 @@
 import { BaseDbClient } from './BaseDbClient';
 import {  UUID } from '../models/TestOrder';
-import { ResultStatus } from '../models/TestResult';
+import { ResultStatus, TestResult } from '../models/TestResult';
 
 export class TestResultDbClient extends BaseDbClient {
 
@@ -17,5 +17,16 @@ export class TestResultDbClient extends BaseDbClient {
       DELETE FROM hometest.result_status
       WHERE order_uid = $1
     `, [orderUid]);
+  }
+
+  async getLatestResultStatusByOrderUid(orderUid: string): Promise<UUID> {
+    const rows = await this.query<TestResult>(`
+      SELECT status
+      FROM hometest.result_status
+      WHERE order_uid = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [orderUid]);
+    return rows[0].status as UUID;
   }
 }
