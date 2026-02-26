@@ -19,14 +19,14 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
 
     async fillAlternativeMobileNumber(randomEntry: PersonalDetailsModel): Promise<void> {
         await this.useAnotherMobileNumber.check();
-        await this.mobileNumberInput.fill(randomEntry.mobileNumber);      
+        await this.mobileNumberInput.fill(randomEntry.mobileNumber);
     }
 
     async selectConfirmMobileNumber(): Promise<void> {
-        await this.confirmMobileNumber.check();        
+        await this.confirmMobileNumber.check();
     }
 
-     async clickContinue(): Promise<void> {
+    async clickContinue(): Promise<void> {
         await this.continueButton.click();
     }
 }

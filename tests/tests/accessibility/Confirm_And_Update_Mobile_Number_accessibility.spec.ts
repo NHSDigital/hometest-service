@@ -20,7 +20,6 @@ test.describe('Accessibility Testing @accessibility', () => {
         expect(accessErrors).toHaveLength(0);
         await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(randomMobileNumber);
         accessErrors = await accessibility.runAccessibilityCheck(confirmAndUpdateMobileNumberPage.page, "Confirm and Update Mobile Number Page");
-        expect(accessErrors).toHaveLength(0);    
+        expect(accessErrors).toHaveLength(0);
     });
 });
-
