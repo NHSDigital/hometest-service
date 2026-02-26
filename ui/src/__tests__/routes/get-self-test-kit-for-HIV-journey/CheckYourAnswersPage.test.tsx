@@ -2,8 +2,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
+  AuthProvider,
+  AuthUser,
   CreateOrderProvider,
   JourneyNavigationProvider,
+  useAuth,
   useCreateOrderContext,
 } from "@/state";
 import { useEffect } from "react";
@@ -46,8 +49,10 @@ function StateSeeder({
   return <>{children}</>;
 }
 
-const defaultOrderData = {
-  user: {
+// Helper component to set auth user
+function AuthSeeder({
+  children,
+  user = {
     sub: "test-sub",
     nhsNumber: "1234567890",
     birthdate: "1990-01-01",
@@ -56,6 +61,20 @@ const defaultOrderData = {
     givenName: "John",
     familyName: "Smith",
   },
+}: {
+  children: React.ReactNode;
+  user?: AuthUser;
+}) {
+  const { setUser } = useAuth();
+
+  useEffect(() => {
+    setUser(user);
+  }, []);
+
+  return <>{children}</>;
+}
+
+const defaultOrderData = {
   deliveryAddress: {
     addressLine1: "73 Roman Rd",
     postTown: "Leeds",
@@ -75,9 +94,13 @@ const TestWrapper = ({
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/check-your-answers"]}
   >
-    <CreateOrderProvider>
-      <StateSeeder orderData={orderData}>{children}</StateSeeder>
-    </CreateOrderProvider>
+    <AuthProvider>
+      <CreateOrderProvider>
+        <AuthSeeder>
+          <StateSeeder orderData={orderData}>{children}</StateSeeder>
+        </AuthSeeder>
+      </CreateOrderProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 

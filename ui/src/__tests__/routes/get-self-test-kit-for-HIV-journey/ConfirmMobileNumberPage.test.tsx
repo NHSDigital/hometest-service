@@ -5,8 +5,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ConfirmMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
 import {
+  AuthProvider,
+  AuthUser,
   CreateOrderProvider,
   JourneyNavigationProvider,
+  useAuth,
   useCreateOrderContext,
 } from "@/state";
 
@@ -14,11 +17,13 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
   >
-    <JourneyNavigationProvider>
-      <CreateOrderProvider>
-        {children}
-      </CreateOrderProvider>
-    </JourneyNavigationProvider>
+    <AuthProvider>
+      <JourneyNavigationProvider>
+        <CreateOrderProvider>
+          {children}
+        </CreateOrderProvider>
+      </JourneyNavigationProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
@@ -445,19 +450,19 @@ describe("ConfirmMobileNumberPage", () => {
     it("should display NHS phone number when user has phoneNumber from NHS Login (AC1, AC2)", () => {
       const WrapperWithPhone = ({ children }: { children: React.ReactNode }) => {
         const TestComponent = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
+          const { setUser } = useAuth();
 
           React.useEffect(() => {
-            updateOrderAnswers({
-              user: {
-                sub: "test-user-123",
-                nhsNumber: "1234567890",
-                birthdate: "1990-01-01",
-                identityProofingLevel: "P9",
-                phoneNumber: "07402123456",
-              },
+            setUser({
+              sub: "test-user-123",
+              nhsNumber: "1234567890",
+              birthdate: "1990-01-01",
+              identityProofingLevel: "P9",
+              phoneNumber: "07402123456",
+              givenName: "John",
+              familyName: "Smith",
             });
-          }, [updateOrderAnswers]);
+          }, [setUser]);
 
           return <>{children}</>;
         };
@@ -466,11 +471,13 @@ describe("ConfirmMobileNumberPage", () => {
           <MemoryRouter
             initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
           >
-            <JourneyNavigationProvider>
-              <CreateOrderProvider>
-                <TestComponent />
-              </CreateOrderProvider>
-            </JourneyNavigationProvider>
+            <AuthProvider>
+              <JourneyNavigationProvider>
+                <CreateOrderProvider>
+                  <TestComponent />
+                </CreateOrderProvider>
+              </JourneyNavigationProvider>
+            </AuthProvider>
           </MemoryRouter>
         );
       };
@@ -489,19 +496,19 @@ describe("ConfirmMobileNumberPage", () => {
     it("should handle user without NHS Login phone number", () => {
       const WrapperWithoutPhone = ({ children }: { children: React.ReactNode }) => {
         const TestComponent = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
+          const { setUser } = useAuth();
 
           React.useEffect(() => {
-            updateOrderAnswers({
-              user: {
-                sub: "test-user-123",
-                nhsNumber: "1234567890",
-                birthdate: "1990-01-01",
-                identityProofingLevel: "P9",
-                phoneNumber: "",
-              },
+            setUser({
+              sub: "test-user-123",
+              nhsNumber: "1234567890",
+              birthdate: "1990-01-01",
+              identityProofingLevel: "P9",
+              phoneNumber: "",
+              givenName: "John",
+              familyName: "Smith",
             });
-          }, [updateOrderAnswers]);
+          }, [setUser]);
 
           return <>{children}</>;
         };
@@ -510,11 +517,13 @@ describe("ConfirmMobileNumberPage", () => {
           <MemoryRouter
             initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
           >
-            <JourneyNavigationProvider>
-              <CreateOrderProvider>
-                <TestComponent />
-              </CreateOrderProvider>
-            </JourneyNavigationProvider>
+            <AuthProvider>
+              <JourneyNavigationProvider>
+                <CreateOrderProvider>
+                  <TestComponent />
+                </CreateOrderProvider>
+              </JourneyNavigationProvider>
+            </AuthProvider>
           </MemoryRouter>
         );
       };
@@ -533,19 +542,19 @@ describe("ConfirmMobileNumberPage", () => {
     it("should allow user with NHS Login phone to select alternative number", () => {
       const WrapperWithPhone = ({ children }: { children: React.ReactNode }) => {
         const TestComponent = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
+          const { setUser } = useAuth();
 
           React.useEffect(() => {
-            updateOrderAnswers({
-              user: {
-                sub: "test-user-123",
-                nhsNumber: "1234567890",
-                birthdate: "1990-01-01",
-                identityProofingLevel: "P9",
-                phoneNumber: "07402123456",
-              },
+            setUser({
+              sub: "test-user-123",
+              nhsNumber: "1234567890",
+              birthdate: "1990-01-01",
+              identityProofingLevel: "P9",
+              phoneNumber: "07402123456",
+              givenName: "John",
+              familyName: "Smith",
             });
-          }, [updateOrderAnswers]);
+          }, [setUser]);
 
           return <>{children}</>;
         };
@@ -554,11 +563,13 @@ describe("ConfirmMobileNumberPage", () => {
           <MemoryRouter
             initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
           >
-            <JourneyNavigationProvider>
-              <CreateOrderProvider>
-                <TestComponent />
-              </CreateOrderProvider>
-            </JourneyNavigationProvider>
+            <AuthProvider>
+              <JourneyNavigationProvider>
+                <CreateOrderProvider>
+                  <TestComponent />
+                </CreateOrderProvider>
+              </JourneyNavigationProvider>
+            </AuthProvider>
           </MemoryRouter>
         );
       };
