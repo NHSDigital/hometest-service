@@ -12,7 +12,7 @@ export class OrderStatusApiResource extends BaseApiClient {
     payload: OrderStatusTaskPayload,
     headers: Record<string, string>,
   ): Promise<APIResponse> {
-    const response = await this.put(API_ENDPOINTS.orderStatus.update, {
+    const response = await this.post(API_ENDPOINTS.orderStatus.update, {
       headers,
       data: payload,
     });
