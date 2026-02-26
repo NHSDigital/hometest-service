@@ -1,10 +1,8 @@
-import { Locator, Page} from '@playwright/test';
-import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
+import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { PersonalDetailsModel } from '../models/PersonalDetails';
+import { PersonalDetails } from '../models/PersonalDetails';
 
-export class EnterMobileNumberPage extends BasePage
-{
+export class EnterMobileNumberPage extends BasePage {
   readonly mobileNumberInput: Locator;
   readonly continueButton: Locator;
 
@@ -14,7 +12,9 @@ export class EnterMobileNumberPage extends BasePage
     this.continueButton = page.getByRole('button', { name: 'Continue' });
   }
 
-  async fillMobileNumberAndContinue(randomEntry: PersonalDetailsModel): Promise<void> {
+  async fillMobileNumberAndContinue(
+    randomEntry: PersonalDetails
+  ): Promise<void> {
     await this.mobileNumberInput.fill(randomEntry.mobileNumber);
     await this.continueButton.click();
   }

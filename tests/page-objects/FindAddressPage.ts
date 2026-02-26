@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { AddressModel } from '../models';
+import { Address } from '../models/Address';
 
 export class FindAddressPage extends BasePage {
   readonly postcodeInput: Locator;
@@ -18,13 +18,17 @@ export class FindAddressPage extends BasePage {
     this.continueButton = page.getByRole('button', { name: 'Continue' });
     this.addressResults = page.locator('.nhsuk-heading-l');
     this.postcodeErrorMessage = page.locator('#postcode--error-message');
-    this.buildingNoErrorMessage = page.locator('#building-number-or-name--error-message');
-    this.enterAddressManuallyLink = page.getByText('Enter address manually')
+    this.buildingNoErrorMessage = page.locator(
+      '#building-number-or-name--error-message'
+    );
+    this.enterAddressManuallyLink = page.getByText('Enter address manually');
   }
 
-  async fillPostCodeAndAddressAndContinue(randomEntry: AddressModel): Promise<void> {
-    await this.postcodeInput.fill(randomEntry.postcode);
-    await this.numNameInput.fill(randomEntry.addressline1);
+  async fillPostCodeAndAddressAndContinue(
+    deliveryAddress: Address
+  ): Promise<void> {
+    await this.postcodeInput.fill(deliveryAddress.postcode);
+    await this.numNameInput.fill(deliveryAddress.addressLine1);
     await this.continueButton.click();
   }
 
@@ -32,10 +36,12 @@ export class FindAddressPage extends BasePage {
     await this.enterAddressManuallyLink.click();
   }
 
-  async getPostcodeAndAddressValues(): Promise<{ postcode: string, firstLineAddress: string }> {
+  async getPostcodeAndAddressValues(): Promise<{
+    postcode: string;
+    firstLineAddress: string;
+  }> {
     const postcodeValue = await this.postcodeInput.inputValue();
     const firstLineAddressValue = await this.numNameInput.inputValue();
     return { postcode: postcodeValue, firstLineAddress: firstLineAddressValue };
   }
-
 }

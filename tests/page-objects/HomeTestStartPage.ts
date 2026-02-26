@@ -1,5 +1,8 @@
 import { Locator, Page } from '@playwright/test';
-import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
+import {
+  ConfigFactory,
+  type ConfigInterface,
+} from '../configuration/EnvironmentConfiguration';
 import { BasePage } from './BasePage';
 
 export class HomeTestStartPage extends BasePage {
@@ -14,12 +17,20 @@ export class HomeTestStartPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.findClinicLink = page.getByRole('link', { name: 'Find a sexual health clinic' });
+    this.findClinicLink = page.getByRole('link', {
+      name: 'Find a sexual health clinic',
+    });
     this.nearestAELink = page.getByRole('link', { name: 'your nearest A&E' });
-    this.nearestSexualHealthClinicLink = page.getByRole('link', { name: /your nearest sexual health/ });
-    this.learnMoreHIVAidsLink = page.getByRole('link', { name: 'Learn more about HIV and AIDS' });
+    this.nearestSexualHealthClinicLink = page.getByRole('link', {
+      name: /your nearest sexual health/,
+    });
+    this.learnMoreHIVAidsLink = page.getByRole('link', {
+      name: 'Learn more about HIV and AIDS',
+    });
     this.startNowBtn = page.getByRole('button', { name: 'Start now' });
-    this.bloodSampleGuideLink = page.getByRole('link', { name: 'Blood sample step-by-step guide' });
+    this.bloodSampleGuideLink = page.getByRole('link', {
+      name: 'Blood sample step-by-step guide',
+    });
     this.config = ConfigFactory.getConfig();
     this.privacyPolicyLink = page.getByRole('link', { name: 'privacy policy' });
   }

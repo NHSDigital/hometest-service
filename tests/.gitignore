@@ -1,8 +1,21 @@
+# Node
 node_modules/
+
+# Test results
 /test-results*
 /testResults*
+
+# Playwright
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Test configuration with personal credentials
 WorkerUser*
 credentials.ts
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.*
