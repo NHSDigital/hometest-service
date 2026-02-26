@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
@@ -34,6 +34,7 @@ function formatUserName(user?: { givenName: string; familyName: string }): strin
 export default function CheckYourAnswersPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
 
   const [consentChecked, setConsentChecked] = useState(false);
@@ -134,7 +135,7 @@ export default function CheckYourAnswersPage() {
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
           <SummaryList.Value>
-            {formatUserName(orderAnswers.user)}
+            {formatUserName(user ?? undefined)}
           </SummaryList.Value>
         </SummaryList.Row>
 
