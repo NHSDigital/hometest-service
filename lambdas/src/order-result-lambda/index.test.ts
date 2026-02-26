@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { OrderStatus, ResultStatus } from '../lib/types/status';
-import { extractAndValidateObservationFields, extractInterpretationCodeFromFHIRObservation, validateDBData } from './validation';
 import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
 
 const initSingleton = {
