@@ -5,7 +5,7 @@ import laLookupService, {
 } from "@/lib/services/la-lookup-service";
 
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe("LaLookupService", () => {
   const postcode = "M503UQ";

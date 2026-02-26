@@ -17,12 +17,12 @@ function TestResultsContent({
   patient,
   order,
   redirectToTracking,
-}: {
+}: Readonly<{
   orderId: string;
   patient: Patient;
   order: OrderDetails;
   redirectToTracking: () => void;
-}) {
+}>) {
   const {
     data: result,
     isPending: isLoading,
@@ -61,11 +61,11 @@ function OrderDetailsContent({
   orderId,
   patient,
   redirectToTracking,
-}: {
+}: Readonly<{
   orderId: string;
   patient: Patient;
   redirectToTracking: () => void;
-}) {
+}>) {
   const {
     data: order,
     isPending: isOrderLoading,

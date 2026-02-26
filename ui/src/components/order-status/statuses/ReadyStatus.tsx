@@ -6,7 +6,7 @@ interface ReadyStatusProps {
   orderId: string;
 }
 
-export function ReadyStatus({ orderId }: ReadyStatusProps) {
+export function ReadyStatus({ orderId }: Readonly<ReadyStatusProps>) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.statuses.ready;
 

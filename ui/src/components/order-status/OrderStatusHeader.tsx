@@ -9,7 +9,7 @@ interface OrderStatusHeaderProps {
 export function OrderStatusHeader({
   order,
   heading,
-}: OrderStatusHeaderProps) {
+}: Readonly<OrderStatusHeaderProps>) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.header;
   const formattedDate = new Date(order.orderedDate).toLocaleDateString(

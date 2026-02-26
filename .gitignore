@@ -162,6 +162,8 @@ mcp.json
 
 **/frontend/
 **/test-results/
+!ui/src/components/test-results/
+!ui/src/components/test-results/**
 .next
 WorkerUser*
 junit.xml

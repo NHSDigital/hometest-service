@@ -3,7 +3,7 @@ jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
 import testResultsService from "@/lib/services/test-results-service";
 
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe("TestResultsService", () => {
   const orderId = "550e8400-e29b-41d4-a716-446655440000";
