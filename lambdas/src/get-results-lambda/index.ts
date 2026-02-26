@@ -4,10 +4,11 @@ import {
   createFhirResponse,
 } from "../lib/fhir-response";
 
-import { OrderBundleBuilder } from "./order-bundle-builder";
+import { ObservationValidation } from "../lib/validators/observation-validation";
 import cors from "@middy/http-cors";
 import { defaultCorsOptions } from "../lib/security/cors-configuration";
-import { getOrderQueryParamsSchema } from "./schemas";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils";
+import { getResultsQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { init } from "./init";
@@ -17,9 +18,10 @@ import { securityHeaders } from "../lib/http/security-headers";
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderDbClient } = init();
+  const correlationId = getCorrelationIdFromEventHeaders(event);
+  const { testResultDbClient, supplierTestResultsService } = init();
 
-  const validationResult = getOrderQueryParamsSchema.safeParse(
+  const validationResult = getResultsQueryParamsSchema.safeParse(
     event.queryStringParameters,
   );
 
@@ -37,9 +39,13 @@ export const lambdaHandler = async (
     date_of_birth: dateOfBirth,
   } = validationResult.data;
 
-  const order = await orderDbClient.getOrder(orderId, nhsNumber, dateOfBirth);
+  const testResult = await testResultDbClient.getResult(
+    orderId,
+    nhsNumber,
+    dateOfBirth,
+  );
 
-  if (!order) {
+  if (testResult?.status !== "RESULT_AVAILABLE") {
     return createFhirErrorResponse(
       404,
       "not-found",
@@ -47,9 +53,23 @@ export const lambdaHandler = async (
     );
   }
 
-  const bundle = OrderBundleBuilder.buildBundle(order);
+  const bundle = await supplierTestResultsService.getResults(
+    orderId,
+    testResult.supplier_id,
+    correlationId,
+  );
 
-  return createFhirResponse(200, bundle);
+  const observation = bundle.entry?.[0]?.resource;
+
+  if (!observation || !ObservationValidation.isNormalResult(observation)) {
+    return createFhirErrorResponse(
+      404,
+      "not-found",
+      "The requested resource could not be found",
+    );
+  }
+
+  return createFhirResponse(200, observation);
 };
 
 export const handler = middy(lambdaHandler)

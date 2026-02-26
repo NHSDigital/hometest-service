@@ -2,7 +2,7 @@
   "priority": 10,
   "request": {
     "method": "POST",
-    "urlPath": "/oauth/token",
+    "urlPathPattern": "/(api/oauth|oauth/token)",
     "headers": {
       "Content-Type": {
         "contains": "application/x-www-form-urlencoded"
