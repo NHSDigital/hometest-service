@@ -1,17 +1,10 @@
 import { test } from '../../fixtures/CombinedTestFixture';
 import { expect } from '@playwright/test';
-import { type Address } from '../../models/Address';
-import { type PersonalDetails } from '../../models/PersonalDetails';
+import { AddressModel } from '../../models/Address';
+import { PersonalDetailsModel } from '../../models/PersonalDetails';
 
-const deliveryAddress: Address = {
-  postcode: 'TN37 7PT',
-  addressLine1: '775 The Ridge',
-  townCity: 'Saint Leonards-on-sea'
-};
-
-const personalDetails: PersonalDetails = {
-  mobileNumber: '447771900900'
-};
+const randomAddress = AddressModel.getRandomAddress();
+const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();
 
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
@@ -28,12 +21,12 @@ test.describe('HIV Test Order journeys', () => {
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
-    expect(postcode).toBe(deliveryAddress.postcode);
-    expect(firstLineAddress).toBe(deliveryAddress.addressLine1);
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
@@ -49,12 +42,12 @@ test.describe('HIV Test Order journeys', () => {
     howComfortablePrickingFingerPage,
     enterMobileNumberPage
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
-    expect(postcode).toBe(deliveryAddress.postcode);
-    expect(firstLineAddress).toBe(deliveryAddress.addressLine1);
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
@@ -71,16 +64,16 @@ test.describe('HIV Test Order journeys', () => {
     enterAddressManuallyPage
   }) => {
     await findAddressPage.clickEnterAddressManuallyLink();
-    await enterAddressManuallyPage.fillAddressAndContinue(deliveryAddress);
+    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress);
   });
 
   test('Order test journey by providing address manually from select delivery address page', async ({
     findAddressPage,
     enterAddressManuallyPage
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await findAddressPage.clickEnterAddressManuallyLink();
-    await enterAddressManuallyPage.fillAddressAndContinue(deliveryAddress);
+    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress);
   });
 
   test('Choose to goto Sexual health clinic instead', async ({
@@ -88,7 +81,7 @@ test.describe('HIV Test Order journeys', () => {
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
   });
@@ -99,12 +92,12 @@ test.describe('HIV Test Order journeys', () => {
     howComfortablePrickingFingerPage,
     bloodSampleGuidePage
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
-    expect(postcode).toBe(deliveryAddress.postcode);
-    expect(firstLineAddress).toBe(deliveryAddress.addressLine1);
+    expect(postcode).toBe(randomAddress.postcode);
+    expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();

@@ -1,4 +1,5 @@
 import addressData from '../test-data/Address.json';
+
 export interface Address {
   postcode: string;
   addressLine1: string;
@@ -10,8 +11,8 @@ export interface Address {
 export class AddressModel implements Address {
   postcode: string;
   addressLine1: string;
-  addressLine2: string;
-  addressLine3: string;
+  addressLine2?: string;
+  addressLine3?: string;
   townCity: string;
 
   constructor(data: Address) {
@@ -34,7 +35,7 @@ export class AddressModel implements Address {
       addressLine1: raw.addressLine1,
       addressLine2: raw.addressLine2,
       addressLine3: raw.addressLine3,
-      townCity: raw.townCity,
+      townCity: raw.townCity
     };
     return new AddressModel(mapped);
   }
