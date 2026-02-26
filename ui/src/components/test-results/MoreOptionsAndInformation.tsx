@@ -1,4 +1,5 @@
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+import supplierService from "@/lib/services/supplier-service";
 import { usePageContent } from "@/hooks";
 
 interface MoreOptionsAndInformationProps {
@@ -9,6 +10,7 @@ export function MoreOptionsAndInformation({
   supplier,
 }: Readonly<MoreOptionsAndInformationProps>) {
   const content = usePageContent("test-results").moreOptionsAndInformation;
+  const supplierLinks = supplierService.getLinksBySupplierName(supplier);
   const fullCheckLinkText = content.fullCheckLink.replace(
     "{supplier}",
     supplier,
@@ -24,7 +26,11 @@ export function MoreOptionsAndInformation({
       </h2>
       <p className="nhsuk-body">
         {`${content.fullCheckPrefix} `}
-        <OpensInNewTabLink linkHref="#" linkText={fullCheckLinkText} />.
+        <OpensInNewTabLink
+          linkHref={supplierLinks.sexualHealth}
+          linkText={fullCheckLinkText}
+        />
+        .
       </p>
       <p className="nhsuk-body">
         <OpensInNewTabLink

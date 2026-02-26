@@ -4,6 +4,7 @@ import { MoreOptionsAndInformation } from "@/components/test-results/MoreOptions
 import { OpensInNewTabLink } from "../OpensInNewTabLink";
 import { OrderDetails } from "@/lib/models/order-details";
 import { OrderStatusHeader } from "@/components/order-status";
+import supplierService from "@/lib/services/supplier-service";
 import { usePageContent } from "@/hooks";
 
 interface NegativeTestResultProps {
@@ -14,6 +15,7 @@ export function NegativeTestResult({
   order,
 }: Readonly<NegativeTestResultProps>) {
   const content = usePageContent("test-results").negativeResult;
+  const supplierLinks = supplierService.getLinksBySupplierName(order.supplier);
   const contactSupplierText = content.contactSupplier.replace(
     "{supplier}",
     order.supplier,
@@ -31,7 +33,11 @@ export function NegativeTestResult({
         <p className="nhsuk-body">{content.windowPeriodAdvice}</p>
         <p className="nhsuk-body">
           {`${content.contactSupplierPrefix} `}
-          <OpensInNewTabLink linkHref={"#"} linkText={contactSupplierText} />.
+          <OpensInNewTabLink
+            linkHref={supplierLinks.contact}
+            linkText={contactSupplierText}
+          />
+          .
         </p>
         <p className="nhsuk-body">{content.gpSharing}</p>
 

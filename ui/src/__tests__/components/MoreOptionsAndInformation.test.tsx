@@ -13,7 +13,7 @@ describe("MoreOptionsAndInformation", () => {
       name: /complete an online sexual health questionnaire with preventx/i,
     });
     expect(questionnaireLink).toBeInTheDocument();
-    expect(questionnaireLink).toHaveAttribute("href", "#");
+    expect(questionnaireLink).toHaveAttribute("href", "https://www.sh.uk/");
   });
 
   it("renders learn more link", () => {
