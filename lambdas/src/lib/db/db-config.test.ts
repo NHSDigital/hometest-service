@@ -26,7 +26,7 @@ describe("db-config", () => {
   it.each([
     {
       testName: "clean password",
-      password: "testpass",
+      passwordInput: "testpass",
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -36,7 +36,7 @@ describe("db-config", () => {
     },
     {
       testName: "password with surrounding double quotes",
-      password: '"testpass"',
+      passwordInput: '"testpass"',
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -46,7 +46,7 @@ describe("db-config", () => {
     },
     {
       testName: "password with surrounding single quotes",
-      password: "'testpass'",
+      passwordInput: "'testpass'",
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -56,7 +56,7 @@ describe("db-config", () => {
     },
     {
       testName: "password with trailing newline",
-      password: "testpass\n",
+      passwordInput: "testpass\n",
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -66,7 +66,7 @@ describe("db-config", () => {
     },
     {
       testName: "password with quotes and newline",
-      password: '"STRONG_APP_PASSWORD"\n',
+      passwordInput: '"STRONG_APP_PASSWORD"\n',
       username: "app_user",
       address: "postgres-db",
       database: "local_hometest_db",
@@ -76,7 +76,7 @@ describe("db-config", () => {
     },
     {
       testName: "password with special characters (no encoding needed)",
-      password: '"p@ss:word/test"\n',
+      passwordInput: '"p@ss:word/test"\n',
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -86,7 +86,7 @@ describe("db-config", () => {
     },
     {
       testName: "no schema provided (undefined)",
-      password: "testpass",
+      passwordInput: "testpass",
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -96,7 +96,7 @@ describe("db-config", () => {
     },
     {
       testName: "empty schema string",
-      password: "testpass",
+      passwordInput: "testpass",
       username: "test",
       address: "localhost",
       database: "testdb",
@@ -107,7 +107,7 @@ describe("db-config", () => {
   ])(
     "should build client config with $testName",
     async ({
-      password,
+      passwordInput,
       username,
       address,
       database,
@@ -115,7 +115,7 @@ describe("db-config", () => {
       expectedPassword,
       expectedOptions,
     }) => {
-      secretsClient.getSecretValue.mockResolvedValue(password);
+      secretsClient.getSecretValue.mockResolvedValue(passwordInput);
       const config = postgresConfig({
         username,
         address,
