@@ -7,6 +7,7 @@ import {
 } from "../utils";
 
 import type { SecretsClient } from "../secrets/secrets-manager-client";
+import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
 
 export interface PostgresConfigOptions {
   username: string;
@@ -24,12 +25,9 @@ function buildSslConfig(sslEnabled: boolean): false | { rejectUnauthorized: bool
     return false;
   }
 
-  // Use strict SSL with AWS RDS certificate
-  const certPath = join(__dirname, "../../certs/eu-west-2-bundle.pem");
-  const ca = readFileSync(certPath, "utf-8");
   return {
     rejectUnauthorized: true,
-    ca,
+    ca: EU_WEST_2_BUNDLE,
   };
 }
 
