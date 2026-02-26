@@ -3,7 +3,7 @@ import { type INhsLoginClient } from '../lib/login/nhs-login-client';
 import { type ITokenService } from '../lib/login/token-service';
 import { type INhsTokenResponseModel } from '../lib/models/nhs-login/nhs-login-token-response-model';
 import { type INhsUserInfoResponseModel } from '../lib/models/nhs-login/nhs-login-user-info-response-model';
-import { TEST_FIRST_NAMES } from '../lib/login/test-user-mapping';
+import { enrichUserInfoWithTestFirstName } from '../lib/login/test-user-mapping';
 import { type LoginBody } from '.';
 
 // ALPHA: This file will need revisiting.
@@ -53,7 +53,7 @@ export class LoginService {
       }
 
       // ALPHA: Enrich user info with test data for missing given_name (temporary workaround)
-      const enrichedUserInfo = this.enrichUserInfoForTesting(userInfoResponse);
+      const enrichedUserInfo = enrichUserInfoWithTestFirstName(userInfoResponse);
 
       return {
         userInfoResponse: enrichedUserInfo,
@@ -63,27 +63,5 @@ export class LoginService {
     } catch (error) {
       throw error;
     }
-  }
-
-  /**
-   * Enriches user info with test data for known test users (temporary workaround)
-   * Fills in missing given_name based on family_name lookup
-   * ALPHA: TODO: Remove this when the given_name (profile_extended) scope is available from NHS Login
-   * @param userInfo - The user info response from NHS Login
-   * @returns Enriched user info with given_name populated if missing
-   */
-  private enrichUserInfoForTesting(
-    userInfo: INhsUserInfoResponseModel
-  ): INhsUserInfoResponseModel {
-    if (userInfo.given_name) {
-      return userInfo;
-    }
-
-    const testFirstName = TEST_FIRST_NAMES[userInfo.family_name];
-    if (testFirstName) {
-      return { ...userInfo, given_name: testFirstName };
-    }
-
-    return userInfo;
   }
 }
