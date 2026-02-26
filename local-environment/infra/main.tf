@@ -444,7 +444,6 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.login_lambda,
       module.order_service_lambda,
       module.session_lambda,
-      module.session_lambda,
       module.order_status_lambda,
     ]))
   }
