@@ -165,7 +165,7 @@ test("Verify Privacy Policy page", async ({
   await homeTestStartPage.clickPrivacyPolicyLink();
   actualHeaderText = await privacyPolicyPage.getHeaderText();
   expect(actualHeaderText).toBe(
-    "HomeTest Privacy Policy - Draft v1.0 Jan 2026",
+    "Hometest Privacy Policy - Draft v1.0 Jan 2026",
   );
   const [newTab] = await Promise.all([
     context.waitForEvent("page"),
