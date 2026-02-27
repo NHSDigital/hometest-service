@@ -89,15 +89,15 @@ describe("HomeTestTermsOfUsePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("renders subsection headings for Testing Services and Hometest App Services", () => {
+    it("renders Testing Services and Hometest App Services as list items in section 6", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
       expect(
-        screen.getByRole("heading", { name: /Testing Services/i, level: 3 }),
-      ).toBeInTheDocument();
+        screen.getAllByText(/Testing Services/i).length,
+      ).toBeGreaterThan(0);
       expect(
-        screen.getByRole("heading", { name: /Hometest App Services/i, level: 3 }),
-      ).toBeInTheDocument();
+        screen.getAllByText(/Hometest App Services/i).length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -106,7 +106,7 @@ describe("HomeTestTermsOfUsePage", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
       const helpLinks = screen.getAllByRole("link", {
-        name: /https:\/\/www\.nhs\.uk\/nhs-app\/help\//i,
+        name: /help and support page/i,
       });
 
       expect(helpLinks.length).toBeGreaterThan(0);
@@ -117,7 +117,7 @@ describe("HomeTestTermsOfUsePage", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
       const helpLinks = screen.getAllByRole("link", {
-        name: /https:\/\/www\.nhs\.uk\/nhs-app\/help\//i,
+        name: /help and support page/i,
       });
 
       expect(helpLinks[0]).toHaveAttribute("target", "_blank");
@@ -127,7 +127,7 @@ describe("HomeTestTermsOfUsePage", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
       const helpLinks = screen.getAllByRole("link", {
-        name: /https:\/\/www\.nhs\.uk\/nhs-app\/help\//i,
+        name: /help and support page/i,
       });
 
       expect(helpLinks[0]).toHaveAttribute("rel", "noopener noreferrer");
@@ -137,7 +137,7 @@ describe("HomeTestTermsOfUsePage", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
       const helpLinks = screen.getAllByRole("link", {
-        name: /https:\/\/www\.nhs\.uk\/nhs-app\/help\/.*opens in new tab/i,
+        name: /help and support page.*opens in new tab/i,
       });
 
       expect(helpLinks.length).toBeGreaterThan(0);
@@ -147,7 +147,7 @@ describe("HomeTestTermsOfUsePage", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
       const helpLinks = screen.getAllByRole("link", {
-        name: /https:\/\/www\.nhs\.uk\/nhs-app\/help\//i,
+        name: /help and support page/i,
       });
 
       expect(helpLinks[0]).toHaveClass("nhsuk-link");
@@ -211,9 +211,10 @@ describe("HomeTestTermsOfUsePage", () => {
         screen.getByRole("heading", { name: /1\. Introduction/i, level: 2 }),
       ).toBeInTheDocument();
 
+      // Testing Services is rendered as a bold list item, not an h3
       expect(
-        screen.getByRole("heading", { name: /Testing Services/i, level: 3 }),
-      ).toBeInTheDocument();
+        screen.getAllByText(/Testing Services/i).length,
+      ).toBeGreaterThan(0);
     });
   });
 
