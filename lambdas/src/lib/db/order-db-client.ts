@@ -48,7 +48,7 @@ export class OrderDbClient {
       INNER JOIN hometest.status_type st ON st.status_code = os.status_code
       INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
       INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
-      WHERE o.order_uid = $1 AND p.nhs_number = $2 AND p.birth_date = $3::date
+      WHERE o.order_uid = $1::uuid AND p.nhs_number = $2 AND p.birth_date = $3::date
       ORDER BY os.created_at DESC
       LIMIT 1;
     `;
