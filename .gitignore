@@ -36,6 +36,9 @@ dist
 cdk.out
 cdk.context.json
 
+# Session cache
+.session-cache/
+
 # MacOS
 .DS_Store
 
