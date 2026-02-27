@@ -8,3 +8,4 @@ export { HowComfortablePrickingFingerPage } from './HowComfortablePrickingFinger
 export { PrivacyPolicyPage } from './PrivacyPolicyPage';
 export { BloodSampleGuidePage } from './BloodSampleGuidePage';
 export { EnterMobileNumberPage } from './EnterMobileNumberPage';
+export { ConfirmAndUpdateMobileNumberPage } from './ConfirmAndUpdateMobileNumberPage';
