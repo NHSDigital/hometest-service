@@ -1,16 +1,35 @@
 import { postgresConfig, postgresConfigFromEnv } from "./db-config";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 describe("db-config", () => {
+  // Environment variable keys
+  const ENV_DB_USERNAME = "DB_USERNAME";
+  const ENV_DB_ADDRESS = "DB_ADDRESS";
+  const ENV_DB_PORT = "DB_PORT";
+  const ENV_DB_NAME = "DB_NAME";
+  const ENV_DB_SCHEMA = "DB_SCHEMA";
+  const ENV_DB_SECRET_NAME = "DB_SECRET_NAME";
+  const ENV_DB_SSL = "DB_SSL";
+
+  // Common test values
+  const TEST_USERNAME = "test";
+  const TEST_PASSWORD = "testpass";
+  const TEST_ADDRESS = "localhost";
+  const TEST_PORT = "5432";
+  const TEST_DATABASE = "testdb";
+  const TEST_SCHEMA_PUBLIC = "public";
+  const TEST_PASSWORD_SECRET_NAME = "postgres-db-password";
+  const CERT_PATH = "../../certs/eu-west-2-bundle.pem";
+
   const mockEnvVariables = {
-    DB_USERNAME: "test-username",
-    DB_ADDRESS: "test-address",
-    DB_PORT: "5432",
-    DB_NAME: "test-database",
-    DB_SCHEMA: "test-schema",
-    DB_SECRET_NAME: "test-secret-name",
-    DB_SSL: "false",
+    [ENV_DB_USERNAME]: "test-username",
+    [ENV_DB_ADDRESS]: "test-address",
+    [ENV_DB_PORT]: TEST_PORT,
+    [ENV_DB_NAME]: "test-database",
+    [ENV_DB_SCHEMA]: "test-schema",
+    [ENV_DB_SECRET_NAME]: "test-secret-name",
+    [ENV_DB_SSL]: "false",
   };
 
   const secretsClient = {
@@ -21,82 +40,82 @@ describe("db-config", () => {
   it.each([
     {
       testName: "clean password",
-      password: "testpass",
-      username: "test",
-      address: "localhost",
-      database: "testdb",
-      schema: "public",
-      expectedPassword: "testpass",
-      expectedOptions: "-c search_path=public",
+      password: TEST_PASSWORD,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
+      schema: TEST_SCHEMA_PUBLIC,
+      expectedPassword: TEST_PASSWORD,
+      expectedOptions: `-c search_path=${TEST_SCHEMA_PUBLIC}`,
     },
     {
       testName: "password with surrounding double quotes",
-      password: '"testpass"',
-      username: "test",
-      address: "localhost",
-      database: "testdb",
-      schema: "public",
-      expectedPassword: "testpass",
-      expectedOptions: "-c search_path=public",
+      password: `"${TEST_PASSWORD}"`,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
+      schema: TEST_SCHEMA_PUBLIC,
+      expectedPassword: TEST_PASSWORD,
+      expectedOptions: `-c search_path=${TEST_SCHEMA_PUBLIC}`,
     },
     {
       testName: "password with surrounding single quotes",
-      password: "'testpass'",
-      username: "test",
-      address: "localhost",
-      database: "testdb",
-      schema: "public",
-      expectedPassword: "testpass",
-      expectedOptions: "-c search_path=public",
+      password: `'${TEST_PASSWORD}'`,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
+      schema: TEST_SCHEMA_PUBLIC,
+      expectedPassword: TEST_PASSWORD,
+      expectedOptions: `-c search_path=${TEST_SCHEMA_PUBLIC}`,
     },
     {
       testName: "password with trailing newline",
-      password: "testpass\n",
-      username: "test",
-      address: "localhost",
-      database: "testdb",
-      schema: "public",
-      expectedPassword: "testpass",
-      expectedOptions: "-c search_path=public",
+      password: `${TEST_PASSWORD}\n`,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
+      schema: TEST_SCHEMA_PUBLIC,
+      expectedPassword: TEST_PASSWORD,
+      expectedOptions: `-c search_path=${TEST_SCHEMA_PUBLIC}`,
     },
     {
       testName: "password with quotes and newline",
-      password: '"STRONG_APP_PASSWORD"\n',
-      username: "app_user",
-      address: "postgres-db",
-      database: "local_hometest_db",
-      schema: "hometest",
-      expectedPassword: "STRONG_APP_PASSWORD",
-      expectedOptions: "-c search_path=hometest",
+      password: `"${TEST_PASSWORD}"\n`,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
+      schema: TEST_SCHEMA_PUBLIC,
+      expectedPassword: TEST_PASSWORD,
+      expectedOptions: `-c search_path=${TEST_SCHEMA_PUBLIC}`,
     },
     {
       testName: "password with special characters (no encoding needed)",
-      password: '"p@ss:word/test"\n',
-      username: "test",
-      address: "localhost",
-      database: "testdb",
-      schema: "public",
+      password: `"p@ss:word/test"\n`,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
+      schema: TEST_SCHEMA_PUBLIC,
       expectedPassword: "p@ss:word/test",
-      expectedOptions: "-c search_path=public",
+      expectedOptions: `-c search_path=${TEST_SCHEMA_PUBLIC}`,
     },
     {
       testName: "no schema provided (undefined)",
-      password: "testpass",
-      username: "test",
-      address: "localhost",
-      database: "testdb",
+      password: TEST_PASSWORD,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
       schema: undefined,
-      expectedPassword: "testpass",
+      expectedPassword: TEST_PASSWORD,
       expectedOptions: undefined,
     },
     {
       testName: "empty schema string",
-      password: "testpass",
-      username: "test",
-      address: "localhost",
-      database: "testdb",
+      password: TEST_PASSWORD,
+      username: TEST_USERNAME,
+      address: TEST_ADDRESS,
+      database: TEST_DATABASE,
       schema: "",
-      expectedPassword: "testpass",
+      expectedPassword: TEST_PASSWORD,
       expectedOptions: undefined,
     },
   ])(
@@ -111,18 +130,16 @@ describe("db-config", () => {
       expectedOptions,
     }) => {
       secretsClient.getSecretValue.mockResolvedValue(password);
-      const config = postgresConfig(
-        {
-          username,
-          address,
-          port: "5432",
-          database,
-          schema,
-          passwordSecretName: "postgres-db-password",
-          secretsClient,
-          sslEnabled: false,
-        }
-      );
+      const config = postgresConfig({
+        username,
+        address,
+        port: TEST_PORT,
+        database,
+        schema,
+        passwordSecretName: TEST_PASSWORD_SECRET_NAME,
+        secretsClient,
+        sslEnabled: false,
+      });
 
       expect(config.user).toEqual(username);
       expect(config.host).toEqual(address);
@@ -133,10 +150,12 @@ describe("db-config", () => {
 
       // Test password function
       expect(typeof config.password).toBe("function");
-      const resolvedPassword = await (config.password as () => Promise<string>)();
+      const resolvedPassword = await (
+        config.password as () => Promise<string>
+      )();
 
       expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
-        "postgres-db-password",
+        TEST_PASSWORD_SECRET_NAME,
         { jsonKey: "password" },
       );
       expect(resolvedPassword).toEqual(expectedPassword);
@@ -156,11 +175,11 @@ describe("db-config", () => {
 
     describe("missing environment variables", () => {
       it.each([
-        ["DB_USERNAME"],
-        ["DB_ADDRESS"],
-        ["DB_PORT"],
-        ["DB_NAME"],
-        ["DB_SECRET_NAME"],
+        [ENV_DB_USERNAME],
+        [ENV_DB_ADDRESS],
+        [ENV_DB_PORT],
+        [ENV_DB_NAME],
+        [ENV_DB_SECRET_NAME],
       ])("should throw error when %s is missing", (envVar: string) => {
         delete process.env[envVar];
 
@@ -172,11 +191,11 @@ describe("db-config", () => {
 
     describe("empty environment variables", () => {
       it.each([
-        ["DB_USERNAME"],
-        ["DB_ADDRESS"],
-        ["DB_PORT"],
-        ["DB_NAME"],
-        ["DB_SECRET_NAME"],
+        [ENV_DB_USERNAME],
+        [ENV_DB_ADDRESS],
+        [ENV_DB_PORT],
+        [ENV_DB_NAME],
+        [ENV_DB_SECRET_NAME],
       ])("should throw error when %s is empty", (envVar: string) => {
         process.env[envVar] = "";
 
@@ -202,7 +221,7 @@ describe("db-config", () => {
       process.env.DB_SSL = "true";
 
       const config = postgresConfigFromEnv(secretsClient);
-      const certPath = join(__dirname, "../../certs/eu-west-2-bundle.pem");
+      const certPath = join(__dirname, CERT_PATH);
       const ca = readFileSync(certPath, "utf-8");
 
       expect(config.ssl).toEqual({
@@ -215,11 +234,11 @@ describe("db-config", () => {
   describe("SSL configuration", () => {
     it("should disable SSL when sslEnabled is false", () => {
       const config = postgresConfig({
-        username: "test",
-        address: "localhost",
-        port: "5432",
-        database: "testdb",
-        passwordSecretName: "postgres-db-password",
+        username: TEST_USERNAME,
+        address: TEST_ADDRESS,
+        port: TEST_PORT,
+        database: TEST_DATABASE,
+        passwordSecretName: TEST_PASSWORD_SECRET_NAME,
         secretsClient,
         sslEnabled: false,
       });
@@ -229,15 +248,15 @@ describe("db-config", () => {
 
     it("should enable SSL with cert when sslEnabled is true", () => {
       const config = postgresConfig({
-        username: "test",
-        address: "localhost",
-        port: "5432",
-        database: "testdb",
-        passwordSecretName: "postgres-db-password",
+        username: TEST_USERNAME,
+        address: TEST_ADDRESS,
+        port: TEST_PORT,
+        database: TEST_DATABASE,
+        passwordSecretName: TEST_PASSWORD_SECRET_NAME,
         secretsClient,
         sslEnabled: true,
       });
-      const certPath = join(__dirname, "../../certs/eu-west-2-bundle.pem");
+      const certPath = join(__dirname, CERT_PATH);
       const ca = readFileSync(certPath, "utf-8");
 
       expect(config.ssl).toEqual({

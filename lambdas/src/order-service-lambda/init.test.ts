@@ -5,6 +5,7 @@ import { TransactionService } from "../lib/db/transaction-db-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
@@ -28,7 +29,8 @@ describe("init", () => {
       "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
   };
 
-  const mockConfig = {
+  // This represents the return value of postgresConfigFromEnv(secretsClient)
+  const mockPostgresConfig = {
     user: "test-user",
     host: "test-host",
     port: 5432,
@@ -43,7 +45,7 @@ describe("init", () => {
     // Set default mock environment variables
     Object.assign(process.env, mockEnvVariables);
 
-    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockConfig);
+    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockPostgresConfig);
   });
 
   afterEach(() => {
@@ -101,7 +103,7 @@ describe("init", () => {
       init();
 
       expect(PostgresDbClient).toHaveBeenCalledWith(
-        mockConfig
+        mockPostgresConfig
       );
     });
 
@@ -183,32 +185,50 @@ describe("init", () => {
       );
     });
 
-    it("should create components in the correct order", () => {
+    it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
       init();
 
-      // AwsSecretsClient should be created first
-      expect(AwsSecretsClient).toHaveBeenCalledTimes(1);
-
-      // PostgresDbClient should be created with an AwsSecretsClient
-      expect(PostgresDbClient).toHaveBeenCalledTimes(1);
-      expect(PostgresDbClient).toHaveBeenCalledWith(
-        expect.any(Object)
+      expect(postgresConfigFromEnv).toHaveBeenCalledWith(
+        expect.any(AwsSecretsClient),
       );
+    });
 
-      // OrderStatusService should be created with a PostgresDbClient
-      expect(OrderStatusService).toHaveBeenCalledTimes(1);
-      expect(OrderStatusService).toHaveBeenCalledWith(
-        expect.any(PostgresDbClient),
-      );
-
-      // TransactionService should be created with a PostgresDbClient
-      expect(TransactionService).toHaveBeenCalledTimes(1);
-      expect(TransactionService).toHaveBeenCalledWith({
-        dbClient: expect.any(PostgresDbClient),
+    it("should create components in the correct order", () => {
+      // 1. AwsSecretsClient should be created first
+      // 2. PostgresDbClient should be created with postgresConfigFromEnv(secretsClient)
+      // 3. OrderStatusService should be created with a PostgresDbClient
+      // 4. TransactionService should be created with a PostgresDbClient
+      // 5. AWSSQSClient should be created
+      testComponentCreationOrder({
+        initFn: init,
+        components: [
+          {
+            mock: AwsSecretsClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: PostgresDbClient as jest.Mock,
+            times: 1,
+            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+          },
+          {
+            mock: OrderStatusService as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: TransactionService as jest.Mock,
+            times: 1,
+            calledWith: {
+              dbClient: expect.any(PostgresDbClient),
+            },
+          },
+          {
+            mock: AWSSQSClient as jest.Mock,
+            times: 1,
+          },
+        ],
       });
-
-      // AWSSQSClient should be created
-      expect(AWSSQSClient).toHaveBeenCalledTimes(1);
     });
   });
 });
