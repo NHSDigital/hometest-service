@@ -1,11 +1,9 @@
-import { APIRequestContext, APIResponse } from '@playwright/test';
-import { config } from '../../configuration';
-import { EnvironmentVariables } from '../../configuration';
-
+import { APIRequestContext, APIResponse, expect } from '@playwright/test';
+import { ConfigFactory } from '../../configuration/EnvironmentConfiguration';
 export interface ApiRequestOptions {
   headers?: Record<string, string>;
   params?: Record<string, string | number | boolean>;
-  data?: any;
+  data?: unknown;
 }
 
 export class BaseApiClient {
@@ -14,12 +12,9 @@ export class BaseApiClient {
 
   constructor(request: APIRequestContext) {
     this.request = request;
-    this.baseURL = config.get(EnvironmentVariables.API_BASE_URL);
+    this.baseURL = ConfigFactory.getConfig().apiBaseUrl;
   }
 
-  /**
-   * Perform GET request
-   */
   protected async get(
     endpoint: string,
     options: ApiRequestOptions = {}
@@ -29,7 +24,7 @@ export class BaseApiClient {
     console.log(`[API GET] ${url}`);
 
     const response = await this.request.get(url, {
-      headers: this.buildHeaders(options.headers),
+      headers: this.buildHeaders(options.headers)
     });
 
     console.log(`[API Response] Status: ${response.status()}`);
@@ -37,9 +32,6 @@ export class BaseApiClient {
     return response;
   }
 
-  /**
-   * Perform POST request
-   */
   protected async post(
     endpoint: string,
     options: ApiRequestOptions = {}
@@ -53,7 +45,7 @@ export class BaseApiClient {
 
     const response = await this.request.post(url, {
       headers: this.buildHeaders(options.headers),
-      data: options.data,
+      data: options.data
     });
 
     console.log(`[API Response] Status: ${response.status()}`);
@@ -61,18 +53,21 @@ export class BaseApiClient {
     return response;
   }
 
-  /**
-   * Build full URL with query parameters
-   */
-  private buildUrl(endpoint: string, params?: Record<string, string | number | boolean>): string {
+  private buildUrl(
+    endpoint: string,
+    params?: Record<string, string | number | boolean>
+  ): string {
     let fullUrl: string;
 
     if (endpoint.startsWith('/')) {
-      const cleanBaseURL = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL;
+      const cleanBaseURL = this.baseURL.endsWith('/')
+        ? this.baseURL.slice(0, -1)
+        : this.baseURL;
       fullUrl = cleanBaseURL + endpoint;
     } else {
-
-      fullUrl = this.baseURL.endsWith('/') ? this.baseURL + endpoint : this.baseURL + '/' + endpoint;
+      fullUrl = this.baseURL.endsWith('/')
+        ? this.baseURL + endpoint
+        : this.baseURL + '/' + endpoint;
     }
 
     if (params) {
@@ -86,36 +81,30 @@ export class BaseApiClient {
     return fullUrl;
   }
 
-  /**
-   * Build request headers
-   */
-  private buildHeaders(customHeaders?: Record<string, string>): Record<string, string> {
+  private buildHeaders(
+    customHeaders?: Record<string, string>
+  ): Record<string, string> {
     const defaultHeaders = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json'
     };
 
     return {
       ...defaultHeaders,
-      ...customHeaders,
+      ...customHeaders
     };
   }
 
-  /**
-   * Parse JSON response
-   */
-  protected async parseJsonResponse<T = any>(response: APIResponse): Promise<T> {
+  protected async parseJsonResponse<T = unknown>(
+    response: APIResponse
+  ): Promise<T> {
     return await response.json();
   }
 
-  /**
-   * Validate response status
-   */
-  protected validateStatus(response: APIResponse, expectedStatus: number = 200): void {
-    if (response.status() !== expectedStatus) {
-      throw new Error(
-        `Expected status ${expectedStatus}, but got ${response.status()}`
-      );
-    }
+  public validateStatus(
+    response: APIResponse,
+    expectedStatus: number = 200
+  ): void {
+    expect(response.status()).toBe(expectedStatus);
   }
 }

@@ -8,12 +8,12 @@ export enum EnvironmentVariables {
   SLOW_MO = 'SLOW_MO',
   ACCESSIBILITY_STANDARDS = 'ACCESSIBILITY_STANDARDS',
   REPORTING_OUTPUT_DIRECTORY = 'REPORTING_OUTPUT_DIRECTORY',
-  DB_HOST     = 'DB_HOST',
-  DB_PORT     = 'DB_PORT',
-  DB_NAME     = 'DB_NAME',
-  DB_USER     = 'DB_USER',
+  DB_HOST = 'DB_HOST',
+  DB_PORT = 'DB_PORT',
+  DB_NAME = 'DB_NAME',
+  DB_USER = 'DB_USER',
   DB_PASSWORD = 'DB_PASSWORD',
 }
 
 export const availableEnvironments = ['local', 'dev'] as const;
-export type Environment = typeof availableEnvironments[number];
+export type Environment = (typeof availableEnvironments)[number];
