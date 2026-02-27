@@ -130,11 +130,6 @@ export const lambdaHandler = async (
 
 const corsOptions: CorsOptions = {
   ...defaultCorsOptions,
-  headers: [
-    "content-type",
-    "authorization",
-    "x-correlation-id",
-  ].join(","),
 };
 
 export const handler = middy(lambdaHandler)
