@@ -20,12 +20,10 @@ jest.mock("./init", () => ({
     httpClient: {
       postRaw: mockHttpClientPostRaw,
     },
-    supplierAuthClient: {
-      getAccessToken: mockSupplierAuthGetAccessToken,
-    },
     supplierDb: {
       getSupplierConfigBySupplierId: mockGetSupplierConfigBySupplierId,
     },
+    secretsClient: {},
   })),
 }));
 
