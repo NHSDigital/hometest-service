@@ -19,6 +19,8 @@ import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
+import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
 
@@ -77,6 +79,10 @@ const router = createBrowserRouter([
         element: <OrderTrackingPage />,
       },
       {
+        path: RoutePath.HomeTestPrivacyPolicyPage,
+        element: <HomeTestPrivacyPolicyPage />,
+      },
+      {
         path: RoutePath.GetSelfTestKitPage,
         element: <JourneyLayout />,
         children: [
@@ -115,6 +121,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.ConfirmMobileNumber,
             element: <ConfirmMobileNumberPage />,
+          },
+          {
+            path: JourneyStepNames.CheckYourAnswers,
+            element: <CheckYourAnswersPage />,
           },
         ],
       },

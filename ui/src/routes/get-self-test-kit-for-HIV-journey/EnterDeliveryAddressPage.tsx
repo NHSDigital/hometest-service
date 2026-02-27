@@ -8,7 +8,6 @@ import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 import { useState } from "react";
 
-// TODO: update redirect logic if user has selected manual address entry (use goToStep)
 // TODO: add postcode lookup integration
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;

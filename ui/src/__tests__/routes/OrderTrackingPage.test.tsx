@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 
 import OrderTrackingPage from "@/routes/OrderTrackingPage";
-import { Patient } from "@/lib/models/patient";
 import { act } from "react";
 import orderDetailsService from "@/lib/services/order-details-service";
 
@@ -51,11 +50,6 @@ describe("OrderTrackingPage", () => {
     status: OrderStatus.ORDER_RECEIVED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
-  };
-
-  const mockPatient: Patient = {
-    nhsNumber: "2657119018",
-    dateOfBirth: "1990-08-11",
   };
 
   const mockUser: AuthUser = {
@@ -140,10 +134,10 @@ describe("OrderTrackingPage", () => {
 
       await screen.findByTestId("order-status");
 
-      expect(orderDetailsService.get).toHaveBeenCalledWith(
-        orderId,
-        mockPatient,
-      );
+      expect(orderDetailsService.get).toHaveBeenCalledWith(orderId, {
+        nhsNumber: "2657119018",
+        dateOfBirth: "1990-08-11",
+      });
       expect(orderDetailsService.get).toHaveBeenCalledTimes(1);
     });
 

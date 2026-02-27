@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, BloodSampleGuidePage, EnterMobileNumberPage } from '../page-objects';
+import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, BloodSampleGuidePage, EnterMobileNumberPage, PrivacyPolicyPage, ConfirmAndUpdateMobileNumberPage } from '../page-objects';
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -8,8 +8,10 @@ export interface MyFixtures {
   selectDeliveryAddressPage: SelectDeliveryAddressPage;
   orderStatusPage: OrderStatusPage;
   howComfortablePrickingFingerPage: HowComfortablePrickingFingerPage;
+  privacyPolicyPage: PrivacyPolicyPage;
   bloodSampleGuidePage: BloodSampleGuidePage;
   enterMobileNumberPage: EnterMobileNumberPage;
+  confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -37,11 +39,18 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new HowComfortablePrickingFingerPage(page));
   },
 
+  privacyPolicyPage: async ({ page }, use) => {
+    await use(new PrivacyPolicyPage(page));
+  },
+
   bloodSampleGuidePage: async ({ page }, use) => {
     await use(new BloodSampleGuidePage(page));
   },
 
   enterMobileNumberPage: async ({ page }, use) => {
     await use(new EnterMobileNumberPage(page));
+  },
+  confirmAndUpdateMobileNumberPage: async ({ page }, use) => {
+    await use(new ConfirmAndUpdateMobileNumberPage(page));
   }
 });

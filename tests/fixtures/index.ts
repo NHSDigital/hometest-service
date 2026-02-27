@@ -1,10 +1,10 @@
-import { mergeTests } from '@playwright/test';
-import { pageObjectFixture } from './PageObjectsFixture';
-import { configurationFixture } from './ConfigurationFixture';
-import { apiFixture } from './ApiFixture';
-import { accessibilityFixture } from './AccessibilityFixture';
-import { storageStateFixture } from './StorageStateFixture';
-import { consoleErrorFixture } from './ConsoleErrorFixture';
+import { accessibilityFixture } from "./accessibilityFixture";
+import { apiFixture } from "./apiFixture";
+import { configurationFixture } from "./configurationFixture";
+import { consoleErrorFixture } from "./consoleErrorFixture";
+import { mergeTests } from "@playwright/test";
+import { pageObjectFixture } from "./pageObjectsFixture";
+import { storageStateFixture } from "./storageStateFixture";
 
 export const test = mergeTests(
   pageObjectFixture,
@@ -12,4 +12,5 @@ export const test = mergeTests(
   apiFixture,
   accessibilityFixture,
   storageStateFixture,
-  consoleErrorFixture);
+  consoleErrorFixture,
+);

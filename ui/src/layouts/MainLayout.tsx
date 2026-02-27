@@ -46,7 +46,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Container>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
-            <AuthLoader>{children}</AuthLoader>
+            <AuthLoader>{children ?? <Outlet />}</AuthLoader>
           </QueryClientProvider>
         </AuthProvider>
       </Container>
