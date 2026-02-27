@@ -1,11 +1,13 @@
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
+import { PersonalDetailsModel } from "../../models/PersonalDetails";
 import { AddressModel } from "../../models/Address";
 
 const randomAddress = AddressModel.getRandomAddress();
+const randomMobileNumber = PersonalDetailsModel.getRandomPersonalDetails();
 
 test(
-  "Enter mobile number page",
+  "Confirm and update mobile number page",
   {
     tag: ["@accessibility"],
   },
@@ -14,7 +16,7 @@ test(
     findAddressPage,
     selectDeliveryAddressPage,
     accessibility,
-    enterMobileNumberPage,
+    confirmAndUpdateMobileNumberPage,
     howComfortablePrickingFingerPage,
   }) => {
     await homeTestStartPage.navigate();
@@ -24,12 +26,19 @@ test(
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await enterMobileNumberPage.waitUntilPageLoad();
-    await enterMobileNumberPage.clickUseAnotherNumber();
-    const postInputAccessErrors = await accessibility.runAccessibilityCheck(
-      enterMobileNumberPage.page,
-      "Enter Mobile Number Page - After Input",
+    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
+    let accessErrors = await accessibility.runAccessibilityCheck(
+      confirmAndUpdateMobileNumberPage.page,
+      "Confirm and Update Mobile Number Page",
     );
-    expect(postInputAccessErrors).toHaveLength(0);
+    expect(accessErrors).toHaveLength(0);
+    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(
+      randomMobileNumber,
+    );
+    accessErrors = await accessibility.runAccessibilityCheck(
+      confirmAndUpdateMobileNumberPage.page,
+      "Confirm and Update Mobile Number Page",
+    );
+    expect(accessErrors).toHaveLength(0);
   },
 );

@@ -1,16 +1,13 @@
-import { expect } from '@playwright/test';
-import { test } from '../../fixtures/CombinedTestFixture';
-import { type Address } from '../../models/Address';
+import { expect } from "@playwright/test";
+import { test } from "../../fixtures/CombinedTestFixture";
+import { AddressModel } from "../../models/Address";
 
-const deliveryAddress: Address = {
-  postcode: 'TN37 7PT',
-  addressLine1: '775 The Ridge',
-  townCity: 'Saint Leonards-on-sea',
-};
+const randomAddress = AddressModel.getRandomAddress();
+
 test(
-  'How comfortable pricking finger Page',
+  "How comfortable pricking finger Page",
   {
-    tag: ['@accessibility'],
+    tag: ["@accessibility"],
   },
   async ({
     homeTestStartPage,
@@ -21,12 +18,12 @@ test(
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.fillPostCodeAndAddressAndContinue(deliveryAddress);
+    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(
       howComfortablePrickingFingerPage.page,
-      'How Comfortable Pricking Finger Page',
+      "How Comfortable Pricking Finger Page",
     );
     expect(accessErrors).toHaveLength(0);
   },
