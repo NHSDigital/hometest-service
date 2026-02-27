@@ -149,6 +149,7 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Actions>
             <a
               href="#"
+              id="address-change"
               onClick={(e) => {
                 e.preventDefault();
                 handleChangeClick('address');
@@ -172,6 +173,7 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Actions>
             <a
               href="#"
+              id="comfortable-change"
               onClick={(e) => {
                 e.preventDefault();
                 handleChangeClick('comfort');
@@ -191,6 +193,7 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Actions>
             <a
               href="#"
+              id="mobile-change"
               onClick={(e) => {
                 e.preventDefault();
                 handleChangeClick('mobile');
