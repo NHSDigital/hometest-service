@@ -295,8 +295,17 @@ export interface OrderTrackingContent {
 
 export interface PrivacyPolicySubsection {
   heading?: string;
+  inlineHeading?: boolean;
   paragraphs?: string[];
   list?: string[];
+  indented?: boolean;
+  ordered?: boolean;
+  listStyle?: string;
+  table?: {
+    caption?: string;
+    headers: string[];
+    rows: string[][];
+  };
 }
 
 export interface PrivacyPolicySection {
@@ -307,6 +316,12 @@ export interface PrivacyPolicySection {
 }
 
 export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
+}
+
+export interface TermsOfUseContent {
   title: string;
   introduction: string[];
   sections: PrivacyPolicySection[];
@@ -380,6 +395,7 @@ export interface PagesContent {
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  "home-test-terms-of-use": TermsOfUseContent;
   "blood-sample-guide": BloodSampleGuideContent;
 }
 

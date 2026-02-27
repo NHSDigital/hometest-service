@@ -5,10 +5,16 @@ import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { BackLink } from "nhsuk-react-components";
 
-export default function HomeTestPrivacyPolicyPage() {
+export default function HomeTestTermsOfUsePage() {
   const navigate = useNavigate();
-  const { "home-test-privacy-policy": content } = useContent();
+  const { "home-test-terms-of-use": content } = useContent();
 
+  /**
+   * Renders a text string, converting:
+   * - **text** → <strong>text</strong> (supports nested links inside bold)
+   * - [display text](url) → internal React Router <Link> (for /paths) or external <a> (for https://)
+   * - bare https://... URLs → external <a target="_blank">
+   */
   const renderTextWithLinks = (text: string, keyPrefix = ""): React.ReactNode[] => {
     const combinedRegex =
       /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+(?<![.,;)]))/g;
@@ -26,10 +32,12 @@ export default function HomeTestPrivacyPolicyPage() {
       }
 
       if (match[1] !== undefined) {
+        // **bold** text — recurse to support bold+link combos
         const boldContent = match[1];
         const innerParts = renderTextWithLinks(boldContent, `${keyPrefix}b${match.index}-`);
         parts.push(<strong key={`${keyPrefix}bold-${match.index}`}>{innerParts}</strong>);
       } else if (match[4]) {
+        // Bare https:// URL
         const url = match[4];
         parts.push(
           <a
@@ -44,6 +52,7 @@ export default function HomeTestPrivacyPolicyPage() {
           </a>,
         );
       } else {
+        // Markdown-style link [display text](href)
         const linkText = match[2];
         const href = match[3];
         const isExternal = href.startsWith("http");
@@ -80,32 +89,72 @@ export default function HomeTestPrivacyPolicyPage() {
     return parts.length > 0 ? parts : [<span key={`${keyPrefix}plain`}>{text}</span>];
   };
 
-
-  const renderHeading = (text: string) => {
-    const numberMatch = text.match(/^(\d+\.\s+)/);
-    if (numberMatch) {
-      return (
-        <>
-          <strong>{numberMatch[1]}</strong>
-          {text.slice(numberMatch[1].length)}
-        </>
-      );
-    }
-    return text;
-  };
-
+  /**
+   * Renders a paragraph, auto-bolding the leading paragraph reference number (e.g. "1.1. ")
+   */
   const renderParagraphs = (paragraphs: string[]) => {
-    return paragraphs.map((paragraph, index) => (
-      <p key={index} className="nhsuk-body">
-        {renderTextWithLinks(paragraph, `p${index}-`)}
-      </p>
-    ));
+    return paragraphs.map((paragraph, index) => {
+      const numberMatch = paragraph.match(/^(\d+\.\d+\.?\s+)/);
+      if (numberMatch) {
+        const number = numberMatch[1];
+        const rest = paragraph.slice(number.length);
+        return (
+          <p key={index} className="nhsuk-body">
+            <strong>{number}</strong>
+            {renderTextWithLinks(rest, `p${index}-`)}
+          </p>
+        );
+      }
+      return (
+        <p key={index} className="nhsuk-body">
+          {renderTextWithLinks(paragraph, `p${index}-`)}
+        </p>
+      );
+    });
   };
 
   const renderListItems = (items: string[]) => {
     return items.map((item, index) => (
       <li key={index}>{renderTextWithLinks(item, `li${index}-`)}</li>
     ));
+  };
+
+  const renderTable = (table: {
+    caption?: string;
+    headers: string[];
+    rows: string[][];
+  }) => {
+    return (
+      <table className="nhsuk-table nhsuk-u-margin-top-4">
+        {table.caption && (
+          <caption className="nhsuk-table__caption">{table.caption}</caption>
+        )}
+        <thead className="nhsuk-table__head">
+          <tr>
+            {table.headers.map((header, i) => (
+              <th key={i} scope="col" className="nhsuk-table__header">
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="nhsuk-table__body">
+          {table.rows.map((row, rowIdx) => (
+            <tr key={rowIdx} className="nhsuk-table__row">
+              {row.map((cell, cellIdx) => (
+                <td key={cellIdx} className="nhsuk-table__cell">
+                  {cell.split("\n").map((line, lineIdx) => (
+                    <p key={lineIdx} className="nhsuk-body nhsuk-u-margin-bottom-1">
+                      {renderTextWithLinks(line, `tbl-${rowIdx}-${cellIdx}-${lineIdx}-`)}
+                    </p>
+                  ))}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
   };
 
   return (
@@ -125,51 +174,35 @@ export default function HomeTestPrivacyPolicyPage() {
           className="nhsuk-u-margin-top-7"
         >
           <h2 id={`section-${section.id}`} className="nhsuk-heading-m">
-            {renderHeading(section.heading)}
+            {section.heading}
           </h2>
 
           {renderParagraphs(section.paragraphs)}
 
           {section.subsections?.map((subsection, subIndex) => (
             <div key={subIndex} className="nhsuk-u-margin-top-4">
-              {subsection.inlineHeading && subsection.heading ? (
-                subsection.paragraphs?.map((paragraph, pIdx) => (
-                  <p key={pIdx} className="nhsuk-body">
-                    {pIdx === 0 && (
-                      <><strong>{subsection.heading}</strong>{" – "}</>
-                    )}
-                    {renderTextWithLinks(paragraph, `sub${subIndex}-p${pIdx}-`)}
-                  </p>
-                ))
-              ) : (
-                <>
-                  {subsection.heading && (
-                    <h3 className="nhsuk-heading-s">{subsection.heading}</h3>
-                  )}
-                  {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
-                </>
+              {subsection.heading && (
+                <h3 className="nhsuk-heading-s">{subsection.heading}</h3>
               )}
 
+              {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
+
               {subsection.list && (() => {
-                if (subsection.listStyle === "dash") {
-                  const items = subsection.list.map((item, idx) => (
-                    <p key={idx} className="nhsuk-body nhsuk-u-margin-bottom-1">
-                      {"- "}{renderTextWithLinks(item, `dash${subIndex}-${idx}-`)}
-                    </p>
-                  ));
-                  return subsection.indented ? (
-                    <div className="nhsuk-u-margin-left-4">{items}</div>
-                  ) : <div>{items}</div>;
-                }
+                const ListTag = subsection.ordered ? "ol" : "ul";
+                const listClass = subsection.ordered
+                  ? "nhsuk-list nhsuk-list--number"
+                  : "nhsuk-list nhsuk-list--bullet";
                 const list = (
-                  <ul className="nhsuk-list nhsuk-list--bullet">
+                  <ListTag className={listClass}>
                     {renderListItems(subsection.list)}
-                  </ul>
+                  </ListTag>
                 );
                 return subsection.indented ? (
                   <div className="nhsuk-u-margin-left-4">{list}</div>
                 ) : list;
               })()}
+
+              {subsection.table && renderTable(subsection.table)}
             </div>
           ))}
         </section>
