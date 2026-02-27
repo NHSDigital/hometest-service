@@ -54,6 +54,7 @@ export interface OrderAnswers {
   mobileNumberSource?: 'nhs-login' | 'manual';
 
   // Consent
+  consentCheckboxChecked?: boolean;
   consentGiven?: boolean;
   consentTimestamp?: string;
 }

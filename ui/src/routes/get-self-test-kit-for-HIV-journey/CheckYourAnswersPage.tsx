@@ -35,7 +35,9 @@ export default function CheckYourAnswersPage() {
   const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
   const { commonContent, "check-your-answers": content } = useContent();
 
-  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(
+    orderAnswers.consentCheckboxChecked ?? false,
+  );
   const [consentError, setConsentError] = useState<string | null>(null);
 
   const handleChangeClick = (field: 'address' | 'mobile' | 'comfort') => {
@@ -64,6 +66,7 @@ export default function CheckYourAnswersPage() {
 
   const handleConsentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setConsentChecked(e.target.checked);
+    updateOrderAnswers({ consentCheckboxChecked: e.target.checked });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
