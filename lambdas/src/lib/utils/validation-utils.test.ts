@@ -22,7 +22,6 @@ describe("generateReadableError", () => {
             expect(readable).toContain("code:");
             expect(readable).toContain("arrayStuff.0:");
         }
-
     });
 
     it("should handle empty ZodError gracefully", () => {
