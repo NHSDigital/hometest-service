@@ -1,10 +1,9 @@
 import { ClientConfig } from "pg";
-import { readFileSync } from "fs";
-import { join } from "path";
 import {
   retrieveMandatoryEnvVariable,
   retrieveOptionalEnvVariable,
 } from "../utils";
+import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
 
 import type { SecretsClient } from "../secrets/secrets-manager-client";
 
@@ -25,11 +24,9 @@ function buildSslConfig(sslEnabled: boolean): false | { rejectUnauthorized: bool
   }
 
   // Use strict SSL with AWS RDS certificate
-  const certPath = join(__dirname, "../../certs/eu-west-2-bundle.pem");
-  const ca = readFileSync(certPath, "utf-8");
   return {
     rejectUnauthorized: true,
-    ca,
+    ca: EU_WEST_2_BUNDLE,
   };
 }
 
@@ -41,7 +38,7 @@ export function postgresConfig(options: PostgresConfigOptions): ClientConfig {
   return {
     user: options.username,
     host: options.address,
-    port: parseInt(options.port, 10),
+    port: Number.parseInt(options.port, 10),
     database: options.database,
     password: async () => {
       const password = await options.secretsClient.getSecretValue(
@@ -49,7 +46,7 @@ export function postgresConfig(options: PostgresConfigOptions): ClientConfig {
         { jsonKey: "password" },
       );
       // Trim whitespace and remove surrounding quotes
-      return password.trim().replace(/^["']|["']$/g, "");
+      return password.trim().replaceAll(/(^["']|["']$)/g, "");
     },
     options: configOptions,
     ssl: buildSslConfig(options.sslEnabled),

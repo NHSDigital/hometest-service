@@ -1,6 +1,5 @@
 import { postgresConfig, postgresConfigFromEnv } from "./db-config";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
 
 describe("db-config", () => {
   // Environment variable keys
@@ -20,7 +19,6 @@ describe("db-config", () => {
   const TEST_DATABASE = "testdb";
   const TEST_SCHEMA_PUBLIC = "public";
   const TEST_PASSWORD_SECRET_NAME = "postgres-db-password";
-  const CERT_PATH = "../../certs/eu-west-2-bundle.pem";
 
   const mockEnvVariables = {
     [ENV_DB_USERNAME]: "test-username",
@@ -221,12 +219,10 @@ describe("db-config", () => {
       process.env.DB_SSL = "true";
 
       const config = postgresConfigFromEnv(secretsClient);
-      const certPath = join(__dirname, CERT_PATH);
-      const ca = readFileSync(certPath, "utf-8");
 
       expect(config.ssl).toEqual({
         rejectUnauthorized: true,
-        ca,
+        ca: EU_WEST_2_BUNDLE,
       });
     });
   });
@@ -256,12 +252,10 @@ describe("db-config", () => {
         secretsClient,
         sslEnabled: true,
       });
-      const certPath = join(__dirname, CERT_PATH);
-      const ca = readFileSync(certPath, "utf-8");
 
       expect(config.ssl).toEqual({
         rejectUnauthorized: true,
-        ca,
+        ca: EU_WEST_2_BUNDLE,
       });
     });
   });

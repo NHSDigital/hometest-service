@@ -1,4 +1,8 @@
------BEGIN CERTIFICATE-----
+// Source: https://truststore.pki.rds.amazonaws.com/eu-west-2/eu-west-2-bundle.pem
+// This is a public certificate bundle, so it's safe to commit it to version control.
+// ALPHA: We should think about certificate rotation
+
+export const EU_WEST_2_BUNDLE = `-----BEGIN CERTIFICATE-----
 MIICrjCCAjSgAwIBAgIRAKKPTYKln9L4NTx9dpZGUjowCgYIKoZIzj0EAwMwgZYx
 CzAJBgNVBAYTAlVTMSIwIAYDVQQKDBlBbWF6b24gV2ViIFNlcnZpY2VzLCBJbmMu
 MRMwEQYDVQQLDApBbWF6b24gUkRTMQswCQYDVQQIDAJXQTEvMC0GA1UEAwwmQW1h
@@ -74,3 +78,4 @@ YiZAbSRRZG+Li23cmPWrbA1CJY121SB+WybCbysbOXzhD3Sl2KSZRwSw4p2HrFtV
 1Prk0dOBtZxCG9luf87ultuDZpfS0w6oNBAMXocgswk24ylcADkkFxBWW+7BETn1
 EpK+t1Lm37mU4sxtuha00XAi
 -----END CERTIFICATE-----
+`;
