@@ -203,7 +203,7 @@
       "options": {
         "yes": {
           "text": "Yes I'm comfortable, send me the kit",
-          "hint": "The test is supplied by Preventx, a trusted partner of the NHS"
+          "hint": "The test is supplied by {supplier}, a trusted partner of the NHS"
         },
         "no": {
           "text": "No, I'd rather go to a sexual health clinic instead",
@@ -1056,9 +1056,7 @@
       "changeLink": "Change",
       "consent": {
         "legend": "Your consent",
-        "labelPrefix": "I understand that",
-        "supplierName": "[Supplier]",
-        "labelMiddle": ", a trusted partner of NHS, will provide the free self-test kit. I agree to their",
+        "label": "I understand that {supplier}, a trusted partner of NHS, will provide the free self-test kit. I agree to their",
         "termsOfUseText": "terms of use",
         "termsOfUseHref": "supplier-terms-and-conditions",
         "labelAnd": "and",

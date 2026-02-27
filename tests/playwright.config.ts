@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { AuthType, ConfigFactory } from './configuration/configuration';
+import { AuthType, ConfigFactory } from './configuration/EnvironmentConfiguration';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
