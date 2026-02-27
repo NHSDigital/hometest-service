@@ -50,6 +50,9 @@ export interface ValidationMessages {
     required: string;
     invalid: string;
   };
+  consent: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -290,6 +293,25 @@ export interface OrderTrackingContent {
   loading: string;
 }
 
+export interface PrivacyPolicySubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface PrivacyPolicySection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: PrivacyPolicySubsection[];
+}
+
+export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
+}
+
 export interface BloodSampleGuideContent {
   title: string;
   whatsInKit: {
@@ -316,6 +338,29 @@ export interface BloodSampleGuideContent {
   }>;
 }
 
+export interface CheckYourAnswersContent {
+  title: string;
+  updateMessage: string;
+  deliveryMessage: string;
+  summaryLabels: {
+    name: string;
+    deliveryAddress: string;
+    comfortableDoingTest: string;
+    mobileNumber: string;
+  };
+  changeLink: string;
+  consent: {
+    legend: string;
+    label: string;
+    termsOfUseText: string;
+    termsOfUseHref: string;
+    labelAnd: string;
+    privacyPolicyText: string;
+    privacyPolicyHref: string;
+  };
+  submitButton: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -328,9 +373,11 @@ export interface PagesContent {
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
+  "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
 }
 

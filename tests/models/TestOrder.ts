@@ -11,6 +11,47 @@ export interface TestOrderRow {
   birth_date: Date;
 }
 
+export type UUID = string;
+export interface Supplier {
+  supplier_id: UUID;
+  supplier_name: 'Preventx' | 'SH:24';
+}
+
+export interface PatientMapping {
+  patient_uid: UUID;
+  nhs_number: string;
+  birth_date: string; // ISO date (YYYY-MM-DD)
+}
+
+export interface TestOrder {
+  order_uid: UUID;
+  supplier_id: UUID;
+  patient_uid: UUID;
+  test_code: string; // e.g., 'PCR'
+  originator: string; // e.g., 'automatic-test'
+}
+
+
+export type OrderStatusCode = 'ORDER_RECEIVED' | 'DISPATCHED' | 'RECEIVED' | 'COMPLETE';
+
+export interface CreateOrderInput {
+  nhs_number: string;
+  birth_date: string; // 'YYYY-MM-DD'
+  supplier_name: Supplier['supplier_name'];
+  test_code: string;
+  originator?: string;
+  initial_status: OrderStatusCode;
+}
+
+export interface CreateOrderResult {
+  patient_uid: UUID;
+  supplier_id: UUID;
+  order_uid: UUID;
+  status_code: OrderStatusCode;
+  correlation_id: UUID;
+}
+
+
 export class TestOrderModel {
   order_uid!: string;
   order_reference!: number;

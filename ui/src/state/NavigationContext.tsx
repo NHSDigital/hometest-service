@@ -21,10 +21,12 @@ export interface NavigationState {
 interface JourneyNavigationContextType {
   currentStep: string;
   stepHistory: string[];
+  returnToStep: string | null;
   goToStep: (step: string) => void;
   goBack: () => void;
   canGoBack: () => boolean;
   clearHistory: () => void;
+  setReturnToStep: (step: string | null) => void;
 }
 
 const JourneyNavigationContext = createContext<
@@ -58,6 +60,8 @@ export function JourneyNavigationProvider({
     stepHistory: [currentStep],
     lastStep: currentStep,
   }));
+
+  const [returnToStep, setReturnToStep] = useState<string | null>(null);
 
   let stepHistory = navigation.stepHistory;
   if (navigation.lastStep !== currentStep) {
@@ -131,10 +135,12 @@ export function JourneyNavigationProvider({
       value={{
         currentStep,
         stepHistory,
+        returnToStep,
         goToStep,
         goBack,
         canGoBack,
         clearHistory,
+        setReturnToStep,
       }}
     >
       {children}

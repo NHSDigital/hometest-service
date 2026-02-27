@@ -10,7 +10,7 @@ import PageLayout from "@/layouts/PageLayout";
 
 export default function EnterMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { commonContent, "enter-mobile-phone-number": content } = useContent();
 
   const [mobileNumber, setMobileNumber] = useState(orderAnswers.mobileNumber || "");
@@ -32,11 +32,18 @@ export default function EnterMobileNumberPage() {
       setMobileNumberError(null);
       const updatedData = {
         mobileNumber: result.data,
+        mobileNumberSource: 'manual' as const,
       };
       console.log("[EnterMobileNumberPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
-      // goToStep("check-your-answers");
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep("check-your-answers");
+      }
     }
   };
 

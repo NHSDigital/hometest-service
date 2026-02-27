@@ -13,7 +13,7 @@ export class OrderStatusPage extends BasePage {
     super(page);
     this.orderHeading = page.locator('h1.nhsuk-heading-l', { hasText: "HIV self-test" });
     this.statusTag = page.locator('#order-status-tag');
-    this.orderedDate = page.locator('#order-date');
+    this.orderedDate = page.locator('span[aria-label*="Order date"]');
     this.referenceNumber = page.locator('#reference-number');
     this.config = ConfigFactory.getConfig();
 
@@ -21,5 +21,9 @@ export class OrderStatusPage extends BasePage {
 
   async navigateToOrder(orderId: string): Promise<void> {
     await this.page.goto(`${this.config.uiBaseUrl}/orders/${orderId}/tracking`);
+  }
+
+  async waitForOrderToLoad(): Promise<void> {
+    await this.orderedDate.waitFor({ state: 'visible' });
   }
 }
