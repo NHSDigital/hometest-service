@@ -1,7 +1,0 @@
-cdk.out
-node_modules
-*.js
-*.d.ts
-package-lock.json
-obj
-bin
