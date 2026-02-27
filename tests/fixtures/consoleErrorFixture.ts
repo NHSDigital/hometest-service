@@ -44,12 +44,17 @@ const defaultOptions: ErrorCaptureOptions = {
     /NHSCookieConsent is not defined/,
     /nhsapp is not defined/,
     /"undefined" is not valid JSON/,
+    // Next.js hydration warning - not an application issue
+    /No `HydrateFallback` element provided to render during initial hydration/
   ],
-  ignoreStatusCodes: [],
+  ignoreStatusCodes: []
 };
 
-function shouldIgnoreError(text: string, patterns: (string | RegExp)[]): boolean {
-  return patterns.some(pattern => {
+function shouldIgnoreError(
+  text: string,
+  patterns: (string | RegExp)[]
+): boolean {
+  return patterns.some((pattern) => {
     if (typeof pattern === 'string') {
       return text.includes(pattern);
     }
@@ -62,7 +67,11 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
   networkErrors: [[], { option: true }],
   errorCaptureOptions: [defaultOptions, { option: true }],
 
-  page: async ({ page, consoleErrors, networkErrors, errorCaptureOptions }, use, testInfo: TestInfo) => {
+  page: async (
+    { page, consoleErrors, networkErrors, errorCaptureOptions },
+    use,
+    testInfo: TestInfo
+  ) => {
     const options = { ...defaultOptions, ...errorCaptureOptions };
     const errors: ConsoleError[] = [];
     const netErrors: NetworkError[] = [];
@@ -76,7 +85,7 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
             type: msg.type(),
             text,
             location: msg.location()?.url,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString()
           });
         }
       }
@@ -89,7 +98,7 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
           type: 'pageerror',
           text: error.message,
           location: error.stack,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         });
       }
     });
@@ -105,7 +114,7 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
             status,
             statusText: response.statusText(),
             method: response.request().method(),
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString()
           });
         }
       }
@@ -125,14 +134,14 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
     if (hasConsoleErrors) {
       await testInfo.attach('console-errors', {
         body: JSON.stringify(errors, null, 2),
-        contentType: 'application/json',
+        contentType: 'application/json'
       });
     }
 
     if (hasNetworkErrors) {
       await testInfo.attach('network-errors', {
         body: JSON.stringify(netErrors, null, 2),
-        contentType: 'application/json',
+        contentType: 'application/json'
       });
     }
 
@@ -155,5 +164,5 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
     if (failureMessages.length > 0) {
       expect.soft(false, failureMessages.join('\n\n')).toBeTruthy();
     }
-  },
+  }
 });
