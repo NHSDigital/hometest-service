@@ -2,11 +2,24 @@ import { expect } from '@playwright/test';
 import { test } from '../../fixtures/CombinedTestFixture';
 import { type Result } from 'axe-core';
 import { TestOrderDbClient } from '../../db/TestOrderDbClient';
+import { OrderStatusCode } from '../../models/TestOrder';
+
+interface OrderStatusStep {
+  statusCode?: OrderStatusCode;
+  stepName: string;
+}
+
+const ORDER_STATUS_STEPS: OrderStatusStep[] = [
+  { stepName: 'Status Confirmed' },
+  { statusCode: 'DISPATCHED', stepName: 'Status Dispatched' },
+  { statusCode: 'RECEIVED', stepName: 'Status Test received' },
+  { statusCode: 'COMPLETE', stepName: 'Status Result Ready' }
+];
 
 let orderId: string;
 let patientId: string;
 const dbClient = new TestOrderDbClient();
-const accessErrors: Result[] = [];
+
 test.describe('Accessibility Testing @accessibility', () => {
   test.beforeAll(async ({ testedUser }) => {
     await dbClient.connect();
@@ -33,50 +46,25 @@ test.describe('Accessibility Testing @accessibility', () => {
     orderStatusPage,
     accessibility
   }) => {
-    await orderStatusPage.navigateToOrder(orderId);
-    await orderStatusPage.waitForOrderToLoad();
-    accessErrors.push(
-      ...(await accessibility.runAccessibilityCheck(
-        orderStatusPage,
-        'Status Confirmed',
-        'Order Tracking Page'
-      ))
-    );
+    const accessErrors: Result[] = [];
 
-    await dbClient.updateOrderStatus(orderId, 'DISPATCHED');
+    for (const { statusCode, stepName } of ORDER_STATUS_STEPS) {
+      await test.step(`Accessibility check: ${stepName}`, async () => {
+        if (statusCode) {
+          await dbClient.updateOrderStatus(orderId, statusCode);
+        }
 
-    await orderStatusPage.navigateToOrder(orderId);
-    await orderStatusPage.waitForOrderToLoad();
-    accessErrors.push(
-      ...(await accessibility.runAccessibilityCheck(
-        orderStatusPage,
-        'Status Dispatched',
-        'Order Tracking Page'
-      ))
-    );
-
-    await dbClient.updateOrderStatus(orderId, 'RECEIVED');
-
-    await orderStatusPage.navigateToOrder(orderId);
-    await orderStatusPage.waitForOrderToLoad();
-    accessErrors.push(
-      ...(await accessibility.runAccessibilityCheck(
-        orderStatusPage,
-        'Status Test received',
-        'Order Tracking Page'
-      ))
-    );
-
-    await dbClient.updateOrderStatus(orderId, 'COMPLETE');
-    await orderStatusPage.navigateToOrder(orderId);
-    await orderStatusPage.waitForOrderToLoad();
-    accessErrors.push(
-      ...(await accessibility.runAccessibilityCheck(
-        orderStatusPage,
-        'Status Result Ready',
-        'Order Tracking Page'
-      ))
-    );
+        await orderStatusPage.navigateToOrder(orderId);
+        await orderStatusPage.waitForOrderToLoad();
+        accessErrors.push(
+          ...(await accessibility.runAccessibilityCheck(
+            orderStatusPage,
+            stepName,
+            'Order Tracking Page'
+          ))
+        );
+      });
+    }
 
     expect(accessErrors).toHaveLength(0);
   });
