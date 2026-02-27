@@ -175,8 +175,14 @@ module "eligibility_lookup_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps",
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 
@@ -285,8 +291,14 @@ module "order_router_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 
@@ -336,8 +348,14 @@ module "order_service_lambda" {
 
   environment_variables = {
     NODE_OPTIONS              = "--enable-source-maps"
-    DATABASE_URL              = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
     ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
+    DB_USERNAME               = "app_user"
+    DB_ADDRESS                = "postgres-db"
+    DB_PORT                   = "5432"
+    DB_NAME                   = "local_hometest_db"
+    DB_SCHEMA                 = "hometest"
+    DB_SECRET_NAME            = "postgres-db-password"
+    DB_SSL                    = "false"
   }
 }
 
