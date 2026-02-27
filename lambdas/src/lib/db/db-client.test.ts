@@ -16,7 +16,13 @@ describe("PostgresDbClient", () => {
 
   beforeEach(() => {
     client = new PostgresDbClient(
-      "postgresql://test:test@localhost:5432/testdb",
+      {
+        user: "test-user",
+        host: "test-host",
+        port: 5432,
+        database: "test-db",
+        password: "test-password",
+      }
     );
     mockPool = (client as any).pool;
   });
