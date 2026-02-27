@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
+import { ConfigFactory, type ConfigInterface } from '../configuration/EnvironmentConfiguration';
 
 export class OrderStatusPage extends BasePage {
   readonly config: ConfigInterface;

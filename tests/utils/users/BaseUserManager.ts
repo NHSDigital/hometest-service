@@ -7,7 +7,7 @@ import {
 import type { BaseTestUser } from './BaseUser';
 import { defaultUserAgent } from '../../playwright.config';
 
-import { ConfigFactory } from '../../configuration/configuration';
+import { ConfigFactory } from '../../configuration/EnvironmentConfiguration';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
