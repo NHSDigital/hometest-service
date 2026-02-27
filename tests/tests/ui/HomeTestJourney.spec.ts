@@ -13,11 +13,13 @@ let actualHeaderText = "";
 test.describe('HIV Test Order journeys', () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
-    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
+    actualHeaderText = await homeTestStartPage.getHeaderText();
+    expect(actualHeaderText).toBe("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
   });
 
   test('Order test journey', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postcode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
@@ -42,13 +44,15 @@ test.describe('HIV Test Order journeys', () => {
     await enterMobileNumberPage.fillMobileNumberAndContinue(randomMobileNumber);
   });
 
-  test('Order test journey by providing address manually from select delivery address page', async ({ findAddressPage, enterAddressManuallyPage }) => {
+  test('Order test journey by providing address manually from select delivery address page', async ({ homeTestStartPage, findAddressPage, enterAddressManuallyPage, selectDeliveryAddressPage }) => {
+    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await findAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillAddressAndContinue(randomAddress)
   });
 
-  test('Choose to goto Sexual health clinic instead', async ({ findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+  test('Choose to goto Sexual health clinic instead', async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage }) => {
+    await homeTestStartPage.clickStartNowButton();
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
