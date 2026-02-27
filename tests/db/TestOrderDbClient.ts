@@ -95,8 +95,7 @@ export class TestOrderDbClient extends BaseDbClient {
       input.originator,
     );
     const correlation_id = await this.insertOrderStatus(order_uid, input.initial_status);
-    await this.insertOrderStatus(order_uid, input.initial_status);
-    return { order_uid, patient_uid };
+    return { order_uid, patient_uid, correlation_id };
   }
 
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
