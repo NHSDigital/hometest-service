@@ -6,7 +6,6 @@ export interface Address {
   addressline2: string;
   addressline3: string;
   towncity: string;
-  mobileNumber: string;
 }
 
 export class AddressModel implements Address {
@@ -15,7 +14,6 @@ export class AddressModel implements Address {
   addressline2: string;
   addressline3: string;
   towncity: string;
-  mobileNumber: string;
 
   constructor(data: Address) {
     this.postcode = data.postcode;
@@ -23,7 +21,6 @@ export class AddressModel implements Address {
     this.addressline2 = data.addressline2;
     this.addressline3 = data.addressline3;
     this.towncity = data.towncity;
-    this.mobileNumber = data.mobileNumber;
   }
 
   static fromJson(data: Address): AddressModel {
