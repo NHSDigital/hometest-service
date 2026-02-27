@@ -208,19 +208,12 @@ When running tests locally (`ENV=local`), you need to configure your test user c
 
 3. **Set environment variables**:
 
-   Set the required authentication environment variables:
+   Set the required authentication environment variables by creating a `credentials.ts` file:
 
-   ```bash
-   # Linux/macOS
-   export OTP="your-otp-secret"
-   export GENERIC_PASS="your-password"
-   export ENV=local
-
-   # Windows (PowerShell)
-   $env:OTP="your-otp-secret"
-   $env:GENERIC_PASS="your-password"
-   $env:ENV="local"
-   ```
+  ```typescript
+  export OTP="your-otp-secret"
+  export GENERIC_PASS="your-password"
+  ```
 
 #### How It Works
 

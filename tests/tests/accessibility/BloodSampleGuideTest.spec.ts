@@ -1,13 +1,14 @@
 import { expect } from '@playwright/test';
-import { test } from '../../fixtures';
+import { test } from '../../fixtures/CombinedTestFixture';
 
-test.describe('Accessibility Testing @accessibility', () => {
-
-  test('Blood Sample Guide Page', async ({ homeTestStartPage, bloodSampleGuidePage, accessibility }) => {
+test('Blood sample guide page',
+  {
+    tag: ['@accessibility']
+  },
+  async ({ homeTestStartPage, bloodSampleGuidePage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickBloodSampleGuideLink();
     await bloodSampleGuidePage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(bloodSampleGuidePage.page, "Blood Sample Guide Page");
     expect(accessErrors).toHaveLength(0)
-  });
 });
