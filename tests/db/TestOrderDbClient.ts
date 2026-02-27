@@ -1,5 +1,5 @@
 import { BaseDbClient } from './BaseDbClient';
-import { TestOrderRow, CreateOrderInput, OrderStatusCode, UUID, PatientMapping, Supplier, TestOrder } from '../models/TestOrder';
+import { TestOrderRow, CreateOrderInput, OrderStatusCode, UUID, PatientMapping, Supplier, TestOrder, CreateOrderResult } from '../models/TestOrder';
 export class TestOrderDbClient extends BaseDbClient {
 
   async getOrderByUid(orderUid: string): Promise<TestOrderRow | undefined> {
@@ -58,12 +58,12 @@ export class TestOrderDbClient extends BaseDbClient {
     }
 
     // Patient doesn't exist, insert new patient
-    const addPatient = await this.query<{ patient_uid: UUID }>(`
+    const rows = await this.query<{ patient_uid: UUID }>(`
       INSERT INTO patient_mapping (nhs_number, birth_date)
       VALUES ($1, $2::date)
       RETURNING patient_uid
     `, [nhs_number, birth_date]);
-    return addPatient[0].patient_uid;
+    return rows[0].patient_uid;
   }
 
  async getSupplierIdByName(supplier_name: string): Promise<UUID> {
@@ -91,12 +91,13 @@ export class TestOrderDbClient extends BaseDbClient {
  return rows[0].order_uid as UUID;
  }
 
- async insertOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<void> {
- const sql = `
+ async insertOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<UUID> {
+ const rows = await this.query<CreateOrderResult>(`
   INSERT INTO order_status (order_uid, status_code)
   VALUES ($1, $2)
- `;
- await this.query(sql, [order_uid, status_code]);
+  RETURNING correlation_id
+ `, [order_uid, status_code]);
+ return rows[0].correlation_id as UUID;
  }
 
  async updateOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<void> {
@@ -117,7 +118,7 @@ export class TestOrderDbClient extends BaseDbClient {
  * @param initial_status - initial status of the order (e.g., 'ORDER_RECEIVED')
  * @returns Patient UID and Order UID of the created order
  */
- async createOrderWithPatientAndStatus(input: CreateOrderInput): Promise<{ order_uid: UUID; patient_uid: UUID }> {
+ async createOrderWithPatientAndStatus(input: CreateOrderInput): Promise<{ order_uid: UUID; patient_uid: UUID; correlation_id: UUID }> {
  const patient_uid = await this.upsertPatient(input.nhs_number, input.birth_date);
  const supplier_id = await this.getSupplierIdByName(input.supplier_name);
  const order_uid = await this.createTestOrder(
@@ -126,9 +127,9 @@ export class TestOrderDbClient extends BaseDbClient {
   input.test_code,
   input.originator ?? 'automatic-test'
  );
- await this.insertOrderStatus(order_uid, input.initial_status);
+ const correlation_id = await this.insertOrderStatus(order_uid, input.initial_status);
 
- return { order_uid, patient_uid };
+ return { order_uid, patient_uid, correlation_id };
  }
 
  async deletePatientByNHSandDOB(nhs_number: string, birth_date: string): Promise<void> {

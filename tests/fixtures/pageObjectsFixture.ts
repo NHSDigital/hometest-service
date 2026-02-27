@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, BloodSampleGuidePage, EnterMobileNumberPage, PrivacyPolicyPage } from '../page-objects';
+import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, BloodSampleGuidePage, EnterMobileNumberPage, PrivacyPolicyPage, ConfirmAndUpdateMobileNumberPage } from '../page-objects';
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -11,6 +11,7 @@ export interface MyFixtures {
   privacyPolicyPage: PrivacyPolicyPage;
   bloodSampleGuidePage: BloodSampleGuidePage;
   enterMobileNumberPage: EnterMobileNumberPage;
+  confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -48,5 +49,8 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   enterMobileNumberPage: async ({ page }, use) => {
     await use(new EnterMobileNumberPage(page));
+  },
+  confirmAndUpdateMobileNumberPage: async ({ page }, use) => {
+    await use(new ConfirmAndUpdateMobileNumberPage(page));
   }
 });
