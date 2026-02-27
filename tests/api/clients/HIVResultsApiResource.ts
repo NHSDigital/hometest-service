@@ -1,7 +1,7 @@
 import { APIResponse } from '@playwright/test';
 import { BaseApiClient } from './BaseApiClient';
-import { API_ENDPOINTS } from '../Endpoints';
-import { HIVTestResult } from '../../test-data/HIVTestResultData';
+import { API_ENDPOINTS } from '../endpoints';
+import { ResultsObservationData } from '../../test-data/ResultsObservationData';
 import { ApiHeaders } from '../../utils/ApiRequestHelper';
 import {
   GetResultParams,
@@ -10,7 +10,7 @@ import {
 
 export class HIVResultsApiResource extends BaseApiClient {
   async submitTestResults(
-    testData: HIVTestResult,
+    testData: ResultsObservationData,
     headers: ApiHeaders,
   ): Promise<APIResponse> {
     return this.post(API_ENDPOINTS.results.base, {

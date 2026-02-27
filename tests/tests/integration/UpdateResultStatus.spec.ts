@@ -1,9 +1,9 @@
 import { expect } from '@playwright/test';
-import { test } from '../../fixtures';
+import { test } from "../../fixtures/CombinedTestFixture";
 import { TestOrderDbClient } from '../../db/TestOrderDbClient';
 import { ResultsObservationData } from '../../test-data/ResultsObservationData';
-import { createHeadersTestResults } from '../../test-data/HeadersTestResults';
 import { TestResultDbClient } from '../../db/TestResultDbClient';
+import { createGetResultHeaders } from '../../test-data/GetResultRequestParams';
 
 let orderId: string;
 let patientId: string;
@@ -13,15 +13,15 @@ const resultDbClient = new TestResultDbClient();
 const supplierName = 'Preventx';
 let supplierId: string;
 
-test.describe('Test results update flow', () => {
+test.describe('Results Flow - Update Order Results Logic', () => {
 
-  test.beforeAll('Connect to the database', async ({ testedUser }) => {
+  test.beforeAll('Connect to the database', async () => {
     await dbClient.connect();
     await resultDbClient.connect();
   });
 
 
-  test.beforeEach(async ({ testedUser }) => {
+  test.beforeEach('Create a patient, order, initial order status', async ({ testedUser }) => {
     console.log('Tested user:', JSON.stringify(testedUser, null, 2));
 
     if (!testedUser.nhsNumber || !testedUser.dob) {
@@ -50,9 +50,9 @@ test.describe('Test results update flow', () => {
     }
 
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
-    const headers = createHeadersTestResults(correlationId);
+    const headers = createGetResultHeaders(correlationId);
     const response = await hivResultsApi.submitTestResults(testData, headers);
-    hivResultsApi.validateResponse(response, 201);
+    hivResultsApi.validateStatus(response, 201);
 
     expect(await dbClient.getLatestOrderStatusByOrderUid(orderId)).toEqual('COMPLETE');
     expect(await resultDbClient.getLatestResultStatusByOrderUid(orderId)).toEqual('RESULT_AVAILABLE');
@@ -64,9 +64,9 @@ test.describe('Test results update flow', () => {
     }
 
     const testData = ResultsObservationData.buildAbnormalObservation(orderId, patientId, supplierId);
-    const headers = createHeadersTestResults(correlationId);
+    const headers = createGetResultHeaders(correlationId);
     const response = await hivResultsApi.submitTestResults(testData, headers);
-    hivResultsApi.validateResponse(response, 201);
+    hivResultsApi.validateStatus(response, 201);
 
     expect(await dbClient.getLatestOrderStatusByOrderUid(orderId)).toEqual('RECEIVED');
     expect(await resultDbClient.getLatestResultStatusByOrderUid(orderId)).toEqual('RESULT_WITHHELD');

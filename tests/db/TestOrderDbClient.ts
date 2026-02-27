@@ -60,12 +60,14 @@ export class TestOrderDbClient extends BaseDbClient {
   async insertOrderStatus(
     orderUid: UUID,
     statusCode: OrderStatusCode,
-  ): Promise<void> {
-    await this.query(
+  ): Promise<UUID> {
+    const rows = await this.query<TestOrderModel>(
       `INSERT INTO hometest.order_status (order_uid, status_code)
-       VALUES ($1, $2)`,
+       VALUES ($1, $2)
+       RETURNING order_uid`,
       [orderUid, statusCode],
     );
+    return rows[0].order_uid;
   }
 
   async updateOrderStatus(
@@ -80,7 +82,7 @@ export class TestOrderDbClient extends BaseDbClient {
 
   async createOrderWithPatientAndStatus(
     input: CreateOrderInput,
-  ): Promise<{ order_uid: UUID; patient_uid: UUID }> {
+  ): Promise<{ order_uid: UUID; patient_uid: UUID; correlation_id: UUID }> {
     const patient_uid = await this.upsertPatient(
       input.nhs_number,
       input.birth_date,
@@ -92,8 +94,9 @@ export class TestOrderDbClient extends BaseDbClient {
       input.test_code,
       input.originator,
     );
+    const correlation_id = await this.insertOrderStatus(order_uid, input.initial_status);
     await this.insertOrderStatus(order_uid, input.initial_status);
-    return { order_uid, patient_uid };
+    return { order_uid, patient_uid, correlation_id };
   }
 
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
@@ -126,7 +129,7 @@ export class TestOrderDbClient extends BaseDbClient {
   }
 
     async getLatestOrderStatusByOrderUid(orderUid: string): Promise< UUID > {
-    const rows = await this.query<CreateOrderResult>(`
+    const rows = await this.query<TestOrderModel>(`
       SELECT status_code
       FROM hometest.order_status
       WHERE order_uid = $1
