@@ -22,8 +22,11 @@ test.describe("HIV Test Order journeys", () => {
     findAddressPage,
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
+    confirmAndUpdateMobileNumberPage,
+    checkYourAnswersPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postCode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
@@ -31,10 +34,18 @@ test.describe("HIV Test Order journeys", () => {
     expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(homeTestStartPage.headerText).toHaveText(
-      "This is what you'll need to do to give a blood sample",
-    );
+    await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
+    // ********
+    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
+    const expectedMobileNumber = await checkYourAnswersPage.getMobileNumber();
+    await confirmAndUpdateMobileNumberPage.clickContinue();
+    // const { actualPostcode, actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumber();
+    // expect(actualMobileNumber).toBe(expectedMobileNumber);
+    // expect(actualPostcode).toBe(filledPostcode);
+    await checkYourAnswersPage.selectConsentCheckbox();
+    await checkYourAnswersPage.clickSubmitOrder();
+    await expect(checkYourAnswersPage.headerText).toHaveText("Order submitted");
   });
 
   test("Mobile number test journey", async ({
