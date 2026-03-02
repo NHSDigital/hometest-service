@@ -2,10 +2,11 @@
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
-import type { ValidationMessages } from "@/content/schema";
+
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
+import type { ValidationMessages } from "@/content/schema";
+import { useContent } from "@/hooks";
 import { useState } from "react";
 
 // TODO: add postcode lookup integration
@@ -15,7 +16,10 @@ const MAX_POSTCODE_LENGTH = 8;
 const MAX_BUILDING_NAME_LENGTH = 100;
 
 // Validation functions
-const validatePostcode = (postcode: string, validationMessages: ValidationMessages): { valid: true; value: string } | { valid: false; message: string } => {
+const validatePostcode = (
+  postcode: string,
+  validationMessages: ValidationMessages,
+): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
     return { valid: false, message: validationMessages.postcode.required };
   }
@@ -33,7 +37,10 @@ const validatePostcode = (postcode: string, validationMessages: ValidationMessag
   return { valid: true, value: normalizedPostcode };
 };
 
-const validateBuildingName = (buildingName: string, validationMessages: ValidationMessages): string | null => {
+const validateBuildingName = (
+  buildingName: string,
+  validationMessages: ValidationMessages,
+): string | null => {
   if (!buildingName || buildingName.trim() === "") {
     return null;
   }
@@ -53,9 +60,7 @@ export default function EnterDeliveryAddressPage() {
   const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
   const [buildingName, setBuildingName] = useState(orderAnswers.buildingNumber || "");
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
-  const [buildingNameError, setBuildingNameError] = useState<string | null>(
-    null,
-  );
+  const [buildingNameError, setBuildingNameError] = useState<string | null>(null);
 
   console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
 
@@ -67,15 +72,16 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
-    const buildingNameValidationError = validateBuildingName(buildingName, commonContent.validation);
-
-    setPostcodeError(
-      postcodeValidation.valid ? null : postcodeValidation.message,
+    const buildingNameValidationError = validateBuildingName(
+      buildingName,
+      commonContent.validation,
     );
+
+    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
     setBuildingNameError(buildingNameValidationError);
 
     if (postcodeValidation.valid && !buildingNameValidationError) {
@@ -107,9 +113,7 @@ export default function EnterDeliveryAddressPage() {
         }
       }}
     >
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {content.title}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       {(postcodeError || buildingNameError) && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
@@ -178,14 +182,17 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <a href="enter-address-manually" onClick={(e) => {
+        <a
+          href="enter-address-manually"
+          onClick={(e) => {
             e.preventDefault();
             updateOrderAnswers({
               postcodeSearch: undefined,
-              buildingNumber: undefined
+              buildingNumber: undefined,
             });
             goToStep(JourneyStepNames.EnterAddressManually);
-          }}>
+          }}
+        >
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
