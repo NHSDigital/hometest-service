@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { AuthUser, AuthContext } from "@/state/AuthContext";
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
@@ -46,7 +47,7 @@ jest.mock("@/mocks/addressLookupResponse.json", () => ({
   ],
 }));
 
-jest.mock('@/lib/services/la-lookup-service', () => ({
+jest.mock("@/lib/services/la-lookup-service", () => ({
   __esModule: true,
   default: {
     getByPostcode: jest.fn().mockResolvedValue({
@@ -62,38 +63,51 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   },
 }));
 
-jest.mock('@/hooks/useContent', () => ({
+jest.mock("@/hooks/useContent", () => ({
   useContent: () => ({
     commonContent: {
       validation: {
         deliveryAddress: {
-          required: 'Select a delivery address',
+          required: "Select a delivery address",
         },
       },
       errorSummary: {
-        title: 'There is a problem',
+        title: "There is a problem",
       },
       navigation: {
-        continue: 'Continue',
-        manualEntryLink: 'Enter address manually',
+        continue: "Continue",
+        manualEntryLink: "Enter address manually",
       },
     },
-    'select-delivery-address': {
-      title: 'addresses found',
-      postcodeLabel: 'Postcode:',
-      editPostcodeLink: 'Edit postcode',
-      formLabel: 'Select your delivery address',
+    "select-delivery-address": {
+      title: "addresses found",
+      postcodeLabel: "Postcode:",
+      editPostcodeLink: "Edit postcode",
+      formLabel: "Select your delivery address",
     },
   }),
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
-  >
-    <JourneyNavigationProvider>
-      <CreateOrderProvider>{children}</CreateOrderProvider>
-    </JourneyNavigationProvider>
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
+    <AuthContext.Provider
+      value={{
+        user: {
+          sub: "",
+          nhsNumber: "",
+          birthdate: "",
+          identityProofingLevel: "",
+          phoneNumber: "",
+          givenName: "",
+          familyName: "",
+        },
+        setUser: jest.fn(),
+      }}
+    >
+      <JourneyNavigationProvider>
+        <CreateOrderProvider>{children}</CreateOrderProvider>
+      </JourneyNavigationProvider>
+    </AuthContext.Provider>
   </MemoryRouter>
 );
 
@@ -131,9 +145,15 @@ describe("SelectDeliveryAddressPage", () => {
     it("renders all address options from mock data", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      expect(screen.getByText(/3 POST OFFICE COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i)).toBeInTheDocument();
-      expect(screen.getByText(/BURLEIGH COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i)).toBeInTheDocument();
-      expect(screen.getByText(/CHASE HOUSE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/3 POST OFFICE COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/BURLEIGH COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/CHASE HOUSE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i),
+      ).toBeInTheDocument();
     });
 
     it("renders correct number of radio buttons", () => {
@@ -248,7 +268,7 @@ describe("SelectDeliveryAddressPage", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
       const radios = screen.getAllByRole("radio");
-      const ids = radios.map(radio => radio.id);
+      const ids = radios.map((radio) => radio.id);
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);

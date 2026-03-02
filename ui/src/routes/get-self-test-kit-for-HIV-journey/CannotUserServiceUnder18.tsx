@@ -4,7 +4,7 @@ import { ActionLink } from "nhsuk-react-components";
 
 export default function CannotUseServiceUnder18Page() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
-  console.log("[CannotUseServiceUnder18Page] stepHistory:", stepHistory);
+
   return (
     <PageLayout
       showBackButton
