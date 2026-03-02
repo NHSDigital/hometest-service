@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 
@@ -44,6 +44,21 @@ const buildEvent = (body: string | null): APIGatewayProxyEvent =>
     isBase64Encoded: false,
   }) as APIGatewayProxyEvent;
 
+const buildContext = (): Context =>
+  ({
+    functionName: "order-service-lambda",
+    functionVersion: "$LATEST",
+    invokedFunctionArn: "arn:aws:lambda:eu-west-2:123456789012:function:order-service-lambda",
+    memoryLimitInMB: 128,
+    awsRequestId: "test-request-id",
+    logGroupName: "/aws/lambda/order-service-lambda",
+    logStreamName: "2024/01/01/[$LATEST]abcd",
+    getRemainingTimeInMillis: () => 30000,
+    done: jest.fn(),
+    fail: jest.fn(),
+    succeed: jest.fn(),
+  }) as unknown as Context;
+
 const basePatient = {
   family: "Doe",
   given: ["Jane"],
@@ -70,7 +85,7 @@ const buildRequestBody = (overrides: Partial<any> = {}): string =>
 const buildValidRequestBody = (): string => buildRequestBody();
 
 describe("order-service-lambda handler", () => {
-  let handler: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+  let handler: any;
 
   beforeEach(async () => {
     jest.resetModules();
@@ -104,13 +119,17 @@ describe("order-service-lambda handler", () => {
     jest.clearAllMocks();
   });
 
+  const invokeHandler = (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    return handler(event, buildContext());
+  };
+
   describe("Correlation ID handling", () => {
     it("should return 400 when getCorrelationIdFromEventHeaders throws an error", async () => {
       mockGetCorrelationIdFromEventHeaders.mockImplementation(() => {
         throw new Error("Correlation ID is missing or invalid");
       });
 
-      const response = await handler(buildEvent(buildValidRequestBody()));
+      const response = await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body).message).toBe(
@@ -133,7 +152,7 @@ describe("order-service-lambda handler", () => {
       mockSendMessage.mockResolvedValue({ messageId: "message-123" });
       mockUpdateOrderStatus.mockResolvedValue(undefined);
 
-      const response = await handler(buildEvent(buildValidRequestBody()));
+      const response = await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(201);
       expect(JSON.parse(response.body)).toEqual({
@@ -146,21 +165,21 @@ describe("order-service-lambda handler", () => {
 
   describe("Request validation", () => {
     it("should return 400 when body is null", async () => {
-      const response = await handler(buildEvent(null));
+      const response = await invokeHandler(buildEvent(null));
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body)).toEqual({ message: "Empty body" });
     });
 
     it("should return 400 when body is empty object", async () => {
-      const response = await handler(buildEvent("{}"));
+      const response = await invokeHandler(buildEvent("{}"));
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body)).toEqual({ message: "Empty body" });
     });
 
     it("should return 400 for invalid JSON", async () => {
-      const response = await handler(buildEvent("{ invalid json }"));
+      const response = await invokeHandler(buildEvent("{ invalid json }"));
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body)).toEqual({
@@ -173,21 +192,21 @@ describe("order-service-lambda handler", () => {
         supplierId: "not-a-uuid",
         patient: { ...basePatient, given: undefined, text: undefined },
       });
-      const response = await handler(buildEvent(invalidBody));
+      const response = await invokeHandler(buildEvent(invalidBody));
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body).message).toMatch(/Validation failed/);
     });
 
     it("should return 400 when consent field is missing", async () => {
       const bodyWithoutConsent = buildRequestBody({ consent: undefined });
-      const response = await handler(buildEvent(bodyWithoutConsent));
+      const response = await invokeHandler(buildEvent(bodyWithoutConsent));
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body).message).toMatch(/Validation failed/);
     });
 
     it("should return 400 when consent is false", async () => {
       const body = buildRequestBody({ consent: false });
-      const response = await handler(buildEvent(body));
+      const response = await invokeHandler(buildEvent(body));
       expect(response.statusCode).toBe(400);
       const responseBody = JSON.parse(response.body);
       expect(responseBody.message).toMatch(/Validation failed/);
@@ -213,7 +232,7 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should create an order and return 201", async () => {
-      const response = await handler(buildEvent(buildValidRequestBody()));
+      const response = await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(201);
       expect(JSON.parse(response.body)).toEqual({
@@ -224,7 +243,7 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should call createPatientAndOrderAndStatus with correct params", async () => {
-      await handler(buildEvent(buildValidRequestBody()));
+      await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(mockCreatePatientAndOrder).toHaveBeenCalledWith(
         "1234567890",
@@ -240,7 +259,7 @@ describe("order-service-lambda handler", () => {
       const orderRequest = OrderServiceRequestSchema.safeParse(
         JSON.parse(requestBody),
       ).data;
-      await handler(buildEvent(requestBody));
+      await invokeHandler(buildEvent(requestBody));
 
       expect(mockBuildFhirServiceRequest).toHaveBeenCalledWith(
         orderRequest,
@@ -259,7 +278,7 @@ describe("order-service-lambda handler", () => {
         order_body: mockFhirServiceRequest,
       };
 
-      await handler(buildEvent(buildValidRequestBody()));
+      await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(mockSendMessage).toHaveBeenCalledWith(
         mockOrderPlacementQueueUrl,
@@ -268,7 +287,7 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should update order status to QUEUED", async () => {
-      await handler(buildEvent(buildValidRequestBody()));
+      await invokeHandler(buildEvent(buildValidRequestBody()));
 
       const orderStatusCallArg = mockUpdateOrderStatus.mock.calls[0][0];
       expect(orderStatusCallArg).toEqual({
@@ -284,7 +303,7 @@ describe("order-service-lambda handler", () => {
     it("should return 400 when createPatientAndOrderAndStatus throws", async () => {
       mockCreatePatientAndOrder.mockRejectedValue(new Error("DB down"));
 
-      const response = await handler(buildEvent(buildValidRequestBody()));
+      const response = await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body)).toEqual({ message: "DB down" });
@@ -301,7 +320,7 @@ describe("order-service-lambda handler", () => {
       });
       mockSendMessage.mockRejectedValue(new Error("SQS down"));
 
-      const response = await handler(buildEvent(buildValidRequestBody()));
+      const response = await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
@@ -322,7 +341,7 @@ describe("order-service-lambda handler", () => {
       mockSendMessage.mockResolvedValue({ messageId: "message-123" });
       mockUpdateOrderStatus.mockRejectedValue(new Error("DB down"));
 
-      const response = await handler(buildEvent(buildValidRequestBody()));
+      const response = await invokeHandler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(500);
       expect(JSON.parse(response.body)).toEqual({
