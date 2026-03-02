@@ -1,5 +1,6 @@
 import PageLayout from "@/layouts/PageLayout";
 import { useJourneyNavigationContext } from "@/state/NavigationContext";
+import { ActionLink } from "nhsuk-react-components";
 
 export default function CannotUseServiceUnder18Page() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
@@ -16,7 +17,7 @@ export default function CannotUseServiceUnder18Page() {
       }}
     >
       <div>
-        <h1>Sorry, you cannot use this service as you are under 18</h1>
+        <h1>You cannot use this service as you are under 18</h1>
 
         <p>
           To get tested for HIV, go to your nearest sexual health clinic, which
@@ -48,26 +49,9 @@ export default function CannotUseServiceUnder18Page() {
 
         <hr className="nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5"></hr>
 
-        <a
-          className="nhsuk-action-link"
-          href="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/results?location=HD1%201AB"
-        >
-          <svg
-            className="nhsuk-icon nhsuk-icon--arrow-right-circle"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            focusable="false"
-            aria-hidden="true"
-          >
-            <path d="M12 2a10 10 0 0 0-10 9h11.7l-4-4a1 1 0 0 1 1.5-1.4l5.6 5.7a1 1 0 0 1 0 1.4l-5.6 5.7a1 1 0 0 1-1.5 0 1 1 0 0 1 0-1.4l4-4H2A10 10 0 1 0 12 2z"></path>
-          </svg>
-
-          <span className="nhsuk-action-link__text">
-            Find another sexual health clinic
-          </span>
-        </a>
+        <ActionLink href="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/results?location=HD1%201AB">
+          Find another sexual health clinic
+        </ActionLink>
 
         <h2>More options and information</h2>
 
@@ -85,12 +69,9 @@ export default function CannotUseServiceUnder18Page() {
           </a>
         </p>
 
-        <div
-          className="nhsuk-grid-row nhsuk-u-margin-bottom-0 nhsuk-u-margin-top-6 nhsuk-u-padding-top-4"
-          style={{ backgroundColor: "#D2E1EF" }}
-        >
+        <div className="nhsuk-grid-row nhsuk-u-padding-top-4 nhsuk-u-padding-bottom-4">
           <div className="nhsuk-grid-column-full flex-center-container">
-            <p>
+            <p className="nhsuk-u-margin-bottom-0">
               This is a new service. Help us improve it and{" "}
               <a href="">give your feedback</a>.
             </p>
