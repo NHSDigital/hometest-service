@@ -40,13 +40,17 @@ export function isUnder18(birthdate: string): boolean {
 }
 
 export default function SelectDeliveryAddressPage() {
-  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
+    useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
   const { user } = useAuth();
 
-  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN || "");
+  const [selectedAddress, setSelectedAddress] = useState<string>(
+    orderAnswers.selectedAddressUPRN || "",
+  );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const addresses = mockAddressResponse.results as AddressResult[];
 
@@ -69,9 +73,7 @@ export default function SelectDeliveryAddressPage() {
       const postcode = orderAnswers.postcodeSearch;
 
       if (!postcode) {
-        console.error(
-          "[SelectDeliveryAddressPage] Missing postcode in journey context."
-        );
+        console.error("[SelectDeliveryAddressPage] Missing postcode in journey context.");
 
         // ALPHA: ToDo error screen thrown here:
         return null;
@@ -88,14 +90,13 @@ export default function SelectDeliveryAddressPage() {
 
       updateOrderAnswers({
         deliveryAddress: {
-          addressLine1:
-            selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
+          addressLine1: selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
           addressLine2: selected.DPA.THOROUGHFARE_NAME,
           addressLine3: selected.DPA.DEPENDENT_LOCALITY,
           postTown: selected.DPA.POST_TOWN,
           postcode: selected.DPA.POSTCODE,
         },
-        addressEntryMethod: 'postcode-search',
+        addressEntryMethod: "postcode-search",
         selectedAddressUPRN: selected.DPA.UPRN,
         localAuthority: {
           code: laResponse.localAuthority.localAuthorityCode,
@@ -116,11 +117,10 @@ export default function SelectDeliveryAddressPage() {
       }
 
       if (isUnder18User) {
-        goToStep("cannot-use-service-under-18");
+        goToStep("under-18-information");
       } else {
         goToStep("how-comfortable-pricking-finger");
       }
-
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
       console.error("Failed to lookup local authority:", err);
@@ -137,22 +137,27 @@ export default function SelectDeliveryAddressPage() {
       onBackButtonClick={() => {
         updateOrderAnswers({
           postcodeSearch: undefined,
-          buildingNumber: undefined
+          buildingNumber: undefined,
         });
         if (stepHistory.length > 1) {
           goBack();
         } else {
           goToStep("enter-delivery-address");
         }
-      }}>
+      }}
+    >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
+        {addresses.length} {addresses.length === 1 ? "address" : "addresses"} {content.title}
       </h1>
-      <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
-        <a href="enter-delivery-address" onClick={(e) => {
-          e.preventDefault();
-          goToStep(JourneyStepNames.EnterDeliveryAddress);
-        }}>
+      <p>
+        {content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
+        <a
+          href="enter-delivery-address"
+          onClick={(e) => {
+            e.preventDefault();
+            goToStep(JourneyStepNames.EnterDeliveryAddress);
+          }}
+        >
           {content.editPostcodeLink}
         </a>
       </p>
@@ -168,7 +173,7 @@ export default function SelectDeliveryAddressPage() {
                 href="#collection-point"
                 onClick={(e) => {
                   e.preventDefault();
-                  document.getElementById('collection-point-1')?.focus();
+                  document.getElementById("collection-point-1")?.focus();
                 }}
               >
                 {addressError}
@@ -211,7 +216,7 @@ export default function SelectDeliveryAddressPage() {
             e.preventDefault();
             updateOrderAnswers({
               postcodeSearch: undefined,
-              buildingNumber: undefined
+              buildingNumber: undefined,
             });
             goToStep("enter-address-manually");
           }}
