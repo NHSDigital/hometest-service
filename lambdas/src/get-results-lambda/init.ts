@@ -5,7 +5,6 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { SupplierService } from "../lib/db/supplier-db";
 import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { TestResultDbClient } from "../lib/db/test-result-db-client";
-import { postgresConfigFromEnv } from "../lib/db/db-config";
 
 export interface Environment {
   testResultDbClient: TestResultDbClient;
