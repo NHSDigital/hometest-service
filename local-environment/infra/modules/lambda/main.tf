@@ -67,7 +67,7 @@ data "aws_region" "current" {}
 
 locals {
   cors_allow_methods = join(", ", var.cors_allow_methods)
-  cors_allow_headers = join(", ", var.cors_allow_headers)
+  cors_allow_headers = join(", ", [for header in var.cors_allow_headers : lower(header)])
 }
 
 resource "aws_api_gateway_method" "cors_options" {
