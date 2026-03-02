@@ -42,12 +42,12 @@ export class OrderDbClient {
           s.supplier_name AS supplier_name,
           p.nhs_number AS patient_nhs_number,
           p.birth_date AS patient_birth_date
-      FROM hometest.test_order o
+      FROM test_order o
       INNER JOIN test_type tt ON tt.test_code = o.test_code
-      INNER JOIN hometest.order_status os ON os.order_uid = o.order_uid
-      INNER JOIN hometest.status_type st ON st.status_code = os.status_code
-      INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
-      INNER JOIN hometest.supplier s ON s.supplier_id = o.supplier_id
+      INNER JOIN order_status os ON os.order_uid = o.order_uid
+      INNER JOIN status_type st ON st.status_code = os.status_code
+      INNER JOIN patient_mapping p ON p.patient_uid = o.patient_uid
+      INNER JOIN supplier s ON s.supplier_id = o.supplier_id
       WHERE o.order_uid = $1::uuid AND p.nhs_number = $2 AND p.birth_date = $3::date
       ORDER BY os.created_at DESC
       LIMIT 1;
