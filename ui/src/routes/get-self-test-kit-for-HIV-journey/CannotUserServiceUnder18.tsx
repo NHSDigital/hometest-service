@@ -19,10 +19,7 @@ export default function CannotUseServiceUnder18Page() {
       <div>
         <h1>You cannot use this service as you are under 18</h1>
 
-        <p>
-          To get tested for HIV, go to your nearest sexual health clinic, which
-          is:
-        </p>
+        <p>To get tested for HIV, go to your nearest sexual health clinic, which is:</p>
 
         <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">1.1 miles away</p>
 
@@ -64,16 +61,16 @@ export default function CannotUseServiceUnder18Page() {
         </p>
 
         <p>
-          <a href="https://www.nhs.uk/conditions/hiv-and-aids/">
-            Learn more about HIV and AIDS
-          </a>
+          <a href="https://www.nhs.uk/conditions/hiv-and-aids/">Learn more about HIV and AIDS</a>
         </p>
 
-        <div className="nhsuk-grid-row nhsuk-u-padding-top-4 nhsuk-u-padding-bottom-4">
-          <div className="nhsuk-grid-column-full flex-center-container">
+        <div
+          className="nhsuk-grid-row nhsuk-u-padding-top-4 nhsuk-u-padding-bottom-4 nhsuk-u-background-color-blue"
+          style={{ backgroundColor: "#D2E1EF" }}
+        >
+          <div className="nhsuk-grid-column-full flex-center-container background-red">
             <p className="nhsuk-u-margin-bottom-0">
-              This is a new service. Help us improve it and{" "}
-              <a href="">give your feedback</a>.
+              This is a new service. Help us improve it and <a href="">give your feedback</a>.
             </p>
           </div>
         </div>
