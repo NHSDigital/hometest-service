@@ -1,0 +1,28 @@
+Error: page.waitForURL: Timeout 60000ms exceeded.
+=========================== logs ===========================
+waiting for navigation until "load"
+  navigated to "http://localhost:3000/"
+============================================================
+
+Stack trace:
+page.waitForURL: Timeout 60000ms exceeded.
+=========================== logs ===========================
+waiting for navigation until "load"
+  navigated to "http://localhost:3000/"
+============================================================
+    at NhsLoginHelper.fillNhsLoginFormsAndWaitForStartPage (/Users/maryia.asadchaya/hometest-service/tests/page-objects/NHSLoginHelper.ts:24:16)
+    at NhsLoginHelper.loginNhsUser (/Users/maryia.asadchaya/hometest-service/tests/page-objects/NHSLoginHelper.ts:35:5)
+    at SandBoxUserManager.loginWorkerUser (/Users/maryia.asadchaya/hometest-service/tests/utils/users/SandBoxUserManager.ts:86:12)
+    at SandBoxUserManager.loginWorkerUsers (/Users/maryia.asadchaya/hometest-service/tests/utils/users/BaseUserManager.ts:190:9)
+    at globalSetup (/Users/maryia.asadchaya/hometest-service/tests/global-setup.ts:10:3)
+
+Network errors:
+[
+  {
+    "url": "http://localhost:3000/",
+    "status": 500,
+    "statusText": "Internal Server Error",
+    "method": "GET",
+    "timestamp": "2026-03-04T12:33:16.514Z"
+  }
+]

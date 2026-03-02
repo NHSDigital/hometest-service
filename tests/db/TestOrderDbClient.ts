@@ -87,8 +87,15 @@ export class TestOrderDbClient extends BaseDbClient {
       input.originator,
     );
     const correlation_id = await this.insertOrderStatus(order_uid, input.initial_status);
-    await this.insertOrderStatus(order_uid, input.initial_status);
     return { order_uid, patient_uid, correlation_id };
+  }
+
+  async deleteOrderByUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM hometest.test_order WHERE order_uid = $1`, [orderUid]);
+  }
+
+  async deleteOrderStatusByUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM order_status WHERE order_uid = $1::uuid`, [orderUid]);
   }
 
   async deleteOrderStatusByUid(orderUid: UUID): Promise<void> {
@@ -105,10 +112,6 @@ export class TestOrderDbClient extends BaseDbClient {
        WHERE nhs_number = $1 AND birth_date = $2::date`,
       [nhsNumber, birthDate],
     );
-  }
-
-  async deleteOrderByUid(orderUid: UUID): Promise<void> {
-    await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }
 
   async getLatestOrderStatusByOrderUid(orderUid: string): Promise<UUID> {
