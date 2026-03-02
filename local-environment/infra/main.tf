@@ -385,9 +385,15 @@ module "get_order_lambda" {
   cors_allow_methods = ["GET", "OPTIONS"]
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
-    ALLOW_ORIGIN = "http://localhost:3000"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+    ALLOW_ORIGIN   = "http://localhost:3000"
   }
 }
 
@@ -412,9 +418,15 @@ module "get_results_lambda" {
   cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-ID"]
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
-    ALLOW_ORIGIN = "http://localhost:3000"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+    ALLOW_ORIGIN   = "http://localhost:3000"
   }
 }
 

@@ -9,10 +9,7 @@ export interface TestResult {
 }
 
 export class TestResultDbClient {
-  readonly dbClient: DBClient;
-  constructor(dbClient: DBClient) {
-    this.dbClient = dbClient;
-  }
+  constructor(private readonly dbClient: DBClient) {}
 
   public async getResult(
     orderId: string,
@@ -24,13 +21,13 @@ export class TestResultDbClient {
           rs.result_id AS id,
           rs.status as status,
           o.supplier_id AS supplier_id
-      FROM hometest.test_order o
-      INNER JOIN hometest.patient_mapping p ON p.patient_uid = o.patient_uid
-      INNER JOIN hometest.result_status rs ON o.order_uid = o.order_uid
+      FROM test_order o
+      INNER JOIN patient_mapping p ON p.patient_uid = o.patient_uid
+      INNER JOIN result_status rs ON o.order_uid = o.order_uid
       WHERE
           (
             SELECT os.status_code = 'COMPLETE'
-            FROM hometest.order_status os
+            FROM order_status os
             WHERE os.order_uid = $1::uuid
             ORDER BY os.created_at DESC
             LIMIT 1
