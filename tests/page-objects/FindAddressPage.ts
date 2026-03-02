@@ -49,7 +49,4 @@ export class FindAddressPage extends BasePage {
     await this.postCodeInput.fill(deliveryAddress.postCode);
     await this.continueButton.click();
   }
-
-
-
 }
