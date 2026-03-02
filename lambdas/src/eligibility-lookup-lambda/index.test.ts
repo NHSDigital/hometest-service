@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
+
 import { lambdaHandler } from "./index";
 import { validatePostcodeFormat } from "./postcode-validator";
 
@@ -21,7 +22,6 @@ jest.mock("./init", () => {
 jest.mock("./postcode-validator", () => ({
   validatePostcodeFormat: jest.fn(),
 }));
-
 
 const { mockLookupByPostcode } = require("./init").__mocks;
 const buildEvent = (postcode: string | null): APIGatewayProxyEvent =>
@@ -63,16 +63,16 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     // logError is not called for 400 errors
   });
 
-  it("returns 500 if no local authority found", async () => {
+  it("returns 404 if no local authority found", async () => {
     (validatePostcodeFormat as jest.Mock).mockReturnValue({ valid: true, cleaned: "AB1 2CD" });
     mockLookupByPostcode.mockResolvedValueOnce(null);
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
-    expect(result.statusCode).toBe(500);
-    expect(JSON.parse(result.body)).toEqual({ error: "No local authority found for AB1 2CD" });
+    expect(result.statusCode).toBe(404);
+    expect(JSON.parse(result.body)).toEqual({ error: "No local authority found for AB12CD" });
   });
 
-  it("returns 500 if no suppliers found", async () => {
+  it("returns 404 if no suppliers found", async () => {
     (validatePostcodeFormat as jest.Mock).mockReturnValue({ valid: true, cleaned: "AB1 2CD" });
     const la = { localAuthorityCode: "E123", region: "TestRegion" };
     mockLookupByPostcode.mockResolvedValueOnce(la);
@@ -80,7 +80,7 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     supplierDb.getSuppliersByLocalAuthorityAndTest = jest.fn().mockResolvedValueOnce([]);
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
-    expect(result.statusCode).toBe(500);
+    expect(result.statusCode).toBe(404);
     expect(JSON.parse(result.body)).toEqual({ error: "No supplier found for LA code E123" });
   });
 

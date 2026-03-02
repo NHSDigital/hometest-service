@@ -86,16 +86,16 @@ export default function EnterDeliveryAddressPage() {
     setBuildingNameError(buildingNameValidationError);
 
     if (postcodeValidation.valid && !buildingNameValidationError) {
-      const updatedData = {
-        postcodeSearch: postcodeValidation.value,
-        buildingNumber: buildingName.trim() || undefined,
-      };
-
-      const laResponse = await laLookupService.getByPostcode(postcode);
+      const laResponse = await laLookupService.getByPostcode(postcodeValidation.value);
       if (!laResponse) {
         goToStep(JourneyStepNames.KitNotAvailableInArea);
         return;
       }
+
+      const updatedData = {
+        postcodeSearch: postcodeValidation.value,
+        buildingNumber: buildingName.trim() || undefined,
+      };
 
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
