@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import mockAddressResponse from "@/mocks/addressLookupResponse.json";
@@ -22,15 +22,35 @@ interface AddressResult {
   };
 }
 
+export function isUnder18(birthdate: string): boolean {
+  const dob = new Date(birthdate);
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+
+  const hasHadBirthdayThisYear =
+    today.getMonth() > dob.getMonth() ||
+    (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+
+  if (!hasHadBirthdayThisYear) {
+    age--;
+  }
+
+  return age < 18;
+}
+
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
+  const { user } = useAuth();
 
   const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN || "");
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const addresses = mockAddressResponse.results as AddressResult[];
+
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +112,11 @@ export default function SelectDeliveryAddressPage() {
         const step = returnToStep;
         setReturnToStep(null);
         goToStep(step);
+        return;
+      }
+
+      if (isUnder18User) {
+        goToStep("cannot-use-service-under-18");
       } else {
         goToStep("how-comfortable-pricking-finger");
       }

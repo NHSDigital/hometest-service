@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import type { ValidationMessages } from "@/content/schema";
 
@@ -100,10 +100,28 @@ const validatePostcode = (postcode: string, validationMessages: ValidationMessag
   return { valid: true, value: normalizedPostcode };
 };
 
+export function isUnder18(birthdate: string): boolean {
+  const dob = new Date(birthdate);
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+
+  const hasHadBirthdayThisYear =
+    today.getMonth() > dob.getMonth() ||
+    (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+
+  if (!hasHadBirthdayThisYear) {
+    age--;
+  }
+
+  return age < 18;
+}
+
 export default function EnterAddressManuallyPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { commonContent, "enter-address-manually": content } = useContent();
+  const { user } = useAuth();
 
   const [addressLine1, setAddressLine1] = useState(orderAnswers.deliveryAddress?.addressLine1 || "");
   const [addressLine2, setAddressLine2] = useState(orderAnswers.deliveryAddress?.addressLine2 || "");
@@ -124,6 +142,8 @@ export default function EnterAddressManuallyPage() {
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
   console.log("[EnterAddressManuallyPage] Current order state:", orderAnswers);
+
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
   const handleAddressLine1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddressLine1(e.target.value);
@@ -186,6 +206,11 @@ export default function EnterAddressManuallyPage() {
         const step = returnToStep;
         setReturnToStep(null);
         goToStep(step);
+        return;
+      }
+
+      if (isUnder18User) {
+        goToStep("cannot-use-service-under-18");
       } else {
         goToStep("how-comfortable-pricking-finger");
       }

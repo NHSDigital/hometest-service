@@ -23,6 +23,7 @@ import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/Che
 import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
+import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUserServiceUnder18";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -125,6 +126,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.CheckYourAnswers,
             element: <CheckYourAnswersPage />,
+          },
+          {
+            path: JourneyStepNames.CannotUseServiceUnder18,
+            element: <CannotUseServiceUnder18Page />,
           },
         ],
       },
