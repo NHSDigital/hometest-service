@@ -245,8 +245,7 @@ module "session_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-
+    NODE_OPTIONS                       = "--enable-source-maps"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
     NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
@@ -385,9 +384,15 @@ module "get_order_lambda" {
   cors_allow_methods = ["GET", "OPTIONS"]
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
-    ALLOW_ORIGIN = "http://localhost:3000"
+    NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 
@@ -411,9 +416,15 @@ module "get_results_lambda" {
   cors_allow_methods = ["GET", "OPTIONS"]
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
-    ALLOW_ORIGIN = "http://localhost:3000"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+    ALLOW_ORIGIN   = "http://localhost:3000"
   }
 }
 
