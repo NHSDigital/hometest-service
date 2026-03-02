@@ -187,6 +187,11 @@ export class TestOrderDbClient extends BaseDbClient {
       [nhsNumber, birthDate],
     );
   }
+  async deleteOrderByUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [
+      orderUid,
+    ]);
+  }
 }
 <<<<<<< HEAD
 
