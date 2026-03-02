@@ -132,7 +132,7 @@ export class TestOrderDbClient extends BaseDbClient {
       ORDER BY created_at DESC
       LIMIT 1
     `, [orderUid]);
- 
+
     return rows[0];
   }
 }
