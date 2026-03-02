@@ -17,5 +17,5 @@ export enum JourneyStepNames {
   EnterMobileNumber = "enter-mobile-phone-number",
   CheckYourAnswers = "check-your-answers",
   ConfirmMobileNumber = "confirm-mobile-phone-number",
-  KitNotAvailableInArea = "kit-not-available-in-area"
+  KitNotAvailableInArea = "kit-not-available-in-area",
 }

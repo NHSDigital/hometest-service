@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionLink } from "nhsuk-react-components";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 import { useJourneyNavigationContext } from "@/state";
@@ -19,14 +20,12 @@ export default function KitNotAvailableInAreaPage() {
       }}
     >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        Free HIV self-test kits are not available in your area using this
-        service
+        Free HIV self-test kits are not available in your area using this service
       </h1>
       <p className="nhsuk-body">There are other options to get an HIV test.</p>
       <h2>Contact your nearest sexual health clinic</h2>
       <p className="nhsuk-body">
-        To get tested for HIV, go to your nearest sexual health clinic, which
-        is:
+        To get tested for HIV, go to your nearest sexual health clinic, which is:
       </p>
       <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">1.1 miles away</p>
 
@@ -49,32 +48,13 @@ export default function KitNotAvailableInAreaPage() {
       </p>
       <hr className="nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5" />
 
-      <a
-        className="nhsuk-action-link"
-        href="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/results?location=HD1%201AB"
-      >
-        <svg
-          className="nhsuk-icon nhsuk-icon--arrow-right-circle"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          focusable="false"
-          aria-hidden="true"
-        >
-          <path d="M12 2a10 10 0 0 0-10 9h11.7l-4-4a1 1 0 0 1 1.5-1.4l5.6 5.7a1 1 0 0 1 0 1.4l-5.6 5.7a1 1 0 0 1-1.5 0 1 1 0 0 1 0-1.4l4-4H2A10 10 0 1 0 12 2z"></path>
-        </svg>
-
-        <span className="nhsuk-action-link__text">
-          Find another sexual health clinic
-        </span>
-      </a>
+      <ActionLink href="https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/results?location=HD1%201AB">
+        Find another sexual health clinic
+      </ActionLink>
 
       <h2>More options and information</h2>
       <p>
-        <a href="https://www.nhs.uk/conditions/hiv-and-aids/">
-          Learn more about HIV and AIDS
-        </a>
+        <a href="https://www.nhs.uk/conditions/hiv-and-aids/">Learn more about HIV and AIDS</a>
       </p>
 
       <div
@@ -83,8 +63,7 @@ export default function KitNotAvailableInAreaPage() {
       >
         <div className="nhsuk-grid-column-full flex-center-container">
           <p>
-            This is a new service. Help us improve it and{" "}
-            <a href="">give your feedback</a>.
+            This is a new service. Help us improve it and <a href="">give your feedback</a>.
           </p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 import type { ValidationMessages } from "@/content/schema";
+import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
 import { useState } from "react";
 
@@ -72,7 +73,7 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
@@ -89,6 +90,13 @@ export default function EnterDeliveryAddressPage() {
         postcodeSearch: postcodeValidation.value,
         buildingNumber: buildingName.trim() || undefined,
       };
+
+      const laResponse = await laLookupService.getByPostcode(postcode);
+      if (!laResponse) {
+        goToStep(JourneyStepNames.KitNotAvailableInArea);
+        return;
+      }
+
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
