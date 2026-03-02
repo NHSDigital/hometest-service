@@ -4,12 +4,14 @@ import { BasePage } from './BasePage';
 export class SelectDeliveryAddressPage extends BasePage {
   readonly editAddressLink: Locator;
   readonly address1: Locator;
+  readonly allAddress: Locator;
   readonly continueButton: Locator;
 
   constructor(page: Page) {
     super(page);
     this.editAddressLink = page.getByRole('link', { name: 'Edit postcode' });
     this.address1 = page.locator('input[type="radio"][name="collection-point"]');
+    this.allAddress = page.locator('#collection-point .nhsuk-radios__label');
     this.continueButton = page.getByRole('button', { name: 'Continue' });
   }
 
@@ -24,5 +26,14 @@ export class SelectDeliveryAddressPage extends BasePage {
   async selectAddressAndContinue(): Promise<void> {
     await this.address1.first().check();
     await this.continueButton.click();
+  }
+
+  async getPostcodes(): Promise<string[]> {
+    const allResults = await this.allAddress.allTextContents();
+    const postcodes = allResults.map(address => {
+      const i = address.split(",");
+      return i[i.length - 1].trim();
+    });
+    return postcodes;
   }
 }

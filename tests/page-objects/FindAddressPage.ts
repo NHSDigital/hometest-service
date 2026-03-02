@@ -44,4 +44,12 @@ export class FindAddressPage extends BasePage {
     const firstLineAddressValue = await this.numNameInput.inputValue();
     return { postCode: postCodeValue, firstLineAddress: firstLineAddressValue };
   }
+
+  async fillPostCodeAndContinue(deliveryAddress: Address): Promise<void> {
+    await this.postCodeInput.fill(deliveryAddress.postCode);
+    await this.continueButton.click();
+  }
+
+
+
 }
