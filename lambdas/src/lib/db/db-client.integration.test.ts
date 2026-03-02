@@ -13,7 +13,18 @@ describe("PostgresDbClient Integration Tests", () => {
       .withPassword("testpass")
       .start();
 
-    client = new PostgresDbClient(container.getConnectionUri());
+    const connectionUri = new URL(container.getConnectionUri());
+
+    client = new PostgresDbClient(
+      {
+        user: decodeURIComponent(connectionUri.username),
+        host: connectionUri.hostname,
+        port: parseInt(connectionUri.port, 10),
+        database: connectionUri.pathname.replace("/", ""),
+        password: decodeURIComponent(connectionUri.password),
+        options: "-c search_path=public",
+      }
+    );
 
     // Create a test table
     await client.query(`

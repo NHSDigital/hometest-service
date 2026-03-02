@@ -86,7 +86,7 @@ export class OrderStatusService {
   ): Promise<IdempotencyCheckResult> {
     const query = `
       SELECT 1
-      FROM hometest.order_status
+      FROM order_status
       WHERE order_uid = $1::uuid AND correlation_id = $2::uuid
       LIMIT 1;
     `;
@@ -105,6 +105,7 @@ export class OrderStatusService {
     }
   }
 
+  // ALPHA: should this method not perform an idempotency check before inserting a new status? Or should that be the responsibility of the caller to check before calling this method?
   /**
    * Add a new order status update to the database
    */
@@ -112,8 +113,9 @@ export class OrderStatusService {
     const { orderId, statusCode, createdAt, correlationId } = params;
 
     const query = `
-      INSERT INTO hometest.order_status (order_uid, status_code, created_at, correlation_id)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO order_status (order_uid, order_reference, status_code, created_at, correlation_id)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING status_id, order_uid, order_reference, status_code, created_at, correlation_id;
     `;
 
     try {

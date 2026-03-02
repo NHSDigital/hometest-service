@@ -1,7 +1,13 @@
-import { BaseDbClient } from './BaseDbClient';
-import { TestOrderRow, CreateOrderInput, OrderStatusCode, UUID, PatientMapping, Supplier, TestOrder, CreateOrderResult } from '../models/TestOrder';
-export class TestOrderDbClient extends BaseDbClient {
+import { BaseDbClient } from "./BaseDbClient";
+import {
+  CreateOrderInput,
+  OrderStatusCode,
+  UUID,
+  Supplier,
+  TestOrderModel,
+} from "../models/TestOrder";
 
+<<<<<<< HEAD
   async getLatestOrderStatusByOrderUid(orderUid: string): Promise<{ status_code: string } | undefined> {
     const rows = await this.query<{ status_code: string }>(`
       SELECT status_code
@@ -68,51 +74,121 @@ export class TestOrderDbClient extends BaseDbClient {
       VALUES ($1, $2::date)
       RETURNING patient_uid
     `, [nhs_number, birth_date]);
+=======
+export class TestOrderDbClient extends BaseDbClient {
+  async getOrderByUid(orderUid: UUID): Promise<TestOrderModel | undefined> {
+    const rows = await this.query<TestOrderModel>(
+      `SELECT t.order_uid, t.order_reference, t.supplier_id, t.patient_uid,
+              t.test_code, t.originator, t.created_at,
+              s.supplier_name, p.nhs_number, p.birth_date
+       FROM test_order t
+       JOIN supplier s ON s.supplier_id = t.supplier_id
+       JOIN patient_mapping p ON p.patient_uid = t.patient_uid
+       WHERE t.order_uid = $1::uuid`,
+      [orderUid],
+    );
+    return rows[0];
+  }
+
+  async getSupplierIdByName(supplierName: string): Promise<UUID> {
+    const rows = await this.query<Supplier>(
+      `SELECT supplier_id FROM supplier
+       WHERE supplier_name = $1 LIMIT 1`,
+      [supplierName],
+    );
+    return rows[0].supplier_id;
+  }
+
+  async upsertPatient(nhsNumber: string, birthDate: string): Promise<UUID> {
+    const rows = await this.query<{ patient_uid: UUID }>(
+      `INSERT INTO patient_mapping (nhs_number, birth_date)
+       VALUES ($1, $2::date)
+       ON CONFLICT (nhs_number) DO UPDATE SET birth_date = EXCLUDED.birth_date
+       RETURNING patient_uid`,
+      [nhsNumber, birthDate],
+    );
+>>>>>>> main
     return rows[0].patient_uid;
   }
 
- async getSupplierIdByName(supplier_name: string): Promise<UUID> {
- const rows = await this.query<Supplier>(`
-  SELECT supplier_id
-  FROM hometest.supplier
-  WHERE supplier_name = $1
-  LIMIT 1
- `,  [supplier_name]);
+  async createTestOrder(
+    supplierId: UUID,
+    patientUid: UUID,
+    testCode: string,
+    originator = "automatic-test",
+  ): Promise<UUID> {
+    const rows = await this.query<TestOrderModel>(
+      `INSERT INTO test_order (supplier_id, patient_uid, test_code, originator)
+       VALUES ($1::uuid, $2::uuid, $3, $4)
+       RETURNING order_uid`,
+      [supplierId, patientUid, testCode, originator],
+    );
+    return rows[0].order_uid;
+  }
 
- return rows[0].supplier_id as UUID;
- }
+  async insertOrderStatus(
+    orderUid: UUID,
+    statusCode: OrderStatusCode,
+  ): Promise<void> {
+    await this.query(
+      `INSERT INTO order_status (order_uid, status_code)
+       VALUES ($1::uuid, $2)`,
+      [orderUid, statusCode],
+    );
+  }
 
- async createTestOrder(
- supplier_id: UUID,
- patient_uid: UUID,
- test_code: string,
- originator = 'automatic-test'
- ): Promise<UUID> {
- const rows = await this.query<TestOrder>(`
-  INSERT INTO hometest.test_order (supplier_id, patient_uid, test_code, originator)
-  VALUES ($1, $2, $3, $4)
-  RETURNING order_uid
- `, [supplier_id, patient_uid, test_code, originator]);
- return rows[0].order_uid as UUID;
- }
+  async updateOrderStatus(
+    orderUid: UUID,
+    statusCode: OrderStatusCode,
+  ): Promise<void> {
+    await this.query(
+      `UPDATE order_status SET status_code = $2 WHERE order_uid = $1::uuid`,
+      [orderUid, statusCode],
+    );
+  }
 
- async insertOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<UUID> {
- const rows = await this.query<CreateOrderResult>(`
-  INSERT INTO hometest.order_status (order_uid, status_code)
-  VALUES ($1, $2)
-  RETURNING correlation_id
- `, [order_uid, status_code]);
- return rows[0].correlation_id as UUID;
- }
+  async createOrderWithPatientAndStatus(
+    input: CreateOrderInput,
+  ): Promise<{ order_uid: UUID; patient_uid: UUID }> {
+    const patient_uid = await this.upsertPatient(
+      input.nhs_number,
+      input.birth_date,
+    );
+    const supplier_id = await this.getSupplierIdByName(input.supplier_name);
+    const order_uid = await this.createTestOrder(
+      supplier_id,
+      patient_uid,
+      input.test_code,
+      input.originator,
+    );
+    await this.insertOrderStatus(order_uid, input.initial_status);
+    return { order_uid, patient_uid };
+  }
 
- async updateOrderStatus(order_uid: UUID, status_code: OrderStatusCode): Promise<void> {
- await this.query<Supplier>(`
-  UPDATE hometest.order_status
-  SET status_code = $2
-  WHERE order_uid = $1
- `, [order_uid, status_code])
+  async deleteOrderStatusByUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM order_status WHERE order_uid = $1::uuid`, [
+      orderUid,
+    ]);
+  }
 
+  async deleteOrderByPatientUid(patientUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM test_order WHERE patient_uid = $1::uuid`, [
+      patientUid,
+    ]);
+  }
+
+  async deletePatientByNHSandDOB(
+    nhsNumber: string,
+    birthDate: string,
+  ): Promise<void> {
+    await this.query(
+      `DELETE FROM patient_mapping
+       WHERE nhs_number = $1 AND birth_date = $2::date`,
+      [nhsNumber, birthDate],
+    );
+  }
 }
+<<<<<<< HEAD
 
 /**
  * Creates an order with a patient and initial status.
@@ -165,3 +241,5 @@ export class TestOrderDbClient extends BaseDbClient {
     `, [orderUid]);
   }
   }
+=======
+>>>>>>> main

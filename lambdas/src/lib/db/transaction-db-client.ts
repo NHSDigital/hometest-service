@@ -29,7 +29,7 @@ export class TransactionService {
       return await this.dbClient.withTransaction(async (tx) => {
         // ALPHA: consider refactoring to use a dedicated patient service and order service to encapsulate this logic and make it more testable
         const patientQuery = `
-          INSERT INTO hometest.patient_mapping (nhs_number, birth_date)
+          INSERT INTO patient_mapping (nhs_number, birth_date)
           VALUES ($1, $2)
           ON CONFLICT (nhs_number)
           DO UPDATE SET birth_date = EXCLUDED.birth_date
@@ -48,7 +48,7 @@ export class TransactionService {
         const patientUid = patientResult.rows[0].patient_uid;
 
         const orderQuery = `
-          INSERT INTO hometest.test_order (supplier_id, patient_uid, test_code, originator)
+          INSERT INTO test_order (supplier_id, patient_uid, test_code, originator)
           VALUES ($1, $2, $3, $4)
           RETURNING order_uid, order_reference;
         `;
