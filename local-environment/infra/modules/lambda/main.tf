@@ -66,8 +66,8 @@ resource "aws_lambda_permission" "this" {
 data "aws_region" "current" {}
 
 locals {
-  cors_allow_methods = join(",", var.cors_allow_methods)
-  cors_allow_headers = join(",", var.cors_allow_headers)
+  cors_allow_methods = join(", ", var.cors_allow_methods)
+  cors_allow_headers = join(", ", var.cors_allow_headers)
 }
 
 resource "aws_api_gateway_method" "cors_options" {

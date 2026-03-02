@@ -1,15 +1,20 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { z } from "zod";
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
 import {
-  createJsonResponse,
   getCorrelationIdFromEventHeaders,
 } from "../lib/utils";
 import { init } from "./init";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { securityHeaders } from "../lib/http/security-headers";
 
 const name = "order-service-lambda";
 const {
@@ -40,7 +45,7 @@ const parseAndValidateRequest = (
   return validationResult.data;
 };
 
-export const handler = async (
+export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   let correlationId: string;
@@ -49,10 +54,13 @@ export const handler = async (
     correlationId = getCorrelationIdFromEventHeaders(event);
   } catch (error) {
     console.error(name, "Failed to retrieve correlation ID", { error });
-    return createJsonResponse(400, {
-      message:
-        error instanceof Error ? error.message : "Invalid correlation ID",
-    });
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        message:
+          error instanceof Error ? error.message : "Invalid correlation ID",
+      }),
+    };
   }
 
   console.info(name, "Received order request", {
@@ -63,7 +71,10 @@ export const handler = async (
 
   try {
     if (event.body === null || event.body === "{}") {
-      return createJsonResponse(400, { message: "Empty body" });
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "Empty body" }),
+      };
     }
 
     const orderRequest = parseAndValidateRequest(event.body);
@@ -106,9 +117,12 @@ export const handler = async (
         correlationId,
         error,
       });
-      return createJsonResponse(500, {
-        message: "Failed to enqueue order",
-      });
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Failed to enqueue order",
+        }),
+      };
     }
 
     try {
@@ -123,9 +137,12 @@ export const handler = async (
         correlationId,
         error,
       });
-      return createJsonResponse(500, {
-        message: "Failed to update order status",
-      });
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Failed to update order status",
+        }),
+      };
     }
 
     console.info(name, "Order created successfully", {
@@ -135,15 +152,29 @@ export const handler = async (
       patientUid: orderResult.patientUid,
     });
 
-    return createJsonResponse(201, {
-      orderUid: orderResult.orderUid,
-      orderReference: orderResult.orderReference,
-      message: "Order created successfully",
-    });
+    return {
+      statusCode: 201,
+      headers: {
+        "X-Correlation-ID": correlationId,
+      },
+      body: JSON.stringify({
+        orderUid: orderResult.orderUid,
+        orderReference: orderResult.orderReference,
+        message: "Order created successfully",
+      }),
+    };
   } catch (error) {
     console.error(name, "Order request failed", { correlationId, error });
-    return createJsonResponse(400, {
-      message: error instanceof Error ? error.message : "Invalid request",
-    });
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        message: error instanceof Error ? error.message : "Invalid request",
+      }),
+    };
   }
 };
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(defaultCorsOptions))
+  .use(httpErrorHandler());
