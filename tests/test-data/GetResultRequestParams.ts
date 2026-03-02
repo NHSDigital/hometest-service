@@ -6,6 +6,7 @@ export interface GetResultParams extends Record<string, string | number | boolea
 
 export interface GetResultHeaders extends Record<string, string> {
   'X-Correlation-ID': string;
+  'Content-Type': string;
 }
 
 export const createGetResultParams = (
@@ -20,4 +21,5 @@ export const createGetResultParams = (
 
 export const createGetResultHeaders = (correlationId: string): GetResultHeaders => ({
   'X-Correlation-ID': correlationId,
+  'Content-Type': 'application/json',
 });

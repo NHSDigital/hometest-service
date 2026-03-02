@@ -1,8 +1,13 @@
-import { BaseDbClient } from "./BaseDbClient";
-import { UUID } from "../models/TestOrder";
-import { ResultStatus, TestResult } from "../models/TestResult";
+import { BaseDbClient } from './BaseDbClient';
+import { UUID } from '../models/TestOrder';
+import { ResultStatus, TestResult } from '../models/TestResult';
 
 export class TestResultDbClient extends BaseDbClient {
+  async insertStatusResult(
+    order_uid: UUID,
+    status: ResultStatus,
+    correlation_id: UUID,
+  ): Promise<void> {
   async insertStatusResult(
     order_uid: UUID,
     status: ResultStatus,
@@ -15,17 +20,20 @@ export class TestResultDbClient extends BaseDbClient {
     await this.query(rows, [order_uid, status, correlation_id]);
   }
 
-  async deleteResultStatusByUid(orderUid: string): Promise<void> {
+  async deleteResultStatusByUid(orderUid: UUID): Promise<void> {
     await this.query(
       `
-      DELETE FROM result_status
+      DELETE FROM hometest.result_status
       WHERE order_uid = $1
+    `,
+      [orderUid],
+    );
     `,
       [orderUid],
     );
   }
 
-  async getLatestResultStatusByOrderUid(orderUid: string): Promise<UUID> {
+  async getLatestResultStatusByOrderUid(orderUid: UUID): Promise<UUID> {
     const rows = await this.query<TestResult>(
       `
       SELECT status
@@ -33,6 +41,9 @@ export class TestResultDbClient extends BaseDbClient {
       WHERE order_uid = $1
       ORDER BY created_at DESC
       LIMIT 1
+    `,
+      [orderUid],
+    );
     `,
       [orderUid],
     );
