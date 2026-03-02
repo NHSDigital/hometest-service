@@ -1,10 +1,6 @@
 import { type DBClient } from "./db-client";
 
-type OrderStatusCode =
-  | "ORDER_RECEIVED"
-  | "DISPATCHED"
-  | "RECEIVED"
-  | "COMPLETE";
+type OrderStatusCode = "CONFIRMED" | "DISPATCHED" | "RECEIVED" | "COMPLETE";
 
 export interface Order {
   id: string;
@@ -53,10 +49,11 @@ export class OrderDbClient {
       LIMIT 1;
     `;
 
-    const result = await this.dbClient.query<Order, [string, string, Date]>(
-      query,
-      [orderId, nhsNumber, dateOfBirth],
-    );
+    const result = await this.dbClient.query<Order, [string, string, Date]>(query, [
+      orderId,
+      nhsNumber,
+      dateOfBirth,
+    ]);
 
     return result?.rows[0] ?? null;
   }

@@ -8,7 +8,7 @@ describe("OrderStatusHeader", () => {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: OrderStatus.ORDER_RECEIVED,
+    status: OrderStatus.CONFIRMED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
