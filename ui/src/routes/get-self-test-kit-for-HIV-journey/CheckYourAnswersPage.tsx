@@ -86,32 +86,31 @@ export default function CheckYourAnswersPage() {
     console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
 
     try {
-      // Hardcoded request for testing
+      // Build orderRequest from OrderAnswers in state
+      const addressLines = orderAnswers.deliveryAddress
+        ? formatAddress(orderAnswers.deliveryAddress)
+        : [];
+
       const orderRequest = {
-        testCode: "31676001",
+        testCode: orderAnswers.supplier?.[0]?.testCode || "",
         testDescription: "HIV antigen test",
-        supplierId: "c1a2b3c4-1234-4def-8abc-123456789abc",
+        supplierId: orderAnswers.supplier?.[0]?.id || "",
         patient: {
-          family: "Doe",
-          given: ["Alex"],
-          text: "Alex Doe",
+          family: orderAnswers.user?.familyName || "",
+          given: [orderAnswers.user?.givenName || ""],
+          text: `${orderAnswers.user?.givenName || ""} ${orderAnswers.user?.familyName || ""}`,
           telecom: [
-            { phone: "+447700900000" },
-            { fax: "+441234567890" },
-            { email: "alex.doe@example.com" },
-            { pager: "123456" },
-            { url: "https://alexdoe.example.com" },
-            { sms: "+447700900001" },
-            { other: "Contact via app" }
+            { phone: orderAnswers.mobileNumber || "" },
+            { sms: orderAnswers.mobileNumber || "" }
           ],
           address: {
-            line: ["123 Main Street", "Flat 4B"],
-            city: "London",
-            postalCode: "SW1A 1AA",
+            line: addressLines,
+            city: orderAnswers.deliveryAddress?.postTown || "",
+            postalCode: orderAnswers.deliveryAddress?.postcode || "",
             country: "United Kingdom"
           },
-          birthDate: "1990-01-01",
-          nhsNumber: "1234567890"
+          birthDate: orderAnswers.user?.birthdate || "",
+          nhsNumber: orderAnswers.user?.nhsNumber || ""
         },
         consent: true
       };

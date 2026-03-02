@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
@@ -7,10 +7,13 @@ import {
   useCreateOrderContext,
 } from "@/state";
 import { useEffect } from "react";
+import orderService from "@/lib/services/order-service";
 
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
 const mockGoBack = jest.fn();
+
+jest.mock("@/lib/services/order-service");
 
 jest.mock("@/state", () => {
   const actual = jest.requireActual("@/state");
@@ -41,7 +44,7 @@ function StateSeeder({
 
   useEffect(() => {
     updateOrderAnswers(orderData);
-  }, []);
+  }, [orderData, updateOrderAnswers]);
 
   return <>{children}</>;
 }
@@ -63,6 +66,13 @@ const defaultOrderData = {
   },
   comfortableDoingTest: "Yes",
   mobileNumber: "07402123123",
+  supplier: [
+    {
+      id: "test-supplier-id",
+      name: "Test Supplier",
+      testCode: "HIV-001",
+    },
+  ],
 };
 
 const TestWrapper = ({
@@ -75,9 +85,11 @@ const TestWrapper = ({
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/check-your-answers"]}
   >
-    <CreateOrderProvider>
-      <StateSeeder orderData={orderData}>{children}</StateSeeder>
-    </CreateOrderProvider>
+    <JourneyNavigationProvider>
+      <CreateOrderProvider>
+        <StateSeeder orderData={orderData}>{children}</StateSeeder>
+      </CreateOrderProvider>
+    </JourneyNavigationProvider>
   </MemoryRouter>
 );
 
@@ -191,7 +203,7 @@ describe("CheckYourAnswersPage", () => {
       expect(changeLinks).toHaveLength(3);
     });
 
-    it("sets returnToStep and navigates when delivery address change is clicked", () => {
+    it("sets returnToStep and navigates to select-delivery-address when delivery address change is clicked (default)", () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
       const changeLinks = screen.getAllByText("Change");
@@ -199,6 +211,27 @@ describe("CheckYourAnswersPage", () => {
 
       expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
       expect(mockGoToStep).toHaveBeenCalledWith("select-delivery-address");
+    });
+
+    it("navigates to enter-address-manually when delivery address was entered manually", () => {
+      const orderDataWithManualAddress = {
+        ...defaultOrderData,
+        addressEntryMethod: 'manual' as const,
+      };
+
+      render(<CheckYourAnswersPage />, {
+        wrapper: ({ children }) => (
+          <TestWrapper orderData={orderDataWithManualAddress}>
+            {children}
+          </TestWrapper>
+        )
+      });
+
+      const changeLinks = screen.getAllByText("Change");
+      fireEvent.click(changeLinks[0]);
+
+      expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-address-manually");
     });
 
     it("sets returnToStep and navigates when comfortable doing test change is clicked", () => {
@@ -213,7 +246,7 @@ describe("CheckYourAnswersPage", () => {
       );
     });
 
-    it("sets returnToStep and navigates when mobile number change is clicked", () => {
+    it("navigates to confirm-mobile-phone-number when mobile number change is clicked (NHS Login flow)", () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
       const changeLinks = screen.getAllByText("Change");
@@ -221,6 +254,27 @@ describe("CheckYourAnswersPage", () => {
 
       expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
       expect(mockGoToStep).toHaveBeenCalledWith("confirm-mobile-phone-number");
+    });
+
+    it("navigates to enter-mobile-number when mobile number was entered manually", () => {
+      const orderDataWithManualMobile = {
+        ...defaultOrderData,
+        mobileNumberSource: 'manual' as const,
+      };
+
+      render(<CheckYourAnswersPage />, {
+        wrapper: ({ children }) => (
+          <TestWrapper orderData={orderDataWithManualMobile}>
+            {children}
+          </TestWrapper>
+        )
+      });
+
+      const changeLinks = screen.getAllByText("Change");
+      fireEvent.click(changeLinks[2]);
+
+      expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-mobile-phone-number");
     });
 
     it("renders visually hidden text for accessibility on change links", () => {
@@ -293,8 +347,15 @@ describe("CheckYourAnswersPage", () => {
       expect(errorLink).toHaveAttribute("href", "#consent");
     });
 
-    it("submits successfully when consent is ticked", () => {
+    it("submits successfully when consent is ticked", async () => {
       const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+      const mockOrderResponse = {
+        orderUid: "test-order-uid",
+        orderReference: "ORD-12345",
+        message: "Order submitted successfully"
+      };
+
+      (orderService.submitOrder as jest.Mock).mockResolvedValue(mockOrderResponse);
 
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
@@ -306,22 +367,43 @@ describe("CheckYourAnswersPage", () => {
       });
       fireEvent.click(submitButton);
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      });
+
       expect(consoleSpy).toHaveBeenCalledWith(
         "[CheckYourAnswersPage] Consent recorded at:",
         expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
+
+      expect(orderService.submitOrder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          testCode: "HIV-001",
+          testDescription: "HIV antigen test",
+          supplierId: "test-supplier-id",
+          consent: true,
+          patient: expect.objectContaining({
+            family: "Smith",
+            given: ["John"],
+            nhsNumber: "1234567890",
+            birthDate: "1990-01-01",
+          }),
+        })
       );
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Order router response:",
+        mockOrderResponse,
+      );
+
+      await waitFor(() => {
+        expect(mockGoToStep).toHaveBeenCalledWith("order-confirmation");
+      });
 
       consoleSpy.mockRestore();
     });
 
     it("does not submit when consent is not ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
       const submitButton = screen.getByRole("button", {
@@ -329,12 +411,7 @@ describe("CheckYourAnswersPage", () => {
       });
       fireEvent.click(submitButton);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
+      expect(orderService.submitOrder).not.toHaveBeenCalled();
     });
   });
 
