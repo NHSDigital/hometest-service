@@ -1,8 +1,9 @@
 import { BaseUserManager } from "./BaseUserManager";
 import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
 import type { NHSLoginUser } from "./BaseUser";
-import NhsLoginHelper from "../../page-objects/NHSLoginHelper";
+import NhsLoginHelper from "../../page-objects/NhsLoginHelper";
 import type { Page } from "@playwright/test";
+import { SpecialUserKey } from "./SpecialUserKey";
 
 export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
   public getWorkerUsers(): NHSLoginUser[] {
@@ -85,4 +86,22 @@ export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
     const loginHelper = new NhsLoginHelper();
     return await loginHelper.loginNhsUser(page, user);
   }
+
+protected getSpecialUsers(): Map<string, NHSLoginUser> {
+    const specialUsersMap = new Map<string, NHSLoginUser>();
+
+    specialUsersMap.set(SpecialUserKey.UNDER_18, {
+      email: 'testuserlive46+4@gmail.com',
+      nhsNumber: '9686883932',
+      odsCode: '',
+      dob: "2009-04-06",
+      otp: process.env.OTP as unknown as string,
+      password: process.env.GENERIC_PASS as unknown as string,
+      description:
+        'User under 18'
+    });
+    return specialUsersMap;
+  }
+
+
 }

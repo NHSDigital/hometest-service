@@ -11,6 +11,7 @@ import { ConfigFactory } from '../../configuration/EnvironmentConfiguration';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
+import { SpecialUserKey } from './SpecialUserKey';
 
 interface NetworkError {
   url: string;
@@ -23,8 +24,9 @@ interface NetworkError {
 export abstract class BaseUserManager<TUser extends BaseTestUser> {
   protected readonly workerUsers: TUser[];
   private readonly numberOfWorkerUsers: number;
-
+  protected readonly specialUsers: Map<string, TUser>;
   protected abstract getWorkerUsers(): TUser[];
+  protected abstract getSpecialUsers(): Map<string, TUser>;
   protected abstract loginWorkerUser(user: TUser, page: Page): Promise<Page>;
 
   config = ConfigFactory.getConfig();
@@ -37,6 +39,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     }
 
     this.workerUsers = this.getWorkerUsers();
+    this.specialUsers = this.getSpecialUsers();
 
     if (numberOfWorkerUsers > this.workerUsers.length) {
       throw new Error(
@@ -217,4 +220,20 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       await browser.close();
     }
   }
+getSpecialUser(key: SpecialUserKey): TUser {
+    if (!this.specialUsers.has(key)) {
+      throw new Error(`Special user not found for key: ${key}`);
+    }
+
+    const user = this.specialUsers.get(key);
+    if (user === undefined) {
+      throw new Error(`Special user is undefined for key: ${key}`);
+    }
+    return user;
+  }
+
+  public async login(user: TUser, page: Page): Promise<void> {
+  await this.loginWorkerUser(user, page);
+}
+
 }
