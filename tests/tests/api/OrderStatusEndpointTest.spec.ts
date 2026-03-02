@@ -8,14 +8,9 @@ test.describe('GET Order API @api', () => {
 
   test.beforeAll(async ({ testedUser }) => {
     await dbClient.connect();
-
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error('Tested user is missing nhsNumber or dob.');
-    }
-
     const result = await dbClient.createOrderWithPatientAndStatus({
-      nhs_number: testedUser.nhsNumber,
-      birth_date: testedUser.dob,
+      nhs_number: testedUser.nhsNumber!,
+      birth_date: testedUser.dob!,
       supplier_name: 'Preventx',
       test_code: 'PCR',
       initial_status: 'ORDER_RECEIVED'
@@ -50,15 +45,11 @@ test.describe('GET Order API @api', () => {
   });
 
   test.afterAll(async ({ testedUser }) => {
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error('Tested user is missing nhsNumber or dob.');
-    }
-
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteOrderByPatientUid(patientId);
     await dbClient.deletePatientByNHSandDOB(
-      testedUser.nhsNumber,
-      testedUser.dob
+      testedUser.nhsNumber!,
+      testedUser.dob!
     );
     await dbClient.disconnect();
   });
