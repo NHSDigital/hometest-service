@@ -1,18 +1,24 @@
 import { init } from "./init";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { OrderStatusService } from "../lib/db/order-status-db";
-import { TransactionService } from "../lib/db/transaction-db-client";
-import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { TestResultDbClient } from "../lib/db/test-result-db-client";
+import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import {
+  setupEnvironment,
+  restoreEnvironment,
+} from "../lib/test-utils/environment-test-helpers";
 
 // Mock all external dependencies
+jest.mock("../lib/http/http-client");
+jest.mock("../lib/db/supplier-db");
 jest.mock("../lib/db/db-client");
-jest.mock("../lib/db/order-status-db");
-jest.mock("../lib/db/transaction-db-client");
-jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("../lib/db/test-result-db-client");
+jest.mock("../lib/supplier/supplier-test-results-service");
 jest.mock("../lib/db/db-config");
 
 describe("init", () => {
@@ -25,8 +31,6 @@ describe("init", () => {
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
-    ORDER_PLACEMENT_QUEUE_URL:
-      "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
   };
 
   // This represents the return value of postgresConfigFromEnv(secretsClient)
@@ -40,17 +44,13 @@ describe("init", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset process.env to a clean state
-    process.env = { ...originalEnv };
-    // Set default mock environment variables
-    Object.assign(process.env, mockEnvVariables);
+    setupEnvironment(mockEnvVariables);
 
     (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockPostgresConfig);
   });
 
   afterEach(() => {
-    // Restore original env
-    process.env = originalEnv;
+    restoreEnvironment(originalEnv);
   });
 
   describe("successful initialization", () => {
@@ -59,15 +59,11 @@ describe("init", () => {
 
       const result = init();
 
-      expect(result).toHaveProperty("orderStatusService");
-      expect(result).toHaveProperty("transactionService");
-      expect(result).toHaveProperty("sqsClient");
-      expect(result).toHaveProperty("orderPlacementQueueUrl");
-      expect(result.orderStatusService).toBeInstanceOf(OrderStatusService);
-      expect(result.transactionService).toBeInstanceOf(TransactionService);
-      expect(result.sqsClient).toBeInstanceOf(AWSSQSClient);
-      expect(result.orderPlacementQueueUrl).toBe(
-        "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
+      expect(result).toHaveProperty("testResultDbClient");
+      expect(result).toHaveProperty("supplierTestResultsService");
+      expect(result.testResultDbClient).toBeInstanceOf(TestResultDbClient);
+      expect(result.supplierTestResultsService).toBeInstanceOf(
+        SupplierTestResultsService,
       );
     });
 
@@ -102,85 +98,65 @@ describe("init", () => {
 
       init();
 
-      expect(PostgresDbClient).toHaveBeenCalledWith(
-        mockPostgresConfig
-      );
+      expect(PostgresDbClient).toHaveBeenCalledWith(mockPostgresConfig);
     });
 
-    it("should create OrderStatusService with PostgresDbClient instance", () => {
+    it("should create TestResultDbClient with PostgresDbClient instance", () => {
       init();
 
-      expect(OrderStatusService).toHaveBeenCalledWith(
+      expect(TestResultDbClient).toHaveBeenCalledWith(
         expect.any(PostgresDbClient),
       );
     });
 
-    it("should create TransactionService with PostgresDbClient instance", () => {
+    it("should create SupplierService with PostgresDbClient instance", () => {
       init();
 
-      expect(TransactionService).toHaveBeenCalledWith({
+      expect(SupplierService).toHaveBeenCalledWith({
         dbClient: expect.any(PostgresDbClient),
       });
     });
 
-    it("should create AWSSQSClient", () => {
+    it("should create FetchHttpClient", () => {
       init();
 
-      expect(AWSSQSClient).toHaveBeenCalledWith();
+      expect(FetchHttpClient).toHaveBeenCalled();
+    });
+
+    it("should create SupplierTestResultsService with correct dependencies", () => {
+      init();
+
+      expect(SupplierTestResultsService).toHaveBeenCalledWith(
+        expect.any(FetchHttpClient),
+        expect.any(AwsSecretsClient),
+        expect.any(SupplierService),
+      );
     });
 
     it("should return an Environment object with all required properties", () => {
       const result = init();
 
       expect(result).toEqual({
-        orderStatusService: expect.any(OrderStatusService),
-        transactionService: expect.any(TransactionService),
-        sqsClient: expect.any(AWSSQSClient),
-        orderPlacementQueueUrl:
-          "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
+        testResultDbClient: expect.any(TestResultDbClient),
+        supplierTestResultsService: expect.any(SupplierTestResultsService),
       });
     });
   });
 
-  describe("missing environment variables", () => {
-    it.each([
-      ["ORDER_PLACEMENT_QUEUE_URL"],
-    ])("should throw error when %s is missing", (envVar) => {
-      delete process.env[envVar];
-
-      expect(() => init()).toThrow(
-        `Missing value for an environment variable ${envVar}`,
-      );
-    });
-  });
-
-  describe("empty environment variables", () => {
-    it.each([
-      ["ORDER_PLACEMENT_QUEUE_URL"],
-    ])("should throw error when %s is empty string", (envVar) => {
-      process.env[envVar] = "";
-
-      expect(() => init()).toThrow(
-        `Missing value for an environment variable ${envVar}`,
-      );
-    });
-  });
-
   describe("integration of components", () => {
-    it("should pass a PostgresDbClient instance to OrderStatusService", () => {
+    it("should pass a PostgresDbClient instance to TestResultDbClient", () => {
       init();
 
-      const orderStatusServiceCalls = (OrderStatusService as jest.Mock).mock
+      const testResultDbClientCalls = (TestResultDbClient as jest.Mock).mock
         .calls;
-      expect(orderStatusServiceCalls[0][0]).toBeInstanceOf(PostgresDbClient);
+      expect(testResultDbClientCalls[0][0]).toBeInstanceOf(PostgresDbClient);
     });
 
-    it("should pass a PostgresDbClient instance to TransactionService", () => {
+    it("should pass a PostgresDbClient instance to SupplierService", () => {
       init();
 
-      const transactionServiceCalls = (TransactionService as jest.Mock).mock
-        .calls;
-      expect(transactionServiceCalls[0][0].dbClient).toBeInstanceOf(
+      const supplierServiceCalls = (SupplierService as jest.Mock).mock.calls;
+      expect(supplierServiceCalls[0][0].dbClient).toBeInstanceOf(
         PostgresDbClient,
       );
     });
@@ -194,14 +170,17 @@ describe("init", () => {
     });
 
     it("should create components in the correct order", () => {
-      // 1. AwsSecretsClient should be created first
+      // 1. FetchHttpClient and AwsSecretsClient should be created first
       // 2. PostgresDbClient should be created with postgresConfigFromEnv(secretsClient)
-      // 3. OrderStatusService should be created with a PostgresDbClient
-      // 4. TransactionService should be created with a PostgresDbClient
-      // 5. AWSSQSClient should be created
+      // 3. TestResultDbClient and SupplierService should be created with PostgresDbClient
+      // 4. SupplierTestResultsService should be created with all its dependencies
       testComponentCreationOrder({
         initFn: init,
         components: [
+          {
+            mock: FetchHttpClient as jest.Mock,
+            times: 1,
+          },
           {
             mock: AwsSecretsClient as jest.Mock,
             times: 1,
@@ -212,19 +191,19 @@ describe("init", () => {
             calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
           },
           {
-            mock: OrderStatusService as jest.Mock,
+            mock: TestResultDbClient as jest.Mock,
             times: 1,
             calledWith: expect.any(PostgresDbClient),
           },
           {
-            mock: TransactionService as jest.Mock,
+            mock: SupplierService as jest.Mock,
             times: 1,
             calledWith: {
               dbClient: expect.any(PostgresDbClient),
             },
           },
           {
-            mock: AWSSQSClient as jest.Mock,
+            mock: SupplierTestResultsService as jest.Mock,
             times: 1,
           },
         ],
