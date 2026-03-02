@@ -24,9 +24,7 @@ describe("NegativeTestResult", () => {
     expect(
       screen.getByRole("heading", { name: "HIV self-test result" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Your result" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Your result")).toBeInTheDocument();
     expect(screen.getByText("Negative")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Next steps" }),

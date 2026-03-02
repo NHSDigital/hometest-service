@@ -109,9 +109,7 @@ describe("TestResultsPage", () => {
     const header = await screen.findByTestId("order-status-header");
     expect(header).toBeInTheDocument();
     expect(screen.getByText("Order: 12345")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Your result" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Your result")).toBeInTheDocument();
     expect(screen.getByText("Negative")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "More options and information" }),

@@ -25,10 +25,12 @@ export function NegativeTestResult({
     <>
       <OrderStatusHeader order={order} heading={content.header} />
       <section aria-label={content.sectionAriaLabel}>
-        <h3 className="nhsuk-heading-s nhsuk-u-margin-0">
+        <p className="nhsuk-body nhsuk-u-font-weight-bold nhsuk-u-margin-bottom-2">
           {content.yourResultHeading}
-        </h3>
-        <h2 className="nhsuk-heading-m">{content.result}</h2>
+        </p>
+        <p className="nhsuk-body nhsuk-u-font-size-26 nhsuk-u-font-weight-bold">
+          {content.result}
+        </p>
         <p className="nhsuk-body">{content.summary}</p>
         <p className="nhsuk-body">{content.windowPeriodAdvice}</p>
         <p className="nhsuk-body">
