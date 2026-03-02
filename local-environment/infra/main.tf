@@ -245,8 +245,7 @@ module "session_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-
+    NODE_OPTIONS                       = "--enable-source-maps"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
     NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
@@ -386,6 +385,7 @@ module "get_order_lambda" {
 
   environment_variables = {
     NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
     DB_USERNAME    = "app_user"
     DB_ADDRESS     = "postgres-db"
     DB_PORT        = "5432"
@@ -393,7 +393,6 @@ module "get_order_lambda" {
     DB_SCHEMA      = "hometest"
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
-    ALLOW_ORIGIN   = "http://localhost:3000"
   }
 }
 

@@ -4,7 +4,7 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { SupplierService } from "../lib/db/supplier-db";
 import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { TestResultDbClient } from "../lib/db/test-result-db-client";
-import { postgresConfigFromEnv } from "src/lib/db/db-config";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
 
 export interface Environment {
   testResultDbClient: TestResultDbClient;
@@ -16,8 +16,8 @@ export function init(): Environment {
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
 
   const httpClient = new FetchHttpClient();
-
   const secretsClient = new AwsSecretsClient(awsRegion);
+
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const testResultDbClient = new TestResultDbClient(dbClient);
 
