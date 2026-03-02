@@ -1,13 +1,12 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
-import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
-import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import { useContent } from "@/hooks";
 import { useState } from "react";
+import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
+import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
@@ -75,7 +74,7 @@ export default function CheckYourAnswersPage() {
     setConsentChecked(e.target.checked);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!consentChecked) {
@@ -94,50 +93,45 @@ export default function CheckYourAnswersPage() {
     console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
     console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
 
-    try {
-      // Build orderRequest from OrderAnswers and User in state
-      const addressLines = orderAnswers.deliveryAddress
-        ? formatAddress(orderAnswers.deliveryAddress)
-        : [];
+    // Build orderRequest from OrderAnswers and User in state
+    const addressLines = orderAnswers.deliveryAddress
+      ? formatAddress(orderAnswers.deliveryAddress)
+      : [];
 
-      const orderRequest: OrderServiceRequest = {
-        testCode: orderAnswers.supplier?.[0]?.testCode || "",
-        testDescription: "HIV antigen test",
-        supplierId: orderAnswers.supplier?.[0]?.id || "",
-        patient: {
-          family: user?.familyName || "",
-          given: [user?.givenName || ""],
-          text: `${user?.givenName || ""} ${user?.familyName || ""}`,
-          telecom: [
-            { phone: orderAnswers.mobileNumber || "" },
-            { sms: orderAnswers.mobileNumber || "" },
-            { email: user?.email || "" },
-          ],
-          address: {
-            line: addressLines,
-            city: orderAnswers.deliveryAddress?.postTown || "",
-            postalCode: orderAnswers.deliveryAddress?.postcode || "",
-            country: "United Kingdom",
-          },
-          birthDate: user?.birthdate || "",
-          nhsNumber: user?.nhsNumber || "",
+    const orderRequest: OrderServiceRequest = {
+      testCode: orderAnswers.supplier?.[0]?.testCode || "",
+      testDescription: "HIV antigen test",
+      supplierId: orderAnswers.supplier?.[0]?.id || "",
+      patient: {
+        family: user?.familyName || "",
+        given: [user?.givenName || ""],
+        text: `${user?.givenName || ""} ${user?.familyName || ""}`,
+        telecom: [
+          { phone: orderAnswers.mobileNumber || "" },
+          { sms: orderAnswers.mobileNumber || "" },
+          { email: user?.email || "" },
+        ],
+        address: {
+          line: addressLines,
+          city: orderAnswers.deliveryAddress?.postTown || "",
+          postalCode: orderAnswers.deliveryAddress?.postcode || "",
+          country: "United Kingdom",
         },
-        consent: true,
-      };
+        birthDate: user?.birthdate || "",
+        nhsNumber: user?.nhsNumber || "",
+      },
+      consent: true,
+    };
 
-      const orderResponse = await orderService.submitOrder(orderRequest);
-      console.log("Order router response:", orderResponse);
+    const orderResponse = await orderService.submitOrder(orderRequest);
+    console.log("Order router response:", orderResponse);
 
-      updateOrderAnswers({
-        orderReferenceNumber: orderResponse.orderReference,
-      });
+    updateOrderAnswers({
+      orderReferenceNumber: orderResponse.orderReference,
+    });
 
-      goToStep(JourneyStepNames.OrderSubmitted);
-    } catch (err) {
-      console.error("Failed to submit order:", err);
-      // ALPHA TODO: Show error to user
-    }
-  };
+    goToStep(JourneyStepNames.OrderSubmitted);
+  });
 
   const addressLines = orderAnswers.deliveryAddress
     ? formatAddress(orderAnswers.deliveryAddress)
@@ -182,7 +176,7 @@ export default function CheckYourAnswersPage() {
 
       <SummaryList>
         <SummaryList.Row>
-          <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
+          <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>{" "}
           <SummaryList.Value>{formatUserName(user)}</SummaryList.Value>
         </SummaryList.Row>
 

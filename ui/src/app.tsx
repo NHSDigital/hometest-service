@@ -13,7 +13,6 @@ import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/En
 import FormSuppliersPrivacyPolicyPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersPrivacyPolicyPage";
 import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
-import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
 import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
@@ -30,9 +29,19 @@ import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage"
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
+import ServiceErrorPage from "./routes/ServiceErrorPage";
+import ErrorRedirect from "./components/ErrorRedirect";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
+  {
+    path: RoutePath.ServiceErrorPage,
+    element: (
+      <MainLayout>
+        <ServiceErrorPage />
+      </MainLayout>
+    ),
+  },
   {
     path: RoutePath.LoginPage,
     element: (
@@ -40,11 +49,7 @@ const router = createBrowserRouter([
         <LoginPage />
       </MainLayout>
     ),
-    errorElement: (
-      <MainLayout>
-        <GlobalErrorPage />
-      </MainLayout>
-    ),
+    errorElement: <ErrorRedirect />,
   },
   {
     path: RoutePath.CallbackPage,
@@ -53,11 +58,7 @@ const router = createBrowserRouter([
         <JourneyLayout />
       </MainLayout>
     ),
-    errorElement: (
-      <MainLayout>
-        <GlobalErrorPage />
-      </MainLayout>
-    ),
+    errorElement: <ErrorRedirect />,
     children: [
       {
         index: true,
@@ -71,11 +72,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <MainLayout />,
     loader: requireAuth,
-    errorElement: (
-      <MainLayout>
-        <GlobalErrorPage />
-      </MainLayout>
-    ),
+    errorElement: <ErrorRedirect />,
     children: [
       {
         path: RoutePath.HomePage,

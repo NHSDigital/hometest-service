@@ -32,7 +32,7 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "select-delivery-address",
   "how-comfortable-pricking-finger",
   "enter-mobile-phone-number",
-  "global-error",
+  "service-error",
   "order-tracking",
   "test-results",
   "blood-sample-guide",

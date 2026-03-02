@@ -6,12 +6,11 @@ import {
   useJourneyNavigationContext,
   usePostcodeLookup,
 } from "@/state";
-import { Button, ErrorSummary, Radios } from "nhsuk-react-components";
-
 import FormPageLayout from "@/layouts/FormPageLayout";
+import { useContent, useAsyncErrorHandler } from "@/hooks";
+import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useContent } from "@/hooks";
 import { useState } from "react";
 
 export default function SelectDeliveryAddressPage() {
@@ -25,7 +24,7 @@ export default function SelectDeliveryAddressPage() {
   );
   const [addressError, setAddressError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
@@ -40,48 +39,55 @@ export default function SelectDeliveryAddressPage() {
     );
     if (!selected) return;
 
-    try {
-      const postcode = selected.postcode;
-      const laResponse = await laLookupService.getByPostcode(postcode);
-      if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
-        updateOrderAnswers({ postcodeSearch: postcode });
-        goToStep(JourneyStepNames.KitNotAvailableInArea);
-        return;
-      }
+    const postcode = orderAnswers.postcodeSearch;
 
-      updateOrderAnswers({
-        deliveryAddress: {
-          addressLine1: selected.line1,
-          addressLine2: selected.line2,
-          addressLine3: selected.line3,
-          postTown: selected.town,
-          postcode: postcode,
-        },
-        addressEntryMethod: "postcode-search",
-        selectedAddressId: selected.id,
-        localAuthority: {
-          code: laResponse.localAuthority.localAuthorityCode,
-          region: laResponse.localAuthority.region,
-        },
-        supplier: laResponse.suppliers.map((supplier) => ({
-          id: supplier.id,
-          name: supplier.name,
-          testCode: supplier.testCode,
-        })),
-      });
+    if (!postcode) {
+      console.error("[SelectDeliveryAddressPage] Missing postcode in journey context.");
 
-      if (returnToStep) {
-        const step = returnToStep;
-        setReturnToStep(null);
-        goToStep(step);
-      } else {
-        goToStep(JourneyStepNames.HowComfortablePrickingFinger);
-      }
-    } catch (err) {
-      // ALPHA: Remove the console log and use proper logging pattern
-      console.error("Failed to lookup local authority:", err);
+      throw new Error("Postcode is required for address selection.");
     }
-  };
+
+    const laResponse = await laLookupService.getByPostcode(postcode);
+
+    if (!laResponse?.suppliers?.length) {
+      console.warn(
+        "[SelectDeliveryAddressPage] LA lookup returned null or incomplete data",
+        laResponse,
+      );
+
+      throw new Error("Unable to determine local authority or suppliers for the selected address.");
+    }
+    console.log("Eligibility lookup response:", laResponse);
+
+    updateOrderAnswers({
+      deliveryAddress: {
+        addressLine1: selected.line1,
+        addressLine2: selected.line2,
+        addressLine3: selected.line3,
+        postTown: selected.town,
+        postcode: selected.postcode,
+      },
+      addressEntryMethod: "postcode-search",
+      selectedAddressId: selected.id,
+      localAuthority: {
+        code: laResponse.localAuthority.localAuthorityCode,
+        region: laResponse.localAuthority.region,
+      },
+      supplier: laResponse.suppliers.map((supplier) => ({
+        id: supplier.id,
+        name: supplier.name,
+        testCode: supplier.testCode,
+      })),
+    });
+
+    if (returnToStep) {
+      const step = returnToStep;
+      setReturnToStep(null);
+      goToStep(step);
+    } else {
+      goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+    }
+  });
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedAddress(e.target.value);

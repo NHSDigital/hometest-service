@@ -1,14 +1,12 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-
-import { CreateOrderProvider } from "@/state/OrderContext";
+import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
 import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useCreateOrderContext } from "@/state";
 import { useEffect } from "react";
 
 const mockLookupPostcode = jest.fn();
@@ -117,13 +115,12 @@ jest.mock("@/hooks/useContent", () => ({
   }),
 }));
 
-function StateSeeder({ children }: { children: React.ReactNode }) {
+function StateSeeder({ children }: Readonly<{ children: React.ReactNode }>) {
   const { updateOrderAnswers } = useCreateOrderContext();
 
   useEffect(() => {
     updateOrderAnswers({ postcodeSearch: "B99 95C" });
   }, [updateOrderAnswers]);
-
   return <>{children}</>;
 }
 
@@ -140,10 +137,21 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("SelectDeliveryAddressPage", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockNavigationContext.stepHistory = ["enter-delivery-address", "select-delivery-address"];
-    mockNavigationContext.returnToStep = null;
+  // Suppress React/error-boundary logging for tests that intentionally render failures.
+  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+
+  const submitForm = () => {
+    const form = screen.getByRole("button", { name: /continue/i }).closest("form");
+
+    if (!form) {
+      throw new Error("Delivery address form not found");
+    }
+
+    fireEvent.submit(form);
+  };
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("Component Rendering", () => {
@@ -198,8 +206,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should show error summary when no address is selected", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       expect(screen.getByRole("alert")).toBeInTheDocument();
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
@@ -215,8 +222,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should link to radio group in error summary", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
       expect(errorLink).toHaveAttribute("href", "#collection-point");
@@ -240,8 +246,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should show error message when submitting without selection", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       expect(screen.getAllByText("Select a delivery address")).toHaveLength(2);
     });
@@ -252,8 +257,7 @@ describe("SelectDeliveryAddressPage", () => {
       const radios = screen.getAllByRole("radio");
       fireEvent.click(radios[0]);
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       expect(screen.queryByText("Select a delivery address")).not.toBeInTheDocument();
     });
@@ -279,8 +283,7 @@ describe("SelectDeliveryAddressPage", () => {
       const radios = screen.getAllByRole("radio");
       fireEvent.click(radios[0]);
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       await screen.findByText(/1 TEST ROAD/i);
     });
@@ -376,8 +379,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should have proper ARIA labels for error summary", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       const alert = screen.getByRole("alert");
       expect(alert).toHaveAttribute("aria-labelledby", "error-summary-title");
@@ -391,6 +393,80 @@ describe("SelectDeliveryAddressPage", () => {
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);
+    });
+  });
+
+  describe("Error handling", () => {
+    it("shows the error boundary when LA lookup returns null", async () => {
+      (laLookupService.getByPostcode as jest.Mock).mockResolvedValueOnce(null);
+
+      render(
+        <TestErrorBoundary>
+          <SelectDeliveryAddressPage />
+        </TestErrorBoundary>,
+        { wrapper: TestWrapper },
+      );
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      submitForm();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "Unable to determine local authority or suppliers for the selected address.",
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows the error boundary when LA lookup returns empty suppliers", async () => {
+      (laLookupService.getByPostcode as jest.Mock).mockResolvedValueOnce({
+        localAuthority: { localAuthorityCode: "4230", region: "Salford" },
+        suppliers: [],
+      });
+
+      render(
+        <TestErrorBoundary>
+          <SelectDeliveryAddressPage />
+        </TestErrorBoundary>,
+        { wrapper: TestWrapper },
+      );
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      submitForm();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            "Unable to determine local authority or suppliers for the selected address.",
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows the error boundary when LA lookup rejects", async () => {
+      (laLookupService.getByPostcode as jest.Mock).mockRejectedValueOnce(
+        new Error("LA lookup failed"),
+      );
+
+      render(
+        <TestErrorBoundary>
+          <SelectDeliveryAddressPage />
+        </TestErrorBoundary>,
+        { wrapper: TestWrapper },
+      );
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+      submitForm();
+
+      await waitFor(() => {
+        expect(screen.getByText("LA lookup failed")).toBeInTheDocument();
+      });
     });
   });
 });

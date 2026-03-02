@@ -1,7 +1,9 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import React from "react";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import { CreateOrderProvider } from "@/state/OrderContext";
 import EnterDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
@@ -10,18 +12,26 @@ import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 
 const mockLookupPostcode = jest.fn();
 const mockClearAddresses = jest.fn();
-let mockLookupResultsStatus = "idle";
-let mockIsLoading = false;
+
+// Exposed setters so tests can drive React state changes in the mock hook
+let setMockLookupResultsStatus: (value: string) => void;
+let setMockIsLoading: (value: boolean) => void;
 
 jest.mock("@/state", () => ({
   ...jest.requireActual("@/state"),
-  usePostcodeLookup: () => ({
-    lookupPostcode: mockLookupPostcode,
-    lookupResultsStatus: mockLookupResultsStatus,
-    isLoading: mockIsLoading,
-    addresses: [],
-    clearAddresses: mockClearAddresses,
-  }),
+  usePostcodeLookup: () => {
+    const [status, setStatus] = React.useState("idle");
+    const [isLoading, setIsLoading] = React.useState(false);
+    setMockLookupResultsStatus = setStatus;
+    setMockIsLoading = setIsLoading;
+    return {
+      lookupPostcode: mockLookupPostcode,
+      lookupResultsStatus: status,
+      isLoading,
+      addresses: [],
+      clearAddresses: mockClearAddresses,
+    };
+  },
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -35,10 +45,15 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("EnterDeliveryAddressPage", () => {
+  // Suppress React/error-boundary logging for tests that intentionally render failures.
+  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLookupResultsStatus = "idle";
-    mockIsLoading = false;
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("Component Rendering", () => {
@@ -152,8 +167,9 @@ describe("EnterDeliveryAddressPage", () => {
     });
 
     it("should accept valid UK postcodes", async () => {
-      mockLookupPostcode.mockResolvedValue("valid");
-      mockLookupResultsStatus = "found";
+      mockLookupPostcode.mockImplementation(async () => {
+        act(() => setMockLookupResultsStatus("found"));
+      });
 
       const validPostcodes = ["M1 1AA", "B33 8TH", "W1A 0AX", "EC1A 1BB"];
 
@@ -260,6 +276,31 @@ describe("EnterDeliveryAddressPage", () => {
       fireEvent.click(submitButton);
 
       expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Postcode Lookup Status", () => {
+    it("shows the error boundary when lookupResultsStatus is error", async () => {
+      mockLookupPostcode.mockImplementation(async () => {
+        act(() => setMockLookupResultsStatus("error"));
+      });
+
+      render(
+        <TestErrorBoundary>
+          <EnterDeliveryAddressPage />
+        </TestErrorBoundary>,
+        { wrapper: TestWrapper },
+      );
+
+      const postcodeInput = screen.getByLabelText(/postcode/i);
+      fireEvent.change(postcodeInput, { target: { value: "M1 1AA" } });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("Postcode lookup failed")).toBeInTheDocument();
+      });
     });
   });
 });

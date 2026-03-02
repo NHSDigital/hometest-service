@@ -6,7 +6,7 @@ import type {
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
-  GlobalErrorContent,
+  ServiceErrorContent,
   HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
   KitNotAvailableInAreaContent,
@@ -30,7 +30,7 @@ export const PageKeys = {
   SelectDeliveryAddress: "select-delivery-address",
   ComfortablePricking: "how-comfortable-pricking-finger",
   BloodSampleGuide: "blood-sample-guide",
-  GlobalError: "global-error",
+  ServiceError: "service-error",
   OrderTracking: "order-tracking",
   HomeTestPolicy: "home-test-privacy-policy",
   SuppliersTermsConditions: "suppliers-terms-conditions",
@@ -52,7 +52,7 @@ export interface UseContentReturn {
   "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "blood-sample-guide": BloodSampleGuideContent;
-  "global-error": GlobalErrorContent;
+  "service-error": ServiceErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
@@ -74,7 +74,7 @@ export const useContent = (): UseContentReturn => {
     "confirm-mobile-phone-number": content.pages["confirm-mobile-phone-number"],
     "enter-mobile-phone-number": content.pages["enter-mobile-phone-number"],
     "check-your-answers": content.pages["check-your-answers"],
-    "global-error": content.pages["global-error"],
+    "service-error": content.pages["service-error"],
     "order-tracking": content.pages["order-tracking"],
     "test-results": content.pages["test-results"],
     "blood-sample-guide": content.pages["blood-sample-guide"],

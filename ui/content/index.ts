@@ -12,7 +12,6 @@ export type {
   EnterDeliveryAddressContent,
   EnterAddressManuallyContent,
   NoAddressFoundContent,
-  GlobalErrorContent,
   OrderTrackingContent,
   TestResultsContent,
   NavigationContent,

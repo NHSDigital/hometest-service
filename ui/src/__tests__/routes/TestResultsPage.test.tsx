@@ -4,7 +4,8 @@ import { AuthUser, useAuth } from "@/state/AuthContext";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 
 import TestResultsPage from "@/routes/TestResultsPage";
 import { act } from "react";
@@ -41,6 +42,9 @@ jest.mock("@/components/order-status", () => ({
 }));
 
 describe("TestResultsPage", () => {
+  // Suppress React/error-boundary logging for tests that intentionally render failures.
+  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+
   const orderId = "550e8400-e29b-41d4-a716-446655440000";
 
   const mockOrder: OrderDetails = {
@@ -76,7 +80,41 @@ describe("TestResultsPage", () => {
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[`/orders/${currentOrderId}/results`]}>
           <Routes>
-            <Route path="/orders/:orderId/results" element={<TestResultsPage />} />
+            <Route
+              path="/orders/:orderId/results"
+              element={
+                <TestErrorBoundary>
+                  <TestResultsPage />
+                </TestErrorBoundary>
+              }
+            />
+            <Route
+              path="/orders/:orderId/tracking"
+              element={<div data-testid="order-tracking-page" />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  };
+
+  const renderWithNoRetry = (currentOrderId: string) => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[`/orders/${currentOrderId}/results`]}>
+          <Routes>
+            <Route
+              path="/orders/:orderId/results"
+              element={
+                <TestErrorBoundary>
+                  <TestResultsPage />
+                </TestErrorBoundary>
+              }
+            />
             <Route
               path="/orders/:orderId/tracking"
               element={<div data-testid="order-tracking-page" />}
@@ -94,6 +132,10 @@ describe("TestResultsPage", () => {
       user: mockUser,
       setUser: jest.fn(),
     });
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it("renders order status header when result is found", async () => {
@@ -179,5 +221,32 @@ describe("TestResultsPage", () => {
     expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
     expect(orderDetailsService.get).not.toHaveBeenCalled();
     expect(testResultsService.get).not.toHaveBeenCalled();
+  });
+
+  it("shows the error boundary when the order query errors", async () => {
+    const orderError = new Error("Failed to fetch order");
+    (orderDetailsService.get as jest.Mock).mockRejectedValue(orderError);
+
+    await act(async () => {
+      renderWithNoRetry(orderId);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to fetch order")).toBeInTheDocument();
+    });
+  });
+
+  it("shows the error boundary when the test results query errors", async () => {
+    const resultError = new Error("Failed to fetch results");
+    (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
+    (testResultsService.get as jest.Mock).mockRejectedValue(resultError);
+
+    await act(async () => {
+      renderWithNoRetry(orderId);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to fetch results")).toBeInTheDocument();
+    });
   });
 });

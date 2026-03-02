@@ -8,6 +8,7 @@ import { useEffect, useRef } from "react";
 import { RoutePath } from "@/lib/models/route-paths";
 import { backendUrl } from "@/settings";
 import { useNavigate } from "react-router-dom";
+import { useAsyncErrorHandler } from "@/hooks";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -36,17 +37,12 @@ export default function CallbackPage() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
   const didRun = useRef(false);
-
-  useEffect(() => {
-    // ALPHA: Revisit this solution to the double call of useEffect.
-    if (didRun.current) return;
-    didRun.current = true;
-
+  const handleCallback = useAsyncErrorHandler(async () => {
     if (!backendUrl) {
       console.error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;
     }
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(globalThis.location.search);
     const code = params.get("code");
     const stateParam = params.get("state");
 
@@ -65,31 +61,30 @@ export default function CallbackPage() {
       return;
     }
 
-    fetch(`${backendUrl}/login`, {
+    const response = await fetch(`${backendUrl}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
       credentials: "include",
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`HTTP ${res.status}: ${text}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        const userData = mapAuthUser(data);
+    });
 
-        setUser(userData);
-      })
-      .then(() => {
-        navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
-      })
-      .catch((err) => {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error("Fetch error:", message);
-      });
-  }, [setUser, navigate]);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`HTTP ${response.status}: ${text}`);
+    }
+
+    const data = await response.json();
+    const userData = mapAuthUser(data);
+
+    setUser(userData);
+    navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
+  });
+
+  useEffect(() => {
+    // ALPHA: Revisit this solution to the double call of useEffect.
+    if (didRun.current) return;
+    didRun.current = true;
+    handleCallback();
+  }, [handleCallback]);
   return null;
 }

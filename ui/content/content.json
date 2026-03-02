@@ -240,9 +240,9 @@
         "alternativeInputHint": "For example, 07771 900 900 or +44 7771 900 900"
       }
     },
-    "global-error": {
-      "title": "Oops!",
-      "message": "Sorry, an unexpected error has occurred."
+    "service-error": {
+      "title": "Sorry, there is a problem with the service",
+      "message": "Try again later."
     },
     "order-tracking": {
       "title": "Track your order",

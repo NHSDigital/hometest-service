@@ -51,7 +51,7 @@ function TestResultsContent({
   }
 
   if (!result) {
-    throw new Error("Unable to load test results");
+    throw new Error("Test results not found");
   }
 
   return <NegativeTestResult order={order} />;
