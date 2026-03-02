@@ -4,11 +4,16 @@ import { createHtmlReport } from 'axe-html-reporter';
 import { AxeResults, Result } from 'axe-core';
 import { existsSync, mkdirSync } from 'fs';
 import * as path from 'path';
-import { config } from '../configuration';
-import { EnvironmentVariables } from '../configuration';
+import { ConfigFactory } from '../configuration/EnvironmentConfiguration';
 
 // Accessibility standards to test against
-const ACCESSIBILITY_STANDARDS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] as const;
+const ACCESSIBILITY_STANDARDS = [
+  'wcag2a',
+  'wcag2aa',
+  'wcag21a',
+  'wcag21aa',
+  'wcag22aa'
+] as const;
 
 export class AccessibilityModule {
   private readonly standards: string[];
@@ -16,12 +21,19 @@ export class AccessibilityModule {
 
   constructor() {
     // Get standards from configuration or use default
-    const standardsConfig = config.get(EnvironmentVariables.ACCESSIBILITY_STANDARDS);
-    this.standards = standardsConfig.split(',').map((s: string) => s.trim());
+    const standardsConfig = ConfigFactory.getConfig().accessibilityStandards;
+    this.standards = standardsConfig
+      ? standardsConfig.split(',').map((s: string) => s.trim())
+      : [...ACCESSIBILITY_STANDARDS];
 
     // Get absolute path to tests/testResults/accessibility
     // __dirname is tests/utils, so go up one level to tests, then into testResults/accessibility
-    const absoluteDir = path.resolve(__dirname, '..', 'testResults', 'accessibility');
+    const absoluteDir = path.resolve(
+      __dirname,
+      '..',
+      'testResults',
+      'accessibility'
+    );
 
     // axe-html-reporter always treats outputDir as relative and prepends cwd,
     // so we need to provide a relative path from cwd to the target directory
@@ -43,7 +55,8 @@ export class AccessibilityModule {
     pageName: string,
     prefix: string = ''
   ): Promise<Result[]> {
-    const page = 'page' in pageOrPageObject ? pageOrPageObject.page : pageOrPageObject;
+    const page =
+      'page' in pageOrPageObject ? pageOrPageObject.page : pageOrPageObject;
     const accessErrors: Result[] = [];
 
     console.log(`🔍 Running accessibility check on: ${pageName}`);
@@ -66,7 +79,9 @@ export class AccessibilityModule {
     });
 
     if (accessErrors.length > 0) {
-      console.log(`❌ ${accessErrors.length} accessibility errors found on ${pageName}`);
+      console.log(
+        `❌ ${accessErrors.length} accessibility errors found on ${pageName}`
+      );
       this.logViolations(accessErrors, pageName);
     } else {
       console.log(`✅ No accessibility violations found on ${pageName}`);
@@ -100,7 +115,12 @@ export class AccessibilityModule {
         : `${prefix}-${pageName}-accessibility-report.html`;
 
     // Ensure directory exists
-    const absolutePath = path.resolve(__dirname, '..', 'testResults', 'accessibility');
+    const absolutePath = path.resolve(
+      __dirname,
+      '..',
+      'testResults',
+      'accessibility'
+    );
     if (!existsSync(absolutePath)) {
       mkdirSync(absolutePath, { recursive: true });
     }
@@ -114,7 +134,9 @@ export class AccessibilityModule {
       }
     });
 
-    console.log(`📄 Report generated: ${accessibilityReportPath}/${accessibilityReportHtml}`);
+    console.log(
+      `📄 Report generated: ${accessibilityReportPath}/${accessibilityReportHtml}`
+    );
   }
 
   /**

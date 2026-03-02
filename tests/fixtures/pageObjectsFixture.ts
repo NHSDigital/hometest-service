@@ -1,5 +1,14 @@
 import { test as base } from '@playwright/test';
-import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, BloodSampleGuidePage, EnterMobileNumberPage, PrivacyPolicyPage, ConfirmAndUpdateMobileNumberPage } from '../page-objects';
+import { HomeTestStartPage } from '../page-objects/HomeTestStartPage';
+import { FindAddressPage } from '../page-objects/FindAddressPage';
+import { EnterAddressManuallyPage } from '../page-objects/EnterAddressManuallyPage';
+import { SelectDeliveryAddressPage } from '../page-objects/SelectDeliveryAddressPage';
+import { OrderStatusPage } from '../page-objects/OrderStatusPage';
+import { HowComfortablePrickingFingerPage } from '../page-objects/HowComfortablePrickingFingerPage';
+import { BloodSampleGuidePage } from '../page-objects/BloodSampleGuidePage';
+import { EnterMobileNumberPage } from '../page-objects/EnterMobileNumberPage';
+import { PrivacyPolicyPage } from '../page-objects/PrivacyPolicyPage';
+import { ConfirmAndUpdateMobileNumberPage } from '../page-objects/ConfirmAndUpdateMobileNumberPage';
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -50,7 +59,8 @@ export const pageObjectFixture = base.extend<MyFixtures>({
   enterMobileNumberPage: async ({ page }, use) => {
     await use(new EnterMobileNumberPage(page));
   },
+
   confirmAndUpdateMobileNumberPage: async ({ page }, use) => {
     await use(new ConfirmAndUpdateMobileNumberPage(page));
-  }
+  },
 });

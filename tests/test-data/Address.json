@@ -1,0 +1,30 @@
+[
+  {
+    "postCode": "TN37 7PT",
+    "addressLine1": "775 The Ridge",
+    "addressLine2": "",
+    "addressLine3": "",
+    "townCity": "Saint Leonards-on-sea"
+  },
+  {
+    "postCode": "BN10 8QN",
+    "addressLine1": "14 Marine Drive",
+    "addressLine2": "Peacehaven",
+    "addressLine3": "",
+    "townCity": "Newhaven"
+  },
+  {
+    "postCode": "M50 3UQ",
+    "addressLine1": "22 Trafford Wharf Road",
+    "addressLine2": "The Quays",
+    "addressLine3": "Trafford Park",
+    "townCity": "Manchester"
+  },
+  {
+    "postCode": "M27 5AW",
+    "addressLine1": "8 Lancaster Road",
+    "addressLine2": "Swinton",
+    "addressLine3": "",
+    "townCity": "Salford"
+  }
+]

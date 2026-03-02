@@ -6,7 +6,8 @@ import {
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { expect } from "@playwright/test";
-import { test } from "../../fixtures";
+import { test } from "../../fixtures/CombinedTestFixture";
+import { randomUUID } from "crypto";
 
 let orderId: string;
 let patientId: string;
@@ -38,7 +39,7 @@ test.describe("GET Result API @api", () => {
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
-      correlationId = result.correlation_id;
+      correlationId = randomUUID();
       console.log(`Created test order with ID: ${orderId}`);
 
       await resultDbClient.insertStatusResult(
@@ -65,7 +66,7 @@ test.describe("GET Result API @api", () => {
     const headers = createGetResultHeaders(correlationId);
     const response = await hivResultsApi.getResult(params, headers);
 
-    hivResultsApi.validateResponse(response, 200);
+    hivResultsApi.validateStatus(response, 200);
     const responseBody = await response.json();
     console.log(
       "The response received: " + JSON.stringify(responseBody, null, 2),
