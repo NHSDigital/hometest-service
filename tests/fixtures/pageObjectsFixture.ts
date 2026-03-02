@@ -10,6 +10,8 @@ import { EnterMobileNumberPage } from '../page-objects/EnterMobileNumberPage';
 import { PrivacyPolicyPage } from '../page-objects/PrivacyPolicyPage';
 import { ConfirmAndUpdateMobileNumberPage } from '../page-objects/ConfirmAndUpdateMobileNumberPage';
 import { NegativeResultPage } from '../page-objects/NegativeResultPage';
+import { CheckYourAnswersPage } from '../page-objects/CheckYourAnswersPage';
+import { OrderSubmittedPage } from '../page-objects/OrderSubmittedPage';
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -23,6 +25,8 @@ export interface MyFixtures {
   enterMobileNumberPage: EnterMobileNumberPage;
   confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
   negativeResultPage: NegativeResultPage;
+  checkYourAnswersPage: CheckYourAnswersPage;
+  orderSubmittedPage: OrderSubmittedPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -68,5 +72,14 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   negativeResultPage: async ({ page }, use) => {
     await use(new NegativeResultPage(page));
+
+  },
+    
+  checkYourAnswersPage: async ({ page }, use) => {
+    await use(new CheckYourAnswersPage(page));
+  },
+
+  orderSubmittedPage: async ({ page }, use) => {
+    await use(new OrderSubmittedPage(page));
   },
 });
