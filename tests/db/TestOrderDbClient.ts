@@ -123,4 +123,16 @@ export class TestOrderDbClient extends BaseDbClient {
       orderUid,
     ]);
   }
+
+  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<{ status_code: string } | undefined> {
+    const rows = await this.query<{ status_code: string }>(`
+      SELECT status_code
+      FROM hometest.order_status
+      WHERE order_uid = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [orderUid]);
+ 
+    return rows[0];
+  }
 }
