@@ -45,6 +45,14 @@ export const storageStateFixture = baseTest.extend<
       const user: BaseTestUser = userManager.getWorkerUser(
         storageStateFixture.info().parallelIndex
       );
+
+      // Validate that required user properties exist
+      if (!user.nhsNumber || !user.dob) {
+        throw new Error(
+          `Test user is missing required properties. nhsNumber: ${user.nhsNumber}, dob: ${user.dob}. User: ${JSON.stringify(user)}`
+        );
+      }
+
       console.log(`Using user with nhsNumber: ${user.nhsNumber}`);
       await use(user);
     },
