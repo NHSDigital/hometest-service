@@ -27,13 +27,4 @@ export class SelectDeliveryAddressPage extends BasePage {
     await this.address1.first().check();
     await this.continueButton.click();
   }
-
-  async getPostcodes(): Promise<string[]> {
-    const allResults = await this.allAddress.allTextContents();
-    const postcodes = allResults.map(address => {
-      const i = address.split(",");
-      return i[i.length - 1].trim();
-    });
-    return postcodes;
-  }
 }

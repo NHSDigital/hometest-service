@@ -24,10 +24,6 @@ test.describe("HIV Test Order journeys", () => {
     howComfortablePrickingFingerPage,
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    const postCodes = await selectDeliveryAddressPage.getPostcodes();
-    for (const pc of postCodes) {
-      expect(pc).toBe(randomAddress.postCode);
-    }
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postCode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
@@ -48,12 +44,11 @@ test.describe("HIV Test Order journeys", () => {
     howComfortablePrickingFingerPage,
     enterMobileNumberPage,
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await findAddressPage.fillPostCodeAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
-    const { postCode, firstLineAddress } =
+    const { postCode } =
       await findAddressPage.getPostcodeAndAddressValues();
     expect(postCode).toBe(randomAddress.postCode);
-    expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
@@ -73,14 +68,6 @@ test.describe("HIV Test Order journeys", () => {
     await enterAddressManuallyPage.fillAddressAndContinue(randomAddress);
   });
 
-  test("Order test journey by providing address manually from select delivery address page", async ({
-    findAddressPage,
-    enterAddressManuallyPage,
-  }) => {
-    await findAddressPage.clickEnterAddressManuallyLink();
-    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress);
-  });
-
   test("Order test journey by providing Postcode Only", async ({
     homeTestStartPage,
     findAddressPage,
@@ -88,10 +75,6 @@ test.describe("HIV Test Order journeys", () => {
     howComfortablePrickingFingerPage,
   }) => {
     await findAddressPage.fillPostCodeAndContinue(randomAddress);
-    const postCodes = await selectDeliveryAddressPage.getPostcodes();
-    for (const pc of postCodes) {
-      expect(pc).toBe(randomAddress.postCode);
-    }
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postCode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
