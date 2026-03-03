@@ -344,25 +344,6 @@ export interface HomeTestPrivacyPolicyContent {
   sections: PrivacyPolicySection[];
 }
 
-export interface PrivacyPolicySubsection {
-  heading?: string;
-  paragraphs?: string[];
-  list?: string[];
-}
-
-export interface PrivacyPolicySection {
-  id: string;
-  heading: string;
-  paragraphs: string[];
-  subsections?: PrivacyPolicySubsection[];
-}
-
-export interface HomeTestPrivacyPolicyContent {
-  title: string;
-  introduction: string[];
-  sections: PrivacyPolicySection[];
-}
-
 export interface BloodSampleGuideContent {
   title: string;
   whatsInKit: {
