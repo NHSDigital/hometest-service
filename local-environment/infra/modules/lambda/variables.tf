@@ -49,7 +49,7 @@ variable "cors_allow_credentials" {
 
 variable "cors_allow_headers" {
   type    = list(string)
-  default = ["Content-Type", "Authorization", "X-Requested-With"]
+  default = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-Id"]
 }
 
 variable "cors_allow_methods" {
