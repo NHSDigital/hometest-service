@@ -1,18 +1,18 @@
-import { init } from "./init";
-import { FetchHttpClient } from "../lib/http/http-client";
-import { SupplierService } from "../lib/db/supplier-db";
-import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { TestResultDbClient } from "../lib/db/test-result-db-client";
-import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
-import { postgresConfigFromEnv } from "../lib/db/db-config";
-import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import {
-  setupEnvironment,
   restoreEnvironment,
+  setupEnvironment,
 } from "../lib/test-utils/environment-test-helpers";
 
-// Mock all external dependencies
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { PostgresDbClient } from "../lib/db/db-client";
+import { SupplierService } from "../lib/db/supplier-db";
+import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
+import { TestResultDbClient } from "../lib/db/test-result-db-client";
+import { init } from "./init";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");
 jest.mock("../lib/db/db-client");
@@ -170,10 +170,6 @@ describe("init", () => {
     });
 
     it("should create components in the correct order", () => {
-      // 1. FetchHttpClient and AwsSecretsClient should be created first
-      // 2. PostgresDbClient should be created with postgresConfigFromEnv(secretsClient)
-      // 3. TestResultDbClient and SupplierService should be created with PostgresDbClient
-      // 4. SupplierTestResultsService should be created with all its dependencies
       testComponentCreationOrder({
         initFn: init,
         components: [
@@ -188,7 +184,7 @@ describe("init", () => {
           {
             mock: PostgresDbClient as jest.Mock,
             times: 1,
-            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+            calledWith: mockPostgresConfig,
           },
           {
             mock: TestResultDbClient as jest.Mock,
