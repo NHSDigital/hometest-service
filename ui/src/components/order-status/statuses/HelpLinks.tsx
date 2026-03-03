@@ -1,3 +1,4 @@
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { Link } from "react-router-dom";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { useCommonContent } from "@/hooks";
@@ -9,10 +10,7 @@ interface HelpLinksProps {
 export function HelpLinks({ supplier }: HelpLinksProps) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.helpLinks;
-  const contactSupplierText = content.contactSupplier.replace(
-    "{supplier}",
-    supplier,
-  );
+  const contactSupplierText = content.contactSupplier.replace("{supplier}", supplier);
 
   return (
     <section aria-labelledby="help-links-heading">
@@ -33,12 +31,7 @@ export function HelpLinks({ supplier }: HelpLinksProps) {
           linkText={content.contactClinic}
         />
       </p>
-      <p className="nhsuk-body">
-        <OpensInNewTabLink
-          linkHref="https://www.nhs.uk/conditions/hiv-and-aids/"
-          linkText={content.learnMoreHIV}
-        />
-      </p>
+      <LearnMoreAboutHivAndAidsLink />
     </section>
   );
 }

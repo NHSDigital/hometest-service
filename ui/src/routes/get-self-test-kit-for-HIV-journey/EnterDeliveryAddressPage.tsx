@@ -86,12 +86,6 @@ export default function EnterDeliveryAddressPage() {
     setBuildingNameError(buildingNameValidationError);
 
     if (postcodeValidation.valid && !buildingNameValidationError) {
-      const laResponse = await laLookupService.getByPostcode(postcodeValidation.value);
-      if (!laResponse) {
-        goToStep(JourneyStepNames.KitNotAvailableInArea);
-        return;
-      }
-
       const updatedData = {
         postcodeSearch: postcodeValidation.value,
         buildingNumber: buildingName.trim() || undefined,
@@ -99,6 +93,12 @@ export default function EnterDeliveryAddressPage() {
 
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
+
+      const laResponse = await laLookupService.getByPostcode(updatedData.postcodeSearch);
+      if (!laResponse) {
+        goToStep(JourneyStepNames.KitNotAvailableInArea);
+        return;
+      }
 
       // Navigate to next step using NavigationContext
       // for now use hard coded value to simulate no address found

@@ -60,7 +60,15 @@ export interface CommonLinks {
     text: string;
     href: string;
   };
+  findAnotherSexualHealthClinic: {
+    text: string;
+    href: string;
+  };
   nearestAE: {
+    text: string;
+    href: string;
+  };
+  learnMoreAboutHivAndAids: {
     text: string;
     href: string;
   };
@@ -114,12 +122,10 @@ export interface HelpLinksContent {
   contactSupplier: string;
   bloodSampleGuide: string;
   contactClinic: string;
-  learnMoreHIV: string;
 }
 
 export interface MoreInformationContent {
   heading: string;
-  learnMoreHIV: string;
 }
 
 export interface AboutServiceContent {
@@ -142,12 +148,19 @@ export interface FooterContent {
   copyright: string;
 }
 
+export interface FeedbackContent {
+  text: string;
+  linkText: string;
+  linkHref: string;
+}
+
 export interface CommonContent {
   navigation: NavigationContent;
   validation: ValidationMessages;
   links: CommonLinks;
   errorSummary: ErrorSummaryContent;
   orderStatus: OrderStatusContent;
+  feedback: FeedbackContent;
   footer: FooterContent;
 }
 
@@ -191,10 +204,6 @@ export interface StartPageContent {
     clinicTextEnd: string;
     sexualHealthText: string;
     sexualHealthLink: {
-      text: string;
-      href: string;
-    };
-    learnMoreLink: {
       text: string;
       href: string;
     };
@@ -361,6 +370,12 @@ export interface CheckYourAnswersContent {
   submitButton: string;
 }
 
+export interface KitNotAvailableInAreaContent {
+  title: string;
+  description: string;
+  moreOptionsHeading: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -379,6 +394,7 @@ export interface PagesContent {
   "order-tracking": OrderTrackingContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
+  "kit-not-available-in-area": KitNotAvailableInAreaContent;
 }
 
 // ============================================================================

@@ -28,5 +28,7 @@ export type {
   HelpLinksContent,
   MoreInformationContent,
   AboutServiceContent,
+  FeedbackContent,
   FooterContent,
+  KitNotAvailableInAreaContent,
 } from "./schema";
