@@ -1,36 +1,26 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
-import { handler, OrderStatusFHIRTask } from "./index";
+import { OrderStatusFHIRTask } from "./index";
 import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
 
-const mockGetCorrelationIdFromEventHeaders = jest.fn();
+const mockInit = jest.fn();
 
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
 
+const mockGetCorrelationIdFromEventHeaders = jest.fn();
+
+jest.mock("./init", () => ({
+  init: () => mockInit(),
+}));
+
 jest.mock("../lib/utils", () => ({
   ...jest.requireActual("../lib/utils"),
-  getCorrelationIdFromEventHeaders: () =>
-    mockGetCorrelationIdFromEventHeaders(),
+  getCorrelationIdFromEventHeaders: () => mockGetCorrelationIdFromEventHeaders(),
 }));
-
-jest.mock("../lib/db/order-status-db", () => ({
-  ...jest.requireActual("../lib/db/order-status-db"),
-  OrderStatusService: jest.fn().mockImplementation(() => ({
-    getPatientIdFromOrder: mockGetPatientIdFromOrder,
-    checkIdempotency: mockCheckIdempotency,
-    addOrderStatusUpdate: mockAddOrderStatusUpdate,
-  })),
-}));
-
-jest.mock("../lib/db/db-client", () => ({
-  PostgresDbClient: jest.fn(),
-}));
-
-process.env.DATABASE_URL = "postgres://localhost/test";
 
 const MOCK_CORRELATION_ID = "123e4567-e89b-12d3-a456-426614174000";
 const MOCK_ORDER_UID = "550e8400-e29b-41d4-a716-446655440000";
@@ -38,9 +28,11 @@ const MOCK_PATIENT_UID = "patient-123";
 const MOCK_BUSINESS_STATUS = IncomingBusinessStatus.DISPATCHED;
 
 describe("Order Status Lambda Handler", () => {
+  let handler: (event: APIGatewayProxyEvent, context: Context) => Promise<any>;
   let mockEvent: Partial<APIGatewayProxyEvent>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    jest.resetModules();
     jest.clearAllMocks();
 
     mockEvent = {};
@@ -49,6 +41,18 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
+
+    mockInit.mockReturnValue({
+      orderStatusDb: {
+        getPatientIdFromOrder: mockGetPatientIdFromOrder,
+        checkIdempotency: mockCheckIdempotency,
+        addOrderStatusUpdate: mockAddOrderStatusUpdate,
+      },
+    });
+
+    const module = await import("./index");
+
+    handler = module.handler;
   });
 
   const validTaskBody: OrderStatusFHIRTask = {
@@ -73,10 +77,7 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if request body is empty", async () => {
       mockEvent.body = "{}";
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
@@ -90,10 +91,7 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if request body is null", async () => {
       mockEvent.body = null;
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
@@ -107,10 +105,7 @@ describe("Order Status Lambda Handler", () => {
     it("should return 400 if request body is invalid JSON", async () => {
       mockEvent.body = "{invalid json";
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -131,10 +126,7 @@ describe("Order Status Lambda Handler", () => {
         },
       } satisfies Partial<Omit<FHIRTask, "basedOn">>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -150,10 +142,7 @@ describe("Order Status Lambda Handler", () => {
         basedOn: [{ reference: "invalid-reference" }],
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -168,10 +157,7 @@ describe("Order Status Lambda Handler", () => {
       mockGetPatientIdFromOrder.mockResolvedValueOnce(null);
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(404);
 
@@ -186,10 +172,7 @@ describe("Order Status Lambda Handler", () => {
       mockGetPatientIdFromOrder.mockResolvedValueOnce(MOCK_PATIENT_UID);
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(mockGetPatientIdFromOrder).toHaveBeenCalledWith(MOCK_ORDER_UID);
       expect(result.statusCode).toBe(201);
@@ -203,10 +186,7 @@ describe("Order Status Lambda Handler", () => {
         for: { reference: "invalid-ref" },
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -221,10 +201,7 @@ describe("Order Status Lambda Handler", () => {
         for: { reference: "Patient/other-patient" },
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -237,10 +214,7 @@ describe("Order Status Lambda Handler", () => {
     it("should proceed when patient matches order", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
     });
@@ -255,10 +229,7 @@ describe("Order Status Lambda Handler", () => {
         },
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -273,10 +244,7 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: undefined,
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -291,10 +259,7 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: { text: IncomingBusinessStatus.DISPATCHED },
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
     });
@@ -305,10 +270,7 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: { text: IncomingBusinessStatus.RECEIVED_AT_LAB },
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
     });
@@ -322,33 +284,22 @@ describe("Order Status Lambda Handler", () => {
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(200);
-      expect(mockCheckIdempotency).toHaveBeenCalledWith(
-        MOCK_ORDER_UID,
-        MOCK_CORRELATION_ID,
-      );
+      expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
     });
 
     it("should process new updates with different correlation ID", async () => {
       const newCorrelationId = "mock-new-correlation-id-123";
-      mockGetCorrelationIdFromEventHeaders.mockReturnValueOnce(
-        newCorrelationId,
-      );
+      mockGetCorrelationIdFromEventHeaders.mockReturnValueOnce(newCorrelationId);
 
       mockCheckIdempotency.mockResolvedValueOnce({
         isDuplicate: false,
       } satisfies IdempotencyCheckResult);
 
       mockEvent.body = JSON.stringify(validTaskBody);
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
 
@@ -367,10 +318,7 @@ describe("Order Status Lambda Handler", () => {
       });
 
       mockEvent.body = JSON.stringify(validTaskBody);
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -389,10 +337,7 @@ describe("Order Status Lambda Handler", () => {
         lastModified: mockedLastModifiedTimestamp, // Older than latest
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
 
@@ -411,10 +356,7 @@ describe("Order Status Lambda Handler", () => {
         lastModified: mockedLastModifiedTimestamp, // Newer than latest
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
 
@@ -426,17 +368,13 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should reject when lastModified is missing", async () => {
-      const { lastModified: _lastModified, ...bodyWithoutLastModified } =
-        validTaskBody;
+      const { lastModified: _lastModified, ...bodyWithoutLastModified } = validTaskBody;
 
       mockEvent.body = JSON.stringify({
         ...bodyWithoutLastModified,
       } satisfies Partial<OrderStatusFHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
 
@@ -450,10 +388,7 @@ describe("Order Status Lambda Handler", () => {
     it("should return 201 OK with updated Task when all validations pass", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
       expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
@@ -488,10 +423,7 @@ describe("Order Status Lambda Handler", () => {
         // Invalid - missing required fields
       } satisfies Partial<FHIRTask>);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
       const body = JSON.parse(result.body);
@@ -500,16 +432,11 @@ describe("Order Status Lambda Handler", () => {
     });
 
     it("should return 500 with OperationOutcome for database errors", async () => {
-      mockGetPatientIdFromOrder.mockRejectedValueOnce(
-        new Error("Database connection failed"),
-      );
+      mockGetPatientIdFromOrder.mockRejectedValueOnce(new Error("Database connection failed"));
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(500);
 
@@ -525,10 +452,7 @@ describe("Order Status Lambda Handler", () => {
 
       mockEvent.body = JSON.stringify(validTaskBody);
 
-      const result = await handler(
-        mockEvent as APIGatewayProxyEvent,
-        {} as Context,
-      );
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(500);
 
