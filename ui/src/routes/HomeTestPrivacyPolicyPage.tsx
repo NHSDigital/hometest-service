@@ -1,85 +1,15 @@
 "use client";
 
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { BackLink } from "nhsuk-react-components";
+import { renderTextWithLinks, cleanListItems, getListClass } from "@/utils/renderTextWithLinks";
+import "@/styles/lists.css";
 
 export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
   const { "home-test-privacy-policy": content } = useContent();
-
-  const renderTextWithLinks = (text: string, keyPrefix = ""): React.ReactNode[] => {
-    const combinedRegex =
-      /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+(?<![.,;)]))/g;
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = combinedRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(
-          <span key={`${keyPrefix}text-${match.index}`}>
-            {text.slice(lastIndex, match.index)}
-          </span>,
-        );
-      }
-
-      if (match[1] !== undefined) {
-        const boldContent = match[1];
-        const innerParts = renderTextWithLinks(boldContent, `${keyPrefix}b${match.index}-`);
-        parts.push(<strong key={`${keyPrefix}bold-${match.index}`}>{innerParts}</strong>);
-      } else if (match[4]) {
-        const url = match[4];
-        parts.push(
-          <a
-            key={`${keyPrefix}ext-${match.index}`}
-            href={url}
-            className="nhsuk-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${url} (opens in new tab)`}
-          >
-            {url}
-          </a>,
-        );
-      } else {
-        const linkText = match[2];
-        const href = match[3];
-        const isExternal = href.startsWith("http");
-
-        if (isExternal) {
-          parts.push(
-            <a
-              key={`${keyPrefix}ext-${match.index}`}
-              href={href}
-              className="nhsuk-link"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${linkText} (opens in new tab)`}
-            >
-              {linkText}
-            </a>,
-          );
-        } else {
-          parts.push(
-            <Link key={`${keyPrefix}int-${match.index}`} to={href} className="nhsuk-link">
-              {linkText}
-            </Link>,
-          );
-        }
-      }
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    if (lastIndex < text.length) {
-      parts.push(<span key={`${keyPrefix}text-end`}>{text.slice(lastIndex)}</span>);
-    }
-
-    return parts.length > 0 ? parts : [<span key={`${keyPrefix}plain`}>{text}</span>];
-  };
-
 
   const renderHeading = (text: string) => {
     const numberMatch = text.match(/^(\d+\.\s+)/);
@@ -102,10 +32,18 @@ export default function HomeTestPrivacyPolicyPage() {
     ));
   };
 
-  const renderListItems = (items: string[]) => {
-    return items.map((item, index) => (
-      <li key={index}>{renderTextWithLinks(item, `li${index}-`)}</li>
-    ));
+  const renderList = (items: string[], ordered?: boolean, indented?: boolean) => {
+    const cleanedItems = cleanListItems(items);
+    const ListTag = ordered ? "ol" : "ul";
+    const listClass = getListClass(items);
+    const list = (
+      <ListTag className={listClass}>
+        {cleanedItems.map((item, index) => (
+          <li key={index}>{renderTextWithLinks(item, `li${index}-`)}</li>
+        ))}
+      </ListTag>
+    );
+    return indented ? <div className="nhsuk-u-margin-left-4">{list}</div> : list;
   };
 
   return (
@@ -136,40 +74,27 @@ export default function HomeTestPrivacyPolicyPage() {
                 subsection.paragraphs?.map((paragraph, pIdx) => (
                   <p key={pIdx} className="nhsuk-body">
                     {pIdx === 0 && (
-                      <><strong>{subsection.heading}</strong>{" – "}</>
+                      <>
+                        <strong>{subsection.heading}</strong>
+                        {" – "}
+                      </>
                     )}
                     {renderTextWithLinks(paragraph, `sub${subIndex}-p${pIdx}-`)}
                   </p>
                 ))
               ) : (
                 <>
-                  {subsection.heading && (
-                    <h3 className="nhsuk-heading-s">{subsection.heading}</h3>
-                  )}
+                  {subsection.heading && <h3 className="nhsuk-heading-s">{subsection.heading}</h3>}
                   {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
                 </>
               )}
 
-              {subsection.list && (() => {
-                if (subsection.listStyle === "dash") {
-                  const items = subsection.list.map((item, idx) => (
-                    <p key={idx} className="nhsuk-body nhsuk-u-margin-bottom-1">
-                      {"- "}{renderTextWithLinks(item, `dash${subIndex}-${idx}-`)}
-                    </p>
-                  ));
-                  return subsection.indented ? (
-                    <div className="nhsuk-u-margin-left-4">{items}</div>
-                  ) : <div>{items}</div>;
-                }
-                const list = (
-                  <ul className="nhsuk-list nhsuk-list--bullet">
-                    {renderListItems(subsection.list)}
-                  </ul>
-                );
-                return subsection.indented ? (
-                  <div className="nhsuk-u-margin-left-4">{list}</div>
-                ) : list;
-              })()}
+              {subsection.list &&
+                renderList(
+                  subsection.list,
+                  subsection.listStyle === "ordered",
+                  subsection.indented,
+                )}
             </div>
           ))}
         </section>
