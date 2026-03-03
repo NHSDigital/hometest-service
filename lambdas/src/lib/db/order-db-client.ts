@@ -22,10 +22,7 @@ export interface Order {
 }
 
 export class OrderDbClient {
-  readonly dbClient: DBClient;
-  constructor(dbClient: DBClient) {
-    this.dbClient = dbClient;
-  }
+  constructor(private readonly dbClient: DBClient) {}
 
   public async getOrder(orderId: string, nhsNumber: string, dateOfBirth: Date) {
     const query = `
