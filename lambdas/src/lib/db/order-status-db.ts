@@ -61,7 +61,7 @@ export class OrderStatusService {
     `;
 
     try {
-      const result = await this.dbClient.query<OrderRow, [string]>(query, [orderId]);
+      const result = await this.dbClient.query<{ patient_uid: string }, [string]>(query, [orderId]);
 
       return result.rowCount === 0 ? null : result.rows[0].patient_uid;
     } catch (error) {

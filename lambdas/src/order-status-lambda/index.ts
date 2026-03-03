@@ -5,10 +5,7 @@ import {
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
 import { FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
-import {
-  createFhirErrorResponse,
-  createFhirResponse,
-} from "../lib/fhir-response";
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
@@ -28,7 +25,7 @@ const name = "order-status-lambda";
 
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
   for: FHIRReferenceSchema,
-  basedOn: z.array(FHIRReferenceSchema).max(1),
+  basedOn: z.array(FHIRReferenceSchema).min(1).max(1),
   lastModified: z.string().datetime(),
   businessStatus: FHIRCodeableConceptSchema.extend({
     text: z.enum(IncomingBusinessStatus),
@@ -63,12 +60,7 @@ export const lambdaHandler = async (
   } catch (error) {
     commons.logError(name, "Invalid JSON in request body", { error });
 
-    return createFhirErrorResponse(
-      400,
-      "invalid",
-      "Invalid JSON in request body",
-      "error",
-    );
+    return createFhirErrorResponse(400, "invalid", "Invalid JSON in request body", "error");
   }
 
   const validationResult = orderStatusFHIRTaskSchema.safeParse(task);
@@ -95,12 +87,7 @@ export const lambdaHandler = async (
         reference: validatedTask.basedOn[0].reference,
       });
 
-      return createFhirErrorResponse(
-        400,
-        "invalid",
-        "Invalid order reference format",
-        "error",
-      );
+      return createFhirErrorResponse(400, "invalid", "Invalid order reference format", "error");
     }
 
     let correlationId: string;
@@ -133,21 +120,14 @@ export const lambdaHandler = async (
     }
 
     // Verify patient ownership
-    const patientIdFromTask = extractIdFromReference(
-      validatedTask.for.reference,
-    );
+    const patientIdFromTask = extractIdFromReference(validatedTask.for.reference);
 
     if (!patientIdFromTask) {
       commons.logError(name, "Invalid patient reference format", {
         reference: validatedTask.for.reference,
       });
 
-      return createFhirErrorResponse(
-        400,
-        "invalid",
-        "Invalid patient reference format",
-        "error",
-      );
+      return createFhirErrorResponse(400, "invalid", "Invalid patient reference format", "error");
     }
 
     if (patientIdFromTask !== orderPatientId) {
@@ -166,10 +146,7 @@ export const lambdaHandler = async (
     }
 
     // Check for idempotency via Correlation ID
-    const idempotencyCheck = await orderStatusDb.checkIdempotency(
-      orderId,
-      correlationId,
-    );
+    const idempotencyCheck = await orderStatusDb.checkIdempotency(orderId, correlationId);
 
     if (idempotencyCheck.isDuplicate) {
       commons.logInfo(name, "Duplicate update detected via correlation ID", {
@@ -190,23 +167,14 @@ export const lambdaHandler = async (
 
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
 
-    commons.logInfo(
-      name,
-      "Order status update added successfully",
-      statusOrderUpdateParams,
-    );
+    commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
 
     return createFhirResponse(201, validatedTask);
   } catch (error) {
     commons.logError(name, "Error processing order status update", {
       error,
     });
-    return createFhirErrorResponse(
-      500,
-      "exception",
-      "An internal error occurred",
-      "fatal",
-    );
+    return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 };
 
