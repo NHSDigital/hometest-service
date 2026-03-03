@@ -1,7 +1,5 @@
-import { expect, Locator, Page } from '@playwright/test';
-import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
+import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { PersonalDetailsModel } from '../models/PersonalDetails';
 
 export class CheckYourAnswersPage extends BasePage {
     readonly mobileNumberInput: Locator;

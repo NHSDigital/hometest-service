@@ -59,6 +59,7 @@ function AuthSeeder({
     phoneNumber: "07402123123",
     givenName: "John",
     familyName: "Smith",
+    email: "john.smith@example.com"
   },
 }: {
   children: React.ReactNode;
