@@ -9,7 +9,7 @@ interface OrderStatusProps {
 export function OrderStatus({ order }: OrderStatusProps) {
   return (
     <section aria-label="Order status information">
-      <OrderStatusHeader order={order} />
+      <OrderStatusHeader order={order} heading="HIV self-test" />
       <OrderStatusContent order={order} />
     </section>
   );

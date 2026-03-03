@@ -1,12 +1,13 @@
-import { APIResponse } from '@playwright/test';
-import { BaseApiClient } from './BaseApiClient';
-import { API_ENDPOINTS } from '../Endpoints';
-import { HIVTestResult } from '../../test-data/HIVTestResultData';
-import { ApiHeaders } from '../../utils/ApiRequestHelper';
 import {
-  GetResultParams,
   GetResultHeaders,
-} from '../../test-data/GetResultRequestParams';
+  GetResultParams,
+} from "../../test-data/GetResultRequestParams";
+
+import { APIResponse } from "@playwright/test";
+import { API_ENDPOINTS } from "../Endpoints";
+import { ApiHeaders } from "../../utils/ApiRequestHelper";
+import { BaseApiClient } from "./BaseApiClient";
+import { HIVTestResult } from "../../test-data/HIVTestResultData";
 
 export class HIVResultsApiResource extends BaseApiClient {
   async submitTestResults(

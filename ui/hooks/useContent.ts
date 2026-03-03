@@ -8,12 +8,13 @@ import type {
   EnterMobilePhoneNumberContent,
   GlobalErrorContent,
   HomeTestPrivacyPolicyContent,
+  HomeTestTermsOfUseContent,
   HowComfortablePrickingFingerContent,
   NoAddressFoundContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
   StartPageContent,
-  TermsOfUseContent,
+  TestResultsContent,
 } from "@/content/schema";
 
 import { content } from "@/content/ContentService";
@@ -48,8 +49,9 @@ export interface UseContentReturn {
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
-  "home-test-terms-of-use": TermsOfUseContent;
+  "home-test-terms-of-use": HomeTestTermsOfUseContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -67,6 +69,7 @@ export const useContent = (): UseContentReturn => {
     "check-your-answers": content.pages["check-your-answers"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
+    "test-results": content.pages["test-results"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
     "home-test-terms-of-use": content.pages["home-test-terms-of-use"],
@@ -101,10 +104,19 @@ export function usePageContent(
 ): HowComfortablePrickingFingerContent;
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
-export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
-export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
-export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
-export function usePageContent(page: "home-test-terms-of-use"): TermsOfUseContent;
+export function usePageContent(
+  page: "blood-sample-guide",
+): BloodSampleGuideContent;
+export function usePageContent(
+  page: "check-your-answers",
+): CheckYourAnswersContent;
+export function usePageContent(page: "test-results"): TestResultsContent;
+export function usePageContent(
+  page: "home-test-privacy-policy",
+): HomeTestPrivacyPolicyContent;
+export function usePageContent(
+  page: "home-test-terms-of-use",
+): HomeTestTermsOfUseContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -120,7 +132,8 @@ export function usePageContent(
     | "blood-sample-guide"
     | "check-your-answers"
     | "home-test-privacy-policy"
-    | "home-test-terms-of-use",
+    | "home-test-terms-of-use"
+    | "test-results",
 ) {
   return content.pages[page];
 }

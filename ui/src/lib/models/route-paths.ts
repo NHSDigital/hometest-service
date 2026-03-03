@@ -4,6 +4,7 @@ export enum RoutePath {
   CallbackPage = "/callback",
   GetSelfTestKitPage = "/get-self-test-kit-for-HIV",
   OrderTrackingPage = "/orders/:orderId/tracking",
+  TestResultsPage = "/orders/:orderId/results",
   HomeTestPrivacyPolicyPage = "/home-test-privacy-policy",
   TermsOfUsePage = "/home-test-terms-of-use",
 }
