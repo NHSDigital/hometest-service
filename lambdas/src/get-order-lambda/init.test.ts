@@ -1,15 +1,15 @@
-import { init } from "./init";
-import { OrderDbClient } from "../lib/db/order-db-client";
-import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { postgresConfigFromEnv } from "../lib/db/db-config";
-import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import {
-  setupEnvironment,
   restoreEnvironment,
+  setupEnvironment,
 } from "../lib/test-utils/environment-test-helpers";
 
-// Mock all external dependencies
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { OrderDbClient } from "../lib/db/order-db-client";
+import { PostgresDbClient } from "../lib/db/db-client";
+import { init } from "./init";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+
 jest.mock("../lib/db/order-db-client");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
@@ -27,7 +27,6 @@ describe("init", () => {
     DB_SECRET_NAME: "test-secret-name",
   };
 
-  // This represents the return value of postgresConfigFromEnv(secretsClient)
   const mockPostgresConfig = {
     user: "test-user",
     host: "test-host",
@@ -123,9 +122,6 @@ describe("init", () => {
     });
 
     it("should create components in the correct order", () => {
-      // 1. AwsSecretsClient should be created first
-      // 2. PostgresDbClient should be created with postgresConfigFromEnv(secretsClient)
-      // 3. OrderDbClient should be created with a PostgresDbClient
       testComponentCreationOrder({
         initFn: init,
         components: [
@@ -136,7 +132,7 @@ describe("init", () => {
           {
             mock: PostgresDbClient as jest.Mock,
             times: 1,
-            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+            calledWith: mockPostgresConfig,
           },
           {
             mock: OrderDbClient as jest.Mock,
