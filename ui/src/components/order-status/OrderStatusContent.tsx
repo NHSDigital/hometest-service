@@ -23,7 +23,7 @@ export function OrderStatusContent({ order }: OrderStatusContentProps) {
       case OrderStatus.RECEIVED:
         return <ReceivedStatus />;
       case OrderStatus.COMPLETE:
-        return <ReadyStatus />;
+        return <ReadyStatus orderId={order.id} />;
       default:
         return null;
     }

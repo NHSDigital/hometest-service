@@ -63,6 +63,11 @@ output "backend_base_url" {
   value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
+output "postcode_lookup_endpoint" {
+  description = "Postcode Lookup Lambda endpoint"
+  value       = module.postcode_lookup_lambda.localstack_endpoint_url
+}
+
 output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
   description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
