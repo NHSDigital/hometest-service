@@ -9,10 +9,7 @@ export interface TestResult {
 }
 
 export class TestResultDbClient {
-  readonly dbClient: DBClient;
-  constructor(dbClient: DBClient) {
-    this.dbClient = dbClient;
-  }
+  constructor(private readonly dbClient: DBClient) {}
 
   public async getResult(
     orderId: string,

@@ -14,6 +14,7 @@ export type {
   NoAddressFoundContent,
   GlobalErrorContent,
   OrderTrackingContent,
+  TestResultsContent,
   NavigationContent,
   ValidationMessages,
   CommonLinks,
