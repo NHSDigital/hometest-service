@@ -15,15 +15,10 @@ test.describe("Accessibility Testing @accessibility", () => {
     await dbClient.connect();
     await resultDbClient.connect();
     console.log("Tested user:", JSON.stringify(testedUser, null, 2));
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error(
-        `Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`,
-      );
-    }
 
     const result = await dbClient.createOrderWithPatientAndStatus({
-      nhs_number: testedUser.nhsNumber,
-      birth_date: testedUser.dob,
+      nhs_number: testedUser.nhsNumber!,
+      birth_date: testedUser.dob!,
       supplier_name: "Preventx",
       test_code: "31676001",
       initial_status: "COMPLETE",
@@ -33,11 +28,7 @@ test.describe("Accessibility Testing @accessibility", () => {
     patientId = result.patient_uid;
     correlationId = randomUUID();
 
-    await resultDbClient.insertStatusResult(
-      orderId,
-      "RESULT_AVAILABLE",
-      correlationId,
-    );
+    await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
   });
 
   test(
@@ -57,18 +48,10 @@ test.describe("Accessibility Testing @accessibility", () => {
   );
 
   test.afterAll(async ({ testedUser }) => {
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error(
-        `Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`,
-      );
-    }
     await resultDbClient.deleteResultStatusByUid(orderId);
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientByNHSandDOB(
-      testedUser.nhsNumber,
-      testedUser.dob,
-    );
+    await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
     await dbClient.disconnect();
     await resultDbClient.disconnect();
   });
