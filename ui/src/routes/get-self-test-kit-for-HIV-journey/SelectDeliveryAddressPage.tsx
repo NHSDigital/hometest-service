@@ -106,7 +106,7 @@ export default function SelectDeliveryAddressPage() {
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
         {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
       </h1>
-      <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
+      <p id="postcode-search--paragraph">{content.postcodeLabel} <strong id="postcode-search--strong">{orderAnswers.postcodeSearch} </strong>
         <a href="enter-delivery-address" onClick={(e) => {
           e.preventDefault();
           goToStep(JourneyStepNames.EnterDeliveryAddress);
