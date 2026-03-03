@@ -72,9 +72,8 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   negativeResultPage: async ({ page }, use) => {
     await use(new NegativeResultPage(page));
-
   },
-    
+
   checkYourAnswersPage: async ({ page }, use) => {
     await use(new CheckYourAnswersPage(page));
   },
