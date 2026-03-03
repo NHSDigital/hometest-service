@@ -5,6 +5,7 @@ import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-r
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
+import { CreateOrderRequest } from "@/lib/models/order-request";
 import PageLayout from "@/layouts/PageLayout";
 import orderService from "@/lib/services/order-service";
 
@@ -91,7 +92,7 @@ export default function CheckYourAnswersPage() {
         ? formatAddress(orderAnswers.deliveryAddress)
         : [];
 
-      const orderRequest = {
+      const orderRequest: CreateOrderRequest = {
         testCode: orderAnswers.supplier?.[0]?.testCode || "",
         testDescription: "HIV antigen test",
         supplierId: orderAnswers.supplier?.[0]?.id || "",
@@ -101,7 +102,8 @@ export default function CheckYourAnswersPage() {
           text: `${orderAnswers.user?.givenName || ""} ${orderAnswers.user?.familyName || ""}`,
           telecom: [
             { phone: orderAnswers.mobileNumber || "" },
-            { sms: orderAnswers.mobileNumber || "" }
+            { sms: orderAnswers.mobileNumber || "" },
+            { email: orderAnswers.user?.email || "" }
           ],
           address: {
             line: addressLines,
