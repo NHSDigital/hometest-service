@@ -1,7 +1,7 @@
-import { APIRequestContext, APIResponse } from '@playwright/test';
-import { BaseApiClient } from './BaseApiClient';
-import { API_ENDPOINTS } from '../endpoints';
-import { OrderStatusTaskPayload } from '../../test-data/OrderStatusTypes';
+import { APIRequestContext, APIResponse } from "@playwright/test";
+import { BaseApiClient } from "./BaseApiClient";
+import { API_ENDPOINTS } from "../Endpoints";
+import { OrderStatusTaskPayload } from "../../test-data/OrderStatusTypes";
 
 export class OrderStatusApiResource extends BaseApiClient {
   constructor(request: APIRequestContext) {
