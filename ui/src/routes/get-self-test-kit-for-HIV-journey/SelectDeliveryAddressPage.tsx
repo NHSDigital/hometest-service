@@ -1,36 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup, AddressResult } from "@/state";
 import { useContent } from "@/hooks";
 import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
-import mockAddressResponse from "@/mocks/addressLookupResponse.json";
 import PageLayout from "@/layouts/PageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
-
-interface AddressResult {
-  DPA: {
-    UPRN: string;
-    ADDRESS: string;
-    BUILDING_NAME?: string;
-    BUILDING_NUMBER?: string;
-    THOROUGHFARE_NAME?: string;
-    DEPENDENT_LOCALITY?: string;
-    POST_TOWN: string;
-    POSTCODE: string;
-  };
-}
 
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
-
-  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN || "");
+  const { addresses } = usePostcodeLookup();
+  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressId ||  "");
   const [addressError, setAddressError] = useState<string | null>(null);
-
-  const addresses = mockAddressResponse.results as AddressResult[];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +26,7 @@ export default function SelectDeliveryAddressPage() {
 
     setAddressError(null);
 
-    const selected = addresses.find((addr) => addr.DPA.UPRN === selectedAddress);
+    const selected: AddressResult | undefined = addresses.find((addr) => addr.id === selectedAddress);
     if (!selected) return;
 
     try {
@@ -68,15 +52,14 @@ export default function SelectDeliveryAddressPage() {
 
       updateOrderAnswers({
         deliveryAddress: {
-          addressLine1:
-            selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
-          addressLine2: selected.DPA.THOROUGHFARE_NAME,
-          addressLine3: selected.DPA.DEPENDENT_LOCALITY,
-          postTown: selected.DPA.POST_TOWN,
-          postcode: selected.DPA.POSTCODE,
+          addressLine1: selected.line1,
+          addressLine2: selected.line2,
+          addressLine3: selected.line3,
+          postTown: selected.town,
+          postcode: selected.postcode,
         },
         addressEntryMethod: 'postcode-search',
-        selectedAddressUPRN: selected.DPA.UPRN,
+        selectedAddressId: selected.id,
         localAuthority: {
           code: laResponse.localAuthority.localAuthorityCode,
           region: laResponse.localAuthority.region,
@@ -123,7 +106,7 @@ export default function SelectDeliveryAddressPage() {
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
         {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
       </h1>
-      <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
+      <p id="postcode-search--paragraph">{content.postcodeLabel} <strong id="postcode-search--strong">{orderAnswers.postcodeSearch} </strong>
         <a href="enter-delivery-address" onClick={(e) => {
           e.preventDefault();
           goToStep(JourneyStepNames.EnterDeliveryAddress);
@@ -167,11 +150,11 @@ export default function SelectDeliveryAddressPage() {
         >
           {addresses.map((address) => (
             <Radios.Radio
-              key={address.DPA.UPRN}
-              value={address.DPA.UPRN}
-              checked={selectedAddress === address.DPA.UPRN}
+              key={address.id}
+              value={address.id}
+              checked={selectedAddress === address.id}
             >
-              {address.DPA.ADDRESS}
+              {address.fullAddress}
             </Radios.Radio>
           ))}
         </Radios>
@@ -184,16 +167,12 @@ export default function SelectDeliveryAddressPage() {
           href="enter-address-manually"
           onClick={(e) => {
             e.preventDefault();
-            updateOrderAnswers({
-              postcodeSearch: undefined,
-              buildingNumber: undefined
-            });
-            goToStep("enter-address-manually");
-          }}
-        >
-          {commonContent.navigation.manualEntryLink}
-        </a>
-      </p>
+            goToStep(JourneyStepNames.EnterDeliveryAddress);
+          }}>
+            {commonContent.navigation.manualEntryLink}
+          </a>
+        </p>
+
     </PageLayout>
   );
 }
