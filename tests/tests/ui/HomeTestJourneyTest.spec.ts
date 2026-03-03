@@ -75,11 +75,9 @@ test.describe("HIV Test Order journeys", () => {
     howComfortablePrickingFingerPage,
   }) => {
     await findAddressPage.fillPostCodeAndContinue(randomAddress);
-    await selectDeliveryAddressPage.clickEditAddressLink();
-    const { postCode, firstLineAddress } =
-      await findAddressPage.getPostcodeAndAddressValues();
-    expect(postCode).toBe(randomAddress.postCode);
-    await selectDeliveryAddressPage.clickContinueButton();
+    const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
+    const {actualPostcode} = await selectDeliveryAddressPage.getPostcodeValues();
+    expect(filledPostcode).toBe(actualPostcode);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
       "This is what you'll need to do to give a blood sample",
