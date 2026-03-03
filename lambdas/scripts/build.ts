@@ -55,12 +55,25 @@ async function buildLambda(lambdaName: string): Promise<void> {
     platform: 'node',
     target: 'node24',
     format: 'cjs',
+<<<<<<< Updated upstream
     external: ['aws-sdk', '@aws-sdk/*'],
+=======
+    // The Lambda nodejs24.x runtime provides @aws-sdk/client-* and @aws-sdk/lib-*
+    // packages. @aws-sdk/rds-signer is NOT in the runtime and must be bundled,
+    // along with its transitive deps (@smithy/*, @aws-sdk/credential-providers).
+    external: [
+      'aws-sdk',
+      '@aws-sdk/client-*',
+      '@aws-sdk/lib-*',
+    ],
+>>>>>>> Stashed changes
     packages: 'bundle',
-    minify: false,
-    sourcemap: false,
+    treeShaking: true,
+    minify: isProduction,
+    legalComments: 'none',
+    sourcemap: !isProduction,
     logLevel: 'info',
-    metafile: true
+    metafile: true,
   });
 
   writeFileSync(join(outDir, 'meta.json'), JSON.stringify(result.metafile, null, 2));
@@ -89,9 +102,7 @@ async function main(): Promise<void> {
   try {
     const lambdas: string[] = options.specificLambda ? [options.specificLambda] : getLambdas();
 
-    for (const lambdaName of lambdas) {
-      await buildLambda(lambdaName);
-    }
+    await Promise.all(lambdas.map(buildLambda));
 
     console.log('Build complete!');
   } catch (error) {
