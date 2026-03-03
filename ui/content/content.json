@@ -299,9 +299,7 @@
               ]
             },
             {
-              "paragraphs": [
-                "Further details are set out in the Hometest Terms of Use [LINK]."
-              ]
+              "paragraphs": ["Further details are set out in the Hometest Terms of Use [LINK]."]
             }
           ]
         },
@@ -381,9 +379,7 @@
             },
             {
               "heading": "Health Data",
-              "paragraphs": [
-                "Special category data may also be collected, including test results."
-              ]
+              "paragraphs": ["Special category data may also be collected, including test results."]
             },
             {
               "heading": "Technical Data",
@@ -393,9 +389,7 @@
             },
             {
               "heading": "Preference Data",
-              "paragraphs": [
-                "This includes your preferences on receiving communications from us."
-              ]
+              "paragraphs": ["This includes your preferences on receiving communications from us."]
             },
             {
               "heading": "Usage Data",
@@ -710,6 +704,45 @@
           "caption": "Place your blood sample tube into the protective packaging following the kit instructions. Write today's date and the time on the form. Put the form and the sealed bag into the pre-paid postage box. Seal it with the security sticker. Put your sample in a post box as soon as you can."
         }
       ]
+    },
+    "suppliers-terms-conditions": {
+      "title": "Supplier terms of use",
+      "suppliers": {
+        "preventx": {
+          "title": "Preventx terms of use",
+          "introduction": ["This is introduction paragraph for Preventx. https://www.sh.uk/"],
+          "sections": [
+            {
+              "id": "preventx-first-section",
+              "heading": "It is first section for Preventx",
+              "paragraphs": ["It is example of content for Preventx."],
+              "subsections": [
+                {
+                  "heading": "It is the first subsection for Preventx",
+                  "paragraphs": ["It is example of content for Preventx."]
+                }
+              ]
+            }
+          ]
+        },
+        "sh:24": {
+          "title": "SH:24 terms of use",
+          "introduction": ["This is introduction paragraph for SH:24. https://sh24.org.uk/"],
+          "sections": [
+            {
+              "id": "sh24-first-section",
+              "heading": "It is first section for SH:24 ",
+              "paragraphs": ["It is example of content for SH:24."],
+              "subsections": [
+                {
+                  "heading": "It is the first subsection for SH:24",
+                  "paragraphs": ["It is example of content for SH:24."]
+                }
+              ]
+            }
+          ]
+        }
+      }
     },
     "check-your-answers": {
       "title": "Check your answers before submitting your order",
