@@ -4,7 +4,12 @@ import { OrderStatusService } from "../lib/db/order-status-db";
 import { TransactionService } from "../lib/db/transaction-db-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+<<<<<<< HEAD
 import { postgresFromEnv } from "../lib/db/connection-string-provider";
+=======
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
@@ -12,7 +17,11 @@ jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/transaction-db-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/secrets/secrets-manager-client");
+<<<<<<< HEAD
 jest.mock("../lib/db/connection-string-provider");
+=======
+jest.mock("../lib/db/db-config");
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -28,8 +37,18 @@ describe("init", () => {
       "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
   };
 
+<<<<<<< HEAD
   const mockConnectionStringProvider = {
     getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
+=======
+  // This represents the return value of postgresConfigFromEnv(secretsClient)
+  const mockPostgresConfig = {
+    user: "test-user",
+    host: "test-host",
+    port: 5432,
+    database: "test-db",
+    password: jest.fn().mockResolvedValue("test-password"),
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
   };
 
   beforeEach(() => {
@@ -39,7 +58,11 @@ describe("init", () => {
     // Set default mock environment variables
     Object.assign(process.env, mockEnvVariables);
 
+<<<<<<< HEAD
     (postgresFromEnv as jest.Mock).mockReturnValue(mockConnectionStringProvider);
+=======
+    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockPostgresConfig);
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
   });
 
   afterEach(() => {
@@ -96,7 +119,13 @@ describe("init", () => {
 
       init();
 
+<<<<<<< HEAD
       expect(PostgresDbClient).toHaveBeenCalledWith(mockConnectionStringProvider);
+=======
+      expect(PostgresDbClient).toHaveBeenCalledWith(
+        mockPostgresConfig
+      );
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
     });
 
     it("should create OrderStatusService with PostgresDbClient instance", () => {
@@ -177,6 +206,7 @@ describe("init", () => {
       );
     });
 
+<<<<<<< HEAD
     it("should create components in the correct order", () => {
       init();
 
@@ -203,6 +233,52 @@ describe("init", () => {
 
       // AWSSQSClient should be created
       expect(AWSSQSClient).toHaveBeenCalledTimes(1);
+=======
+    it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
+      init();
+
+      expect(postgresConfigFromEnv).toHaveBeenCalledWith(
+        expect.any(AwsSecretsClient),
+      );
+    });
+
+    it("should create components in the correct order", () => {
+      // 1. AwsSecretsClient should be created first
+      // 2. PostgresDbClient should be created with postgresConfigFromEnv(secretsClient)
+      // 3. OrderStatusService should be created with a PostgresDbClient
+      // 4. TransactionService should be created with a PostgresDbClient
+      // 5. AWSSQSClient should be created
+      testComponentCreationOrder({
+        initFn: init,
+        components: [
+          {
+            mock: AwsSecretsClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: PostgresDbClient as jest.Mock,
+            times: 1,
+            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+          },
+          {
+            mock: OrderStatusService as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: TransactionService as jest.Mock,
+            times: 1,
+            calledWith: {
+              dbClient: expect.any(PostgresDbClient),
+            },
+          },
+          {
+            mock: AWSSQSClient as jest.Mock,
+            times: 1,
+          },
+        ],
+      });
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
     });
   });
 });

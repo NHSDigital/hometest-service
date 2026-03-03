@@ -1,30 +1,34 @@
-import { Locator, Page } from '@playwright/test';
-import { BasePage } from './BasePage';
-import { AddressModel } from '../models';
+import { Locator, Page } from "@playwright/test";
+import { BasePage } from "./BasePage";
+import { Address } from "../models/Address";
 
 export class FindAddressPage extends BasePage {
-  readonly postcodeInput: Locator;
+  readonly postCodeInput: Locator;
   readonly numNameInput: Locator;
   readonly continueButton: Locator;
   readonly addressResults: Locator;
-  readonly postcodeErrorMessage: Locator;
+  readonly postCodeErrorMessage: Locator;
   readonly buildingNoErrorMessage: Locator;
   readonly enterAddressManuallyLink: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.postcodeInput = page.locator('#postcode');
-    this.numNameInput = page.locator('#building-number-or-name');
-    this.continueButton = page.getByRole('button', { name: 'Continue' });
-    this.addressResults = page.locator('.nhsuk-heading-l');
-    this.postcodeErrorMessage = page.locator('#postcode--error-message');
-    this.buildingNoErrorMessage = page.locator('#building-number-or-name--error-message');
-    this.enterAddressManuallyLink = page.getByText('Enter address manually')
+    this.postCodeInput = page.locator("#postcode");
+    this.numNameInput = page.locator("#building-number-or-name");
+    this.continueButton = page.getByRole("button", { name: "Continue" });
+    this.addressResults = page.locator(".nhsuk-heading-l");
+    this.postCodeErrorMessage = page.locator("#postcode--error-message");
+    this.buildingNoErrorMessage = page.locator(
+      "#building-number-or-name--error-message",
+    );
+    this.enterAddressManuallyLink = page.getByText("Enter address manually");
   }
 
-  async fillPostCodeAndAddressAndContinue(randomEntry: AddressModel): Promise<void> {
-    await this.postcodeInput.fill(randomEntry.postcode);
-    await this.numNameInput.fill(randomEntry.addressline1);
+  async fillPostCodeAndAddressAndContinue(
+    deliveryAddress: Address,
+  ): Promise<void> {
+    await this.postCodeInput.fill(deliveryAddress.postCode);
+    await this.numNameInput.fill(deliveryAddress.addressLine1);
     await this.continueButton.click();
   }
 
@@ -32,10 +36,12 @@ export class FindAddressPage extends BasePage {
     await this.enterAddressManuallyLink.click();
   }
 
-  async getPostcodeAndAddressValues(): Promise<{ postcode: string, firstLineAddress: string }> {
-    const postcodeValue = await this.postcodeInput.inputValue();
+  async getPostcodeAndAddressValues(): Promise<{
+    postCode: string;
+    firstLineAddress: string;
+  }> {
+    const postCodeValue = await this.postCodeInput.inputValue();
     const firstLineAddressValue = await this.numNameInput.inputValue();
-    return { postcode: postcodeValue, firstLineAddress: firstLineAddressValue };
+    return { postCode: postCodeValue, firstLineAddress: firstLineAddressValue };
   }
-
 }

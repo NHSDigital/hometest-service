@@ -3,7 +3,11 @@ const mockSupplierService = jest.fn();
 const mockLaLookupService = jest.fn();
 const mockConsoleCommons = jest.fn();
 const mockAwsSecretsClient = jest.fn();
+<<<<<<< HEAD
 const mockPostgresFromEnv = jest.fn();
+=======
+const mockPostgresConfigFromEnv = jest.fn();
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
 jest.mock("../lib/db/db-client", () => ({
   PostgresDbClient: mockPostgresDbClient,
@@ -25,8 +29,13 @@ jest.mock("../lib/commons", () => ({
   ConsoleCommons: mockConsoleCommons,
 }));
 
+<<<<<<< HEAD
 jest.mock("../lib/db/connection-string-provider", () => ({
   postgresFromEnv: mockPostgresFromEnv,
+=======
+jest.mock("../lib/db/db-config", () => ({
+  postgresConfigFromEnv: mockPostgresConfigFromEnv,
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 }));
 
 // import remains here to avoid hoisting issues with jest.mock
@@ -70,18 +79,39 @@ describe("eligibility-lookup-lambda init", () => {
     process.env.DB_NAME = "local_hometest_db";
     process.env.DB_SCHEMA = "hometest";
     process.env.DB_SECRET_NAME = "postgres-db-password";
+<<<<<<< HEAD
+=======
+
+    const mockConfig = {
+      user: "test-user",
+      host: "test-host",
+      port: 5432,
+      database: "test-db",
+      password: jest.fn().mockResolvedValue("test-password"),
+    };
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
     mockPostgresDbClient.mockImplementation(() => dbClientInstance);
     mockSupplierService.mockImplementation(() => supplierServiceInstance);
     mockLaLookupService.mockImplementation(() => laLookupServiceInstance);
     mockConsoleCommons.mockImplementation(() => commonsInstance);
     mockAwsSecretsClient.mockImplementation(() => secretsClientInstance);
+<<<<<<< HEAD
     mockPostgresFromEnv.mockReturnValue(mockConnectionStringProvider);
+=======
+    mockPostgresConfigFromEnv.mockReturnValue(mockConfig);
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
     const result = init();
 
     expect(mockConsoleCommons).toHaveBeenCalled();
+<<<<<<< HEAD
     expect(mockPostgresDbClient).toHaveBeenCalledWith(mockConnectionStringProvider);
+=======
+    expect(mockPostgresDbClient).toHaveBeenCalledWith(
+      mockConfig
+    );
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
     expect(mockSupplierService).toHaveBeenCalledWith({ dbClient: dbClientInstance });
     expect(mockLaLookupService).toHaveBeenCalled();
 

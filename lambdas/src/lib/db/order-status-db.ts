@@ -58,7 +58,7 @@ export class OrderStatusService {
     const query = `
       SELECT patient_uid
       FROM test_order
-      WHERE order_uid = $1
+      WHERE order_uid = $1::uuid
       LIMIT 1;
     `;
 
@@ -88,7 +88,7 @@ export class OrderStatusService {
     const query = `
       SELECT 1
       FROM order_status
-      WHERE order_uid = $1 AND correlation_id = $2
+      WHERE order_uid = $1::uuid AND correlation_id = $2::uuid
       LIMIT 1;
     `;
 
@@ -106,6 +106,7 @@ export class OrderStatusService {
     }
   }
 
+  // ALPHA: should this method not perform an idempotency check before inserting a new status? Or should that be the responsibility of the caller to check before calling this method?
   /**
    * Update order status in the database
    */

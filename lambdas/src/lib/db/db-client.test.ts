@@ -18,10 +18,24 @@ describe("PostgresDbClient", () => {
     getSslEnabled: jest.fn().mockReturnValue(true),
   };
 
+<<<<<<< HEAD
   beforeEach(async () => {
     client = new PostgresDbClient(connectionStringProvider);
     await (client as any).poolPromise;
     mockPool = await (client as any).poolPromise;
+=======
+  beforeEach(() => {
+    client = new PostgresDbClient(
+      {
+        user: "test-user",
+        host: "test-host",
+        port: 5432,
+        database: "test-db",
+        password: "test-password",
+      }
+    );
+    mockPool = (client as any).pool;
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
   });
 
   afterEach(() => {
