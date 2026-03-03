@@ -69,7 +69,7 @@ describe("eligibility-lookup-lambda lambdaHandler", () => {
     const event = buildEvent("AB12CD");
     const result = await lambdaHandler(event, context);
     expect(result.statusCode).toBe(404);
-    expect(JSON.parse(result.body)).toEqual({ error: "No local authority found for AB12CD" });
+    expect(JSON.parse(result.body)).toEqual({ error: "No local authority found for AB1 2CD" });
   });
 
   it("returns 404 if no suppliers found", async () => {

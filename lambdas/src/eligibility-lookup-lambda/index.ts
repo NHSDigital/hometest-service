@@ -27,7 +27,7 @@ export const lambdaHandler = async (
   try {
     const la = await laLookupService.lookupByPostcode(formatResult.cleaned);
     if (!la) {
-      return errorResponse(404, `No local authority found for ${postcode}`);
+      return errorResponse(404, `No local authority found for ${formatResult.cleaned}`);
     }
 
     const laCode = la.localAuthorityCode;
