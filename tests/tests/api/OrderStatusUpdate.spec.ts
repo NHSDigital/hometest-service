@@ -1,48 +1,50 @@
-import { randomUUID } from 'crypto';
-import { test, expect } from '../../fixtures/IntegrationFixture';
-import { OrderStatusTaskPayload } from '../../test-data/OrderStatusTypes';
-import { faker } from '@faker-js/faker';
+import { randomUUID } from "crypto";
+import { test, expect } from "../../fixtures/IntegrationFixture";
+import { OrderStatusTaskPayload } from "../../test-data/OrderStatusTypes";
+import { faker } from "@faker-js/faker";
 
-const supplierId = 'c1a2b3c4-1234-4def-8abc-123456789abc';
-const testCode = '31676001';
-const originator = 'automation-test';
-const defaultStatus = 'in-progress';
-const defaultIntent = 'order';
+const supplierId = "c1a2b3c4-1234-4def-8abc-123456789abc";
+const testCode = "31676001";
+const originator = "automation-test";
+const defaultStatus = "in-progress";
+const defaultIntent = "order";
 
 const businessStatusCases = [
-  { businessStatus: 'dispatched', expectedStatusCode: 'DISPATCHED' },
-  { businessStatus: 'received-at-lab', expectedStatusCode: 'RECEIVED' },
+  { businessStatus: "dispatched", expectedStatusCode: "DISPATCHED" },
+  { businessStatus: "received-at-lab", expectedStatusCode: "RECEIVED" },
 ] as const;
 
 const buildHeaders = (correlationId: string): Record<string, string> => ({
-  'Content-Type': 'application/json',
-  'X-Correlation-ID': correlationId,
+  "Content-Type": "application/json",
+  "X-Correlation-ID": correlationId,
 });
 
-test.describe('Order Status Update API', () => {
+test.describe("Order Status Update API", () => {
   let orderUid: string;
   let patientUid: string;
   let nhsNumber: string;
   let birthDate: string;
 
-  const buildTaskPayload = (overrides: Partial<OrderStatusTaskPayload> = {}): OrderStatusTaskPayload => ({
-    resourceType: 'Task',
+  const buildTaskPayload = (
+    overrides: Partial<OrderStatusTaskPayload> = {},
+  ): OrderStatusTaskPayload => ({
+    resourceType: "Task",
     status: defaultStatus,
     intent: defaultIntent,
     basedOn: [{ reference: `Order/${orderUid}` }],
     for: { reference: `Patient/${patientUid}` },
-    businessStatus: { text: 'dispatched' },
+    businessStatus: { text: "dispatched" },
     lastModified: new Date().toISOString(),
     ...overrides,
   });
 
   test.beforeEach(async () => {
     nhsNumber = `99${faker.number.int({ min: 100000000, max: 999999999 })}`;
-    birthDate = faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toISOString().split('T')[0];
+    birthDate = faker.date.birthdate({ min: 18, max: 65, mode: "age" }).toISOString().split("T")[0];
   });
 
   test.beforeEach(async ({ testOrderDb }) => {
-    patientUid = await testOrderDb.upsertPatient(nhsNumber,birthDate);
+    patientUid = await testOrderDb.upsertPatient(nhsNumber, birthDate);
     orderUid = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
   });
 
@@ -53,16 +55,19 @@ test.describe('Order Status Update API', () => {
   });
 
   for (const { businessStatus, expectedStatusCode } of businessStatusCases) {
-    test(`success (200) persists ${businessStatus} status`, async ({ orderStatusApi, testOrderDb }) => {
+    test(`success (201) persists ${businessStatus} status`, async ({
+      orderStatusApi,
+      testOrderDb,
+    }) => {
       const response = await orderStatusApi.updateOrderStatus(
         buildTaskPayload({ businessStatus: { text: businessStatus } }),
         buildHeaders(randomUUID()),
       );
 
-      orderStatusApi.validateResponse(response, 200);
+      orderStatusApi.validateResponse(response, 201);
 
-      const statusRow = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
-      expect(statusRow?.status_code).toBe(expectedStatusCode);
+      const statusCode = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
+      expect(statusCode).toBe(expectedStatusCode);
     });
   }
 });
