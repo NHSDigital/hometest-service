@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { EnvironmentVariables } from '../configuration/configuration';
+import { EnvironmentVariables } from '../configuration/EnvironmentConfiguration';
 
 export class BaseDbClient {
   client: Client;

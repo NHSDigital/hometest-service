@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -24,11 +23,11 @@ interface AddressResult {
 }
 
 export default function SelectDeliveryAddressPage() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
 
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [selectedAddress, setSelectedAddress] = useState<string>(orderAnswers.selectedAddressUPRN || "");
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const addresses = mockAddressResponse.results as AddressResult[];
@@ -58,31 +57,48 @@ export default function SelectDeliveryAddressPage() {
         return null;
       }
 
+      const laResponse = await laLookupService.getByPostcode(postcode);
 
-      const la = await laLookupService.getByPostcode(postcode);
-
-      console.log("LA lookup response:", la);
+      if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+        console.warn("LA lookup returned null or incomplete data", laResponse);
+        // ALPHA: ToDo error screen thrown here:
+        return null;
+      }
+      console.log("Eligibility lookup response:", laResponse);
 
       updateOrderAnswers({
         deliveryAddress: {
-          addressLine1: selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
+          addressLine1:
+            selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
           addressLine2: selected.DPA.THOROUGHFARE_NAME,
           addressLine3: selected.DPA.DEPENDENT_LOCALITY,
           postTown: selected.DPA.POST_TOWN,
           postcode: selected.DPA.POSTCODE,
         },
+        addressEntryMethod: 'postcode-search',
+        selectedAddressUPRN: selected.DPA.UPRN,
         localAuthority: {
-          code: la.localAuthorityCode,
-          region: la.region,
+          code: laResponse.localAuthority.localAuthorityCode,
+          region: laResponse.localAuthority.region,
         },
+        supplier: laResponse.suppliers.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+          testCode: supplier.testCode,
+        })),
       });
 
-      goToStep("how-comfortable-pricking-finger");
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep("how-comfortable-pricking-finger");
+      }
 
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
       console.error("Failed to lookup local authority:", err);
-      setAddressError("Unable to determine local authority. Please try again.");
     }
   };
 
@@ -150,7 +166,11 @@ export default function SelectDeliveryAddressPage() {
           onChange={handleRadioChange}
         >
           {addresses.map((address) => (
-            <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
+            <Radios.Radio
+              key={address.DPA.UPRN}
+              value={address.DPA.UPRN}
+              checked={selectedAddress === address.DPA.UPRN}
+            >
               {address.DPA.ADDRESS}
             </Radios.Radio>
           ))}

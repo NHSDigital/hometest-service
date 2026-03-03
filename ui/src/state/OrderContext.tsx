@@ -9,7 +9,6 @@ import {
   useContext,
   useState,
 } from "react";
-
 import { AuthUser } from "./AuthContext";
 
 // Address structure
@@ -24,14 +23,18 @@ export interface Address {
 // Order state
 export interface OrderAnswers {
   // From auth
+  // todo: replace with AuthCondext
   user?: AuthUser;
 
-  // From enter-delivery-address
+  // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
+  selectedAddressUPRN?: string;
 
   // Final delivery address
   deliveryAddress?: Address;
+  addressEntryMethod?: 'postcode-search' | 'manual';
+
   comfortableDoingTest?: string;
 
   // From LA Lookup
@@ -40,8 +43,19 @@ export interface OrderAnswers {
     region: string;
   };
 
+  supplier?: {
+    id: string;
+    name: string;
+    testCode: string;
+  }[];
+
   // Mobile number
   mobileNumber?: string;
+  mobileNumberSource?: 'nhs-login' | 'manual';
+
+  // Consent
+  consentGiven?: boolean;
+  consentTimestamp?: string;
 }
 
 interface CreateOrderContextType {

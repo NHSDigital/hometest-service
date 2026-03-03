@@ -1,5 +1,15 @@
 import { test as base } from '@playwright/test';
-import { FindAddressPage, HomeTestStartPage, EnterAddressManuallyPage, SelectDeliveryAddressPage, OrderStatusPage, HowComfortablePrickingFingerPage, BloodSampleGuidePage, EnterMobileNumberPage } from '../page-objects';
+import { HomeTestStartPage } from '../page-objects/HomeTestStartPage';
+import { FindAddressPage } from '../page-objects/FindAddressPage';
+import { EnterAddressManuallyPage } from '../page-objects/EnterAddressManuallyPage';
+import { SelectDeliveryAddressPage } from '../page-objects/SelectDeliveryAddressPage';
+import { OrderStatusPage } from '../page-objects/OrderStatusPage';
+import { HowComfortablePrickingFingerPage } from '../page-objects/HowComfortablePrickingFingerPage';
+import { BloodSampleGuidePage } from '../page-objects/BloodSampleGuidePage';
+import { EnterMobileNumberPage } from '../page-objects/EnterMobileNumberPage';
+import { PrivacyPolicyPage } from '../page-objects/PrivacyPolicyPage';
+import { ConfirmAndUpdateMobileNumberPage } from '../page-objects/ConfirmAndUpdateMobileNumberPage';
+import { NegativeResultPage } from '../page-objects/NegativeResultPage';
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -8,8 +18,11 @@ export interface MyFixtures {
   selectDeliveryAddressPage: SelectDeliveryAddressPage;
   orderStatusPage: OrderStatusPage;
   howComfortablePrickingFingerPage: HowComfortablePrickingFingerPage;
+  privacyPolicyPage: PrivacyPolicyPage;
   bloodSampleGuidePage: BloodSampleGuidePage;
   enterMobileNumberPage: EnterMobileNumberPage;
+  confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
+  negativeResultPage: NegativeResultPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -37,11 +50,23 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new HowComfortablePrickingFingerPage(page));
   },
 
+  privacyPolicyPage: async ({ page }, use) => {
+    await use(new PrivacyPolicyPage(page));
+  },
+
   bloodSampleGuidePage: async ({ page }, use) => {
     await use(new BloodSampleGuidePage(page));
   },
 
   enterMobileNumberPage: async ({ page }, use) => {
     await use(new EnterMobileNumberPage(page));
-  }
+  },
+
+  confirmAndUpdateMobileNumberPage: async ({ page }, use) => {
+    await use(new ConfirmAndUpdateMobileNumberPage(page));
+  },
+
+  negativeResultPage: async ({ page }, use) => {
+    await use(new NegativeResultPage(page));
+  },
 });

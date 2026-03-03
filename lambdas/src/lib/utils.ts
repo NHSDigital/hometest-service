@@ -124,17 +124,15 @@ export function isUUID(str: string): boolean {
 export const getCorrelationIdFromEventHeaders = (
   event: APIGatewayProxyEvent,
 ): string => {
-  if (
-    event.headers["X-Correlation-ID"] &&
-    isUUID(event.headers["X-Correlation-ID"])
-  ) {
-    return event.headers["X-Correlation-ID"];
+  let correlationId: string | null = null;
+  for (const [key, value] of Object.entries(event.headers)) {
+    if (value && key.toLowerCase() === "x-correlation-id") {
+      correlationId = value;
+    }
   }
-  if (
-    event.headers["x-correlation-id"] &&
-    isUUID(event.headers["x-correlation-id"])
-  ) {
-    return event.headers["x-correlation-id"];
+
+  if (correlationId && isUUID(correlationId)) {
+    return correlationId;
   }
 
   throw new Error(

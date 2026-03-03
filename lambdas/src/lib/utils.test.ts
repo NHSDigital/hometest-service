@@ -53,33 +53,39 @@ describe("getCorrelationIdFromEventHeaders", () => {
     resource: "",
   });
 
-  it("returns X-Correlation-ID header when present and valid", () => {
-    const event = mockEvent({
-      "X-Correlation-ID": "123e4567-e89b-12d3-a456-426614174000",
-    });
-    expect(getCorrelationIdFromEventHeaders(event)).toBe(
-      "123e4567-e89b-12d3-a456-426614174000",
-    );
-  });
-
-  it("returns x-correlation-id header when present and valid", () => {
-    const event = mockEvent({
-      "x-correlation-id": "550e8400-e29b-41d4-a716-446655440000",
-    });
-    expect(getCorrelationIdFromEventHeaders(event)).toBe(
-      "550e8400-e29b-41d4-a716-446655440000",
-    );
-  });
-
-  it("prioritizes X-Correlation-ID over x-correlation-id when both present and valid", () => {
-    const event = mockEvent({
-      "X-Correlation-ID": "123e4567-e89b-12d3-a456-426614174000",
-      "x-correlation-id": "550e8400-e29b-41d4-a716-446655440000",
-    });
-    expect(getCorrelationIdFromEventHeaders(event)).toBe(
-      "123e4567-e89b-12d3-a456-426614174000",
-    );
-  });
+  it.each([
+    {
+      headerKey: "X-Correlation-ID",
+      uuid: "123e4567-e89b-12d3-a456-426614174000",
+      description: "uppercase with hyphens",
+    },
+    {
+      headerKey: "x-correlation-id",
+      uuid: "550e8400-e29b-41d4-a716-446655440000",
+      description: "lowercase with hyphens",
+    },
+    {
+      headerKey: "X-CORRELATION-ID",
+      uuid: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      description: "all uppercase",
+    },
+    {
+      headerKey: "x-Correlation-Id",
+      uuid: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      description: "mixed case",
+    },
+    {
+      headerKey: "X-CoRrElAtIoN-iD",
+      uuid: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      description: "random mixed case",
+    },
+  ])(
+    "returns correlation ID when header is $description ($headerKey)",
+    ({ headerKey, uuid }) => {
+      const event = mockEvent({ [headerKey]: uuid });
+      expect(getCorrelationIdFromEventHeaders(event)).toBe(uuid);
+    },
+  );
 
   it("throws when no correlation ID header exists", () => {
     const event = mockEvent({});
