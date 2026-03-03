@@ -1,3 +1,4 @@
+import { OpensInNewTabLink } from "./OpensInNewTabLink";
 import { useCommonContent } from "@/hooks";
 
 export function FeedbackSection() {
@@ -11,7 +12,11 @@ export function FeedbackSection() {
       <div className="nhsuk-grid-column-full flex-center-container">
         <p>
           {`${commonContent.feedback.text} `}
-          <a href={commonContent.feedback.linkHref}>{commonContent.feedback.linkText}</a>.
+          <OpensInNewTabLink
+            linkHref={commonContent.feedback.linkHref}
+            linkText={commonContent.feedback.linkText}
+          />
+          .
         </p>
       </div>
     </div>
