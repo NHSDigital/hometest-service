@@ -142,6 +142,12 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
     }
 
     // Update order status to SUBMITTED after successful submission
+    // This is a best-effort update. If it fails, we log the error but do NOT throw.
+    // Rationale: The order has already been successfully submitted to the supplier.
+    // If we throw here, the SQS message will be retried (at-least-once delivery),
+    // causing sendOrderToSupplier() to run again and potentially placing duplicate
+    // orders unless the supplier endpoint is idempotent for X-Correlation-ID.
+    // Instead, we accept the status update failure and avoid duplicate supplier orders.
     try {
       await orderStatusService.updateOrderStatus({
         orderId: parsedBody.order_body.id!,
@@ -150,9 +156,12 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
         correlationId: correlationId,
       });
     } catch (error) {
-      throw new Error(`${name}: Failed to update order status to SUBMITTED`, {
-        cause: error,
-      });
+      console.error(
+        `${name}: Failed to update order status to SUBMITTED for order ${parsedBody.order_body.id}. ` +
+          `Order was successfully submitted to supplier with correlation ID ${correlationId}.`,
+        error,
+      );
+      // Do not rethrow - allow the SQS message to succeed to prevent duplicate supplier submissions
     }
   } catch (error) {
     // Always throw for any error, so Lambda can batch fail

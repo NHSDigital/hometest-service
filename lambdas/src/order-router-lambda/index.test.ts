@@ -218,7 +218,7 @@ describe("order-router-lambda", () => {
       });
     });
 
-    it("should fail if order status update throws an error", async () => {
+    it("should succeed even if order status update fails (best-effort)", async () => {
       mockHttpClientPostRaw.mockResolvedValue({
         status: 201,
         text: async () => JSON.stringify({ id: "order-123" }),
@@ -237,7 +237,8 @@ describe("order-router-lambda", () => {
 
       const result = await handler(sqsEvent, mockContext as Context);
 
-      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+      // Should succeed to avoid retrying and potentially duplicating the supplier order
+      expect(result.batchItemFailures).toEqual([]);
       expect(mockUpdateOrderStatus).toHaveBeenCalled();
     });
   });
