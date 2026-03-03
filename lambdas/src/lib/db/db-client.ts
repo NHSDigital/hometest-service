@@ -35,7 +35,7 @@ export class PostgresDbClient implements DBClient {
       await connectionStringProvider.getConnectionString();
     const sslEnabled = connectionStringProvider.getSslEnabled();
 
-    return new Pool({
+    const poolConfig: ConstructorParameters<typeof Pool>[0] = {
       connectionString,
       max: 5,
       idleTimeoutMillis: 60000,
@@ -43,7 +43,16 @@ export class PostgresDbClient implements DBClient {
       ssl: sslEnabled ? {
         rejectUnauthorized: false,
       } : false,
-    });
+    };
+
+    // IAM auth tokens expire after 15 minutes. Supplying password as a function
+    // ensures pg.Pool requests a fresh token for every new connection it establishes.
+    if (connectionStringProvider.getDynamicPassword) {
+      const getDynamicPassword = connectionStringProvider.getDynamicPassword.bind(connectionStringProvider);
+      poolConfig.password = () => getDynamicPassword();
+    }
+
+    return new Pool(poolConfig);
   }
 
   private async getPool(): Promise<Pool> {
