@@ -21,6 +21,7 @@ import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
       {
         path: RoutePath.TestResultsPage,
         element: <TestResultsPage />,
+      },
+      {
+        path: RoutePath.SuppliersTermsConditions,
+        element: <SuppliersTermsConditionsPage />,
       },
       {
         path: RoutePath.HomeTestPrivacyPolicyPage,

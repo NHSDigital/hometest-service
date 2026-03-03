@@ -10,9 +10,7 @@ describe("AboutService", () => {
         <AboutService supplier="Preventx" />
       </MemoryRouter>,
     );
-    expect(
-      screen.getByRole("heading", { name: /about this service/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /about this service/i })).toBeInTheDocument();
   });
 
   it("renders HomeTest terms of use link with correct href and aria-label", () => {
@@ -45,7 +43,7 @@ describe("AboutService", () => {
     );
     const link = screen.getByRole("link", { name: "Preventx terms of use" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/suppliers-terms-conditions");
+    expect(link).toHaveAttribute("href", "/suppliers-terms-conditions?supplier=Preventx");
   });
 
   it("renders supplier privacy link with Preventx name", () => {
@@ -67,7 +65,7 @@ describe("AboutService", () => {
     );
     const link = screen.getByRole("link", { name: "SH24 terms of use" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/suppliers-terms-conditions");
+    expect(link).toHaveAttribute("href", "/suppliers-terms-conditions?supplier=SH24");
   });
 
   it("renders supplier privacy link with SH24 name", () => {

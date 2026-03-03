@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
+import { useContent } from "@/hooks";
+import { useState } from "react";
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -38,26 +39,26 @@ export default function CheckYourAnswersPage() {
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
-  const handleChangeClick = (field: 'address' | 'mobile' | 'comfort') => {
+  const handleChangeClick = (field: "address" | "mobile" | "comfort") => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
 
-    if (field === 'address') {
+    if (field === "address") {
       // Route based on how address was entered
-      if (orderAnswers.addressEntryMethod === 'manual') {
+      if (orderAnswers.addressEntryMethod === "manual") {
         goToStep(JourneyStepNames.EnterAddressManually);
       } else {
         // Default to select address (postcode search flow)
         goToStep(JourneyStepNames.SelectDeliveryAddress);
       }
-    } else if (field === 'mobile') {
+    } else if (field === "mobile") {
       // Route based on mobile number source
-      if (orderAnswers.mobileNumberSource === 'manual') {
+      if (orderAnswers.mobileNumberSource === "manual") {
         goToStep(JourneyStepNames.EnterMobileNumber);
       } else {
         // NHS Login flow
         goToStep(JourneyStepNames.ConfirmMobileNumber);
       }
-    } else if (field === 'comfort') {
+    } else if (field === "comfort") {
       goToStep(JourneyStepNames.HowComfortablePrickingFinger);
     }
   };
@@ -92,7 +93,7 @@ export default function CheckYourAnswersPage() {
     : [];
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -131,9 +132,7 @@ export default function CheckYourAnswersPage() {
       <SummaryList>
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
-          <SummaryList.Value>
-            {formatUserName(orderAnswers.user)}
-          </SummaryList.Value>
+          <SummaryList.Value>{formatUserName(orderAnswers.user)}</SummaryList.Value>
         </SummaryList.Row>
 
         <SummaryList.Row>
@@ -151,12 +150,13 @@ export default function CheckYourAnswersPage() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleChangeClick('address');
+                handleChangeClick("address");
               }}
             >
               {content.changeLink}
               <span className="nhsuk-u-visually-hidden">
-                {" "}{content.summaryLabels.deliveryAddress}
+                {" "}
+                {content.summaryLabels.deliveryAddress}
               </span>
             </a>
           </SummaryList.Actions>
@@ -174,12 +174,13 @@ export default function CheckYourAnswersPage() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleChangeClick('comfort');
+                handleChangeClick("comfort");
               }}
             >
               {content.changeLink}
               <span className="nhsuk-u-visually-hidden">
-                {" "}{content.summaryLabels.comfortableDoingTest}
+                {" "}
+                {content.summaryLabels.comfortableDoingTest}
               </span>
             </a>
           </SummaryList.Actions>
@@ -193,13 +194,11 @@ export default function CheckYourAnswersPage() {
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                handleChangeClick('mobile');
+                handleChangeClick("mobile");
               }}
             >
               {content.changeLink}
-              <span className="nhsuk-u-visually-hidden">
-                {" "}{content.summaryLabels.mobileNumber}
-              </span>
+              <span className="nhsuk-u-visually-hidden"> {content.summaryLabels.mobileNumber}</span>
             </a>
           </SummaryList.Actions>
         </SummaryList.Row>
@@ -208,17 +207,9 @@ export default function CheckYourAnswersPage() {
       <form onSubmit={handleSubmit}>
         <Fieldset>
           <Fieldset.Legend size="m">{content.consent.legend}</Fieldset.Legend>
-          <Checkboxes
-            id="consent"
-            name="consent"
-            error={consentError || undefined}
-          >
-            <Checkboxes.Box
-              value="consent"
-              checked={consentChecked}
-              onChange={handleConsentChange}
-            >
-              {content.consent.label.replace('{supplier}', supplierName)}{" "}
+          <Checkboxes id="consent" name="consent" error={consentError || undefined}>
+            <Checkboxes.Box value="consent" checked={consentChecked} onChange={handleConsentChange}>
+              {content.consent.label.replace("{supplier}", supplierName)}{" "}
               <a href={content.consent.termsOfUseHref}>{content.consent.termsOfUseText}</a>{" "}
               {content.consent.labelAnd}{" "}
               <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.
@@ -228,6 +219,6 @@ export default function CheckYourAnswersPage() {
 
         <Button type="submit">{content.submitButton}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }
