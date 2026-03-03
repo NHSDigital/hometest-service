@@ -1,11 +1,12 @@
-import { BaseDbClient } from "./BaseDbClient";
 import {
   CreateOrderInput,
   OrderStatusCode,
-  UUID,
   Supplier,
   TestOrderModel,
+  UUID,
 } from "../models/TestOrder";
+
+import { BaseDbClient } from "./BaseDbClient";
 
 export class TestOrderDbClient extends BaseDbClient {
   async getOrderByUid(orderUid: UUID): Promise<TestOrderModel | undefined> {

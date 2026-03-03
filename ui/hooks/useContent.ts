@@ -13,6 +13,7 @@ import type {
   OrderTrackingContent,
   SelectDeliveryAddressContent,
   StartPageContent,
+  TestResultsContent,
 } from "@/content/schema";
 
 import { content } from "@/content/ContentService";
@@ -46,6 +47,7 @@ export interface UseContentReturn {
   "blood-sample-guide": BloodSampleGuideContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
 }
 
@@ -64,6 +66,7 @@ export const useContent = (): UseContentReturn => {
     "check-your-answers": content.pages["check-your-answers"],
     "global-error": content.pages["global-error"],
     "order-tracking": content.pages["order-tracking"],
+    "test-results": content.pages["test-results"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
   };
@@ -97,9 +100,16 @@ export function usePageContent(
 ): HowComfortablePrickingFingerContent;
 export function usePageContent(page: "global-error"): GlobalErrorContent;
 export function usePageContent(page: "order-tracking"): OrderTrackingContent;
-export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
-export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
-export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
+export function usePageContent(
+  page: "blood-sample-guide",
+): BloodSampleGuideContent;
+export function usePageContent(
+  page: "check-your-answers",
+): CheckYourAnswersContent;
+export function usePageContent(page: "test-results"): TestResultsContent;
+export function usePageContent(
+  page: "home-test-privacy-policy",
+): HomeTestPrivacyPolicyContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -114,6 +124,7 @@ export function usePageContent(
     | "order-tracking"
     | "blood-sample-guide"
     | "check-your-answers"
+    | "test-results"
     | "home-test-privacy-policy",
 ) {
   return content.pages[page];
