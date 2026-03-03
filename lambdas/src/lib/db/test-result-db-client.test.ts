@@ -107,7 +107,7 @@ describe("TestResultDbClient", () => {
             o.supplier_id AS supplier_id
         FROM test_order o
         INNER JOIN patient_mapping p ON p.patient_uid = o.patient_uid
-        INNER JOIN result_status rs ON o.order_uid = o.order_uid
+        INNER JOIN result_status rs ON rs.order_uid = o.order_uid
         WHERE
             (
               SELECT os.status_code = 'COMPLETE'

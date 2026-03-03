@@ -241,7 +241,7 @@
       }
     },
     "test-results": {
-      "title": "Test resulsts",
+      "title": "Test results",
       "error": {
         "title": "There is a problem",
         "orderIdRequired": "Order ID is required."
