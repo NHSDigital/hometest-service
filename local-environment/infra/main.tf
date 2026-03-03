@@ -469,7 +469,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.get_results_lambda,
     module.login_lambda,
     module.order_service_lambda,
-    module.session_lambda
+    module.session_lambda,
+    module.postcode_lookup_lambda
   ]
 
   triggers = {
@@ -480,7 +481,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.get_results_lambda,
       module.login_lambda,
       module.order_service_lambda,
-      module.session_lambda
+      module.session_lambda,
+      module.postcode_lookup_lambda
     ]))
   }
 

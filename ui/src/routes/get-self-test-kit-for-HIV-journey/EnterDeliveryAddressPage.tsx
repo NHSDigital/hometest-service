@@ -74,10 +74,10 @@ export default function EnterDeliveryAddressPage() {
       hasSubmittedRef.current = false;
       switch (lookupResultsStatus) {
         case "not_found":
-          goToStep("no-address-found");
+          goToStep(JourneyStepNames.NoAddressFound);
           break;
         case "found":
-          goToStep("select-delivery-address");
+          goToStep(JourneyStepNames.SelectDeliveryAddress);
           break;
         case "error":
           console.error("Postcode lookup failed");
@@ -94,7 +94,7 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);

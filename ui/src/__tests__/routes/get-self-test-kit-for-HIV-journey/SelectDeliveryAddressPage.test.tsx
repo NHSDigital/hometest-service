@@ -1,69 +1,74 @@
 import "@testing-library/jest-dom";
+
 import { fireEvent, render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
-import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
-import { MemoryRouter } from "react-router-dom";
-import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import { JourneyStepNames } from "@/lib/models/route-paths";
+import { MemoryRouter } from "react-router-dom";
+import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
+import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useEffect } from "react";
 import { useCreateOrderContext } from "@/state";
+import { useEffect } from "react";
 
 const mockLookupPostcode = jest.fn();
-const mockLookupResultsStatus = 'idle';
+const mockLookupResultsStatus = "idle";
 const mockGoToStep = jest.fn();
 
 const mockNavigationContext = {
+  currentStep: "select-delivery-address",
   goToStep: mockGoToStep,
   goBack: jest.fn(),
+  canGoBack: jest.fn(() => true),
+  clearHistory: jest.fn(),
   stepHistory: ["enter-delivery-address", "select-delivery-address"],
   returnToStep: null,
   setReturnToStep: jest.fn(),
 };
 
-jest.mock('@/state', () => ({
-  ...jest.requireActual('@/state'),
+jest.mock("@/state", () => ({
+  ...jest.requireActual("@/state"),
   useJourneyNavigationContext: () => mockNavigationContext,
   usePostcodeLookup: () => ({
     lookupPostcode: mockLookupPostcode,
     lookupResultsStatus: mockLookupResultsStatus,
     addresses: [
       {
-        "id": "MOCK0000001",
-        "buildingNumber": "1",
-        "buildingName": "",
-        "subBuildingName": "",
-        "fullAddress": "1 TEST ROAD, CHECK TOWN, B99 95C",
-        "thoroughfare": "TEST ROAD",
-        "town": "CHECK TOWN",
-        "postcode": "B99 95C"
+        id: "MOCK0000001",
+        buildingNumber: "1",
+        buildingName: "",
+        subBuildingName: "",
+        fullAddress: "1 TEST ROAD, CHECK TOWN, B99 95C",
+        thoroughfare: "TEST ROAD",
+        town: "CHECK TOWN",
+        postcode: "B99 95C",
       },
       {
-        "id": "MOCK0000002",
-        "buildingNumber": "2",
-        "buildingName": "",
-        "subBuildingName": "",
-        "fullAddress": "2 TEST ROAD, CHECK TOWN, B99 95C",
-        "thoroughfare": "TEST ROAD",
-        "town": "CHECK TOWN",
-        "postcode": "B99 95C"
+        id: "MOCK0000002",
+        buildingNumber: "2",
+        buildingName: "",
+        subBuildingName: "",
+        fullAddress: "2 TEST ROAD, CHECK TOWN, B99 95C",
+        thoroughfare: "TEST ROAD",
+        town: "CHECK TOWN",
+        postcode: "B99 95C",
       },
       {
-        "id": "MOCK0000003",
-        "buildingNumber": "3",
-        "buildingName": "TEST BUILDING",
-        "subBuildingName": "FLAT 1",
-        "fullAddress": "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
-        "thoroughfare": "TEST ROAD",
-        "town": "CHECK TOWN",
-        "postcode": "B99 95C"
+        id: "MOCK0000003",
+        buildingNumber: "3",
+        buildingName: "TEST BUILDING",
+        subBuildingName: "FLAT 1",
+        fullAddress: "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
+        thoroughfare: "TEST ROAD",
+        town: "CHECK TOWN",
+        postcode: "B99 95C",
       },
     ],
   }),
 }));
 
-jest.mock('@/lib/services/la-lookup-service', () => ({
+jest.mock("@/lib/services/la-lookup-service", () => ({
   __esModule: true,
   default: {
     getByPostcode: jest.fn().mockResolvedValue({
@@ -79,27 +84,27 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   },
 }));
 
-jest.mock('@/hooks/useContent', () => ({
+jest.mock("@/hooks/useContent", () => ({
   useContent: () => ({
     commonContent: {
       validation: {
         deliveryAddress: {
-          required: 'Select a delivery address',
+          required: "Select a delivery address",
         },
       },
       errorSummary: {
-        title: 'There is a problem',
+        title: "There is a problem",
       },
       navigation: {
-        continue: 'Continue',
-        manualEntryLink: 'Enter address manually',
+        continue: "Continue",
+        manualEntryLink: "Enter address manually",
       },
     },
-    'select-delivery-address': {
-      title: 'addresses found',
-      postcodeLabel: 'Postcode:',
-      editPostcodeLink: 'Edit postcode',
-      formLabel: 'Select your delivery address',
+    "select-delivery-address": {
+      title: "addresses found",
+      postcodeLabel: "Postcode:",
+      editPostcodeLink: "Edit postcode",
+      formLabel: "Select your delivery address",
     },
   }),
 }));
@@ -115,9 +120,7 @@ function StateSeeder({ children }: { children: React.ReactNode }) {
 }
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
     <JourneyNavigationProvider>
       <CreateOrderProvider>
         <StateSeeder>
@@ -168,7 +171,9 @@ describe("SelectDeliveryAddressPage", () => {
 
       expect(screen.getByText(/1 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
       expect(screen.getByText(/2 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
-      expect(screen.getByText(/FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C/i),
+      ).toBeInTheDocument();
     });
 
     it("renders correct number of radio buttons", () => {
@@ -304,7 +309,7 @@ describe("SelectDeliveryAddressPage", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
       const radios = screen.getAllByRole("radio");
-      const ids = radios.map(radio => radio.id);
+      const ids = radios.map((radio) => radio.id);
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);
