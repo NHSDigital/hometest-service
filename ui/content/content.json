@@ -759,7 +759,6 @@
         "legend": "Your consent",
         "label": "I understand that {supplier}, a trusted partner of NHS, will provide the free self-test kit. I agree to their",
         "termsOfUseText": "terms of use",
-        "termsOfUseHref": "supplier-terms-and-conditions",
         "labelAnd": "and",
         "privacyPolicyText": "privacy policy",
         "privacyPolicyHref": "supplier-privacy-policy"

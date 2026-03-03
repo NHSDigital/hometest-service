@@ -385,7 +385,6 @@ export interface CheckYourAnswersContent {
     legend: string;
     label: string;
     termsOfUseText: string;
-    termsOfUseHref: string;
     labelAnd: string;
     privacyPolicyText: string;
     privacyPolicyHref: string;

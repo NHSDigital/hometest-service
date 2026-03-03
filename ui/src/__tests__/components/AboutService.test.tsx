@@ -60,21 +60,21 @@ describe("AboutService", () => {
   it("renders supplier terms link with SH24 name", () => {
     render(
       <MemoryRouter>
-        <AboutService supplier="SH24" />
+        <AboutService supplier="SH:24" />
       </MemoryRouter>,
     );
-    const link = screen.getByRole("link", { name: "SH24 terms of use" });
+    const link = screen.getByRole("link", { name: "SH:24 terms of use" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/suppliers-terms-conditions?supplier=SH24");
+    expect(link).toHaveAttribute("href", "/suppliers-terms-conditions?supplier=SH%3A24");
   });
 
   it("renders supplier privacy link with SH24 name", () => {
     render(
       <MemoryRouter>
-        <AboutService supplier="SH24" />
+        <AboutService supplier="SH:24" />
       </MemoryRouter>,
     );
-    const link = screen.getByRole("link", { name: "SH24 privacy policy" });
+    const link = screen.getByRole("link", { name: "SH:24 privacy policy" });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("href", "/suppliers-privacy-policy");
   });

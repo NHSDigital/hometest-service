@@ -1,10 +1,10 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { JourneyStepNames } from "@/lib/models/route-paths";
 import { useContent } from "@/hooks";
 import { useState } from "react";
 
@@ -210,7 +210,11 @@ export default function CheckYourAnswersPage() {
           <Checkboxes id="consent" name="consent" error={consentError || undefined}>
             <Checkboxes.Box value="consent" checked={consentChecked} onChange={handleConsentChange}>
               {content.consent.label.replace("{supplier}", supplierName)}{" "}
-              <a href={content.consent.termsOfUseHref}>{content.consent.termsOfUseText}</a>{" "}
+              <a
+                href={`${RoutePath.SuppliersTermsConditions}?supplier=${encodeURIComponent(supplierName)}`}
+              >
+                {content.consent.termsOfUseText}
+              </a>{" "}
               {content.consent.labelAnd}{" "}
               <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.
             </Checkboxes.Box>
