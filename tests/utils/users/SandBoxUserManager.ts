@@ -1,7 +1,7 @@
 import { BaseUserManager } from "./BaseUserManager";
 import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
 import type { NHSLoginUser } from "./BaseUser";
-import NhsLoginHelper from "../../page-objects/NHSLoginHelper";
+import NhsLoginHelper from "../../page-objects/NhsLoginHelper";
 import type { Page } from "@playwright/test";
 
 export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
