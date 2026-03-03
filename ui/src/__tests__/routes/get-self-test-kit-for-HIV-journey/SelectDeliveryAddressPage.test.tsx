@@ -50,10 +50,41 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   __esModule: true,
   default: {
     getByPostcode: jest.fn().mockResolvedValue({
-      localAuthorityCode: "4230",
-      region: "Salford",
+      localAuthority: {
+        localAuthorityCode: "4230",
+        region: "Salford",
+      },
+      suppliers: [
+        { id: "SUP1", name: "Supplier One", testCode: "31676001" },
+        { id: "SUP2", name: "Supplier Two", testCode: "PCR" },
+      ],
     }),
   },
+}));
+
+jest.mock('@/hooks/useContent', () => ({
+  useContent: () => ({
+    commonContent: {
+      validation: {
+        deliveryAddress: {
+          required: 'Select a delivery address',
+        },
+      },
+      errorSummary: {
+        title: 'There is a problem',
+      },
+      navigation: {
+        continue: 'Continue',
+        manualEntryLink: 'Enter address manually',
+      },
+    },
+    'select-delivery-address': {
+      title: 'addresses found',
+      postcodeLabel: 'Postcode:',
+      editPostcodeLink: 'Edit postcode',
+      formLabel: 'Select your delivery address',
+    },
+  }),
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -71,10 +102,8 @@ describe("SelectDeliveryAddressPage", () => {
     it("renders the main heading with correct address count", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const heading = screen.getByRole("heading", {
-        name: /3 addresses found/i,
-      });
-      expect(heading).toBeInTheDocument();
+      const heading = screen.getByRole("heading");
+      expect(heading).toHaveTextContent("3 addresses addresses found");
     });
 
     it("displays the searched postcode", () => {

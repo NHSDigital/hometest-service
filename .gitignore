@@ -17,6 +17,7 @@
 .env
 .env.local
 .env.*.local
+.env.*
 
 # Local stuff
 db-data
@@ -34,6 +35,9 @@ dist
 # CDK Stuff
 cdk.out
 cdk.context.json
+
+# Session cache
+.session-cache/
 
 # MacOS
 .DS_Store
@@ -161,6 +165,8 @@ mcp.json
 
 **/frontend/
 **/test-results/
+!ui/src/components/test-results/
+!ui/src/components/test-results/**
 .next
 WorkerUser*
 junit.xml

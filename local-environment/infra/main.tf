@@ -175,7 +175,14 @@ module "eligibility_lookup_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 
@@ -238,8 +245,7 @@ module "session_lambda" {
   cors_allow_credentials = true
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-
+    NODE_OPTIONS                       = "--enable-source-maps"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
     NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
@@ -284,8 +290,14 @@ module "order_router_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS = "--enable-source-maps"
-    DATABASE_URL = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 
@@ -341,8 +353,79 @@ module "order_service_lambda" {
 
   environment_variables = {
     NODE_OPTIONS              = "--enable-source-maps"
-    DATABASE_URL              = "postgresql://app_user:STRONG_APP_PASSWORD@postgres-db:5432/local_hometest_db?currentSchema=hometest"
     ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
+    DB_USERNAME               = "app_user"
+    DB_ADDRESS                = "postgres-db"
+    DB_PORT                   = "5432"
+    DB_NAME                   = "local_hometest_db"
+    DB_SCHEMA                 = "hometest"
+    DB_SECRET_NAME            = "postgres-db-password"
+    DB_SSL                    = "false"
+  }
+}
+
+module "get_order_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "get-order"
+  zip_path                      = "${path.module}/../../lambdas/dist/get-order-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "order"
+  http_method                   = "GET"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  enable_cors        = true
+  cors_allow_origin  = "http://localhost:3000"
+  cors_allow_methods = ["GET", "OPTIONS"]
+
+  environment_variables = {
+    NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+  }
+}
+
+module "get_results_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "get-results"
+  zip_path                      = "${path.module}/../../lambdas/dist/get-results-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "results"
+  http_method                   = "GET"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  enable_cors        = true
+  cors_allow_origin  = "http://localhost:3000"
+  cors_allow_methods = ["GET", "OPTIONS"]
+  cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-ID"]
+
+  environment_variables = {
+    NODE_OPTIONS   = "--enable-source-maps"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+    ALLOW_ORIGIN   = "http://localhost:3000"
   }
 }
 
@@ -353,6 +436,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     module.eligibility_lookup_lambda,
     module.order_result_lambda,
+    module.get_order_lambda,
+    module.get_results_lambda,
     module.login_lambda,
     module.order_service_lambda,
     module.session_lambda
@@ -362,9 +447,11 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     redeployment = sha1(jsonencode([
       module.eligibility_lookup_lambda,
       module.order_result_lambda,
+      module.get_order_lambda,
+      module.get_results_lambda,
       module.login_lambda,
       module.order_service_lambda,
-      module.session_lambda,
+      module.session_lambda
     ]))
   }
 

@@ -1,25 +1,38 @@
-import { Locator, Page} from '@playwright/test';
-import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
+import { Locator, Page } from '@playwright/test';
+import {
+  ConfigFactory,
+  type ConfigInterface
+} from '../configuration/EnvironmentConfiguration';
 import { BasePage } from './BasePage';
 
 export class HomeTestStartPage extends BasePage {
   readonly config: ConfigInterface;
   readonly findClinicLink: Locator;
   readonly nearestAELink: Locator;
-  readonly nearestSexualHealthClinicLink: Locator;
+  readonly sexualHealthServicesLink: Locator;
   readonly learnMoreHIVAidsLink: Locator;
   readonly startNowBtn: Locator;
+  readonly privacyPolicyLink: Locator;
   readonly bloodSampleGuideLink: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.findClinicLink = page.getByRole('link', { name: 'Find a sexual health clinic' });
+    this.findClinicLink = page.getByRole('link', {
+      name: 'Find a sexual health clinic'
+    });
     this.nearestAELink = page.getByRole('link', { name: 'your nearest A&E' });
-    this.nearestSexualHealthClinicLink = page.getByRole('link', { name: /your nearest sexual health/ });
-    this.learnMoreHIVAidsLink = page.getByRole('link', { name: 'Learn more about HIV and AIDS' });
+    this.sexualHealthServicesLink = page.getByRole('link', {
+      name: 'find sexual health services near you'
+    });
+    this.learnMoreHIVAidsLink = page.getByRole('link', {
+      name: 'Learn more about HIV and AIDS'
+    });
     this.startNowBtn = page.getByRole('button', { name: 'Start now' });
-    this.bloodSampleGuideLink = page.getByRole('link', { name: 'Blood sample step-by-step guide' });
+    this.bloodSampleGuideLink = page.getByRole('link', {
+      name: 'Blood sample step-by-step guide'
+    });
     this.config = ConfigFactory.getConfig();
+    this.privacyPolicyLink = page.getByRole('link', { name: 'privacy policy' });
   }
 
   async navigate(): Promise<void> {
@@ -41,8 +54,8 @@ export class HomeTestStartPage extends BasePage {
     await this.page.waitForURL(expectedUrl);
   }
 
-  async clickNearestSexualHealthClinicLink(expectedUrl: string): Promise<void> {
-    await this.nearestSexualHealthClinicLink.click();
+  async clickSexualHealthServicesLink(expectedUrl: string): Promise<void> {
+    await this.sexualHealthServicesLink.click();
     await this.page.waitForURL(expectedUrl);
   }
 
@@ -53,6 +66,10 @@ export class HomeTestStartPage extends BasePage {
 
   async clickStartNowButton(): Promise<void> {
     await this.startNowBtn.click();
+  }
+
+  async clickPrivacyPolicyLink(): Promise<void> {
+    await this.privacyPolicyLink.click();
   }
 
   async clickBloodSampleGuideLink(): Promise<void> {

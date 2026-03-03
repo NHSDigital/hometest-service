@@ -32,7 +32,9 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "enter-mobile-phone-number",
   "global-error",
   "order-tracking",
+  "test-results",
   "blood-sample-guide",
+  "home-test-privacy-policy",
 ];
 
 const isObject = (value: unknown): value is Record<string, unknown> =>

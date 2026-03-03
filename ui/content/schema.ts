@@ -50,6 +50,9 @@ export interface ValidationMessages {
     required: string;
     invalid: string;
   };
+  consent: {
+    required: string;
+  };
 }
 
 export interface CommonLinks {
@@ -265,19 +268,80 @@ export interface EnterMobilePhoneNumberContent {
   };
 }
 
+export interface ConfirmMobilePhoneNumberContent {
+  title: string;
+  description: string;
+  form: {
+    alternativeLabel: string;
+    alternativeInputLabel: string;
+    alternativeInputHint: string;
+  };
+}
+
 export interface GlobalErrorContent {
   title: string;
   message: string;
 }
 
 export interface OrderTrackingContent {
-  title: string;
   error: {
     title: string;
     orderNotFound: string;
     orderIdRequired: string;
   };
-  loading: string;
+}
+
+export interface TestResultsContent {
+  title: string;
+  error: {
+    title: string;
+    orderIdRequired: string;
+  };
+  negativeResult: {
+    header: string;
+    sectionAriaLabel: string;
+    yourResultHeading: string;
+    result: string;
+    summary: string;
+    windowPeriodAdvice: string;
+    contactSupplierPrefix: string;
+    contactSupplier: string;
+    gpSharing: string;
+    nextStepsHeading: string;
+    nextStepsAdvice: string;
+  };
+  moreOptionsAndInformation: {
+    heading: string;
+    fullCheckPrefix: string;
+    fullCheckLink: string;
+    prepLink: string;
+    prepAdvice: string;
+    clinicLink: string;
+    learnMoreHIV: string;
+  };
+  medicalAbbreviationsHelp: {
+    intro: string;
+    linkText: string;
+  };
+}
+
+export interface PrivacyPolicySubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface PrivacyPolicySection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: PrivacyPolicySubsection[];
+}
+
+export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
 }
 
 export interface BloodSampleGuideContent {
@@ -306,6 +370,29 @@ export interface BloodSampleGuideContent {
   }>;
 }
 
+export interface CheckYourAnswersContent {
+  title: string;
+  updateMessage: string;
+  deliveryMessage: string;
+  summaryLabels: {
+    name: string;
+    deliveryAddress: string;
+    comfortableDoingTest: string;
+    mobileNumber: string;
+  };
+  changeLink: string;
+  consent: {
+    legend: string;
+    label: string;
+    termsOfUseText: string;
+    termsOfUseHref: string;
+    labelAnd: string;
+    privacyPolicyText: string;
+    privacyPolicyHref: string;
+  };
+  submitButton: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -318,8 +405,12 @@ export interface PagesContent {
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
+  "check-your-answers": CheckYourAnswersContent;
+  "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "test-results": TestResultsContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
 }
 

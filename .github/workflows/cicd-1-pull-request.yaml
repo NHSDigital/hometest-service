@@ -6,8 +6,9 @@ name: "CI/CD pull request"
 on:
   push:
     branches:
-      - "**"
+      - "main"
   pull_request:
+    types: [opened, reopened, edited, synchronize]
     types: [opened, reopened, edited, synchronize]
 
 jobs:
