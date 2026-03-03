@@ -56,8 +56,9 @@ async function buildLambda(lambdaName: string): Promise<void> {
     target: 'node24',
     format: 'cjs',
     // @aws-sdk/client-* packages are provided by the Lambda runtime (nodejs24.x),
-    // but @aws-sdk/rds-signer is NOT included in the runtime and must be bundled.
-    external: ['aws-sdk', '@aws-sdk/client-*', '@aws-sdk/lib-*', '@aws-sdk/credential-providers'],
+    // but @aws-sdk/rds-signer is NOT included in the runtime and must be bundled
+    // (along with its dependency @aws-sdk/credential-providers and @aws-sdk/util-format-url).
+    external: ['aws-sdk', '@aws-sdk/client-*', '@aws-sdk/lib-*'],
     packages: 'bundle',
     minify: false,
     sourcemap: false,
