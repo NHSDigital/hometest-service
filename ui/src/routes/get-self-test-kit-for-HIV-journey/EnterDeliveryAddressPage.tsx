@@ -1,16 +1,13 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
+import { useEffect, useRef, useState } from "react";
 
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 import type { ValidationMessages } from "@/content/schema";
-import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
-import { useState } from "react";
-
-// TODO: add postcode lookup integration
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -56,6 +53,7 @@ const validateBuildingName = (
 export default function EnterDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { lookupPostcode, lookupResultsStatus, isLoading, clearAddresses } = usePostcodeLookup();
   const { commonContent, "enter-delivery-address": content } = useContent();
 
   const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
@@ -63,7 +61,30 @@ export default function EnterDeliveryAddressPage() {
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
   const [buildingNameError, setBuildingNameError] = useState<string | null>(null);
 
+  const hasSubmittedRef = useRef(false);
+
   console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
+
+  useEffect(() => {
+    clearAddresses();
+  }, [clearAddresses]);
+
+  useEffect(() => {
+    if (hasSubmittedRef.current && !isLoading && lookupResultsStatus !== "idle") {
+      hasSubmittedRef.current = false;
+      switch (lookupResultsStatus) {
+        case "not_found":
+          goToStep("no-address-found");
+          break;
+        case "found":
+          goToStep("select-delivery-address");
+          break;
+        case "error":
+          console.error("Postcode lookup failed");
+          break;
+      }
+    }
+  }, [lookupResultsStatus, isLoading, goToStep]);
 
   const handlePostcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPostcode(e.target.value);
@@ -73,7 +94,7 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
@@ -94,19 +115,8 @@ export default function EnterDeliveryAddressPage() {
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
-      const laResponse = await laLookupService.getByPostcode(updatedData.postcodeSearch);
-      if (!laResponse) {
-        goToStep(JourneyStepNames.KitNotAvailableInArea);
-        return;
-      }
-
-      // Navigate to next step using NavigationContext
-      // for now use hard coded value to simulate no address found
-      if (updatedData.postcodeSearch == "BT655EU") {
-        goToStep("no-address-found");
-      } else {
-        goToStep("select-delivery-address");
-      }
+      hasSubmittedRef.current = true;
+      await lookupPostcode(updatedData.postcodeSearch);
     }
   };
 
