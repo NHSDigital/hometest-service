@@ -252,6 +252,35 @@ module "session_lambda" {
   }
 }
 
+# Postcode Lookup Lambda
+module "postcode_lookup_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "postcode-lookup"
+  zip_path                      = "${path.module}/../../lambdas/dist/postcode-lookup-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "postcode-lookup"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "GET"
+
+  environment_variables = {
+    NODE_OPTIONS                            = "--enable-source-maps",
+    POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME = "os-places-creds",
+    POSTCODE_LOOKUP_BASE_URL                = "https://api.os.uk/search/places/v1",
+    POSTCODE_LOOKUP_TIMEOUT_MS              = "5000",
+    POSTCODE_LOOKUP_MAX_RETRIES             = "3",
+    POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",
+    POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR    = "2",
+    USE_STUB_POSTCODE_CLIENT                = false,
+    POSTCODE_LOOKUP_REJECT_UNAUTHORIZED     = false,
+  }
+}
+
 module "hello_world_lambda" {
   source = "./modules/lambda"
 

@@ -34,6 +34,6 @@ export default {
     "^.+\\.jsx?$": ["babel-jest", { configFile: "./babel.config.cjs" }],
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(@middy|uuid)/)", // add ESM packages here
+    "/node_modules/(?!(@middy|uuid|@aws-sdk)/)", // add ESM packages here
   ],
 };
