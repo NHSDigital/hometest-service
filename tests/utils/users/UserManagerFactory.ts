@@ -1,4 +1,4 @@
-import { AuthType, ConfigFactory, type ConfigInterface } from '../../configuration/configuration';
+import { AuthType, ConfigFactory, type ConfigInterface } from '../../configuration/EnvironmentConfiguration';
 import { getNumberOfWorkers } from '../../playwright.config';
 import { SandBoxUserManager as SandboxUserManager } from './SandBoxUserManager';
 import type { BaseTestUser } from './BaseUser';

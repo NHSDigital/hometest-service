@@ -4,7 +4,11 @@ import { retrieveMandatoryEnvVariable } from "../lib/utils";
 import { TransactionService } from "../lib/db/transaction-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+<<<<<<< HEAD
 import { postgresFromEnv } from "../lib/db/connection-string-provider";
+=======
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
 export interface Environment {
   orderStatusService: OrderStatusService;
@@ -20,7 +24,11 @@ export function init(): Environment {
   const awsRegion =
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
   const secretsClient = new AwsSecretsClient(awsRegion);
+<<<<<<< HEAD
   const dbClient = new PostgresDbClient(postgresFromEnv(secretsClient));
+=======
+  const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
   const orderStatusService = new OrderStatusService(dbClient);
   const transactionService = new TransactionService({ dbClient });
   const sqsClient = new AWSSQSClient();

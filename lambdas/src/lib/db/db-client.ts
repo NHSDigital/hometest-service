@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import { Pool } from "pg";
 import { ConnectionStringProvider } from "./connection-string-provider";
+=======
+import { Pool, ClientConfig } from "pg";
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
 
 /**
  * A library-agnostic representation of a database result.
@@ -22,6 +26,7 @@ export interface DBClient {
  * Concrete implementation using pg.Pool
  */
 export class PostgresDbClient implements DBClient {
+<<<<<<< HEAD
   private readonly poolPromise: Promise<Pool>;
 
   constructor(connectionStringProvider: ConnectionStringProvider) {
@@ -57,6 +62,21 @@ export class PostgresDbClient implements DBClient {
 
   private async getPool(): Promise<Pool> {
     return this.poolPromise;
+=======
+  private readonly pool: Pool;
+
+  constructor(config: ClientConfig) {
+    this.pool = this.createPool(config);
+  }
+
+  private createPool(config: ClientConfig): Pool {
+    return new Pool({
+      ...config,
+      max: 5,
+      idleTimeoutMillis: 60000,
+      connectionTimeoutMillis: 60000,
+    });
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
   }
 
   async query<T = any, I extends any[] = any[]>(
@@ -72,8 +92,12 @@ export class PostgresDbClient implements DBClient {
   }
 
   async withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T> {
+<<<<<<< HEAD
     const pool = await this.getPool();
     const client = await pool.connect();
+=======
+    const client = await this.pool.connect();
+>>>>>>> 8c47243a733da9c990ea007b2ad300ca1b1f0e72
     const txClient: DBClient = {
       query: async <Q = any, I extends any[] = any[]>(
         text: string,
