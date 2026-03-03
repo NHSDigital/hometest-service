@@ -250,8 +250,40 @@
         "title": "There is a problem",
         "orderNotFound": "We could not find this order.",
         "orderIdRequired": "Order ID is required."
+      }
+    },
+    "test-results": {
+      "title": "Test results",
+      "error": {
+        "title": "There is a problem",
+        "orderIdRequired": "Order ID is required."
       },
-      "loading": "Loading..."
+      "negativeResult": {
+        "header": "HIV self-test result",
+        "sectionAriaLabel": "Negative test result information",
+        "yourResultHeading": "Your result",
+        "result": "Negative",
+        "summary": "A negative test result means the test did not detect HIV.",
+        "windowPeriodAdvice": "However, if you took the test less than 45 days after potential exposure, wait until the 45 days have passed and do a new test to confirm the negative result. This is because HIV takes time to show in a blood sample.",
+        "contactSupplierPrefix": "If you have any questions about your result,",
+        "contactSupplier": "contact {supplier}, the kit supplier",
+        "gpSharing": "We do not share your test result with your GP.",
+        "nextStepsHeading": "Next steps",
+        "nextStepsAdvice": "We recommend you do an HIV test every 3 months if you regularly have sex without condoms with new or casual partners."
+      },
+      "moreOptionsAndInformation": {
+        "heading": "More options and information",
+        "fullCheckPrefix": "For a full sexual health check for HIV, Chlamydia, Gonorrhoea, and Syphilis,",
+        "fullCheckLink": "complete an online sexual health questionnaire with {supplier}",
+        "prepLink": "PrEP",
+        "prepAdvice": "reduces the risk of getting HIV. You can get PrEP from a health professional at an",
+        "clinicLink": "NHS sexual health clinic.",
+        "learnMoreHIV": "Learn more about HIV and AIDS"
+      },
+      "medicalAbbreviationsHelp": {
+        "intro": "You may see medical abbreviations you are not familiar with.",
+        "linkText": "Help with medical abbreviations"
+      }
     },
     "home-test-privacy-policy": {
       "title": "Hometest Privacy Policy - Draft v1.0 Jan 2026",

@@ -293,13 +293,45 @@ export interface GlobalErrorContent {
 }
 
 export interface OrderTrackingContent {
-  title: string;
   error: {
     title: string;
     orderNotFound: string;
     orderIdRequired: string;
   };
-  loading: string;
+}
+
+export interface TestResultsContent {
+  title: string;
+  error: {
+    title: string;
+    orderIdRequired: string;
+  };
+  negativeResult: {
+    header: string;
+    sectionAriaLabel: string;
+    yourResultHeading: string;
+    result: string;
+    summary: string;
+    windowPeriodAdvice: string;
+    contactSupplierPrefix: string;
+    contactSupplier: string;
+    gpSharing: string;
+    nextStepsHeading: string;
+    nextStepsAdvice: string;
+  };
+  moreOptionsAndInformation: {
+    heading: string;
+    fullCheckPrefix: string;
+    fullCheckLink: string;
+    prepLink: string;
+    prepAdvice: string;
+    clinicLink: string;
+    learnMoreHIV: string;
+  };
+  medicalAbbreviationsHelp: {
+    intro: string;
+    linkText: string;
+  };
 }
 
 export interface PrivacyPolicySubsection {
@@ -392,6 +424,7 @@ export interface PagesContent {
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
+  "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "kit-not-available-in-area": KitNotAvailableInAreaContent;
