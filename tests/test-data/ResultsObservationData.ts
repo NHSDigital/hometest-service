@@ -15,7 +15,7 @@ export interface Reference {
 }
 
 export interface HIVObservation {
-  resourceType: 'Observation';
+  resourceType: "Observation";
   id: string;
   basedOn: Reference[];
   status: string;
@@ -29,43 +29,47 @@ export interface HIVObservation {
 }
 
 export class ResultsObservationData {
-  static buildNormalObservation(orderId: string, patientId: string, supplierId: string): HIVObservation {
+  static buildNormalObservation(
+    orderId: string,
+    patientId: string,
+    supplierId: string,
+  ): HIVObservation {
     return {
-      resourceType: 'Observation',
-      id: '550e8400-e29b-41d4-a716-446655440001',
+      resourceType: "Observation",
+      id: "550e8400-e29b-41d4-a716-446655440001",
       basedOn: [
         {
           reference: `ServiceRequest/${orderId}`,
         },
       ],
-      status: 'final',
+      status: "final",
       code: {
         coding: [
           {
-            system: 'http://snomed.info/sct',
-            code: '31676001',
-            display: 'HIV antigen test',
+            system: "http://snomed.info/sct",
+            code: "31676001",
+            display: "HIV antigen test",
           },
         ],
-        text: 'HIV antigen test',
+        text: "HIV antigen test",
       },
       subject: {
         reference: `Patient/${patientId}`,
       },
-      effectiveDateTime: '2025-11-04T15:45:00Z',
-      issued: '2025-11-04T16:00:00Z',
+      effectiveDateTime: "2025-11-04T15:45:00Z",
+      issued: "2025-11-04T16:00:00Z",
       performer: [
         {
           reference: `Organization/${supplierId}`,
-          display: 'Supplier Organization',
+          display: "Supplier Organization",
         },
       ],
       valueCodeableConcept: {
         coding: [
           {
-            system: 'http://snomed.info/sct',
-            code: '260415000',
-            display: 'Not detected',
+            system: "http://snomed.info/sct",
+            code: "260415000",
+            display: "Not detected",
           },
         ],
       },
@@ -73,54 +77,57 @@ export class ResultsObservationData {
         {
           coding: [
             {
-              system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-              code: 'N',
-              display: 'Normal',
+              system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              code: "N",
+              display: "Normal",
             },
           ],
-          text: 'Normal',
         },
       ],
     };
   }
 
-  static buildAbnormalObservation(orderId: string, patientId: string, supplierId: string): HIVObservation {
+  static buildAbnormalObservation(
+    orderId: string,
+    patientId: string,
+    supplierId: string,
+  ): HIVObservation {
     return {
-      resourceType: 'Observation',
-      id: '550e8400-e29b-41d4-a716-446655440001',
+      resourceType: "Observation",
+      id: "550e8400-e29b-41d4-a716-446655440001",
       basedOn: [
         {
           reference: `ServiceRequest/${orderId}`,
         },
       ],
-      status: 'final',
+      status: "final",
       code: {
         coding: [
           {
-            system: 'http://snomed.info/sct',
-            code: '31676001',
-            display: 'HIV antigen test',
+            system: "http://snomed.info/sct",
+            code: "31676001",
+            display: "HIV antigen test",
           },
         ],
-        text: 'HIV antigen test',
+        text: "HIV antigen test",
       },
       subject: {
         reference: `Patient/${patientId}`,
       },
-      effectiveDateTime: '2025-11-04T15:45:00Z',
-      issued: '2025-11-04T16:00:00Z',
+      effectiveDateTime: "2025-11-04T15:45:00Z",
+      issued: "2025-11-04T16:00:00Z",
       performer: [
         {
           reference: `Organization/${supplierId}`,
-          display: 'Supplier Organization',
+          display: "Supplier Organization",
         },
       ],
       valueCodeableConcept: {
         coding: [
           {
-            system: 'http://snomed.info/sct',
-            code: '260415000',
-            display: 'Detected',
+            system: "http://snomed.info/sct",
+            code: "260415000",
+            display: "Detected",
           },
         ],
       },
@@ -128,9 +135,9 @@ export class ResultsObservationData {
         {
           coding: [
             {
-              system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-              code: 'A',
-              display: 'Abnormal',
+              system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              code: "A",
+              display: "Abnormal",
             },
           ],
         },

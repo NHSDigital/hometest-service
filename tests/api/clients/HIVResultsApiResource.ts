@@ -1,18 +1,9 @@
-import { APIResponse } from '@playwright/test';
-import { BaseApiClient } from './BaseApiClient';
-import { API_ENDPOINTS } from '../endpoints';
-import { ResultsObservationData } from '../../test-data/ResultsObservationData';
-import { ApiHeaders } from '../../utils/ApiRequestHelper';
-import {
-  GetResultHeaders,
-  GetResultParams,
-} from "../../test-data/GetResultRequestParams";
-
 import { APIResponse } from "@playwright/test";
-import { API_ENDPOINTS } from "../Endpoints";
-import { ApiHeaders } from "../../utils/ApiRequestHelper";
 import { BaseApiClient } from "./BaseApiClient";
-import { HIVTestResult } from "../../test-data/HIVTestResultData";
+import { API_ENDPOINTS } from "../Endpoints";
+import { ResultsObservationData } from "../../test-data/ResultsObservationData";
+import { ApiHeaders } from "../../utils/ApiRequestHelper";
+import { GetResultParams, GetResultHeaders } from "../../test-data/GetResultRequestParams";
 
 export class HIVResultsApiResource extends BaseApiClient {
   async submitTestResults(
@@ -25,10 +16,7 @@ export class HIVResultsApiResource extends BaseApiClient {
     });
   }
 
-  async getResult(
-    params: GetResultParams,
-    headers: GetResultHeaders,
-  ): Promise<APIResponse> {
+  async getResult(params: GetResultParams, headers: GetResultHeaders): Promise<APIResponse> {
     const response = await this.get(API_ENDPOINTS.results.get, {
       params,
       headers,
