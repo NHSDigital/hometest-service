@@ -36,10 +36,10 @@ test.describe('Backend API, order endpoint', () => {
     }
   );
 
-  test.afterAll(async ({ testOrderDb }) => {
+  test.afterEach(async ({ testOrderDb }) => {
     await testOrderDb.deleteOrderByUid(createdOrderUid);
     await testOrderDb.deleteOrderByPatientUid(patientUid!);
-    await testOrderDb.deletePatientByNHSandDOB(
+    await testOrderDb.deletePatientMapping(
       OrderTestData.getDefaultOrder().patient.nhsNumber,
       OrderTestData.getDefaultOrder().patient.birthDate
     );

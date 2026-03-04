@@ -74,7 +74,7 @@ test.describe("GET Result API @api", () => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientByNHSandDOB(
+      await dbClient.deletePatientMapping(
         testedUser.nhsNumber!,
         testedUser.dob!,
       );

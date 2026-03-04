@@ -109,7 +109,7 @@ export class TestOrderDbClient extends BaseDbClient {
     ]);
   }
 
-  async deletePatientByNHSandDOB(nhsNumber: string,
+  async deletePatientMapping(nhsNumber: string,
     birthDate: string,
   ): Promise<void> {
     await this.query(
