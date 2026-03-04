@@ -41,15 +41,12 @@ describe("OrderStatusService", () => {
         rowCount: 1,
       });
 
-      const result = await service.getPatientIdFromOrder(
-        "550e8400-e29b-41d4-a716-446655440000",
-      );
+      const result = await service.getPatientIdFromOrder("550e8400-e29b-41d4-a716-446655440000");
 
       expect(result).toEqual(mockOrder.patient_uid);
-      expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining("SELECT"),
-        ["550e8400-e29b-41d4-a716-446655440000"],
-      );
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
+        "550e8400-e29b-41d4-a716-446655440000",
+      ]);
     });
 
     it("should return null when order does not exist", async () => {
@@ -82,10 +79,10 @@ describe("OrderStatusService", () => {
       );
 
       expect(result.isDuplicate).toBe(true);
-      expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining("correlation_id"),
-        ["550e8400-e29b-41d4-a716-446655440000", "corr-123"],
-      );
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("correlation_id"), [
+        "550e8400-e29b-41d4-a716-446655440000",
+        "corr-123",
+      ]);
     });
 
     it("should return false for new correlation IDs", async () => {
@@ -100,7 +97,7 @@ describe("OrderStatusService", () => {
     });
   });
 
-  describe("updateOrderStatus", () => {
+  describe("addUpdateOrderStatus", () => {
     it("should insert new order status record", async () => {
       const mockParams: OrderStatusUpdateParams = {
         orderId: "550e8400-e29b-41d4-a716-446655440000",
@@ -114,9 +111,7 @@ describe("OrderStatusService", () => {
         rowCount: 1,
       });
 
-      await expect(
-        service.addOrderStatusUpdate(mockParams),
-      ).resolves.toBeUndefined();
+      await expect(service.addOrderStatusUpdate(mockParams)).resolves.toBeUndefined();
 
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),

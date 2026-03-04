@@ -48,14 +48,15 @@ export const lambdaHandler = async (
     method: event.httpMethod,
   });
 
-  let task: FHIRTask;
+  let task: unknown;
 
-  // Parse and validate request body
+  if (!event.body) {
+    commons.logError(name, "Missing request body");
+
+    return createFhirErrorResponse(400, "invalid", "Request body is required", "error");
+  }
+
   try {
-    if (event.body === "{}" || event.body === null) {
-      throw new Error("Empty body");
-    }
-
     task = JSON.parse(event.body);
   } catch (error) {
     commons.logError(name, "Invalid JSON in request body", { error });

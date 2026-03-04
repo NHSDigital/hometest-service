@@ -49,14 +49,7 @@ export interface FHIRContainedPatient {
 export interface FHIRServiceRequest {
   resourceType: "ServiceRequest";
   id?: string;
-  status:
-    | "draft"
-    | "active"
-    | "on-hold"
-    | "revoked"
-    | "completed"
-    | "entered-in-error"
-    | "unknown";
+  status: "draft" | "active" | "on-hold" | "revoked" | "completed" | "entered-in-error" | "unknown";
   intent:
     | "proposal"
     | "plan"
@@ -102,7 +95,8 @@ export type FHIRTaskIntent =
   | "reflex-order"
   | "filler-order"
   | "instance-order"
-  | "option";
+  | "option"
+  | "unknown";
 
 export interface FHIRTaskPerformer {
   actor: FHIRReference;

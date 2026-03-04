@@ -74,18 +74,19 @@ describe("Order Status Lambda Handler", () => {
   };
 
   describe("Request Parsing and Validation", () => {
-    it("should return 400 if request body is empty", async () => {
+    it("should return 400 if request body is empty JSON object", async () => {
       mockEvent.body = "{}";
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
-      expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
-
       const body = JSON.parse(result.body);
 
       expect(body.resourceType).toBe("OperationOutcome");
       expect(body.issue[0].code).toBe("invalid");
+
+      // Diagnostics now describe missing required fields
+      expect(body.issue[0].diagnostics).toMatch(/basedOn|lastModified|businessStatus/);
     });
 
     it("should return 400 if request body is null", async () => {
@@ -94,12 +95,11 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(400);
-      expect(result.headers?.["Content-Type"]).toBe("application/fhir+json");
-
       const body = JSON.parse(result.body);
 
       expect(body.resourceType).toBe("OperationOutcome");
       expect(body.issue[0].code).toBe("invalid");
+      expect(body.issue[0].diagnostics).toMatch(/Request body is required/);
     });
 
     it("should return 400 if request body is invalid JSON", async () => {

@@ -55,7 +55,7 @@ export class OrderStatusService {
   async getPatientIdFromOrder(orderId: string): Promise<string | null> {
     const query = `
       SELECT patient_uid
-      FROM hometest.test_order
+      FROM test_order
       WHERE order_uid = $1::uuid
       LIMIT 1;
     `;
