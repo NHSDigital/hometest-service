@@ -7,6 +7,8 @@ let actualHeaderText = "";
 const randomAddress = AddressModel.getRandomAddress();
 const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();
 const makeAComplaintUrl = "https://ico.org.uk/make-a-complaint/";
+const cyberAwareUrl = "https://www.ncsc.gov.uk/cyberaware/home";
+const helpAndSupportUrl = "https://www.nhs.uk/nhs-app/help/";
 
 test.describe("HIV Test Order journeys", () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
@@ -175,10 +177,71 @@ test("Verify Privacy Policy page", async ({
   expect(actualHeaderText).toBe(
     "Hometest Privacy Policy - Draft v1.0 Jan 2026",
   );
+
+  await privacyPolicyPage.clickBackLink();
+  await expect(homeTestStartPage.headerText).toHaveText(
+    "Get a self-test kit for HIV",
+  );
+
   const [newTab] = await Promise.all([
     context.waitForEvent("page"),
     privacyPolicyPage.clickMakeAComplaintLink(),
   ]);
   await newTab.waitForLoadState();
   expect(newTab.url()).toBe(makeAComplaintUrl);
+});
+
+test("Verify Terms of Use page", async ({
+  homeTestStartPage,
+  termsOfUsePage,
+  privacyPolicyPage,
+  context,
+  page,
+}) => {
+  await homeTestStartPage.navigate();
+  await expect(homeTestStartPage.headerText).toHaveText(
+    "Get a self-test kit for HIV",
+  );
+  await homeTestStartPage.clickTermsOfUseLink();
+  actualHeaderText = await termsOfUsePage.getHeaderText();
+  expect(actualHeaderText).toBe(
+    "Hometest Terms of Use - Draft V1 January 2026",
+  );
+
+  // Cyber Aware Link
+  let [newTab] = await Promise.all([
+    context.waitForEvent("page"),
+    termsOfUsePage.clickCyberAwareLink(),
+  ]);
+  await newTab.waitForLoadState();
+  expect(newTab.url()).toBe(cyberAwareUrl);
+  await newTab.close();
+  await page.bringToFront();
+
+  // Help and Support Link
+  [newTab] = await Promise.all([
+    context.waitForEvent("page"),
+    termsOfUsePage.clickHelpAndSupportLink(),
+  ]);
+  await newTab.waitForLoadState();
+  expect(newTab.url()).toBe(helpAndSupportUrl);
+  await newTab.close();
+  await page.bringToFront();
+
+  // Home Test Privacy Policy Link
+  [newTab] = await Promise.all([
+    context.waitForEvent("page"),
+    termsOfUsePage.clickHomeTestPrivacyPolicyLink(),
+  ]);
+  await newTab.waitForLoadState();
+  actualHeaderText = await privacyPolicyPage.getHeaderText();
+  expect(actualHeaderText).toBe(
+    "Hometest Privacy Policy - Draft v1.0 Jan 2026",
+  );
+
+  await termsOfUsePage.clickBackLink();
+  await termsOfUsePage.clickBackLink();
+  await expect(homeTestStartPage.headerText).toHaveText(
+    "Get a self-test kit for HIV",
+  );
 });

@@ -10,7 +10,7 @@ import { EnterMobileNumberPage } from '../page-objects/EnterMobileNumberPage';
 import { PrivacyPolicyPage } from '../page-objects/PrivacyPolicyPage';
 import { ConfirmAndUpdateMobileNumberPage } from '../page-objects/ConfirmAndUpdateMobileNumberPage';
 import { NegativeResultPage } from '../page-objects/NegativeResultPage';
-
+import { TermsOfUsePage } from '../page-objects/TermsOfUsePage';
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
   findAddressPage: FindAddressPage;
@@ -23,6 +23,7 @@ export interface MyFixtures {
   enterMobileNumberPage: EnterMobileNumberPage;
   confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
   negativeResultPage: NegativeResultPage;
+  termsOfUsePage: TermsOfUsePage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -68,5 +69,9 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   negativeResultPage: async ({ page }, use) => {
     await use(new NegativeResultPage(page));
+  },
+
+  termsOfUsePage: async ({ page }, use) => {
+    await use(new TermsOfUsePage(page));
   },
 });
