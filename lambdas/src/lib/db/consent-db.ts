@@ -40,7 +40,7 @@ export class ConsentService {
 
   /**
    * Retrieve the consent record for the given order.
-   * The index on consent(order_uuid) ensures O(1) retrieval.
+   * The index on consent(order_uuid) enables efficient retrieval via indexed lookup.
    */
   async getConsentByOrderUid(orderUid: string): Promise<ConsentRow | null> {
     const query = `
