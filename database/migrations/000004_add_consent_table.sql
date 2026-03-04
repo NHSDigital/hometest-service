@@ -6,7 +6,7 @@ CREATE TABLE consent
   created_at timestamp with time zone NOT NULL DEFAULT current_timestamp
 );
 
-CREATE INDEX idx_consent_order_uid ON consent (order_uid);
+CREATE UNIQUE INDEX idx_consent_order_uid ON consent (order_uid);
 
 
 -- +goose Down
