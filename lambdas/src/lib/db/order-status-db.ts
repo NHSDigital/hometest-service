@@ -61,11 +61,7 @@ export class OrderStatusService {
     `;
 
     try {
-<<<<<<< HEAD
       const result = await this.dbClient.query<{ patient_uid: string }, [string]>(query, [orderId]);
-=======
-      const result = await this.dbClient.query<OrderRow, [string]>(query, [orderId]);
->>>>>>> origin/main
 
       return result.rowCount === 0 ? null : result.rows[0].patient_uid;
     } catch (error) {
@@ -103,13 +99,8 @@ export class OrderStatusService {
   /**
    * Add a new order status update to the database
    */
-<<<<<<< HEAD
   async addOrderStatusUpdate(params: OrderStatusUpdateParams): Promise<void> {
     const { orderId, statusCode, createdAt, correlationId } = params;
-=======
-  async updateOrderStatus(params: OrderStatusUpdateParams): Promise<OrderStatusRow> {
-    const { orderId, orderReference, statusCode, createdAt, correlationId } = params;
->>>>>>> origin/main
 
     const query = `
       INSERT INTO order_status (order_uid, status_code, created_at, correlation_id)

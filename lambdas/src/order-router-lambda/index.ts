@@ -149,7 +149,7 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
     // orders unless the supplier endpoint is idempotent for X-Correlation-ID.
     // Instead, we accept the status update failure and avoid duplicate supplier orders.
     try {
-      await orderStatusService.updateOrderStatus({
+      await orderStatusService.addOrderStatusUpdate({
         orderId: parsedBody.order_body.id!,
         statusCode: OrderStatusCodes.SUBMITTED,
         createdAt: new Date().toISOString(),
