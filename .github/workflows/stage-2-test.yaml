@@ -96,20 +96,20 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Full history is needed to improving relevancy of reporting
       - name: "Download UI coverage data"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ui-coverage-data
           path: ui/coverage/
 
       - name: "Download Lambda coverage data"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: lambdas-coverage-data
           path: lambdas/coverage/
