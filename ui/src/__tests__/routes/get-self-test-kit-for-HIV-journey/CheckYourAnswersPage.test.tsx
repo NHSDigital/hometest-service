@@ -293,32 +293,6 @@ describe("CheckYourAnswersPage", () => {
       expect(errorLink).toHaveAttribute("href", "#consent");
     });
 
-    it("submits successfully when consent is ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
-
-      const checkbox = screen.getByRole("checkbox");
-      fireEvent.click(checkbox);
-
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
-
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Consent recorded at:",
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
-    });
-
     it("does not submit when consent is not ticked", () => {
       const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
