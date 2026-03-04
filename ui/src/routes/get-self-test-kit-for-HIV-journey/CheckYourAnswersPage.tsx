@@ -6,8 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/s
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
-import {CreateOrderRequest} from "@/lib/models/order-request";
-import orderService from "@/lib/services/order-service";
+import orderService, {OrderServiceRequest} from "@/lib/services/order-service";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
@@ -100,7 +99,7 @@ export default function CheckYourAnswersPage() {
         ? formatAddress(orderAnswers.deliveryAddress)
         : [];
 
-      const orderRequest: CreateOrderRequest = {
+      const orderRequest: OrderServiceRequest = {
         testCode: orderAnswers.supplier?.[0]?.testCode || "",
         testDescription: "HIV antigen test",
         supplierId: orderAnswers.supplier?.[0]?.id || "",

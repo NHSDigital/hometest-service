@@ -30,8 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<AuthUser | null>(null);
 
   const setUser = useCallback((user: AuthUser | null) => {
-    //ALPHA - remove this log
-    console.log("[AuthProvider] Setting user:", user);
     setUserState(user);
   }, []);
 

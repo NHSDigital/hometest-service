@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
@@ -9,6 +9,7 @@ import {
   useCreateOrderContext,
 } from "@/state";
 import { useEffect } from "react";
+import orderService from "@/lib/services/order-service";
 
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
@@ -30,6 +31,15 @@ jest.mock("@/state", () => {
     }),
   };
 });
+
+jest.mock("@/lib/services/order-service", () => ({
+  __esModule: true,
+  default: {
+    submitOrder: jest.fn(),
+  },
+}));
+
+const mockSubmitOrder = orderService.submitOrder as jest.Mock;
 
 // Helper component to pre-populate order state
 function StateSeeder({
@@ -72,6 +82,14 @@ function AuthSeeder({
   }, []);
 
   return <>{children}</>;
+}
+
+function OrderReferenceObserver() {
+  const { orderAnswers } = useCreateOrderContext();
+
+  return (
+    <span data-testid="order-reference">{orderAnswers.orderReferenceNumber || ""}</span>
+  );
 }
 
 const defaultOrderData = {
@@ -358,6 +376,28 @@ describe("CheckYourAnswersPage", () => {
       );
 
       consoleSpy.mockRestore();
+    });
+
+    it("updates order reference number after successful submit", async () => {
+      mockSubmitOrder.mockResolvedValueOnce({ orderReference: "ORDER-123" });
+
+      render(
+        <>
+          <CheckYourAnswersPage />
+          <OrderReferenceObserver />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      fireEvent.click(screen.getByRole("checkbox"));
+      fireEvent.click(screen.getByRole("button", { name: /submit order/i }));
+
+      await waitFor(() => {
+        expect(mockSubmitOrder).toHaveBeenCalled();
+        expect(screen.getByTestId("order-reference")).toHaveTextContent(
+          "ORDER-123",
+        );
+      });
     });
   });
 

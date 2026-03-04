@@ -13,9 +13,6 @@ export class FindAddressPage extends BasePage {
   private postcode: string | null = null
   private addressline1: string | null = null
 
-  private postcode: string | null = null
-  private addressline1: string | null = null
-
   constructor(page: Page) {
     super(page);
     this.postCodeInput = page.locator("#postcode");
