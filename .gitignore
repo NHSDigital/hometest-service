@@ -18,6 +18,7 @@
 .env.local
 .env.*.local
 .env.*
+.env*
 
 # Local stuff
 db-data
@@ -36,9 +37,6 @@ dist
 cdk.out
 cdk.context.json
 
-# Session cache
-.session-cache/
-
 # MacOS
 .DS_Store
 
@@ -46,6 +44,9 @@ cdk.context.json
 *.pem
 private_key.pem
 public_key.pem
+
+# Secrets
+os-places-creds.json
 
 # https://github.com/github/gitignore/blob/main/Terraform.gitignore
 

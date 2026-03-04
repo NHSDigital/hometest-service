@@ -9,6 +9,9 @@ import PageLayout from "@/layouts/PageLayout";
 import {CreateOrderRequest} from "@/lib/models/order-request";
 import orderService from "@/lib/services/order-service";
 
+// TODO: update to dynamically render supplier based on API (probably stored in state)
+// TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
+
 function formatAddress(address: {
   addressLine1?: string;
   addressLine2?: string;

@@ -24,7 +24,7 @@ export interface OrderAnswers {
   // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
-  selectedAddressUPRN?: string;
+  selectedAddressId?: string;
 
   // Final delivery address
   deliveryAddress?: Address;

@@ -5,12 +5,14 @@ export class BaseDbClient {
   client: Client;
 
   constructor() {
+    const schema = process.env[EnvironmentVariables.DB_SCHEMA] ?? 'hometest';
     this.client = new Client({
       host:     process.env[EnvironmentVariables.DB_HOST]     ?? 'localhost',
       port:     parseInt(process.env[EnvironmentVariables.DB_PORT] ?? '5432', 10),
       database: process.env[EnvironmentVariables.DB_NAME]     ?? 'local_hometest_db',
       user:     process.env[EnvironmentVariables.DB_USER]     ?? 'admin',
       password: process.env[EnvironmentVariables.DB_PASSWORD] ?? 'admin',
+      options:  `-c search_path=${schema}`,
     });
   }
 

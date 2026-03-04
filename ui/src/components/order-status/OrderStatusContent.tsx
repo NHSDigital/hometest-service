@@ -1,6 +1,7 @@
 import {
   ConfirmedStatus,
   DispatchedStatus,
+  ProcessingStatus,
   ReadyStatus,
   ReceivedStatus,
 } from "./statuses";
@@ -13,12 +14,11 @@ interface OrderStatusContentProps {
 export function OrderStatusContent({ order }: OrderStatusContentProps) {
   const renderStatus = () => {
     switch (order.status) {
-      case OrderStatus.ORDER_RECEIVED:
+      case OrderStatus.PROCESSING:
+        return <ProcessingStatus />;
+      case OrderStatus.CONFIRMED:
         return (
-          <ConfirmedStatus
-            maxDeliveryDays={order.maxDeliveryDays}
-            supplier={order.supplier}
-          />
+          <ConfirmedStatus maxDeliveryDays={order.maxDeliveryDays} supplier={order.supplier} />
         );
       case OrderStatus.DISPATCHED:
         return (
