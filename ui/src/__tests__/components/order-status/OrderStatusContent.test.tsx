@@ -18,6 +18,18 @@ describe("OrderStatusContent", () => {
     maxDeliveryDays: 5,
   };
 
+  describe("Processing status", () => {
+    const processingOrder: OrderDetails = {
+      ...baseOrder,
+      status: OrderStatus.PROCESSING,
+    };
+
+    it("renders processing status", () => {
+      renderWithRouter(<OrderStatusContent order={processingOrder} />);
+      expect(screen.getByText("PROCESSING")).toBeInTheDocument();
+    });
+  });
+
   describe("Confirmed status", () => {
     it("renders confirmed status heading", () => {
       renderWithRouter(<OrderStatusContent order={baseOrder} />);

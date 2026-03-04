@@ -1,4 +1,10 @@
-import { ConfirmedStatus, DispatchedStatus, ReadyStatus, ReceivedStatus } from "./statuses";
+import {
+  ConfirmedStatus,
+  DispatchedStatus,
+  ProcessingStatus,
+  ReadyStatus,
+  ReceivedStatus,
+} from "./statuses";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 interface OrderStatusContentProps {
@@ -8,6 +14,8 @@ interface OrderStatusContentProps {
 export function OrderStatusContent({ order }: OrderStatusContentProps) {
   const renderStatus = () => {
     switch (order.status) {
+      case OrderStatus.PROCESSING:
+        return <ProcessingStatus />;
       case OrderStatus.CONFIRMED:
         return (
           <ConfirmedStatus maxDeliveryDays={order.maxDeliveryDays} supplier={order.supplier} />

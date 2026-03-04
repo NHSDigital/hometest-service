@@ -1,6 +1,13 @@
 import { type DBClient } from "./db-client";
 
-type OrderStatusCode = "CONFIRMED" | "DISPATCHED" | "RECEIVED" | "COMPLETE";
+type OrderStatusCode =
+  | "GENERATED"
+  | "QUEUED"
+  | "SUBMITTED"
+  | "CONFIRMED"
+  | "DISPATCHED"
+  | "RECEIVED"
+  | "COMPLETE";
 
 export interface Order {
   id: string;

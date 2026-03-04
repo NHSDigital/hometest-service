@@ -29,6 +29,20 @@ describe("OrderStatus", () => {
     expect(screen.getByText(/wait for your kit to be dispatched/i)).toBeInTheDocument();
   });
 
+  it("renders both header and content for processing status", () => {
+    const processingOrder: OrderDetails = {
+      ...mockOrder,
+      status: OrderStatusEnum.PROCESSING,
+    };
+    renderWithRouter(<OrderStatus order={processingOrder} />);
+
+    // Header content
+    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
+
+    // Status content
+    expect(screen.getByText(/PROCESSING/i)).toBeInTheDocument();
+  });
+
   it("renders both header and content for dispatched status", () => {
     const dispatchedOrder: OrderDetails = {
       ...mockOrder,
