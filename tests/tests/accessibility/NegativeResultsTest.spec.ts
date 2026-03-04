@@ -14,7 +14,6 @@ test.describe("Accessibility Testing @accessibility", () => {
   test.beforeAll(async ({ testedUser }) => {
     await dbClient.connect();
     await resultDbClient.connect();
-    console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
     const result = await dbClient.createOrderWithPatientAndStatus({
       nhs_number: testedUser.nhsNumber!,
