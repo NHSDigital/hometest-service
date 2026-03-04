@@ -26,7 +26,7 @@ describe("ConsentService", () => {
     it("should insert a consent record and return the row when consent is true", async () => {
       const mockConsent: ConsentRow = {
         consent_uid: "consent-1",
-        order_uuid: orderUid,
+        order_uid: orderUid,
         created_at: "2024-01-01T00:00:00Z",
       };
 
@@ -70,7 +70,7 @@ describe("ConsentService", () => {
     it("should return the consent row for a known order", async () => {
       const mockConsent: ConsentRow = {
         consent_uid: "consent-1",
-        order_uuid: orderUid,
+        order_uid: orderUid,
         created_at: "2024-01-01T00:00:00Z",
       };
 

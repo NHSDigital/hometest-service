@@ -46,7 +46,7 @@ describe("TransactionService", () => {
         })
         .mockResolvedValueOnce({
           rows: [
-            { consent_uid: "consent-1", order_uuid: "order-1", created_at: expect.any(String) },
+            { consent_uid: "consent-1", order_uid: "order-1", created_at: expect.any(String) },
           ],
           rowCount: 1,
         });
@@ -100,7 +100,7 @@ describe("TransactionService", () => {
         })
         .mockResolvedValueOnce({
           rows: [
-            { consent_uid: "consent-1", order_uuid: "order-1", created_at: expect.any(String) },
+            { consent_uid: "consent-1", order_uid: "order-1", created_at: expect.any(String) },
           ],
           rowCount: 1,
         });
