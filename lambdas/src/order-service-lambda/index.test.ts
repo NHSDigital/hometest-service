@@ -17,13 +17,11 @@ jest.mock("./init", () => ({
 
 jest.mock("../lib/utils", () => ({
   ...jest.requireActual("../lib/utils"),
-  getCorrelationIdFromEventHeaders: () =>
-    mockGetCorrelationIdFromEventHeaders(),
+  getCorrelationIdFromEventHeaders: () => mockGetCorrelationIdFromEventHeaders(),
 }));
 
 jest.mock("./fhir-mapper", () => ({
-  buildFhirServiceRequest: (...args: unknown[]) =>
-    mockBuildFhirServiceRequest(...args),
+  buildFhirServiceRequest: (...args: unknown[]) => mockBuildFhirServiceRequest(...args),
 }));
 
 const validSupplierId = "123e4567-e89b-12d3-a456-426614174000";
@@ -80,12 +78,10 @@ describe("order-service-lambda handler", () => {
     mockSendMessage.mockReset();
     mockGetCorrelationIdFromEventHeaders.mockReset();
     mockBuildFhirServiceRequest.mockReset();
-    mockGetCorrelationIdFromEventHeaders.mockReturnValue(
-      "123e4567-e89b-12d3-a456-426614174123",
-    );
+    mockGetCorrelationIdFromEventHeaders.mockReturnValue("123e4567-e89b-12d3-a456-426614174123");
     mockInit.mockReturnValue({
       transactionService: {
-        createPatientAndOrderAndStatus: mockCreatePatientAndOrder,
+        createPatientOrderAndConsent: mockCreatePatientAndOrder,
       },
       orderStatusService: {
         updateOrderStatus: mockUpdateOrderStatus,
@@ -113,15 +109,11 @@ describe("order-service-lambda handler", () => {
       const response = await handler(buildEvent(buildValidRequestBody()));
 
       expect(response.statusCode).toBe(400);
-      expect(JSON.parse(response.body).message).toBe(
-        "Correlation ID is missing or invalid",
-      );
+      expect(JSON.parse(response.body).message).toBe("Correlation ID is missing or invalid");
     });
 
     it("should continue processing when correlation ID is successfully retrieved", async () => {
-      mockGetCorrelationIdFromEventHeaders.mockReturnValue(
-        "valid-correlation-id",
-      );
+      mockGetCorrelationIdFromEventHeaders.mockReturnValue("valid-correlation-id");
       mockCreatePatientAndOrder.mockResolvedValue({
         orderUid: "order-123",
         orderReference: 456,
@@ -223,7 +215,7 @@ describe("order-service-lambda handler", () => {
       });
     });
 
-    it("should call createPatientAndOrderAndStatus with correct params", async () => {
+    it("should call createPatientOrderAndConsent with correct params", async () => {
       await handler(buildEvent(buildValidRequestBody()));
 
       expect(mockCreatePatientAndOrder).toHaveBeenCalledWith(
@@ -237,9 +229,7 @@ describe("order-service-lambda handler", () => {
 
     it("should call buildFhirServiceRequest with correct params", async () => {
       const requestBody = buildValidRequestBody();
-      const orderRequest = OrderServiceRequestSchema.safeParse(
-        JSON.parse(requestBody),
-      ).data;
+      const orderRequest = OrderServiceRequestSchema.safeParse(JSON.parse(requestBody)).data;
       await handler(buildEvent(requestBody));
 
       expect(mockBuildFhirServiceRequest).toHaveBeenCalledWith(
@@ -250,9 +240,7 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should send message to SQS with correct params", async () => {
-      mockGetCorrelationIdFromEventHeaders.mockReturnValue(
-        "valid-correlation-id",
-      );
+      mockGetCorrelationIdFromEventHeaders.mockReturnValue("valid-correlation-id");
       const parsedOrderBody = {
         supplier_code: validSupplierId,
         correlation_id: "valid-correlation-id",

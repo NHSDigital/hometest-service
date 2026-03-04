@@ -1,5 +1,6 @@
 import { DBClient } from "./db-client";
 import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
+import { ConsentService } from "./consent-db";
 
 export interface TransactionServiceProperties {
   dbClient: DBClient;
@@ -17,7 +18,7 @@ export class TransactionService {
     this.dbClient = dbClient;
   }
 
-  async createPatientAndOrderAndStatus(
+  async createPatientOrderAndConsent(
     nhsNumber: string,
     birthDate: string,
     supplierId: string,
@@ -36,10 +37,10 @@ export class TransactionService {
           RETURNING patient_uid;
         `;
 
-        const patientResult = await tx.query<
-          { patient_uid: string },
-          [string, string]
-        >(patientQuery, [nhsNumber, birthDate]);
+        const patientResult = await tx.query<{ patient_uid: string }, [string, string]>(
+          patientQuery,
+          [nhsNumber, birthDate],
+        );
 
         if (patientResult.rowCount === 0 || !patientResult.rows[0]) {
           throw new Error("Failed to create or retrieve patient record");
@@ -73,6 +74,9 @@ export class TransactionService {
           correlationId,
         });
 
+        const consentService = new ConsentService(tx);
+        await consentService.createConsent(order_uid);
+
         return {
           orderUid: order_uid,
           orderReference: order_reference,
@@ -80,7 +84,7 @@ export class TransactionService {
         };
       });
     } catch (error) {
-      throw new Error("Failed to create patient and order in database", {
+      throw new Error("Failed to create patient, order and consent in database", {
         cause: error,
       });
     }
