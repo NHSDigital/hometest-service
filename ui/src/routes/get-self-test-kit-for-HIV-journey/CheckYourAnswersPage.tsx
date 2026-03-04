@@ -1,12 +1,11 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
-import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 import { useContent } from "@/hooks";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 function formatAddress(address: {
