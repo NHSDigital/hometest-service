@@ -2,7 +2,7 @@ import { DBClient } from "./db-client";
 
 export interface ConsentRow {
   consent_uid: string;
-  order_uuid: string;
+  order_uid: string;
   created_at: string;
 }
 
@@ -27,9 +27,9 @@ export class ConsentService {
     }
 
     const query = `
-      INSERT INTO consent (order_uuid)
+      INSERT INTO consent (order_uid)
       VALUES ($1::uuid)
-      RETURNING consent_uid, order_uuid, created_at;
+      RETURNING consent_uid, order_uid, created_at;
     `;
 
     try {
@@ -49,13 +49,13 @@ export class ConsentService {
 
   /**
    * Retrieve the consent record for the given order.
-   * The index on consent(order_uuid) enables efficient retrieval via indexed lookup.
+   * The index on consent(order_uid) enables efficient retrieval via indexed lookup.
    */
   async getConsentByOrderUid(orderUid: string): Promise<ConsentRow | null> {
     const query = `
-      SELECT consent_uid, order_uuid, created_at
+      SELECT consent_uid, order_uid, created_at
       FROM consent
-      WHERE order_uuid = $1::uuid
+      WHERE order_uid = $1::uuid
       LIMIT 1;
     `;
 
