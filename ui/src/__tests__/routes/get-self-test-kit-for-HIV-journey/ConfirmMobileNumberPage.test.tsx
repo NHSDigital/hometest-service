@@ -5,20 +5,23 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ConfirmMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
 import {
+  AuthProvider,
   CreateOrderProvider,
   JourneyNavigationProvider,
-  useCreateOrderContext,
+  useAuth,
 } from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
   >
-    <JourneyNavigationProvider>
-      <CreateOrderProvider>
-        {children}
-      </CreateOrderProvider>
-    </JourneyNavigationProvider>
+    <AuthProvider>
+      <JourneyNavigationProvider>
+        <CreateOrderProvider>
+          {children}
+        </CreateOrderProvider>
+      </JourneyNavigationProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
@@ -442,22 +445,23 @@ describe("ConfirmMobileNumberPage", () => {
   });
 
   describe("NHS Login Phone Number Scenarios", () => {
-    it("should display NHS phone number when user has phoneNumber from NHS Login (AC1, AC2)", () => {
+    // Helper to create wrapper with specific user phone number
+    const createWrapperWithPhone = (phoneNumber: string) => {
       const WrapperWithPhone = ({ children }: { children: React.ReactNode }) => {
         const TestComponent = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
+          const { setUser } = useAuth();
 
           React.useEffect(() => {
-            updateOrderAnswers({
-              user: {
-                sub: "test-user-123",
-                nhsNumber: "1234567890",
-                birthdate: "1990-01-01",
-                identityProofingLevel: "P9",
-                phoneNumber: "07402123456",
-              },
+            setUser({
+              sub: "test-user-123",
+              nhsNumber: "1234567890",
+              birthdate: "1990-01-01",
+              identityProofingLevel: "P9",
+              phoneNumber,
+              givenName: "John",
+              familyName: "Smith",
             });
-          }, [updateOrderAnswers]);
+          }, [setUser]);
 
           return <>{children}</>;
         };
@@ -466,16 +470,22 @@ describe("ConfirmMobileNumberPage", () => {
           <MemoryRouter
             initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
           >
-            <JourneyNavigationProvider>
-              <CreateOrderProvider>
-                <TestComponent />
-              </CreateOrderProvider>
-            </JourneyNavigationProvider>
+            <AuthProvider>
+              <JourneyNavigationProvider>
+                <CreateOrderProvider>
+                  <TestComponent />
+                </CreateOrderProvider>
+              </JourneyNavigationProvider>
+            </AuthProvider>
           </MemoryRouter>
         );
       };
 
-      render(<ConfirmMobileNumberPage />, { wrapper: WrapperWithPhone });
+      return WrapperWithPhone;
+    };
+
+    it("should display NHS phone number when user has phoneNumber from NHS Login (AC1, AC2)", () => {
+      render(<ConfirmMobileNumberPage />, { wrapper: createWrapperWithPhone("07402123456") });
 
       const nhsPhone = screen.getByText("07402123456");
       expect(nhsPhone).toBeInTheDocument();
@@ -487,39 +497,7 @@ describe("ConfirmMobileNumberPage", () => {
     });
 
     it("should handle user without NHS Login phone number", () => {
-      const WrapperWithoutPhone = ({ children }: { children: React.ReactNode }) => {
-        const TestComponent = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
-
-          React.useEffect(() => {
-            updateOrderAnswers({
-              user: {
-                sub: "test-user-123",
-                nhsNumber: "1234567890",
-                birthdate: "1990-01-01",
-                identityProofingLevel: "P9",
-                phoneNumber: "",
-              },
-            });
-          }, [updateOrderAnswers]);
-
-          return <>{children}</>;
-        };
-
-        return (
-          <MemoryRouter
-            initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
-          >
-            <JourneyNavigationProvider>
-              <CreateOrderProvider>
-                <TestComponent />
-              </CreateOrderProvider>
-            </JourneyNavigationProvider>
-          </MemoryRouter>
-        );
-      };
-
-      render(<ConfirmMobileNumberPage />, { wrapper: WrapperWithoutPhone });
+      render(<ConfirmMobileNumberPage />, { wrapper: createWrapperWithPhone("") });
 
       expect(screen.getByRole("heading", {
         name: /what's your mobile phone number\?/i,
@@ -531,39 +509,7 @@ describe("ConfirmMobileNumberPage", () => {
     });
 
     it("should allow user with NHS Login phone to select alternative number", () => {
-      const WrapperWithPhone = ({ children }: { children: React.ReactNode }) => {
-        const TestComponent = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
-
-          React.useEffect(() => {
-            updateOrderAnswers({
-              user: {
-                sub: "test-user-123",
-                nhsNumber: "1234567890",
-                birthdate: "1990-01-01",
-                identityProofingLevel: "P9",
-                phoneNumber: "07402123456",
-              },
-            });
-          }, [updateOrderAnswers]);
-
-          return <>{children}</>;
-        };
-
-        return (
-          <MemoryRouter
-            initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
-          >
-            <JourneyNavigationProvider>
-              <CreateOrderProvider>
-                <TestComponent />
-              </CreateOrderProvider>
-            </JourneyNavigationProvider>
-          </MemoryRouter>
-        );
-      };
-
-      render(<ConfirmMobileNumberPage />, { wrapper: WrapperWithPhone });
+      render(<ConfirmMobileNumberPage />, { wrapper: createWrapperWithPhone("07402123456") });
 
       const alternativeRadio = screen.getByLabelText(/use another mobile phone number/i);
       fireEvent.click(alternativeRadio);

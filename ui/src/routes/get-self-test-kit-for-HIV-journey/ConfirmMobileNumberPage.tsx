@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, ErrorSummary, Radios, TextInput } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
@@ -11,9 +11,10 @@ import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema"
 export default function ConfirmMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { user } = useAuth();
   const { commonContent, "confirm-mobile-phone-number": content } = useContent();
 
-  const nhsPhone = orderAnswers.user?.phoneNumber;
+  const nhsPhone = user?.phoneNumber;
 
   // Pre-populate based on existing data
   const getInitialSelection = (): "nhs-mobile-number" | "other" | null => {

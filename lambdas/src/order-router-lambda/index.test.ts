@@ -7,12 +7,10 @@ import { HttpError } from "../lib/http/http-client";
 const mockHttpClientPostRaw = jest.fn();
 const mockSupplierAuthGetAccessToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
+const mockUpdateOrderStatus = jest.fn();
 
 const supplierOrderBody = JSON.parse(
-  readFileSync(
-    join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"),
-    "utf-8",
-  ),
+  readFileSync(join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"), "utf-8"),
 ) as Record<string, unknown>;
 
 jest.mock("./init", () => ({
@@ -24,6 +22,9 @@ jest.mock("./init", () => ({
       getSupplierConfigBySupplierId: mockGetSupplierConfigBySupplierId,
     },
     secretsClient: {},
+    orderStatusService: {
+      updateOrderStatus: mockUpdateOrderStatus,
+    },
   })),
 }));
 
@@ -68,8 +69,7 @@ describe("order-router-lambda", () => {
     mockContext = {
       functionName: "order-router",
       functionVersion: "1",
-      invokedFunctionArn:
-        "arn:aws:lambda:eu-west-2:123456789012:function:order-router",
+      invokedFunctionArn: "arn:aws:lambda:eu-west-2:123456789012:function:order-router",
       memoryLimitInMB: "128",
       awsRequestId: "test-request-id",
       logGroupName: "/aws/lambda/order-router",
@@ -84,6 +84,7 @@ describe("order-router-lambda", () => {
     mockHttpClientPostRaw.mockReset();
     mockSupplierAuthGetAccessToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
+    mockUpdateOrderStatus.mockReset();
 
     process.env.AWS_REGION = "eu-west-2";
   });
@@ -106,6 +107,7 @@ describe("order-router-lambda", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockUpdateOrderStatus.mockResolvedValue(undefined);
     });
 
     it("should process a single valid SQS message successfully", async () => {
@@ -121,9 +123,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -185,21 +185,67 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
       expect(result.batchItemFailures).toEqual([]);
     });
+
+    it("should update order status to SUBMITTED after successful order placement", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: supplierOrderBody,
+      });
+
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([]);
+      expect(mockUpdateOrderStatus).toHaveBeenCalledWith({
+        orderId: supplierOrderBody.id,
+        statusCode: "SUBMITTED",
+        createdAt: expect.any(String),
+        correlationId: validCorrelationId,
+      });
+    });
+
+    it("should succeed even if order status update fails (best-effort)", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      mockUpdateOrderStatus.mockRejectedValue(new Error("Database connection failed"));
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: supplierOrderBody,
+      });
+
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      // Should succeed to avoid retrying and potentially duplicating the supplier order
+      expect(result.batchItemFailures).toEqual([]);
+      expect(mockUpdateOrderStatus).toHaveBeenCalled();
+    });
   });
 
   describe("message validation errors", () => {
     it("should fail for invalid JSON in message body", async () => {
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: "{ invalid json }" },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: "{ invalid json }" }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -212,9 +258,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -228,9 +272,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -243,9 +285,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -259,9 +299,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -274,9 +312,7 @@ describe("order-router-lambda", () => {
         correlation_id: validCorrelationId,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -290,9 +326,7 @@ describe("order-router-lambda", () => {
         order_body: null,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -306,9 +340,28 @@ describe("order-router-lambda", () => {
         order_body: "not-an-object",
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
+
+      const result = await handler(sqsEvent, mockContext as Context);
+
+      expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
+    });
+
+    it("should fail for missing order_body.id", async () => {
+      mockDefaultSupplierConfig();
+      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockUpdateOrderStatus.mockResolvedValue(undefined);
+
+      const orderBodyWithoutId = { ...supplierOrderBody };
+      delete orderBodyWithoutId.id;
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: orderBodyWithoutId,
+      });
+
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -326,9 +379,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -337,9 +388,7 @@ describe("order-router-lambda", () => {
     });
 
     it("should fail when supplier config retrieval throws error", async () => {
-      mockGetSupplierConfigBySupplierId.mockRejectedValue(
-        new Error("Database connection failed"),
-      );
+      mockGetSupplierConfigBySupplierId.mockRejectedValue(new Error("Database connection failed"));
 
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
@@ -347,9 +396,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -366,11 +413,7 @@ describe("order-router-lambda", () => {
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
 
       mockSupplierAuthGetAccessToken.mockRejectedValue(
-        new HttpError(
-          "HTTP POST request failed with status: 401",
-          401,
-          mockErrorResponse,
-        ),
+        new HttpError("HTTP POST request failed with status: 401", 401, mockErrorResponse),
       );
 
       const messageBody = JSON.stringify({
@@ -379,9 +422,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -394,6 +435,7 @@ describe("order-router-lambda", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockUpdateOrderStatus.mockResolvedValue(undefined);
     });
 
     it("should fail when supplier returns 400 Bad Request", async () => {
@@ -403,11 +445,7 @@ describe("order-router-lambda", () => {
       });
 
       mockHttpClientPostRaw.mockRejectedValue(
-        new HttpError(
-          "HTTP POST request failed with status: 400",
-          400,
-          mockErrorResponse,
-        ),
+        new HttpError("HTTP POST request failed with status: 400", 400, mockErrorResponse),
       );
 
       const messageBody = JSON.stringify({
@@ -416,9 +454,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -448,9 +484,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -480,9 +514,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -500,9 +532,7 @@ describe("order-router-lambda", () => {
         order_body: supplierOrderBody,
       });
 
-      const sqsEvent = createSQSEvent([
-        { messageId: "msg-1", body: messageBody },
-      ]);
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
 
       const result = await handler(sqsEvent, mockContext as Context);
 
@@ -514,6 +544,7 @@ describe("order-router-lambda", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockUpdateOrderStatus.mockResolvedValue(undefined);
     });
 
     it("should process successful messages and fail only invalid ones", async () => {

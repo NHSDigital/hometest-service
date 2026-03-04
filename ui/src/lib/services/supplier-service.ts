@@ -8,7 +8,7 @@ const suppliersMetadata: Record<string, SupplierLinks> = {
     sexualHealth: "https://www.sh.uk/",
     contact: "https://www.sh.uk/contact-us",
   },
-  sh24: {
+  "sh:24": {
     sexualHealth: "https://sh24.org.uk/",
     contact: "https://freetesting.hiv/contact",
   },

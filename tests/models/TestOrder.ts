@@ -1,6 +1,10 @@
 export type UUID = string;
 
+<<<<<<< HEAD
 export type OrderStatusCode = "ORDER_RECEIVED" | "DISPATCHED" | "RECEIVED" | "COMPLETE";
+=======
+export type OrderStatusCode = "CONFIRMED" | "DISPATCHED" | "RECEIVED" | "COMPLETE";
+>>>>>>> origin/main
 export interface TestOrderModel {
   order_uid: string;
   order_reference: number;

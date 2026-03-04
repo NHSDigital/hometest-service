@@ -21,7 +21,6 @@ test.describe("GET Result API @api", () => {
     async ({ testedUser }) => {
       await dbClient.connect();
       await resultDbClient.connect();
-      console.log("Tested user:", JSON.stringify(testedUser, null, 2));
       // testedUser.nhsNumber and testedUser.dob are validated in the global fixture
 
       const result = await dbClient.createOrderWithPatientAndStatus({
@@ -63,7 +62,11 @@ test.describe("GET Result API @api", () => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
+<<<<<<< HEAD
       await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
+=======
+      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+>>>>>>> origin/main
       await dbClient.disconnect();
       await resultDbClient.disconnect();
     },

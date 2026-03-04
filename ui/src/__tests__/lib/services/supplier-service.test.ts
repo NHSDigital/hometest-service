@@ -12,7 +12,7 @@ describe("SupplierService", () => {
     },
     {
       testName: "returns links for SH24",
-      supplierName: "SH24",
+      supplierName: "SH:24",
       expected: {
         sexualHealth: "https://sh24.org.uk/",
         contact: "https://freetesting.hiv/contact",
