@@ -1,0 +1,61 @@
+export interface OSPlacesResponse {
+  header: {
+    uri: string;
+    query: string;
+    offset: number;
+    totalresults: number;
+    format: string;
+    dataset: string;
+    lr: string;
+    maxresults: number;
+    epoch: string;
+    output_srs: string;
+  };
+  results?: Array<{
+    DPA: {
+      UPRN: string;
+      UDPRN: string;
+      ADDRESS: string;
+      ORGANISATION_NAME?: string;
+      DEPARTMENT_NAME?: string;
+      SUB_BUILDING_NAME?: string;
+      BUILDING_NAME?: string;
+      BUILDING_NUMBER?: string;
+      DEPENDENT_THOROUGHFARE_NAME?: string;
+      THOROUGHFARE_NAME?: string;
+      DOUBLE_DEPENDENT_LOCALITY?: string;
+      DEPENDENT_LOCALITY?: string;
+      POST_TOWN: string;
+      POSTCODE: string;
+      RPC?: string;
+      X_COORDINATE?: number;
+      Y_COORDINATE?: number;
+      LNG?: number;
+      LAT?: number;
+      STATUS?: string;
+      LOGICAL_STATUS_CODE?: string;
+      CLASSIFICATION_CODE?: string;
+      CLASSIFICATION_CODE_DESCRIPTION?: string;
+      LOCAL_CUSTODIAN_CODE?: number;
+      LOCAL_CUSTODIAN_CODE_DESCRIPTION?: string;
+      COUNTRY_CODE?: string;
+      COUNTRY_CODE_DESCRIPTION?: string;
+      POSTAL_ADDRESS_CODE?: string;
+      POSTAL_ADDRESS_CODE_DESCRIPTION?: string;
+      BLPU_STATE_CODE?: number;
+      BLPU_STATE_CODE_DESCRIPTION?: string;
+      TOPOGRAPHY_LAYER_TOID?: string;
+      WARD_CODE?: string;
+      PARISH_CODE?: string;
+      PARENT_UPRN?: string;
+      LAST_UPDATE_DATE?: string;
+      ENTRY_DATE?: string;
+      LEGAL_NAME?: string;
+      BLPU_STATE_DATE?: string;
+      LANGUAGE?: string;
+      MATCH?: number;
+      MATCH_DESCRIPTION?: string;
+      DELIVERY_POINT_SUFFIX?: string;
+    };
+  }>;
+}
