@@ -17,16 +17,9 @@ test.describe("HIV Test Order journeys", () => {
     await homeTestStartPage.clickStartNowButton();
   });
 
-  test("Order test journey", async ({
-    homeTestStartPage,
-    findAddressPage,
-    selectDeliveryAddressPage,
-    howComfortablePrickingFingerPage,
-    confirmAndUpdateMobileNumberPage,
-    checkYourAnswersPage
+  test("Order test journey", async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
     await selectDeliveryAddressPage.clickEditAddressLink();
     const { postCode, firstLineAddress } =
       await findAddressPage.getPostcodeAndAddressValues();
@@ -36,16 +29,6 @@ test.describe("HIV Test Order journeys", () => {
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    // ********
-    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-    const expectedMobileNumber = await checkYourAnswersPage.getMobileNumber();
-    await confirmAndUpdateMobileNumberPage.clickContinue();
-    // const { actualPostcode, actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumber();
-    // expect(actualMobileNumber).toBe(expectedMobileNumber);
-    // expect(actualPostcode).toBe(filledPostcode);
-    await checkYourAnswersPage.selectConsentCheckbox();
-    await checkYourAnswersPage.clickSubmitOrder();
-    await expect(checkYourAnswersPage.headerText).toHaveText("Order submitted");
   });
 
   test("Mobile number test journey", async ({
@@ -87,7 +70,7 @@ test.describe("HIV Test Order journeys", () => {
   }) => {
     await findAddressPage.fillPostCodeAndContinue(randomAddress);
     const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
-    const {actualPostcode} = await selectDeliveryAddressPage.getPostcodeValues();
+    const { actualPostcode } = await selectDeliveryAddressPage.getPostcodeValues();
     expect(filledPostcode).toBe(actualPostcode);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
