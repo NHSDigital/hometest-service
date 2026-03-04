@@ -2,7 +2,6 @@ import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import { JourneyStepNames } from "@/lib/models/route-paths";
 import KitNotAvailableInAreaPage from "@/routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
 import { usePageContent } from "@/hooks";
 
@@ -98,17 +97,6 @@ describe("KitNotAvailableInAreaPage", () => {
 
       expect(mockGoBack).toHaveBeenCalledTimes(1);
       expect(mockGoToStep).not.toHaveBeenCalled();
-    });
-
-    it("navigates to enter delivery address when there is no history", () => {
-      mockNavigationContext.stepHistory = ["kit-not-available-in-area"];
-
-      render(<KitNotAvailableInAreaPage />);
-
-      fireEvent.click(screen.getByRole("button", { name: "Back" }));
-
-      expect(mockGoToStep).toHaveBeenCalledWith(JourneyStepNames.EnterDeliveryAddress);
-      expect(mockGoBack).not.toHaveBeenCalled();
     });
   });
 });

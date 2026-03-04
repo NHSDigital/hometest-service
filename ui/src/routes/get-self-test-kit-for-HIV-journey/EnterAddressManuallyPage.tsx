@@ -194,8 +194,10 @@ export default function EnterAddressManuallyPage() {
       postcodeValidation.valid
     ) {
       try {
-        const laResponse = await laLookupService.getByPostcode(postcodeValidation.value);
+        const postcode = postcodeValidation.value;
+        const laResponse = await laLookupService.getByPostcode(postcode);
         if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+          updateOrderAnswers({ postcodeSearch: postcode });
           goToStep(JourneyStepNames.KitNotAvailableInArea);
           return;
         }
@@ -206,7 +208,7 @@ export default function EnterAddressManuallyPage() {
             addressLine2: addressLine2.trim() || undefined,
             addressLine3: addressLine3.trim() || undefined,
             postTown: townOrCity.trim(),
-            postcode: postcodeValidation.value,
+            postcode: postcode,
           },
           addressEntryMethod: "manual" as const,
           localAuthority: {

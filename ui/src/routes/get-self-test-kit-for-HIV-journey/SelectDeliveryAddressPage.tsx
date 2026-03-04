@@ -41,8 +41,10 @@ export default function SelectDeliveryAddressPage() {
     if (!selected) return;
 
     try {
-      const laResponse = await laLookupService.getByPostcode(selected.postcode);
+      const postcode = selected.postcode;
+      const laResponse = await laLookupService.getByPostcode(postcode);
       if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+        updateOrderAnswers({ postcodeSearch: postcode });
         goToStep(JourneyStepNames.KitNotAvailableInArea);
         return;
       }
@@ -53,7 +55,7 @@ export default function SelectDeliveryAddressPage() {
           addressLine2: selected.line2,
           addressLine3: selected.line3,
           postTown: selected.town,
-          postcode: selected.postcode,
+          postcode: postcode,
         },
         addressEntryMethod: "postcode-search",
         selectedAddressId: selected.id,
