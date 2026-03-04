@@ -61,8 +61,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       testCode: orderRequest.testCode,
     });
 
-    // Create patient, order, status and consent record in a single transaction
-    // ALPHA: no real idempotency check, but repeated requests should throw because of unique constraint on order_status.order_uid, which is generated as a UUID in createPatientOrderAndConsent
+    // Create patient, order, status and consent record in a single transaction.
+    // NOTE: This endpoint is not explicitly idempotent. Repeated requests may result in multiple status records for the same order; callers must not rely on uniqueness of order_status.order_uid for idempotency.
     const orderResult = await transactionService.createPatientOrderAndConsent(
       orderRequest.patient.nhsNumber,
       orderRequest.patient.birthDate,
