@@ -76,11 +76,11 @@
                   "coding": [
                     {
                       "system": "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
-                      "code": "ORDER_RECEIVED",
+                      "code": "CONFIRMED",
                       "display": "Order confirmed"
                     }
                   ],
-                  "text": "ORDER_RECEIVED"
+                  "text": "CONFIRMED"
                 }
               }
             ]

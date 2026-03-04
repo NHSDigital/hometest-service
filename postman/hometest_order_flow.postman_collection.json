@@ -28,7 +28,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  },\n  \"consent\": true\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id_localstack}}\",\n  \"consent\": true,\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\",\n      \"use\": \"home\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -37,9 +37,7 @@
             },
             "url": {
               "raw": "{{order_service_endpoint_localstack}}",
-              "host": [
-                "{{order_service_endpoint_localstack}}"
-              ]
+              "host": ["{{order_service_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -71,9 +69,7 @@
             },
             "url": {
               "raw": "{{order_service_endpoint_localstack}}",
-              "host": [
-                "{{order_service_endpoint_localstack}}"
-              ]
+              "host": ["{{order_service_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -96,7 +92,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"supplierId\": \"{{supplier_id}}\"\n}",
+              "raw": "{\n    \"supplierId\": \"{{supplier_id_localstack}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -105,9 +101,7 @@
             },
             "url": {
               "raw": "{{order_service_endpoint_localstack}}",
-              "host": [
-                "{{order_service_endpoint_localstack}}"
-              ]
+              "host": ["{{order_service_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -125,7 +119,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id_localstack}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -134,15 +128,13 @@
             },
             "url": {
               "raw": "{{order_service_endpoint_localstack}}",
-              "host": [
-                "{{order_service_endpoint_localstack}}"
-              ]
+              "host": ["{{order_service_endpoint_localstack}}"]
             }
           },
           "response": []
         },
         {
-          "name": "400: supplier not found - db error",
+          "name": "400: missing consent",
           "request": {
             "method": "POST",
             "header": [
@@ -159,7 +151,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"a1a2b3c4-1234-4def-8abc-123456789abc\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id_localstack}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" },\n      { \"email\": \"alex.doe@example.com\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -168,9 +160,7 @@
             },
             "url": {
               "raw": "{{order_service_endpoint_localstack}}",
-              "host": [
-                "{{order_service_endpoint_localstack}}"
-              ]
+              "host": ["{{order_service_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -193,7 +183,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  }\n}",
+              "raw": "{\n  \"testCode\": \"31676001\",\n  \"testDescription\": \"HIV antigen test\",\n  \"supplierId\": \"{{supplier_id_localstack}}\",\n  \"patient\": {\n    \"family\": \"Doe\",\n    \"given\": [\"Alex\"],\n    \"text\": \"Alex Doe\",\n    \"telecom\": [\n      { \"phone\": \"+447700900000\" }\n    ],\n    \"address\": {\n      \"line\": [\"123 Main Street\", \"Flat 4B\"],\n      \"city\": \"London\",\n      \"postalCode\": \"SW1A 1AA\",\n      \"country\": \"United Kingdom\"\n    },\n    \"birthDate\": \"1990-01-01\",\n    \"nhsNumber\": \"1234567890\"\n  },\n  \"consent\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -202,9 +192,7 @@
             },
             "url": {
               "raw": "{{order_service_endpoint_localstack}}",
-              "host": [
-                "{{order_service_endpoint_localstack}}"
-              ]
+              "host": ["{{order_service_endpoint_localstack}}"]
             }
           },
           "response": []
@@ -219,9 +207,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     },
     {
@@ -230,9 +216,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     }
   ],
@@ -242,7 +226,23 @@
       "value": ""
     },
     {
-      "key": "supplier_id",
+      "key": "supplier_id_localstack",
+      "value": ""
+    },
+    {
+      "key": "order_service_endpoint_dev",
+      "value": ""
+    },
+    {
+      "key": "order_service_endpoint_uat",
+      "value": ""
+    },
+    {
+      "key": "supplier_id_preventx",
+      "value": ""
+    },
+    {
+      "key": "supplier_id_sh24",
       "value": ""
     }
   ]
