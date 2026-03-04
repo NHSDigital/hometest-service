@@ -1,10 +1,10 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
 import { useEffect, useRef, useState } from "react";
 
-import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
 import type { ValidationMessages } from "@/content/schema";
 import { useContent } from "@/hooks";
@@ -127,7 +127,7 @@ export default function EnterDeliveryAddressPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("get-self-test-kit-for-HIV");
+          goToStep(RoutePath.GetSelfTestKitPage);
         }
       }}
     >
