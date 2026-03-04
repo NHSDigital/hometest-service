@@ -64,7 +64,10 @@ test.describe("Accessibility Testing @accessibility", () => {
   test.afterAll(async ({ testedUser }) => {
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
+    await dbClient.deletePatientMapping(
+      testedUser.nhsNumber!,
+      testedUser.dob!
+    );
     await dbClient.disconnect();
   });
 });
