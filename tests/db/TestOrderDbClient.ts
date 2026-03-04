@@ -106,4 +106,15 @@ export class TestOrderDbClient extends BaseDbClient {
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
     await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }
+
+    async getLatestOrderStatusByOrderUid(orderUid: string): Promise< UUID > {
+    const rows = await this.query<TestOrderModel>(`
+      SELECT status_code
+      FROM hometest.order_status
+      WHERE order_uid = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [orderUid]);
+    return rows[0].status_code as UUID;
+  }
 }

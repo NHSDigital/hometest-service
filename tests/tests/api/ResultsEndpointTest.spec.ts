@@ -25,8 +25,8 @@ test.describe("GET Result API @api", () => {
       // testedUser.nhsNumber and testedUser.dob are validated in the global fixture
 
       const result = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: testedUser.nhsNumber,
-        birth_date: testedUser.dob,
+        nhs_number: testedUser.nhsNumber!,
+        birth_date: testedUser.dob!,
         supplier_name: "Preventx",
         test_code: "PCR",
         initial_status: "COMPLETE",
@@ -37,11 +37,7 @@ test.describe("GET Result API @api", () => {
       correlationId = randomUUID();
       console.log(`Created test order with ID: ${orderId}`);
 
-      await resultDbClient.insertStatusResult(
-        orderId,
-        "RESULT_AVAILABLE",
-        correlationId,
-      );
+      await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
     },
   );
 
@@ -49,19 +45,13 @@ test.describe("GET Result API @api", () => {
     hivResultsApi,
     testedUser,
   }) => {
-    const params = createGetResultParams(
-      testedUser.nhsNumber!,
-      testedUser.dob!,
-      orderId,
-    );
+    const params = createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId);
     const headers = createGetResultHeaders(correlationId);
     const response = await hivResultsApi.getResult(params, headers);
 
     hivResultsApi.validateStatus(response, 200);
     const responseBody = await response.json();
-    console.log(
-      "The response received: " + JSON.stringify(responseBody, null, 2),
-    );
+    console.log("The response received: " + JSON.stringify(responseBody, null, 2));
     const resultStatus = responseBody.interpretation[0].coding[0].display;
     expect(resultStatus).toBe("Normal");
     console.log("Confirmed status: Normal");
@@ -70,14 +60,10 @@ test.describe("GET Result API @api", () => {
   test.afterAll(
     "Delete result status,order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
-
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientByNHSandDOB(
-        testedUser.nhsNumber!,
-        testedUser.dob!,
-      );
+      await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.disconnect();
       await resultDbClient.disconnect();
     },
