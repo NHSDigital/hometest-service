@@ -96,13 +96,16 @@ export class TestOrderDbClient extends BaseDbClient {
     await this.query(`DELETE FROM test_order WHERE patient_uid = $1::uuid`, [patientUid]);
   }
 
-  async deletePatientByNHSandDOB(nhsNumber: string, birthDate: string): Promise<void> {
+  async deletePatientMapping(nhsNumber: string,
+    birthDate: string,
+  ): Promise<void> {
     await this.query(
       `DELETE FROM patient_mapping
        WHERE nhs_number = $1 AND birth_date = $2::date`,
       [nhsNumber, birthDate],
     );
   }
+
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
     await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }
@@ -116,5 +119,17 @@ export class TestOrderDbClient extends BaseDbClient {
       LIMIT 1
     `, [orderUid]);
     return rows[0].status_code as UUID;
+  }
+
+  async getOrderStatusesByOrderUid(orderUid: string): Promise<{ status_code: string }[] | undefined> {
+    const rows = await this.query<{ status_code: string }>(`
+      SELECT status_code
+      FROM hometest.order_status
+      WHERE order_uid = $1
+      ORDER BY created_at DESC
+      LIMIT 2
+    `, [orderUid]);
+
+    return rows;
   }
 }
