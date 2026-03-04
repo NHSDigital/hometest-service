@@ -4,7 +4,6 @@ import {
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
-import { FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";

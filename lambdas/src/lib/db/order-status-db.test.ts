@@ -28,11 +28,11 @@ describe("OrderStatusService", () => {
   describe("getPatientIdFromOrder", () => {
     it("should fetch order by UUID", async () => {
       const mockOrder: OrderRow = {
-        order_uid: "550e8400-e29b-41d4-a716-446655440000",
-        patient_uid: "patient-123",
+        order_uid: "some-mocked-order-id",
+        patient_uid: "some-mocked-patient-id",
         order_reference: 100001,
-        supplier_id: "supplier-123",
-        test_code: "TEST001",
+        supplier_id: "some-mocked-supplier-id",
+        test_code: "some-mocked-test-code",
         created_at: "2024-01-01T00:00:00Z",
       };
 
@@ -41,11 +41,11 @@ describe("OrderStatusService", () => {
         rowCount: 1,
       });
 
-      const result = await service.getPatientIdFromOrder("550e8400-e29b-41d4-a716-446655440000");
+      const result = await service.getPatientIdFromOrder("some-mocked-order-id");
 
       expect(result).toEqual(mockOrder.patient_uid);
       expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
-        "550e8400-e29b-41d4-a716-446655440000",
+        "some-mocked-order-id",
       ]);
     });
 
@@ -74,14 +74,14 @@ describe("OrderStatusService", () => {
       mockQuery.mockResolvedValue({ rows: [{ 1: 1 }], rowCount: 1 });
 
       const result = await service.checkIdempotency(
-        "550e8400-e29b-41d4-a716-446655440000",
-        "corr-123",
+        "some-mocked-order-id",
+        "some-mocked-correlation-id",
       );
 
       expect(result.isDuplicate).toBe(true);
       expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("correlation_id"), [
-        "550e8400-e29b-41d4-a716-446655440000",
-        "corr-123",
+        "some-mocked-order-id",
+        "some-mocked-correlation-id",
       ]);
     });
 
@@ -100,10 +100,10 @@ describe("OrderStatusService", () => {
   describe("addUpdateOrderStatus", () => {
     it("should insert new order status record", async () => {
       const mockParams: OrderStatusUpdateParams = {
-        orderId: "550e8400-e29b-41d4-a716-446655440000",
+        orderId: "some-mocked-order-id",
         statusCode: OrderStatusCodes.COMPLETE,
         createdAt: "2024-01-15T11:00:00Z",
-        correlationId: "corr-123",
+        correlationId: "some-mocked-correlation-id",
       };
 
       mockQuery.mockResolvedValue({
@@ -115,7 +115,12 @@ describe("OrderStatusService", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),
-        Object.values(mockParams),
+        Object.values([
+          mockParams.orderId,
+          mockParams.statusCode,
+          mockParams.createdAt,
+          mockParams.correlationId,
+        ]),
       );
     });
 
@@ -124,10 +129,10 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          orderId: "order-123",
+          orderId: "some-mocked-order-id",
           statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "corr-123",
+          correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
     });
@@ -140,10 +145,10 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          orderId: "order-123",
+          orderId: "some-mocked-order-id",
           statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "corr-123",
+          correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
     });

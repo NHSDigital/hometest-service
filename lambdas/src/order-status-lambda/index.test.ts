@@ -400,7 +400,7 @@ describe("Order Status Lambda Handler", () => {
       expect(body.for.reference).toBe(`Patient/${MOCK_PATIENT_UID}`);
     });
 
-    it("should call updateOrderStatus with correct parameters", async () => {
+    it("should call addOrderStatusUpdate with correct parameters", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
       await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
