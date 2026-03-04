@@ -22,12 +22,7 @@ test.describe("GET Result API @api", () => {
       await dbClient.connect();
       await resultDbClient.connect();
       console.log("Tested user:", JSON.stringify(testedUser, null, 2));
-
-      if (!testedUser.nhsNumber || !testedUser.dob) {
-        throw new Error(
-          `Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`,
-        );
-      }
+      // testedUser.nhsNumber and testedUser.dob are validated in the global fixture
 
       const result = await dbClient.createOrderWithPatientAndStatus({
         nhs_number: testedUser.nhsNumber,
@@ -54,13 +49,9 @@ test.describe("GET Result API @api", () => {
     hivResultsApi,
     testedUser,
   }) => {
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error("Test user must have nhsNumber and dob");
-    }
-
     const params = createGetResultParams(
-      testedUser.nhsNumber,
-      testedUser.dob,
+      testedUser.nhsNumber!,
+      testedUser.dob!,
       orderId,
     );
     const headers = createGetResultHeaders(correlationId);
@@ -79,17 +70,13 @@ test.describe("GET Result API @api", () => {
   test.afterAll(
     "Delete result status,order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
-      if (!testedUser.nhsNumber || !testedUser.dob) {
-        throw new Error(
-          `Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`,
-        );
-      }
+
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientByNHSandDOB(
-        testedUser.nhsNumber,
-        testedUser.dob,
+        testedUser.nhsNumber!,
+        testedUser.dob!,
       );
       await dbClient.disconnect();
       await resultDbClient.disconnect();

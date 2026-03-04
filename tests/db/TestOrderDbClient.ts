@@ -1,11 +1,12 @@
-import { BaseDbClient } from "./BaseDbClient";
 import {
   CreateOrderInput,
   OrderStatusCode,
-  UUID,
   Supplier,
   TestOrderModel,
+  UUID,
 } from "../models/TestOrder";
+
+import { BaseDbClient } from "./BaseDbClient";
 
 export class TestOrderDbClient extends BaseDbClient {
   async getOrderByUid(orderUid: UUID): Promise<TestOrderModel | undefined> {
@@ -117,5 +118,10 @@ export class TestOrderDbClient extends BaseDbClient {
        WHERE nhs_number = $1 AND birth_date = $2::date`,
       [nhsNumber, birthDate],
     );
+  }
+  async deleteOrderByUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [
+      orderUid,
+    ]);
   }
 }

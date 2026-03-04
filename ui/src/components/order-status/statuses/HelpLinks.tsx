@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+import supplierService from "@/lib/services/supplier-service";
 import { useCommonContent } from "@/hooks";
 
 interface HelpLinksProps {
@@ -9,6 +10,7 @@ interface HelpLinksProps {
 export function HelpLinks({ supplier }: HelpLinksProps) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.helpLinks;
+  const supplierLinks = supplierService.getLinksBySupplierName(supplier);
   const contactSupplierText = content.contactSupplier.replace(
     "{supplier}",
     supplier,
@@ -20,7 +22,10 @@ export function HelpLinks({ supplier }: HelpLinksProps) {
         {content.heading}
       </h2>
       <p className="nhsuk-body">
-        <OpensInNewTabLink linkHref="#" linkText={contactSupplierText} />
+        <OpensInNewTabLink
+          linkHref={supplierLinks.contact}
+          linkText={contactSupplierText}
+        />
       </p>
       <p className="nhsuk-body">
         <Link to="/blood-sample-guide" className="nhsuk-link">

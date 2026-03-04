@@ -1,0 +1,13 @@
+# Dependency directories
+node_modules/
+
+# Environment & runtime files
+.env
+.env.*
+
+# Git-related
+.git/
+
+# Ignore editor stuff
+.vscode/
+.idea/
