@@ -1,6 +1,6 @@
-import { BaseDbClient } from './BaseDbClient';
-import { UUID } from '../models/TestOrder';
-import { ResultStatus, TestResult } from '../models/TestResult';
+import { BaseDbClient } from "./BaseDbClient";
+import { UUID } from "../models/TestOrder";
+import { ResultStatus, TestResult } from "../models/TestResult";
 
 export class TestResultDbClient extends BaseDbClient {
   async insertStatusResult(
@@ -33,7 +33,7 @@ export class TestResultDbClient extends BaseDbClient {
     );
   }
 
-  async getLatestResultStatusByOrderUid(orderUid: UUID): Promise<UUID> {
+  async getLatestResultStatusByOrderUid(orderUid: UUID): Promise<ResultStatus> {
     const rows = await this.query<TestResult>(
       `
       SELECT status
@@ -44,9 +44,6 @@ export class TestResultDbClient extends BaseDbClient {
     `,
       [orderUid],
     );
-    `,
-      [orderUid],
-    );
-    return rows[0].status as UUID;
+    return rows[0].status as ResultStatus;
   }
 }
