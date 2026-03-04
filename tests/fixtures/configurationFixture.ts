@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { ConfigFactory, type ConfigInterface } from '../configuration/configuration';
+import { ConfigFactory, type ConfigInterface } from '../configuration/EnvironmentConfiguration';
 
 type ConfigurationFixtures = {
   config: ConfigInterface;

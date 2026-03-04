@@ -4,8 +4,11 @@ import {
   Coding,
   Extension,
   Identifier,
+  Observation,
   Resource,
 } from "fhir/r4";
+
+import { FhirConstants } from "./fhir-constants";
 
 export class FhirUtils {
   static findResource<T extends Resource>(
@@ -44,5 +47,19 @@ export class FhirUtils {
     system: string,
   ): Identifier | null {
     return resource.identifier?.find((id) => id.system === system) ?? null;
+  }
+
+  static isNormalObservationResult(observation: Observation): boolean {
+    if (!observation.interpretation) {
+      return false;
+    }
+
+    return observation.interpretation.some((interpretation) =>
+      interpretation.coding?.some(
+        (coding) =>
+          coding.system === FhirConstants.OBSERVATION_INTERPRETATION_SYSTEM &&
+          coding.code === FhirConstants.NORMAL_OBSERVATION_CODE,
+      ),
+    );
   }
 }

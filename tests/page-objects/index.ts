@@ -1,5 +1,3 @@
-import { PrivacyPolicyPage } from './PrivacyPolicyPage';
-
 export { BasePage } from './BasePage';
 export { HomeTestStartPage } from './HomeTestStartPage';
 export { FindAddressPage } from './FindAddressPage';

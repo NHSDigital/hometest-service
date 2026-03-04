@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, ClientConfig } from "pg";
 
 /**
  * A library-agnostic representation of a database result.
@@ -13,9 +13,7 @@ export interface DBClient {
     text: string,
     values?: I,
   ): Promise<DbResult<T>>;
-  withTransaction<T>(
-    fn: (client: DBClient) => Promise<T>,
-  ): Promise<T>;
+  withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T>;
   close(): Promise<void>;
 }
 
@@ -23,14 +21,18 @@ export interface DBClient {
  * Concrete implementation using pg.Pool
  */
 export class PostgresDbClient implements DBClient {
-  private pool: Pool;
+  private readonly pool: Pool;
 
-  constructor(connectionString: string) {
-    this.pool = new Pool({
-      connectionString: connectionString,
+  constructor(config: ClientConfig) {
+    this.pool = this.createPool(config);
+  }
+
+  private createPool(config: ClientConfig): Pool {
+    return new Pool({
+      ...config,
       max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      idleTimeoutMillis: 60000,
+      connectionTimeoutMillis: 60000,
     });
   }
 
@@ -45,9 +47,7 @@ export class PostgresDbClient implements DBClient {
     };
   }
 
-  async withTransaction<T>(
-    fn: (client: DBClient) => Promise<T>,
-  ): Promise<T> {
+  async withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
     const txClient: DBClient = {
       query: async <Q = any, I extends any[] = any[]>(

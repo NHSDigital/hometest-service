@@ -2,48 +2,51 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import { MemoryRouter } from "react-router-dom";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 
-jest.mock("@/mocks/addressLookupResponse.json", () => ({
-  header: {
-    totalresults: 3,
-  },
-  results: [
-    {
-      DPA: {
-        UPRN: "100091215278",
-        ADDRESS: "3 POST OFFICE COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY",
-        BUILDING_NAME: "3 POST OFFICE COTTAGE",
-        THOROUGHFARE_NAME: "HIGH STREET",
-        DEPENDENT_LOCALITY: "WETHERSFIELD",
-        POST_TOWN: "BRAINTREE",
-        POSTCODE: "CM7 4BY",
+const mockLookupPostcode = jest.fn();
+const mockLookupResultsStatus = 'idle';
+
+jest.mock('@/state', () => ({
+  ...jest.requireActual('@/state'),
+  usePostcodeLookup: () => ({
+    lookupPostcode: mockLookupPostcode,
+    lookupResultsStatus: mockLookupResultsStatus,
+    addresses: [
+      {
+        "id": "MOCK0000001",
+        "buildingNumber": "1",
+        "buildingName": "",
+        "subBuildingName": "",
+        "fullAddress": "1 TEST ROAD, CHECK TOWN, B99 95C",
+        "thoroughfare": "TEST ROAD",
+        "town": "CHECK TOWN",
+        "postcode": "B99 95C"
       },
-    },
-    {
-      DPA: {
-        UPRN: "100091215283",
-        ADDRESS: "BURLEIGH COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY",
-        BUILDING_NAME: "BURLEIGH COTTAGE",
-        THOROUGHFARE_NAME: "HIGH STREET",
-        DEPENDENT_LOCALITY: "WETHERSFIELD",
-        POST_TOWN: "BRAINTREE",
-        POSTCODE: "CM7 4BY",
+      {
+        "id": "MOCK0000002",
+        "buildingNumber": "2",
+        "buildingName": "",
+        "subBuildingName": "",
+        "fullAddress": "2 TEST ROAD, CHECK TOWN, B99 95C",
+        "thoroughfare": "TEST ROAD",
+        "town": "CHECK TOWN",
+        "postcode": "B99 95C"
       },
-    },
-    {
-      DPA: {
-        UPRN: "100091215306",
-        ADDRESS: "CHASE HOUSE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY",
-        BUILDING_NAME: "CHASE HOUSE",
-        THOROUGHFARE_NAME: "HIGH STREET",
-        DEPENDENT_LOCALITY: "WETHERSFIELD",
-        POST_TOWN: "BRAINTREE",
-        POSTCODE: "CM7 4BY",
+      {
+        "id": "MOCK0000003",
+        "buildingNumber": "3",
+        "buildingName": "TEST BUILDING",
+        "subBuildingName": "FLAT 1",
+        "fullAddress": "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
+        "thoroughfare": "TEST ROAD",
+        "town": "CHECK TOWN",
+        "postcode": "B99 95C"
       },
-    },
-  ],
+    ],
+  }),
 }));
 
 jest.mock('@/lib/services/la-lookup-service', () => ({
@@ -92,7 +95,9 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
   >
     <JourneyNavigationProvider>
-      <CreateOrderProvider>{children}</CreateOrderProvider>
+      <CreateOrderProvider>
+        <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
+      </CreateOrderProvider>
     </JourneyNavigationProvider>
   </MemoryRouter>
 );
@@ -131,9 +136,9 @@ describe("SelectDeliveryAddressPage", () => {
     it("renders all address options from mock data", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      expect(screen.getByText(/3 POST OFFICE COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i)).toBeInTheDocument();
-      expect(screen.getByText(/BURLEIGH COTTAGE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i)).toBeInTheDocument();
-      expect(screen.getByText(/CHASE HOUSE, HIGH STREET, WETHERSFIELD, BRAINTREE, CM7 4BY/i)).toBeInTheDocument();
+      expect(screen.getByText(/1 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
+      expect(screen.getByText(/2 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
+      expect(screen.getByText(/FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
     });
 
     it("renders correct number of radio buttons", () => {
@@ -219,7 +224,7 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      await screen.findByText(/3 POST OFFICE COTTAGE/i);
+      await screen.findByText(/1 TEST ROAD/i);
     });
   });
 
