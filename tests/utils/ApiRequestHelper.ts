@@ -1,25 +1,51 @@
+import { OrderStatusTaskPayload } from "../test-data/OrderStatusTypes";
+
 export interface ApiHeaders {
   [key: string]: string;
-  'Content-Type': string;
-  'X-Correlation-ID': string;
+  "Content-Type": string;
+  "X-Correlation-ID": string;
 }
 
-export function createHeaders(
-  contentType: string,
-  correlationId: string
-): ApiHeaders {
+export const businessStatusCases = [
+  { businessStatus: "dispatched", expectedStatusCode: "DISPATCHED" },
+  { businessStatus: "received-at-lab", expectedStatusCode: "RECEIVED" },
+] as const;
+
+export const buildTaskPayload = (
+  orderUid: string,
+  patientUid: string,
+  defaultStatus: string,
+  defaultIntent: string,
+  overrides: Partial<OrderStatusTaskPayload> = {},
+): OrderStatusTaskPayload => ({
+  resourceType: "Task",
+  status: defaultStatus,
+  intent: defaultIntent,
+  basedOn: [{ reference: `Order/${orderUid}` }],
+  for: { reference: `Patient/${patientUid}` },
+  businessStatus: { text: "dispatched" },
+  lastModified: new Date().toISOString(),
+  ...overrides,
+});
+
+export function createHeaders(contentType: string, correlationId: string): ApiHeaders {
   return {
-    'Content-Type': contentType,
-    'X-Correlation-ID': correlationId
+    "Content-Type": contentType,
+    "X-Correlation-ID": correlationId,
   };
 }
 
+export const buildHeaders = (correlationId: string): Record<string, string> => ({
+  "Content-Type": "application/json",
+  "X-Correlation-ID": correlationId,
+});
+
 export const headersOrder: ApiHeaders = createHeaders(
-  'application/json',
-  '123e4567-e89b-42d3-a456-426614174000'
+  "application/json",
+  "123e4567-e89b-42d3-a456-426614174000",
 );
 
 export const headersTestResults: ApiHeaders = createHeaders(
-  'application/fhir+json',
-  '123e4567-e89b-12d3-a456-426614174999'
+  "application/fhir+json",
+  "123e4567-e89b-12d3-a456-426614174999",
 );

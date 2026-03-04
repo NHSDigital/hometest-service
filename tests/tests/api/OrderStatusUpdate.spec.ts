@@ -1,23 +1,15 @@
 import { randomUUID } from "crypto";
 import { test, expect } from "../../fixtures/IntegrationFixture";
-import { OrderStatusTaskPayload } from "../../test-data/OrderStatusTypes";
+import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
+import { OrderTestData } from "../../test-data/OrderTestData";
+import { buildHeaders, buildTaskPayload } from "../../utils/ApiRequestHelper";
 import { faker } from "@faker-js/faker";
 
-const supplierId = "c1a2b3c4-1234-4def-8abc-123456789abc";
-const testCode = "31676001";
-const originator = "automation-test";
-const defaultStatus = "in-progress";
-const defaultIntent = "order";
-
-const businessStatusCases = [
-  { businessStatus: "dispatched", expectedStatusCode: "DISPATCHED" },
-  { businessStatus: "received-at-lab", expectedStatusCode: "RECEIVED" },
-] as const;
-
-const buildHeaders = (correlationId: string): Record<string, string> => ({
-  "Content-Type": "application/json",
-  "X-Correlation-ID": correlationId,
-});
+const supplierId = OrderTestData.PREVENTX_SUPPLIER_ID;
+const testCode = OrderTestData.defaultOrder.testCode;
+const originator = OrderStatusTestData.DEFAULT_ORIGINATOR;
+const defaultStatus = OrderStatusTestData.DEFAULT_STATUS;
+const defaultIntent = OrderStatusTestData.DEFAULT_INTENT;
 
 test.describe("Order Status Update API", () => {
   let orderUid: string;
@@ -25,25 +17,9 @@ test.describe("Order Status Update API", () => {
   let nhsNumber: string;
   let birthDate: string;
 
-  const buildTaskPayload = (
-    overrides: Partial<OrderStatusTaskPayload> = {},
-  ): OrderStatusTaskPayload => ({
-    resourceType: "Task",
-    status: defaultStatus,
-    intent: defaultIntent,
-    basedOn: [{ reference: `Order/${orderUid}` }],
-    for: { reference: `Patient/${patientUid}` },
-    businessStatus: { text: "dispatched" },
-    lastModified: new Date().toISOString(),
-    ...overrides,
-  });
-
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ testOrderDb }) => {
     nhsNumber = `99${faker.number.int({ min: 100000000, max: 999999999 })}`;
     birthDate = faker.date.birthdate({ min: 18, max: 65, mode: "age" }).toISOString().split("T")[0];
-  });
-
-  test.beforeEach(async ({ testOrderDb }) => {
     patientUid = await testOrderDb.upsertPatient(nhsNumber, birthDate);
     orderUid = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
   });
@@ -54,20 +30,29 @@ test.describe("Order Status Update API", () => {
     await testOrderDb.deletePatientByNHSandDOB(nhsNumber, birthDate);
   });
 
-  for (const { businessStatus, expectedStatusCode } of businessStatusCases) {
-    test(`success (201) persists ${businessStatus} status`, async ({
-      orderStatusApi,
-      testOrderDb,
-    }) => {
-      const response = await orderStatusApi.updateOrderStatus(
-        buildTaskPayload({ businessStatus: { text: businessStatus } }),
-        buildHeaders(randomUUID()),
-      );
+  test("success (201) persists order status updates", async ({ orderStatusApi, testOrderDb }) => {
+    const dispatchedResponse = await orderStatusApi.updateOrderStatus(
+      buildTaskPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
+        businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_DISPATCHED },
+      }),
+      buildHeaders(randomUUID()),
+    );
 
-      orderStatusApi.validateResponse(response, 201);
+    orderStatusApi.validateResponse(dispatchedResponse, 201);
 
-      const statusCode = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
-      expect(statusCode).toBe(expectedStatusCode);
-    });
-  }
+    const dispatchedStatusCode = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
+    expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
+
+    const receivedResponse = await orderStatusApi.updateOrderStatus(
+      buildTaskPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
+        businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB },
+      }),
+      buildHeaders(randomUUID()),
+    );
+
+    orderStatusApi.validateResponse(receivedResponse, 201);
+
+    const receivedStatusCode = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
+    expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
+  });
 });
