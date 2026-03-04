@@ -3,7 +3,7 @@ import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 
 const mockInit = jest.fn();
-const mockCreatePatientAndOrder = jest.fn();
+const mockCreatePatientOrderAndConsent = jest.fn();
 const mockUpdateOrderStatus = jest.fn();
 const mockSendMessage = jest.fn();
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
@@ -73,7 +73,7 @@ describe("order-service-lambda handler", () => {
   beforeEach(async () => {
     jest.resetModules();
     mockInit.mockReset();
-    mockCreatePatientAndOrder.mockReset();
+    mockCreatePatientOrderAndConsent.mockReset();
     mockUpdateOrderStatus.mockReset();
     mockSendMessage.mockReset();
     mockGetCorrelationIdFromEventHeaders.mockReset();
@@ -81,7 +81,7 @@ describe("order-service-lambda handler", () => {
     mockGetCorrelationIdFromEventHeaders.mockReturnValue("123e4567-e89b-12d3-a456-426614174123");
     mockInit.mockReturnValue({
       transactionService: {
-        createPatientOrderAndConsent: mockCreatePatientAndOrder,
+        createPatientOrderAndConsent: mockCreatePatientOrderAndConsent,
       },
       orderStatusService: {
         updateOrderStatus: mockUpdateOrderStatus,
@@ -114,7 +114,7 @@ describe("order-service-lambda handler", () => {
 
     it("should continue processing when correlation ID is successfully retrieved", async () => {
       mockGetCorrelationIdFromEventHeaders.mockReturnValue("valid-correlation-id");
-      mockCreatePatientAndOrder.mockResolvedValue({
+      mockCreatePatientOrderAndConsent.mockResolvedValue({
         orderUid: "order-123",
         orderReference: 456,
         patientUid: "patient-123",
@@ -194,7 +194,7 @@ describe("order-service-lambda handler", () => {
     };
 
     beforeEach(() => {
-      mockCreatePatientAndOrder.mockResolvedValue({
+      mockCreatePatientOrderAndConsent.mockResolvedValue({
         orderUid: "order-123",
         orderReference: 456,
         patientUid: "patient-123",
@@ -218,7 +218,7 @@ describe("order-service-lambda handler", () => {
     it("should call createPatientOrderAndConsent with correct params", async () => {
       await handler(buildEvent(buildValidRequestBody()));
 
-      expect(mockCreatePatientAndOrder).toHaveBeenCalledWith(
+      expect(mockCreatePatientOrderAndConsent).toHaveBeenCalledWith(
         "1234567890",
         "1990-01-01",
         validSupplierId,
@@ -270,8 +270,8 @@ describe("order-service-lambda handler", () => {
   });
 
   describe("Error handling", () => {
-    it("should return 400 when createPatientAndOrderAndStatus throws", async () => {
-      mockCreatePatientAndOrder.mockRejectedValue(new Error("DB down"));
+    it("should return 400 when createPatientOrderAndConsent throws", async () => {
+      mockCreatePatientOrderAndConsent.mockRejectedValue(new Error("DB down"));
 
       const response = await handler(buildEvent(buildValidRequestBody()));
 
@@ -280,7 +280,7 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should return 500 when sending to SQS fails", async () => {
-      mockCreatePatientAndOrder.mockResolvedValue({
+      mockCreatePatientOrderAndConsent.mockResolvedValue({
         orderUid: "order-123",
         orderReference: 456,
         patientUid: "patient-123",
@@ -300,7 +300,7 @@ describe("order-service-lambda handler", () => {
     });
 
     it("should return 500 when updating order status fails", async () => {
-      mockCreatePatientAndOrder.mockResolvedValue({
+      mockCreatePatientOrderAndConsent.mockResolvedValue({
         orderUid: "order-123",
         orderReference: 456,
         patientUid: "patient-123",
