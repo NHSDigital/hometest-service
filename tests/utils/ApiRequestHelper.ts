@@ -6,12 +6,7 @@ export interface ApiHeaders {
   "X-Correlation-ID": string;
 }
 
-export const businessStatusCases = [
-  { businessStatus: "dispatched", expectedStatusCode: "DISPATCHED" },
-  { businessStatus: "received-at-lab", expectedStatusCode: "RECEIVED" },
-] as const;
-
-export const buildTaskPayload = (
+export const orderStatusPayload = (
   orderUid: string,
   patientUid: string,
   defaultStatus: string,
