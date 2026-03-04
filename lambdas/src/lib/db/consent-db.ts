@@ -15,8 +15,17 @@ export class ConsentService {
 
   /**
    * Record consent for a given order. Each call inserts a new consent row.
+   * Validates that the consent value is true before recording.
+   *
+   * @param orderUid - The UUID of the order
+   * @param consentValue - The consent value from the request (must be true)
+   * @throws Error if consent is not true or if database operation fails
    */
-  async createConsent(orderUid: string): Promise<ConsentRow> {
+  async createConsent(orderUid: string, consentValue: boolean): Promise<ConsentRow> {
+    if (consentValue !== true) {
+      throw new Error(`Consent must be true to record consent for orderId ${orderUid}`);
+    }
+
     const query = `
       INSERT INTO consent (order_uuid)
       VALUES ($1::uuid)

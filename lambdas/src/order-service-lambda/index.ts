@@ -69,6 +69,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       orderRequest.supplierId,
       orderRequest.testCode,
       correlationId,
+      orderRequest.consent,
     );
 
     const orderBody = buildFhirServiceRequest(
