@@ -24,6 +24,7 @@ export class TransactionService {
     supplierId: string,
     testCode: string,
     correlationId: string,
+    consent: boolean,
     originator?: string,
   ): Promise<CreateOrderResult> {
     try {
@@ -75,7 +76,7 @@ export class TransactionService {
         });
 
         const consentService = new ConsentService(tx);
-        await consentService.createConsent(order_uid);
+        await consentService.createConsent(order_uid, consent);
 
         return {
           orderUid: order_uid,

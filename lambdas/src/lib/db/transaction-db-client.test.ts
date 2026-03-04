@@ -57,6 +57,7 @@ describe("TransactionService", () => {
         supplierId,
         testCode,
         correlationId,
+        true,
       );
 
       expect(result).toEqual({
@@ -110,6 +111,7 @@ describe("TransactionService", () => {
         supplierId,
         testCode,
         correlationId,
+        true,
         "originator-1",
       );
 
@@ -131,6 +133,7 @@ describe("TransactionService", () => {
           supplierId,
           testCode,
           correlationId,
+          true,
         ),
       ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
@@ -153,6 +156,7 @@ describe("TransactionService", () => {
           supplierId,
           testCode,
           correlationId,
+          true,
         ),
       ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
@@ -179,6 +183,7 @@ describe("TransactionService", () => {
           supplierId,
           testCode,
           correlationId,
+          true,
         ),
       ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
@@ -209,6 +214,7 @@ describe("TransactionService", () => {
           supplierId,
           testCode,
           correlationId,
+          true,
         ),
       ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
@@ -223,6 +229,34 @@ describe("TransactionService", () => {
           supplierId,
           testCode,
           correlationId,
+          true,
+        ),
+      ).rejects.toThrow(/Failed to create patient, order and consent in database/);
+    });
+
+    it("should throw error when consent is false", async () => {
+      mockQuery
+        .mockResolvedValueOnce({
+          rows: [{ patient_uid: "patient-1" }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ order_uid: "order-1", order_reference: 123 }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ status_id: "status-1" }],
+          rowCount: 1,
+        });
+
+      await expect(
+        service.createPatientOrderAndConsent(
+          nhsNumber,
+          birthDate,
+          supplierId,
+          testCode,
+          correlationId,
+          false,
         ),
       ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });

@@ -23,7 +23,7 @@ describe("ConsentService", () => {
   describe("createConsent", () => {
     const orderUid = "550e8400-e29b-41d4-a716-446655440000";
 
-    it("should insert a consent record and return the row", async () => {
+    it("should insert a consent record and return the row when consent is true", async () => {
       const mockConsent: ConsentRow = {
         consent_uid: "consent-1",
         order_uuid: orderUid,
@@ -32,7 +32,7 @@ describe("ConsentService", () => {
 
       mockQuery.mockResolvedValue({ rows: [mockConsent], rowCount: 1 });
 
-      const result = await service.createConsent(orderUid);
+      const result = await service.createConsent(orderUid, true);
 
       expect(result).toEqual(mockConsent);
       expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO consent"), [
@@ -40,10 +40,17 @@ describe("ConsentService", () => {
       ]);
     });
 
+    it("should throw when consent is false", async () => {
+      await expect(service.createConsent(orderUid, false)).rejects.toThrow(
+        `Consent must be true to record consent for orderId ${orderUid}`,
+      );
+      expect(mockQuery).not.toHaveBeenCalled();
+    });
+
     it("should throw when the insert returns no rows", async () => {
       mockQuery.mockResolvedValue({ rows: [], rowCount: 0 });
 
-      await expect(service.createConsent(orderUid)).rejects.toThrow(
+      await expect(service.createConsent(orderUid, true)).rejects.toThrow(
         `Failed to record consent for orderId ${orderUid}`,
       );
     });
@@ -51,7 +58,7 @@ describe("ConsentService", () => {
     it("should throw on database failure", async () => {
       mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
-      await expect(service.createConsent(orderUid)).rejects.toThrow(
+      await expect(service.createConsent(orderUid, true)).rejects.toThrow(
         `Failed to record consent for orderId ${orderUid}`,
       );
     });
