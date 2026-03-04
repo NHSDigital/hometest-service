@@ -37,7 +37,7 @@ export interface OrderServiceRequest {
 
 export interface OrderServiceResponse {
   orderUid: string;
-  orderReference: string;
+  orderReference: number;
   message: string;
 }
 
