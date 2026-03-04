@@ -4,18 +4,28 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import { FeedbackSection } from "@/components/FeedbackSection";
 import { FindAnotherSexualHealthClinicLink } from "@/components/FindAnotherSexualHealthClinicLink";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { NearestSexualHealthClinicSection } from "@/components/NearestSexualHealthClinicSection";
 import PageLayout from "@/layouts/PageLayout";
 import { usePageContent } from "@/hooks";
 
 export default function KitNotAvailableInAreaPage() {
-  const { goBack } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers } = useCreateOrderContext();
   const content = usePageContent("kit-not-available-in-area");
 
   return (
-    <PageLayout showBackButton onBackButtonClick={goBack}>
+    <PageLayout
+      showBackButton
+      onBackButtonClick={() => {
+        if (stepHistory.length > 1) {
+          goBack();
+        } else {
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
+        }
+      }}
+    >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
       <p className="nhsuk-body">{content.description}</p>
 

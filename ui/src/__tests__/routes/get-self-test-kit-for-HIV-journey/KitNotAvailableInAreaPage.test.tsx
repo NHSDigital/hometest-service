@@ -98,5 +98,16 @@ describe("KitNotAvailableInAreaPage", () => {
       expect(mockGoBack).toHaveBeenCalledTimes(1);
       expect(mockGoToStep).not.toHaveBeenCalled();
     });
+
+    it("navigates to enter delivery address when there is no history", () => {
+      mockNavigationContext.stepHistory = ["kit-not-available-in-area"];
+
+      render(<KitNotAvailableInAreaPage />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Back" }));
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
+      expect(mockGoBack).not.toHaveBeenCalled();
+    });
   });
 });

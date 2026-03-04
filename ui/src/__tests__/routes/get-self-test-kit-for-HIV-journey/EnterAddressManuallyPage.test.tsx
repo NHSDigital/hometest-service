@@ -1,11 +1,14 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { CreateOrderProvider } from "@/state/OrderContext";
 import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
+import laLookupService from "@/lib/services/la-lookup-service";
+import { useCreateOrderContext } from "@/state/OrderContext";
+import { useJourneyNavigationContext } from "@/state/NavigationContext";
 
 jest.mock("@/lib/services/la-lookup-service", () => ({
   __esModule: true,
@@ -29,6 +32,18 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("EnterAddressManuallyPage", () => {
+  const ContextObserver = () => {
+    const { orderAnswers } = useCreateOrderContext();
+    const { currentStep } = useJourneyNavigationContext();
+
+    return (
+      <>
+        <div data-testid="postcode-search">{orderAnswers.postcodeSearch ?? ""}</div>
+        <div data-testid="current-step">{currentStep}</div>
+      </>
+    );
+  };
+
   describe("Component Rendering", () => {
     it("renders the main heading", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
@@ -599,5 +614,64 @@ describe("EnterAddressManuallyPage", () => {
       expect(screen.queryByText("Enter a city or town")).not.toBeInTheDocument();
       expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
     });
+  });
+
+  describe("Eligibility Check", () => {
+    const mockedGetByPostcode = laLookupService.getByPostcode as jest.MockedFunction<
+      typeof laLookupService.getByPostcode
+    >;
+
+    const fillValidRequiredFields = () => {
+      fireEvent.change(screen.getByLabelText(/address line 1/i), {
+        target: { value: "123 Main Street" },
+      });
+      fireEvent.change(screen.getByLabelText(/town or city/i), {
+        target: { value: "London" },
+      });
+      fireEvent.change(screen.getByLabelText(/postcode/i), {
+        target: { value: "SW1A 1AA" },
+      });
+    };
+
+    beforeEach(() => {
+      mockedGetByPostcode.mockClear();
+    });
+
+    it.each([
+      ["LA lookup returns null", null],
+      [
+        "LA lookup returns empty suppliers list",
+        {
+          localAuthority: {
+            localAuthorityCode: "4230",
+            region: "Salford",
+          },
+          suppliers: [],
+        },
+      ],
+    ])(
+      "should navigate to KitNotAvailableInArea and save postcodeSearch when %s",
+      async (_caseName, laResponse) => {
+        mockedGetByPostcode.mockResolvedValueOnce(laResponse as never);
+
+        render(
+          <>
+            <EnterAddressManuallyPage />
+            <ContextObserver />
+          </>,
+          { wrapper: TestWrapper },
+        );
+
+        fillValidRequiredFields();
+        fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+        await waitFor(() => {
+          expect(screen.getByTestId("postcode-search")).toHaveTextContent("SW1A 1AA");
+          expect(screen.getByTestId("current-step")).toHaveTextContent("kit-not-available-in-area");
+        });
+
+        expect(mockedGetByPostcode).toHaveBeenCalledWith("SW1A 1AA");
+      },
+    );
   });
 });
