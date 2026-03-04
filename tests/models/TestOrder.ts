@@ -1,10 +1,6 @@
 export type UUID = string;
 
-export type OrderStatusCode =
-  | 'ORDER_RECEIVED'
-  | 'DISPATCHED'
-  | 'RECEIVED'
-  | 'COMPLETE';
+export type OrderStatusCode = "CONFIRMED" | "DISPATCHED" | "RECEIVED" | "COMPLETE";
 export interface TestOrderModel {
   order_uid: string;
   order_reference: number;
@@ -19,12 +15,12 @@ export interface TestOrderModel {
 }
 export interface Supplier {
   supplier_id: UUID;
-  supplier_name: 'Preventx' | 'SH:24';
+  supplier_name: "Preventx" | "SH:24";
 }
 export interface CreateOrderInput {
   nhs_number: string;
   birth_date: string;
-  supplier_name: Supplier['supplier_name'];
+  supplier_name: Supplier["supplier_name"];
   test_code: string;
   originator?: string;
   initial_status: OrderStatusCode;
