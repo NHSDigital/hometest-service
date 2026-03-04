@@ -30,6 +30,7 @@ test.describe('Backend API, order endpoint', () => {
       expect(order!.test_code).toBe(payload.testCode);
       expect(order!.nhs_number).toBe(payload.patient.nhsNumber);
       const statusRows = await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid);
+      expect(statusRows).toHaveLength(2)
       patientUid = await testOrderDb.getOrderByUid(createdOrderUid).then(order => order?.patient_uid);
       expect(statusRows?.[1].status_code).toBe('GENERATED');
       expect(statusRows?.[0].status_code).toBe('QUEUED');

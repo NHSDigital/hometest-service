@@ -25,8 +25,8 @@ test.describe("GET Result API @api", () => {
       // testedUser.nhsNumber and testedUser.dob are validated in the global fixture
 
       const result = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: testedUser.nhsNumber,
-        birth_date: testedUser.dob,
+        nhs_number: testedUser.nhsNumber!,
+        birth_date: testedUser.dob!,
         supplier_name: "Preventx",
         test_code: "PCR",
         initial_status: "COMPLETE",
