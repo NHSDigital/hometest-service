@@ -8,10 +8,7 @@ const MAX_DELIVERY_DAYS = 5;
 
 export class OrderDetailsMapper {
   static mapBundleToOrderDetails(bundle: Bundle): OrderDetails {
-    const serviceRequest = FhirUtils.findResource<ServiceRequest>(
-      bundle,
-      "ServiceRequest",
-    );
+    const serviceRequest = FhirUtils.findResource<ServiceRequest>(bundle, "ServiceRequest");
 
     if (!serviceRequest) {
       throw new Error("ServiceRequest not found in bundle");
@@ -32,6 +29,8 @@ export class OrderDetailsMapper {
     };
   }
 
+  private static readonly PROCESSING_STATUSES = new Set(["GENERATED", "QUEUED", "SUBMITTED"]);
+
   private static extractStatus(serviceRequest: ServiceRequest): OrderStatus {
     const businessStatusExtension = FhirUtils.findExtension(
       serviceRequest,
@@ -43,16 +42,22 @@ export class OrderDetailsMapper {
       FhirConstants.ORDER_BUSINESS_STATUS_SYSTEM,
     )?.code;
 
-    if (!statusCode || !(statusCode in OrderStatus)) {
-      throw new Error(`Invalid or missing status: ${statusCode}`);
+    if (!statusCode) {
+      throw new Error("Missing status");
+    }
+
+    if (this.PROCESSING_STATUSES.has(statusCode)) {
+      return OrderStatus.PROCESSING;
+    }
+
+    if (!(statusCode in OrderStatus)) {
+      throw new Error(`Invalid status: ${statusCode}`);
     }
 
     return statusCode as OrderStatus;
   }
 
-  private static extractDispatchedDate(
-    serviceRequest: ServiceRequest,
-  ): string | undefined {
+  private static extractDispatchedDate(serviceRequest: ServiceRequest): string | undefined {
     const businessStatusExtension = FhirUtils.findExtension(
       serviceRequest,
       FhirConstants.BUSINESS_STATUS_EXTENSION_URL,
@@ -66,9 +71,7 @@ export class OrderDetailsMapper {
     return dispatchedDateExtension?.valueDate;
   }
 
-  private static extractReferenceNumber(
-    serviceRequest: ServiceRequest,
-  ): string {
+  private static extractReferenceNumber(serviceRequest: ServiceRequest): string {
     const referenceNumberIdentifier = FhirUtils.findIdentifier(
       serviceRequest,
       FhirConstants.ORDER_ID_SYSTEM,

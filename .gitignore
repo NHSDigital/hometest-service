@@ -18,6 +18,7 @@
 .env.local
 .env.*.local
 .env.*
+.env*
 
 # Local stuff
 db-data
