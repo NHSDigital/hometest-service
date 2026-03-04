@@ -139,16 +139,6 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </MemoryRouter>
 );
 
-const TestWrapperWithoutSeed = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
-    <JourneyNavigationProvider>
-      <CreateOrderProvider>
-        <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
-      </CreateOrderProvider>
-    </JourneyNavigationProvider>
-  </MemoryRouter>
-);
-
 describe("SelectDeliveryAddressPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -309,27 +299,6 @@ describe("SelectDeliveryAddressPage", () => {
         expect(mockNavigationContext.setReturnToStep).toHaveBeenCalledWith(null);
         expect(mockGoToStep).toHaveBeenCalledWith("check-your-answers");
       });
-    });
-
-    it("does not navigate and logs an error when postcode is missing", async () => {
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapperWithoutSeed });
-
-      const radios = screen.getAllByRole("radio");
-      fireEvent.click(radios[0]);
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          "[SelectDeliveryAddressPage] Missing postcode in journey context.",
-        );
-      });
-      expect(mockGoToStep).not.toHaveBeenCalled();
-
-      consoleErrorSpy.mockRestore();
     });
 
     it("navigates to kit not available when lookup returns no suppliers", async () => {

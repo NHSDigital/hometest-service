@@ -49,9 +49,7 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
     lastStep: currentStep,
   }));
 
-  const [returnToStep, setReturnToStep] = useState<
-    JourneyStepNames | RoutePath.GetSelfTestKitPage | null
-  >(null);
+  const [returnToStep, setReturnToStep] = useState<Step | null>(null);
 
   let stepHistory = navigation.stepHistory;
   if (navigation.lastStep !== currentStep) {
@@ -75,7 +73,7 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
   }
 
   const goToStep = useCallback(
-    (step: JourneyStepNames | RoutePath.GetSelfTestKitPage) => {
+    (step: Step) => {
       console.log("[JourneyNavigationProvider] Going to step:", step);
 
       const targetPath =

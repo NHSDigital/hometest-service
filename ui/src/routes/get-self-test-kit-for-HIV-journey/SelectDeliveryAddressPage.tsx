@@ -41,22 +41,11 @@ export default function SelectDeliveryAddressPage() {
     if (!selected) return;
 
     try {
-      const postcode = orderAnswers.postcodeSearch;
-
-      if (!postcode) {
-        console.error("[SelectDeliveryAddressPage] Missing postcode in journey context.");
-
-        // ALPHA: ToDo error screen thrown here:
-        return null;
-      }
-
-      const laResponse = await laLookupService.getByPostcode(postcode);
-
+      const laResponse = await laLookupService.getByPostcode(selected.postcode);
       if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
         goToStep(JourneyStepNames.KitNotAvailableInArea);
         return;
       }
-      console.log("Eligibility lookup response:", laResponse);
 
       updateOrderAnswers({
         deliveryAddress: {

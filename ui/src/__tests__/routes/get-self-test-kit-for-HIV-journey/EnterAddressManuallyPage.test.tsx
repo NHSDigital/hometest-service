@@ -81,28 +81,38 @@ describe("EnterAddressManuallyPage", () => {
       expect(errorLink).toHaveAttribute("href", "#address-line-1");
     });
 
-    it("should link to town field in error summary", () => {
+    it("should link to town field in error summary and focus it when clicked", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
+      const townInput = screen.getByLabelText(/town or city/i);
       const errorLink = screen.getByRole("link", {
         name: "Enter a city or town",
       });
       expect(errorLink).toHaveAttribute("href", "#address-town");
+
+      fireEvent.click(errorLink);
+
+      expect(townInput).toHaveFocus();
     });
 
-    it("should link to postcode field in error summary", () => {
+    it("should link to postcode field in error summary and focus it when clicked", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
+      const postcodeInput = screen.getByLabelText(/postcode/i);
       const errorLink = screen.getByRole("link", {
         name: "Enter a full UK postcode",
       });
       expect(errorLink).toHaveAttribute("href", "#postcode");
+
+      fireEvent.click(errorLink);
+
+      expect(postcodeInput).toHaveFocus();
     });
 
     it("should link to address line 2 field in error summary when address line 2 is too long", () => {
@@ -119,6 +129,36 @@ describe("EnterAddressManuallyPage", () => {
         name: "Address line 2 must be 100 characters or less",
       });
       expect(errorLink).toHaveAttribute("href", "#address-line-2");
+    });
+
+    it("should focus address line 2 and 3 fields when their error summary links are clicked", () => {
+      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+
+      const addressLine2Input = screen.getByLabelText(/address line 2/i);
+      const addressLine3Input = screen.getByLabelText(/address line 3/i);
+
+      fireEvent.change(addressLine2Input, {
+        target: { value: "B".repeat(101) },
+      });
+      fireEvent.change(addressLine3Input, {
+        target: { value: "C".repeat(101) },
+      });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      const addressLine2ErrorLink = screen.getByRole("link", {
+        name: "Address line 2 must be 100 characters or less",
+      });
+      const addressLine3ErrorLink = screen.getByRole("link", {
+        name: "Address line 3 must be 100 characters or less",
+      });
+
+      fireEvent.click(addressLine2ErrorLink);
+      expect(addressLine2Input).toHaveFocus();
+
+      fireEvent.click(addressLine3ErrorLink);
+      expect(addressLine3Input).toHaveFocus();
     });
 
     it("should show multiple errors in error summary", () => {

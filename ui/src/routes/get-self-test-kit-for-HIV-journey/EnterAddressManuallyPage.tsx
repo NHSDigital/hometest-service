@@ -193,34 +193,46 @@ export default function EnterAddressManuallyPage() {
       !townOrCityValidationError &&
       postcodeValidation.valid
     ) {
-      const updatedData = {
-        deliveryAddress: {
-          addressLine1: addressLine1.trim(),
-          addressLine2: addressLine2.trim() || undefined,
-          addressLine3: addressLine3.trim() || undefined,
-          postTown: townOrCity.trim(),
-          postcode: postcodeValidation.value,
-        },
-        addressEntryMethod: "manual" as const,
-      };
-      console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
-      updateOrderAnswers(updatedData);
-
-      if (returnToStep) {
-        const step = returnToStep;
-        setReturnToStep(null);
-        goToStep(step);
-      } else {
-        const laResponse = await laLookupService.getByPostcode(
-          updatedData.deliveryAddress.postcode,
-        );
-
+      try {
+        const laResponse = await laLookupService.getByPostcode(postcodeValidation.value);
         if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
           goToStep(JourneyStepNames.KitNotAvailableInArea);
           return;
         }
 
-        goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+        const updatedData = {
+          deliveryAddress: {
+            addressLine1: addressLine1.trim(),
+            addressLine2: addressLine2.trim() || undefined,
+            addressLine3: addressLine3.trim() || undefined,
+            postTown: townOrCity.trim(),
+            postcode: postcodeValidation.value,
+          },
+          addressEntryMethod: "manual" as const,
+          localAuthority: {
+            code: laResponse.localAuthority.localAuthorityCode,
+            region: laResponse.localAuthority.region,
+          },
+          supplier: laResponse.suppliers.map((supplier) => ({
+            id: supplier.id,
+            name: supplier.name,
+            testCode: supplier.testCode,
+          })),
+        };
+
+        console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
+        updateOrderAnswers(updatedData);
+
+        if (returnToStep) {
+          const step = returnToStep;
+          setReturnToStep(null);
+          goToStep(step);
+        } else {
+          goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+        }
+      } catch (err) {
+        // ALPHA: Remove the console log and use proper logging pattern
+        console.error("Failed to lookup local authority:", err);
       }
     }
   };
