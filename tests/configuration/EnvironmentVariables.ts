@@ -13,6 +13,7 @@ export enum EnvironmentVariables {
   DB_NAME = 'DB_NAME',
   DB_USER = 'DB_USER',
   DB_PASSWORD = 'DB_PASSWORD',
+  DB_SCHEMA = 'DB_SCHEMA',
 }
 
 export const availableEnvironments = ['local', 'dev'] as const;
