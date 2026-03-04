@@ -1,4 +1,4 @@
-import { postgresConfig, postgresConfigFromEnv } from "./db-config";
+import { postgresConfig, postgresIamConfig, postgresConfigFromEnv } from "./db-config";
 import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
 
 describe("db-config", () => {
@@ -10,6 +10,8 @@ describe("db-config", () => {
   const ENV_DB_SCHEMA = "DB_SCHEMA";
   const ENV_DB_SECRET_NAME = "DB_SECRET_NAME";
   const ENV_DB_SSL = "DB_SSL";
+  const ENV_USE_IAM_AUTH = "USE_IAM_AUTH";
+  const ENV_DB_REGION = "DB_REGION";
 
   // Common test values
   const TEST_USERNAME = "test";
@@ -257,6 +259,177 @@ describe("db-config", () => {
         rejectUnauthorized: true,
         ca: EU_WEST_2_BUNDLE,
       });
+    });
+  });
+
+  describe("IAM authentication", () => {
+    const mockIamAuthClient = {
+      getAuthToken: jest.fn(),
+    };
+
+    it("should build config with IAM auth token as password", async () => {
+      const expectedToken = "iam-auth-token-abc123";
+      mockIamAuthClient.getAuthToken.mockResolvedValue(expectedToken);
+
+      const config = postgresIamConfig({
+        username: TEST_USERNAME,
+        address: TEST_ADDRESS,
+        port: TEST_PORT,
+        database: TEST_DATABASE,
+        schema: TEST_SCHEMA_PUBLIC,
+        region: "eu-west-2",
+        sslEnabled: true,
+        iamAuthClient: mockIamAuthClient,
+      });
+
+      expect(config.user).toEqual(TEST_USERNAME);
+      expect(config.host).toEqual(TEST_ADDRESS);
+      expect(config.port).toEqual(5432);
+      expect(config.database).toEqual(TEST_DATABASE);
+      expect(config.options).toEqual(`-c search_path=${TEST_SCHEMA_PUBLIC}`);
+
+      // IAM auth always enables SSL
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: true,
+        ca: EU_WEST_2_BUNDLE,
+      });
+
+      // Password should be an async function that returns the IAM token
+      expect(typeof config.password).toBe("function");
+      const resolvedPassword = await (config.password as () => Promise<string>)();
+      expect(resolvedPassword).toEqual(expectedToken);
+      expect(mockIamAuthClient.getAuthToken).toHaveBeenCalled();
+    });
+
+    it("should enforce SSL even when sslEnabled is false", () => {
+      mockIamAuthClient.getAuthToken.mockResolvedValue("token");
+
+      const config = postgresIamConfig({
+        username: TEST_USERNAME,
+        address: TEST_ADDRESS,
+        port: TEST_PORT,
+        database: TEST_DATABASE,
+        region: "eu-west-2",
+        sslEnabled: false,
+        iamAuthClient: mockIamAuthClient,
+      });
+
+      // SSL must always be enabled for IAM auth
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: true,
+        ca: EU_WEST_2_BUNDLE,
+      });
+    });
+
+    it("should set search_path when schema is provided", async () => {
+      mockIamAuthClient.getAuthToken.mockResolvedValue("token");
+
+      const config = postgresIamConfig({
+        username: TEST_USERNAME,
+        address: TEST_ADDRESS,
+        port: TEST_PORT,
+        database: TEST_DATABASE,
+        schema: "my_schema",
+        region: "eu-west-2",
+        sslEnabled: true,
+        iamAuthClient: mockIamAuthClient,
+      });
+
+      expect(config.options).toEqual("-c search_path=my_schema");
+    });
+
+    it("should not set search_path when schema is undefined", async () => {
+      mockIamAuthClient.getAuthToken.mockResolvedValue("token");
+
+      const config = postgresIamConfig({
+        username: TEST_USERNAME,
+        address: TEST_ADDRESS,
+        port: TEST_PORT,
+        database: TEST_DATABASE,
+        schema: undefined,
+        region: "eu-west-2",
+        sslEnabled: true,
+        iamAuthClient: mockIamAuthClient,
+      });
+
+      expect(config.options).toBeUndefined();
+    });
+  });
+
+  describe("postgresConfigFromEnv with IAM auth", () => {
+    let originalEnv: NodeJS.ProcessEnv;
+    beforeEach(() => {
+      originalEnv = { ...process.env };
+      Object.assign(process.env, {
+        ...mockEnvVariables,
+        [ENV_USE_IAM_AUTH]: "true",
+        [ENV_DB_REGION]: "eu-west-2",
+      });
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    it("should use IAM auth when USE_IAM_AUTH is true", () => {
+      // DB_SECRET_NAME should NOT be required when using IAM auth
+      delete process.env[ENV_DB_SECRET_NAME];
+
+      const config = postgresConfigFromEnv(secretsClient);
+
+      expect(config.user).toEqual("test-username");
+      expect(config.host).toEqual("test-address");
+      expect(config.port).toEqual(5432);
+      expect(config.database).toEqual("test-database");
+      expect(config.options).toEqual("-c search_path=test-schema");
+      // IAM auth always enforces SSL
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: true,
+        ca: EU_WEST_2_BUNDLE,
+      });
+      expect(typeof config.password).toBe("function");
+    });
+
+    it("should not require DB_SECRET_NAME when using IAM auth", () => {
+      delete process.env[ENV_DB_SECRET_NAME];
+
+      expect(() => postgresConfigFromEnv(secretsClient)).not.toThrow();
+    });
+
+    it("should use DB_REGION env var for the region", () => {
+      process.env[ENV_DB_REGION] = "us-east-1";
+
+      const config = postgresConfigFromEnv(secretsClient);
+
+      // Config should be created successfully with the specified region
+      expect(config.user).toEqual("test-username");
+    });
+
+    it("should fall back to AWS_REGION when DB_REGION is not set", () => {
+      delete process.env[ENV_DB_REGION];
+      process.env.AWS_REGION = "ap-southeast-1";
+
+      const config = postgresConfigFromEnv(secretsClient);
+
+      expect(config.user).toEqual("test-username");
+    });
+
+    it("should use Secrets Manager when USE_IAM_AUTH is false", () => {
+      process.env[ENV_USE_IAM_AUTH] = "false";
+
+      const config = postgresConfigFromEnv(secretsClient);
+
+      expect(config.user).toEqual("test-username");
+      expect(typeof config.password).toBe("function");
+    });
+
+    it("should use Secrets Manager when USE_IAM_AUTH is not set", () => {
+      delete process.env[ENV_USE_IAM_AUTH];
+
+      const config = postgresConfigFromEnv(secretsClient);
+
+      expect(config.user).toEqual("test-username");
+      expect(typeof config.password).toBe("function");
     });
   });
 });
