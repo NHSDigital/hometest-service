@@ -8,10 +8,7 @@ const MAX_DELIVERY_DAYS = 5;
 
 export class OrderDetailsMapper {
   static mapBundleToOrderDetails(bundle: Bundle): OrderDetails {
-    const serviceRequest = FhirUtils.findResource<ServiceRequest>(
-      bundle,
-      "ServiceRequest",
-    );
+    const serviceRequest = FhirUtils.findResource<ServiceRequest>(bundle, "ServiceRequest");
 
     if (!serviceRequest) {
       throw new Error("ServiceRequest not found in bundle");
@@ -46,7 +43,7 @@ export class OrderDetailsMapper {
     )?.code;
 
     if (!statusCode) {
-      throw new Error(`Invalid or missing status: ${statusCode}`);
+      throw new Error("Missing status");
     }
 
     if (this.PROCESSING_STATUSES.has(statusCode)) {
@@ -54,15 +51,13 @@ export class OrderDetailsMapper {
     }
 
     if (!(statusCode in OrderStatus)) {
-      throw new Error(`Invalid or missing status: ${statusCode}`);
+      throw new Error(`Invalid status: ${statusCode}`);
     }
 
     return statusCode as OrderStatus;
   }
 
-  private static extractDispatchedDate(
-    serviceRequest: ServiceRequest,
-  ): string | undefined {
+  private static extractDispatchedDate(serviceRequest: ServiceRequest): string | undefined {
     const businessStatusExtension = FhirUtils.findExtension(
       serviceRequest,
       FhirConstants.BUSINESS_STATUS_EXTENSION_URL,
@@ -76,9 +71,7 @@ export class OrderDetailsMapper {
     return dispatchedDateExtension?.valueDate;
   }
 
-  private static extractReferenceNumber(
-    serviceRequest: ServiceRequest,
-  ): string {
+  private static extractReferenceNumber(serviceRequest: ServiceRequest): string {
     const referenceNumberIdentifier = FhirUtils.findIdentifier(
       serviceRequest,
       FhirConstants.ORDER_ID_SYSTEM,

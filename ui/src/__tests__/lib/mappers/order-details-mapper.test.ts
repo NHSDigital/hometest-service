@@ -69,7 +69,7 @@ describe("OrderDetailsMapper", () => {
     it("should throw for an unknown status code", () => {
       const bundle = createBundle("UNKNOWN");
       expect(() => OrderDetailsMapper.mapBundleToOrderDetails(bundle)).toThrow(
-        "Invalid or missing status: UNKNOWN",
+        "Invalid status: UNKNOWN",
       );
     });
 
@@ -84,9 +84,7 @@ describe("OrderDetailsMapper", () => {
         ],
       });
 
-      expect(() => OrderDetailsMapper.mapBundleToOrderDetails(bundle)).toThrow(
-        "Invalid or missing status",
-      );
+      expect(() => OrderDetailsMapper.mapBundleToOrderDetails(bundle)).toThrow("Missing status");
     });
   });
 
