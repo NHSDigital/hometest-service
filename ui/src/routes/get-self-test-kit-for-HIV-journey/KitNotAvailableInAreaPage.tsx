@@ -31,7 +31,9 @@ export default function KitNotAvailableInAreaPage() {
 
       <NearestSexualHealthClinicSection />
       <hr className="nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5" />
-      <FindAnotherSexualHealthClinicLink postcodeSearch={orderAnswers.postcodeSearch} />
+      <FindAnotherSexualHealthClinicLink
+        postcodeSearch={orderAnswers.deliveryAddress?.postcode || orderAnswers.postcodeSearch}
+      />
       <h2>{content.moreOptionsHeading}</h2>
       <LearnMoreAboutHivAndAidsLink />
       <FeedbackSection />

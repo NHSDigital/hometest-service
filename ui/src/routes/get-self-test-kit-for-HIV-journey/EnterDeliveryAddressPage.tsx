@@ -201,7 +201,7 @@ export default function EnterDeliveryAddressPage() {
 
       <p className="nhsuk-body">
         <a
-          href="enter-address-manually"
+          href={JourneyStepNames.EnterAddressManually}
           onClick={(e) => {
             e.preventDefault();
             updateOrderAnswers({

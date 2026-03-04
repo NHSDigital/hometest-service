@@ -217,7 +217,7 @@ export default function EnterAddressManuallyPage() {
 
         if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
           goToStep(JourneyStepNames.KitNotAvailableInArea);
-          return null;
+          return;
         }
 
         goToStep(JourneyStepNames.HowComfortablePrickingFinger);

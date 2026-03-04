@@ -25,7 +25,7 @@ export default function SelectDeliveryAddressPage() {
   );
   const [addressError, setAddressError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
@@ -54,7 +54,7 @@ export default function SelectDeliveryAddressPage() {
 
       if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
         goToStep(JourneyStepNames.KitNotAvailableInArea);
-        return null;
+        return;
       }
       console.log("Eligibility lookup response:", laResponse);
 
@@ -84,7 +84,7 @@ export default function SelectDeliveryAddressPage() {
         setReturnToStep(null);
         goToStep(step);
       } else {
-        goToStep("how-comfortable-pricking-finger");
+        goToStep(JourneyStepNames.HowComfortablePrickingFinger);
       }
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
@@ -107,7 +107,7 @@ export default function SelectDeliveryAddressPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("enter-delivery-address");
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
         }
       }}
     >
@@ -177,10 +177,10 @@ export default function SelectDeliveryAddressPage() {
 
       <p className="nhsuk-body">
         <a
-          href="enter-address-manually"
+          href={JourneyStepNames.EnterAddressManually}
           onClick={(e) => {
             e.preventDefault();
-            goToStep(JourneyStepNames.EnterDeliveryAddress);
+            goToStep(JourneyStepNames.EnterAddressManually);
           }}
         >
           {commonContent.navigation.manualEntryLink}

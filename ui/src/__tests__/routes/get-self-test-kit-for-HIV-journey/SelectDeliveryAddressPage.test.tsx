@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
-import { JourneyStepNames } from "@/lib/models/route-paths";
 import { MemoryRouter } from "react-router-dom";
 import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
@@ -16,7 +15,16 @@ const mockLookupPostcode = jest.fn();
 const mockLookupResultsStatus = "idle";
 const mockGoToStep = jest.fn();
 
-const mockNavigationContext = {
+const mockNavigationContext: {
+  currentStep: string;
+  goToStep: jest.Mock;
+  goBack: jest.Mock;
+  canGoBack: jest.Mock;
+  clearHistory: jest.Mock;
+  stepHistory: string[];
+  returnToStep: string | null;
+  setReturnToStep: jest.Mock;
+} = {
   currentStep: "select-delivery-address",
   goToStep: mockGoToStep,
   goBack: jest.fn(),
@@ -131,9 +139,21 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </MemoryRouter>
 );
 
+const TestWrapperWithoutSeed = ({ children }: { children: React.ReactNode }) => (
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
+    <JourneyNavigationProvider>
+      <CreateOrderProvider>
+        <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
+      </CreateOrderProvider>
+    </JourneyNavigationProvider>
+  </MemoryRouter>
+);
+
 describe("SelectDeliveryAddressPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockNavigationContext.stepHistory = ["enter-delivery-address", "select-delivery-address"];
+    mockNavigationContext.returnToStep = null;
   });
 
   describe("Component Rendering", () => {
@@ -211,6 +231,19 @@ describe("SelectDeliveryAddressPage", () => {
       const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
       expect(errorLink).toHaveAttribute("href", "#collection-point");
     });
+
+    it("should focus first address radio when error summary link is clicked", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      const radios = screen.getAllByRole("radio");
+      const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
+      fireEvent.click(errorLink);
+
+      expect(radios[0]).toHaveFocus();
+    });
   });
 
   describe("Radio Selection Validation", () => {
@@ -262,6 +295,43 @@ describe("SelectDeliveryAddressPage", () => {
       await screen.findByText(/1 TEST ROAD/i);
     });
 
+    it("navigates to returnToStep and clears it when return step is set", async () => {
+      mockNavigationContext.returnToStep = "check-your-answers";
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockNavigationContext.setReturnToStep).toHaveBeenCalledWith(null);
+        expect(mockGoToStep).toHaveBeenCalledWith("check-your-answers");
+      });
+    });
+
+    it("does not navigate and logs an error when postcode is missing", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapperWithoutSeed });
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "[SelectDeliveryAddressPage] Missing postcode in journey context.",
+        );
+      });
+      expect(mockGoToStep).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
     it("navigates to kit not available when lookup returns no suppliers", async () => {
       (laLookupService.getByPostcode as jest.Mock).mockResolvedValueOnce({
         localAuthority: {
@@ -279,8 +349,9 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      await screen.findByText(/1 TEST ROAD/i);
-      expect(mockGoToStep).toHaveBeenCalledWith(JourneyStepNames.KitNotAvailableInArea);
+      await waitFor(() => {
+        expect(mockGoToStep).toHaveBeenCalledWith("kit-not-available-in-area");
+      });
     });
   });
 
@@ -291,6 +362,44 @@ describe("SelectDeliveryAddressPage", () => {
       const manualLink = screen.getByRole("link", { name: /enter address manually/i });
       expect(manualLink).toBeInTheDocument();
       expect(manualLink).toHaveAttribute("href", "enter-address-manually");
+    });
+
+    it("navigates to enter delivery address when edit postcode link is clicked", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const editLink = screen.getByRole("link", { name: /edit postcode/i });
+      fireEvent.click(editLink);
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
+    });
+
+    it("navigates to manual address entry when manual link is clicked", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const manualLink = screen.getByRole("link", { name: /enter address manually/i });
+      fireEvent.click(manualLink);
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-address-manually");
+    });
+
+    it("uses goBack when back link is clicked and history has previous steps", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const backLink = screen.getByText(/^back$/i);
+      fireEvent.click(backLink);
+
+      expect(mockNavigationContext.goBack).toHaveBeenCalled();
+    });
+
+    it("navigates to enter delivery address when back link is clicked with no history", () => {
+      mockNavigationContext.stepHistory = ["select-delivery-address"];
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const backLink = screen.getByText(/^back$/i);
+      fireEvent.click(backLink);
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
     });
   });
 
