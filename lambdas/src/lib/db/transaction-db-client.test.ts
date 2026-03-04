@@ -23,7 +23,7 @@ describe("TransactionService", () => {
     service = new TransactionService({ dbClient: mockDbClient as any });
   });
 
-  describe("createPatientAndOrderAndStatus", () => {
+  describe("createPatientOrderAndConsent", () => {
     const nhsNumber = "1234567890";
     const birthDate = "1990-01-01";
     const supplierId = "SUP001";
@@ -43,9 +43,15 @@ describe("TransactionService", () => {
         .mockResolvedValueOnce({
           rows: [{ status_id: "status-1" }],
           rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [
+            { consent_uid: "consent-1", order_uuid: "order-1", created_at: expect.any(String) },
+          ],
+          rowCount: 1,
         });
 
-      const result = await service.createPatientAndOrderAndStatus(
+      const result = await service.createPatientOrderAndConsent(
         nhsNumber,
         birthDate,
         supplierId,
@@ -59,11 +65,8 @@ describe("TransactionService", () => {
         patientUid: "patient-1",
       });
       expect(mockTransaction).toHaveBeenCalledTimes(1);
-      expect(mockQuery).toHaveBeenCalledTimes(3);
-      expect(mockQuery).toHaveBeenNthCalledWith(1, expect.any(String), [
-        nhsNumber,
-        birthDate,
-      ]);
+      expect(mockQuery).toHaveBeenCalledTimes(4);
+      expect(mockQuery).toHaveBeenNthCalledWith(1, expect.any(String), [nhsNumber, birthDate]);
       expect(mockQuery).toHaveBeenNthCalledWith(2, expect.any(String), [
         supplierId,
         "patient-1",
@@ -77,6 +80,7 @@ describe("TransactionService", () => {
         expect.any(String),
         correlationId,
       ]);
+      expect(mockQuery).toHaveBeenNthCalledWith(4, expect.any(String), ["order-1"]);
     });
 
     it("should pass originator when provided", async () => {
@@ -92,9 +96,15 @@ describe("TransactionService", () => {
         .mockResolvedValueOnce({
           rows: [{ status_id: "status-1" }],
           rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [
+            { consent_uid: "consent-1", order_uuid: "order-1", created_at: expect.any(String) },
+          ],
+          rowCount: 1,
         });
 
-      await service.createPatientAndOrderAndStatus(
+      await service.createPatientOrderAndConsent(
         nhsNumber,
         birthDate,
         supplierId,
@@ -115,14 +125,14 @@ describe("TransactionService", () => {
       mockQuery.mockResolvedValue({ rows: [], rowCount: 0 });
 
       await expect(
-        service.createPatientAndOrderAndStatus(
+        service.createPatientOrderAndConsent(
           nhsNumber,
           birthDate,
           supplierId,
           testCode,
           correlationId,
         ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
+      ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
 
     it("should throw error when order insert returns no rows", async () => {
@@ -137,14 +147,14 @@ describe("TransactionService", () => {
         });
 
       await expect(
-        service.createPatientAndOrderAndStatus(
+        service.createPatientOrderAndConsent(
           nhsNumber,
           birthDate,
           supplierId,
           testCode,
           correlationId,
         ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
+      ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
 
     it("should throw error when order status insert returns no rows", async () => {
@@ -163,28 +173,58 @@ describe("TransactionService", () => {
         });
 
       await expect(
-        service.createPatientAndOrderAndStatus(
+        service.createPatientOrderAndConsent(
           nhsNumber,
           birthDate,
           supplierId,
           testCode,
           correlationId,
         ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
+      ).rejects.toThrow(/Failed to create patient, order and consent in database/);
+    });
+
+    it("should throw error when consent insert returns no rows", async () => {
+      mockQuery
+        .mockResolvedValueOnce({
+          rows: [{ patient_uid: "patient-1" }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ order_uid: "order-1", order_reference: 123 }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [{ status_id: "status-1" }],
+          rowCount: 1,
+        })
+        .mockResolvedValueOnce({
+          rows: [],
+          rowCount: 0,
+        });
+
+      await expect(
+        service.createPatientOrderAndConsent(
+          nhsNumber,
+          birthDate,
+          supplierId,
+          testCode,
+          correlationId,
+        ),
+      ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
 
     it("should throw error when database query fails", async () => {
       mockQuery.mockRejectedValue(new Error("DB failure"));
 
       await expect(
-        service.createPatientAndOrderAndStatus(
+        service.createPatientOrderAndConsent(
           nhsNumber,
           birthDate,
           supplierId,
           testCode,
           correlationId,
         ),
-      ).rejects.toThrow(/Failed to create patient and order in database/);
+      ).rejects.toThrow(/Failed to create patient, order and consent in database/);
     });
   });
 });

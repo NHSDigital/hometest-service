@@ -1,0 +1,63 @@
+import { DBClient } from "./db-client";
+
+export interface ConsentRow {
+  consent_uid: string;
+  order_uuid: string;
+  created_at: string;
+}
+
+export class ConsentService {
+  private readonly dbClient: DBClient;
+
+  constructor(dbClient: DBClient) {
+    this.dbClient = dbClient;
+  }
+
+  /**
+   * Record consent for a given order. Each call inserts a new consent row.
+   */
+  async createConsent(orderUid: string): Promise<ConsentRow> {
+    const query = `
+      INSERT INTO consent (order_uuid)
+      VALUES ($1::uuid)
+      RETURNING consent_uid, order_uuid, created_at;
+    `;
+
+    try {
+      const result = await this.dbClient.query<ConsentRow, [string]>(query, [orderUid]);
+
+      if (result.rowCount === 0 || !result.rows[0]) {
+        throw new Error("Failed to insert consent record");
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Failed to record consent for orderId ${orderUid}`, {
+        cause: error,
+      });
+    }
+  }
+
+  /**
+   * Retrieve the consent record for the given order.
+   * The index on consent(order_uuid) ensures O(1) retrieval.
+   */
+  async getConsentByOrderUid(orderUid: string): Promise<ConsentRow | null> {
+    const query = `
+      SELECT consent_uid, order_uuid, created_at
+      FROM consent
+      WHERE order_uuid = $1::uuid
+      LIMIT 1;
+    `;
+
+    try {
+      const result = await this.dbClient.query<ConsentRow, [string]>(query, [orderUid]);
+
+      return result.rowCount === 0 ? null : result.rows[0];
+    } catch (error) {
+      throw new Error(`Failed to fetch consent for orderId ${orderUid}`, {
+        cause: error,
+      });
+    }
+  }
+}
