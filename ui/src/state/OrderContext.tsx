@@ -1,14 +1,14 @@
 "use client";
 
-// TODO: remove console.logs
-
 import {
   ReactNode,
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
+import { registerDebugState } from "@/lib/utils/debug";
 import { AuthUser } from "./AuthContext";
 
 // Address structure
@@ -70,13 +70,12 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
-    console.log("[CreateOrderProvider] Updating with:", updates);
-    setOrderAnswers((prev) => {
-      const newState = { ...prev, ...updates };
-      console.log("[CreateOrderProvider] New state:", newState);
-      return newState;
-    });
+    setOrderAnswers((prev) => ({ ...prev, ...updates }));
   }, []);
+
+  useEffect(() => {
+    registerDebugState('order', () => orderAnswers);
+  }, [orderAnswers]);
 
   const reset = useCallback(() => {
     setOrderAnswers({});

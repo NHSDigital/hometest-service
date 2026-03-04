@@ -34,7 +34,6 @@ export default function EnterMobileNumberPage() {
         mobileNumber: result.data,
         mobileNumberSource: 'manual' as const,
       };
-      console.log("[EnterMobileNumberPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
       if (returnToStep) {

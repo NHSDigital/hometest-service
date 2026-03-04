@@ -123,8 +123,6 @@ export default function EnterAddressManuallyPage() {
   const [townOrCityError, setTownOrCityError] = useState<string | null>(null);
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
-  console.log("[EnterAddressManuallyPage] Current order state:", orderAnswers);
-
   const handleAddressLine1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddressLine1(e.target.value);
   };
@@ -179,7 +177,6 @@ export default function EnterAddressManuallyPage() {
         },
         addressEntryMethod: 'manual' as const,
       };
-      console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
       if (returnToStep) {

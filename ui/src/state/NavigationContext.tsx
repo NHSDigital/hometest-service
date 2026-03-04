@@ -1,14 +1,14 @@
 "use client";
 
-// TODO: remove console.logs
-
 import {
   ReactNode,
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
+import { registerDebugState } from "@/lib/utils/debug";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { RoutePath } from "@/lib/models/route-paths";
@@ -75,19 +75,10 @@ export function JourneyNavigationProvider({
       stepHistory: newHistory,
       lastStep: currentStep,
     });
-
-    console.log(
-      "[JourneyNavigationProvider] Step changed to:",
-      currentStep,
-      "History:",
-      newHistory,
-    );
   }
 
   const goToStep = useCallback(
     (step: string) => {
-      console.log("[JourneyNavigationProvider] Going to step:", step);
-
       // Build journey-specific path
       const targetPath =
         step === "get-self-test-kit-for-HIV"
@@ -100,14 +91,9 @@ export function JourneyNavigationProvider({
   );
 
   const goBack = useCallback(() => {
-    console.log("[JourneyNavigationProvider] Going back from:", currentStep);
-    console.log("[JourneyNavigationProvider] Current history:", stepHistory);
-
     if (stepHistory.length > 1) {
       const newHistory = stepHistory.slice(0, -1);
       const previousStep = newHistory[newHistory.length - 1];
-
-      console.log("[JourneyNavigationProvider] Going back to:", previousStep);
 
       setNavigation({
         stepHistory: newHistory,
@@ -122,8 +108,11 @@ export function JourneyNavigationProvider({
     return stepHistory.length > 1;
   }, [stepHistory.length]);
 
+  useEffect(() => {
+    registerDebugState('navigation', () => ({ currentStep, stepHistory, returnToStep }));
+  }, [currentStep, stepHistory, returnToStep]);
+
   const clearHistory = useCallback(() => {
-    console.log("[JourneyNavigationProvider] Clearing history");
     setNavigation({
       stepHistory: [currentStep],
       lastStep: currentStep,

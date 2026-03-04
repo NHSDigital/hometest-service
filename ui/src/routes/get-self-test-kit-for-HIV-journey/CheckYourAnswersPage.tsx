@@ -82,9 +82,7 @@ export default function CheckYourAnswersPage() {
       consentTimestamp,
     });
 
-    console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
     // TODO: Submit order via API
-    console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
   };
 
   const addressLines = orderAnswers.deliveryAddress

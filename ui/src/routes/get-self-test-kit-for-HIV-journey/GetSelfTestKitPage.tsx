@@ -27,7 +27,6 @@ export default function GetSelfTestKitPage() {
     };
 
     updateOrderAnswers({ user: authData });
-    console.log("[GetSelfTestKitPage] Auth data set:", authData);
   }, [updateOrderAnswers]);
 
   return (
