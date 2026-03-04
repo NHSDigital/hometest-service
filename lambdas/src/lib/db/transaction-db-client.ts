@@ -18,6 +18,20 @@ export class TransactionService {
     this.dbClient = dbClient;
   }
 
+  /**
+   * Creates or updates a patient record, creates a test order, creates the GENERATED order status,
+   * and records consent for the order in a single database transaction.
+   *
+   * @param nhsNumber - The NHS number of the patient.
+   * @param birthDate - The birth date of the patient.
+   * @param supplierId - The supplier ID for the test order.
+   * @param testCode - The code for the test being ordered.
+   * @param correlationId - Correlation ID for tracking the transaction.
+   * @param consent - Indicates whether consent is given for the order.
+   * @param originator - Optional originator of the order.
+   * @returns An object containing orderUid, orderReference, and patientUid.
+   * @throws Error if any part of the transaction fails.
+   */
   async createPatientOrderAndConsent(
     nhsNumber: string,
     birthDate: string,
