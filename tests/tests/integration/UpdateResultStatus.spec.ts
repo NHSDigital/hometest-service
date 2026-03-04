@@ -23,15 +23,9 @@ test.describe("Results Flow - Update Order Results Logic", () => {
   test.beforeEach("Create a patient, order, initial order status", async ({ testedUser }) => {
     console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error(
-        `Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`,
-      );
-    }
-
     const result = await dbClient.createOrderWithPatientAndStatus({
-      nhs_number: testedUser.nhsNumber,
-      birth_date: testedUser.dob,
+      nhs_number: testedUser.nhsNumber!,
+      birth_date: testedUser.dob!,
       supplier_name: supplierName,
       test_code: "PCR",
       initial_status: "ORDER_RECEIVED",
@@ -46,13 +40,8 @@ test.describe("Results Flow - Update Order Results Logic", () => {
   });
 
   test("Update the order status and result status when test result is normal", async ({
-    testedUser,
     hivResultsApi,
   }) => {
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error("Test user must have nhsNumber and dob");
-    }
-
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
     const response = await hivResultsApi.submitTestResults(
       testData,
@@ -66,14 +55,7 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     );
   });
 
-  test("Update the result status when test result is abnormal", async ({
-    testedUser,
-    hivResultsApi,
-  }) => {
-    if (!testedUser.nhsNumber || !testedUser.dob) {
-      throw new Error("Test user must have nhsNumber and dob");
-    }
-
+  test("Update the result status when test result is abnormal", async ({ hivResultsApi }) => {
     const testData = ResultsObservationData.buildAbnormalObservation(
       orderId,
       patientId,
@@ -103,7 +85,7 @@ test.describe("Results Flow - Update Order Results Logic", () => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber, testedUser.dob);
+      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     },
   );
 

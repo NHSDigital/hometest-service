@@ -27,8 +27,6 @@ test.describe("GET Result API @api", () => {
       const result = await dbClient.createOrderWithPatientAndStatus({
         nhs_number: testedUser.nhsNumber!,
         birth_date: testedUser.dob!,
-        nhs_number: testedUser.nhsNumber!,
-        birth_date: testedUser.dob!,
         supplier_name: "Preventx",
         test_code: "PCR",
         initial_status: "COMPLETE",
@@ -65,7 +63,7 @@ test.describe("GET Result API @api", () => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
+      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.disconnect();
       await resultDbClient.disconnect();
     },
