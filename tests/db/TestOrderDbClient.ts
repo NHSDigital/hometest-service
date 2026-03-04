@@ -109,8 +109,7 @@ export class TestOrderDbClient extends BaseDbClient {
     ]);
   }
 
-  async deletePatientByNHSandDOB(
-    nhsNumber: string,
+  async deletePatientMapping(nhsNumber: string,
     birthDate: string,
   ): Promise<void> {
     await this.query(
@@ -119,9 +118,22 @@ export class TestOrderDbClient extends BaseDbClient {
       [nhsNumber, birthDate],
     );
   }
+
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
     await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [
       orderUid,
     ]);
+  }
+
+  async getOrderStatusesByOrderUid(orderUid: string): Promise<{ status_code: string }[] | undefined> {
+    const rows = await this.query<{ status_code: string }>(`
+      SELECT status_code
+      FROM hometest.order_status
+      WHERE order_uid = $1
+      ORDER BY created_at DESC
+      LIMIT 2
+    `, [orderUid]);
+
+    return rows;
   }
 }
