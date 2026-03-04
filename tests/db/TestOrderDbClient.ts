@@ -113,7 +113,7 @@ export class TestOrderDbClient extends BaseDbClient {
     await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }
 
-  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<UUID> {
+  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<OrderStatusCode> {
     const rows = await this.query<TestOrderModel>(
       `SELECT status_code
        FROM hometest.order_status
@@ -122,7 +122,7 @@ export class TestOrderDbClient extends BaseDbClient {
        LIMIT 1`,
       [orderUid],
     );
-    return rows[0].status_code as UUID;
+    return rows[0].status_code as OrderStatusCode;
   }
 }
 }
