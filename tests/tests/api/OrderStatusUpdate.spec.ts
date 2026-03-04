@@ -27,7 +27,7 @@ test.describe("Order Status Update API", () => {
   test.afterEach(async ({ testOrderDb }) => {
     await testOrderDb.deleteOrderStatusByUid(orderUid);
     await testOrderDb.deleteOrderByUid(orderUid);
-    await testOrderDb.deletePatientByNHSandDOB(nhsNumber, birthDate);
+    await testOrderDb.deletePatientMapping(nhsNumber, birthDate);
   });
 
   test("success (201) persists order status updates", async ({ orderStatusApi, testOrderDb }) => {
