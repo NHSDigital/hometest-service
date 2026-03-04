@@ -3,15 +3,14 @@ import { DBClient } from "./db-client";
 export const OrderStatusCodes = {
   GENERATED: "GENERATED",
   QUEUED: "QUEUED",
-  PLACED: "PLACED",
-  ORDER_RECEIVED: "ORDER_RECEIVED",
+  SUBMITTED: "SUBMITTED",
+  CONFIRMED: "CONFIRMED",
   DISPATCHED: "DISPATCHED",
   RECEIVED: "RECEIVED",
   COMPLETE: "COMPLETE",
 } as const;
 
-export type OrderStatusCode =
-  (typeof OrderStatusCodes)[keyof typeof OrderStatusCodes];
+export type OrderStatusCode = (typeof OrderStatusCodes)[keyof typeof OrderStatusCodes];
 
 export interface OrderStatusRow {
   status_id: string;
@@ -63,28 +62,20 @@ export class OrderStatusService {
     `;
 
     try {
-      const result = await this.dbClient.query<OrderRow, [string]>(query, [
-        orderId,
-      ]);
+      const result = await this.dbClient.query<OrderRow, [string]>(query, [orderId]);
 
       return result.rowCount === 0 ? null : result.rows[0];
     } catch (error) {
-      throw new Error(
-        `Failed to fetch order from database for orderId ${orderId}`,
-        {
-          cause: error,
-        },
-      );
+      throw new Error(`Failed to fetch order from database for orderId ${orderId}`, {
+        cause: error,
+      });
     }
   }
 
   /**
    * Check for idempotency - verify if an update with the same correlation ID was already processed
    */
-  async checkIdempotency(
-    orderId: string,
-    correlationId: string,
-  ): Promise<IdempotencyCheckResult> {
+  async checkIdempotency(orderId: string, correlationId: string): Promise<IdempotencyCheckResult> {
     const query = `
       SELECT 1
       FROM order_status
@@ -99,10 +90,9 @@ export class OrderStatusService {
         isDuplicate: (result.rowCount ?? 0) > 0,
       };
     } catch (error) {
-      throw new Error(
-        `Failed to check idempotency for correlationId ${correlationId}`,
-        { cause: error },
-      );
+      throw new Error(`Failed to check idempotency for correlationId ${correlationId}`, {
+        cause: error,
+      });
     }
   }
 
@@ -110,11 +100,8 @@ export class OrderStatusService {
   /**
    * Update order status in the database
    */
-  async updateOrderStatus(
-    params: OrderStatusUpdateParams,
-  ): Promise<OrderStatusRow> {
-    const { orderId, orderReference, statusCode, createdAt, correlationId } =
-      params;
+  async updateOrderStatus(params: OrderStatusUpdateParams): Promise<OrderStatusRow> {
+    const { orderId, orderReference, statusCode, createdAt, correlationId } = params;
 
     const query = `
       INSERT INTO order_status (order_uid, order_reference, status_code, created_at, correlation_id)
@@ -126,13 +113,7 @@ export class OrderStatusService {
       const result = await this.dbClient.query<
         OrderStatusRow,
         [string, number | null, string, string, string | null]
-      >(query, [
-        orderId,
-        orderReference ?? null,
-        statusCode,
-        createdAt,
-        correlationId,
-      ]);
+      >(query, [orderId, orderReference ?? null, statusCode, createdAt, correlationId]);
 
       if (result.rowCount === 0) {
         throw new Error("Failed to insert order status");
