@@ -6,6 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { useContent } from "@/hooks";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 function formatAddress(address: {
@@ -211,7 +212,11 @@ export default function CheckYourAnswersPage() {
             <Checkboxes.Box value="consent" checked={consentChecked} onChange={handleConsentChange}>
               {content.consent.label.replace("{supplier}", supplierName)}{" "}
               <a
-                href={`${RoutePath.SuppliersTermsConditions}?supplier=${encodeURIComponent(supplierName)}`}
+                href={JourneyStepNames.SuppliersTermsConditions}
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToStep(JourneyStepNames.SuppliersTermsConditions);
+                }}
               >
                 {content.consent.termsOfUseText}
               </a>{" "}

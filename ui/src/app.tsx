@@ -10,6 +10,7 @@ import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
+import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
@@ -135,6 +136,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.CheckYourAnswers,
             element: <CheckYourAnswersPage />,
+          },
+          {
+            path: JourneyStepNames.SuppliersTermsConditions,
+            element: <FormSuppliersTermsConditionsPage />,
           },
         ],
       },

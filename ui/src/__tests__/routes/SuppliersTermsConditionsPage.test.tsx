@@ -1,9 +1,45 @@
 import "@testing-library/jest-dom";
 
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import SuppliersTermsConditionsPage from "@/routes/SuppliersTermsConditionsPage";
+
+const mockNavigate = jest.fn();
+const mockSuppliersTermsConditionsContent = jest.fn(
+  ({ supplier }: { supplier?: string | null }) => (
+    <div data-testid="suppliers-terms-content">Supplier: {supplier ?? "missing"}</div>
+  ),
+);
+
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+jest.mock("@/layouts/PageLayout", () => ({
+  __esModule: true,
+  default: ({
+    children,
+    onBackButtonClick,
+  }: {
+    children: React.ReactNode;
+    onBackButtonClick: () => void;
+  }) => (
+    <div data-testid="page-layout">
+      <button onClick={onBackButtonClick}>Back</button>
+      {children}
+    </div>
+  ),
+}));
+
+jest.mock("@/components/SuppliersTermsConditionsContent", () => ({
+  SuppliersTermsConditionsContent: (props: { supplier?: string | null }) =>
+    mockSuppliersTermsConditionsContent(props),
+}));
 
 const renderAt = (url: string) => {
   return render(
@@ -16,27 +52,35 @@ const renderAt = (url: string) => {
 };
 
 describe("SuppliersTermsConditionsPage", () => {
-  it("renders Preventx content for preventx supplier", () => {
-    renderAt("/suppliers-terms-conditions?supplier=Preventx");
-
-    expect(screen.getByRole("heading", { name: "Preventx terms of use" })).toBeInTheDocument();
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it("renders SH24 content for sh24 supplier", () => {
+  it("passes supplier from query params to shared content component", () => {
     renderAt("/suppliers-terms-conditions?supplier=SH:24");
 
-    expect(screen.getByRole("heading", { name: "SH:24 terms of use" })).toBeInTheDocument();
+    expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: SH:24");
+    expect(mockSuppliersTermsConditionsContent).toHaveBeenCalledWith({ supplier: "SH:24" });
   });
 
-  it("throws error for unknown supplier", () => {
-    expect(() => {
-      renderAt("/suppliers-terms-conditions?supplier=unknown");
-    }).toThrow("Unknown supplier: unknown");
+  it("passes null supplier when query param is missing", () => {
+    renderAt("/suppliers-terms-conditions");
+
+    expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: missing");
+    expect(mockSuppliersTermsConditionsContent).toHaveBeenCalledWith({ supplier: null });
   });
 
-  it("throws error when supplier is missing", () => {
-    expect(() => {
-      renderAt("/suppliers-terms-conditions");
-    }).toThrow("Unknown supplier: missing supplier");
+  it("navigates back when back action is triggered", () => {
+    renderAt("/suppliers-terms-conditions?supplier=Preventx");
+
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it("renders inside PageLayout", () => {
+    renderAt("/suppliers-terms-conditions?supplier=Preventx");
+
+    expect(screen.getByTestId("page-layout")).toBeInTheDocument();
   });
 });
