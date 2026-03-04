@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
+
+// TODO: update to dynamically render supplier based on API (probably stored in state)
+// TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -23,14 +26,18 @@ function formatAddress(address: {
   ].filter((line): line is string => Boolean(line));
 }
 
-function formatUserName(user?: { givenName: string; familyName: string }): string {
+function formatUserName(user?: { givenName: string; familyName: string } | null): string {
   if (!user) return "";
-  return `${user.givenName} ${user.familyName}`;
+  if (user.givenName && user.familyName) {
+    return `${user.givenName} ${user.familyName}`;
+  }
+  return user.familyName || "";
 }
 
 export default function CheckYourAnswersPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
 
   const [consentChecked, setConsentChecked] = useState(false);
@@ -83,6 +90,7 @@ export default function CheckYourAnswersPage() {
     });
 
     // TODO: Submit order via API
+    goToStep(JourneyStepNames.OrderSubmitted);
   };
 
   const addressLines = orderAnswers.deliveryAddress
@@ -130,7 +138,7 @@ export default function CheckYourAnswersPage() {
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
           <SummaryList.Value>
-            {formatUserName(orderAnswers.user)}
+            {formatUserName(user)}
           </SummaryList.Value>
         </SummaryList.Row>
 

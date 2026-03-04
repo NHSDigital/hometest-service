@@ -6,28 +6,11 @@ import { useContent } from "@/hooks";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { Link } from "react-router-dom";
 import PageLayout from "@/layouts/PageLayout";
-import { useEffect } from "react";
 
 export default function GetSelfTestKitPage() {
-  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { updateOrderAnswers } = useCreateOrderContext();
   const { goToStep } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
-
-  useEffect(() => {
-    // TODO: Replace with actual auth data from NHS Login redirect
-    // This mock data simulates what will come from the auth response
-    const authData = {
-      sub: "49f470a1-cc52-49b7-beba-0f9cec937c46",
-      nhsNumber: "9686368973",
-      birthdate: "1968-02-12",
-      identityProofingLevel: "P9",
-      phoneNumber: "+447887510886",
-      givenName: "John",
-      familyName: "Smith",
-    };
-
-    updateOrderAnswers({ user: authData });
-  }, [updateOrderAnswers]);
 
   return (
     <PageLayout>

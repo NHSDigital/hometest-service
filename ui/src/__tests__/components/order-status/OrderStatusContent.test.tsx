@@ -13,17 +13,27 @@ describe("OrderStatusContent", () => {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: OrderStatus.ORDER_RECEIVED,
+    status: OrderStatus.CONFIRMED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
 
+  describe("Processing status", () => {
+    const processingOrder: OrderDetails = {
+      ...baseOrder,
+      status: OrderStatus.PROCESSING,
+    };
+
+    it("renders processing status", () => {
+      renderWithRouter(<OrderStatusContent order={processingOrder} />);
+      expect(screen.getByText("PROCESSING")).toBeInTheDocument();
+    });
+  });
+
   describe("Confirmed status", () => {
     it("renders confirmed status heading", () => {
       renderWithRouter(<OrderStatusContent order={baseOrder} />);
-      expect(
-        screen.getByText(/wait for your kit to be dispatched/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/wait for your kit to be dispatched/i)).toBeInTheDocument();
     });
 
     it("displays expected delivery timeframe", () => {
@@ -33,30 +43,22 @@ describe("OrderStatusContent", () => {
 
     it('displays "Still need help?" section', () => {
       renderWithRouter(<OrderStatusContent order={baseOrder} />);
-      expect(
-        screen.getByRole("heading", { name: /still need help/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /still need help/i })).toBeInTheDocument();
     });
 
     it("displays supplier contact link", () => {
       renderWithRouter(<OrderStatusContent order={baseOrder} />);
-      expect(
-        screen.getByText(/contact preventx, the kit supplier/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/contact preventx, the kit supplier/i)).toBeInTheDocument();
     });
 
     it("displays all help links with correct URLs", () => {
       renderWithRouter(<OrderStatusContent order={baseOrder} />);
 
-      const bloodSampleLink = screen.getByText(
-        /blood sample step-by-step guide/i,
-      );
+      const bloodSampleLink = screen.getByText(/blood sample step-by-step guide/i);
       expect(bloodSampleLink).toBeInTheDocument();
       expect(bloodSampleLink).toHaveAttribute("href", "/blood-sample-guide");
 
-      const sexualHealthLink = screen.getByText(
-        /contact my nearest sexual health clinic/i,
-      );
+      const sexualHealthLink = screen.getByText(/contact my nearest sexual health clinic/i);
       expect(sexualHealthLink).toBeInTheDocument();
       expect(sexualHealthLink).toHaveAttribute(
         "href",
@@ -65,10 +67,7 @@ describe("OrderStatusContent", () => {
 
       const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
       expect(hivInfoLink).toBeInTheDocument();
-      expect(hivInfoLink).toHaveAttribute(
-        "href",
-        "https://www.nhs.uk/conditions/hiv-and-aids/",
-      );
+      expect(hivInfoLink).toHaveAttribute("href", "https://www.nhs.uk/conditions/hiv-and-aids/");
     });
   });
 
@@ -81,9 +80,7 @@ describe("OrderStatusContent", () => {
 
     it("renders dispatched status heading", () => {
       renderWithRouter(<OrderStatusContent order={dispatchedOrder} />);
-      expect(
-        screen.getByText(/wait for your kit to arrive/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/wait for your kit to arrive/i)).toBeInTheDocument();
     });
 
     it("displays dispatched date", () => {
@@ -98,9 +95,7 @@ describe("OrderStatusContent", () => {
 
     it('displays "Still need help?" section', () => {
       renderWithRouter(<OrderStatusContent order={dispatchedOrder} />);
-      expect(
-        screen.getByRole("heading", { name: /still need help/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /still need help/i })).toBeInTheDocument();
     });
 
     it('does not display "Sent" text when dispatchedDate is not provided', () => {
@@ -126,26 +121,19 @@ describe("OrderStatusContent", () => {
 
     it("displays contact message", () => {
       renderWithRouter(<OrderStatusContent order={receivedOrder} />);
-      expect(
-        screen.getByText(/we.ll contact you when it.s ready/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/we.ll contact you when it.s ready/i)).toBeInTheDocument();
     });
 
     it('displays "More information" section', () => {
       renderWithRouter(<OrderStatusContent order={receivedOrder} />);
-      expect(
-        screen.getByRole("heading", { name: /more information/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /more information/i })).toBeInTheDocument();
     });
 
     it("displays HIV info link with correct URL", () => {
       renderWithRouter(<OrderStatusContent order={receivedOrder} />);
       const hivInfoLink = screen.getByText(/learn more about hiv and aids/i);
       expect(hivInfoLink).toBeInTheDocument();
-      expect(hivInfoLink).toHaveAttribute(
-        "href",
-        "https://www.nhs.uk/conditions/hiv-and-aids/",
-      );
+      expect(hivInfoLink).toHaveAttribute("href", "https://www.nhs.uk/conditions/hiv-and-aids/");
     });
   });
 

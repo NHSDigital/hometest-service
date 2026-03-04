@@ -17,11 +17,7 @@ test.describe("HIV Test Order journeys", () => {
     await homeTestStartPage.clickStartNowButton();
   });
 
-  test("Order test journey", async ({
-    homeTestStartPage,
-    findAddressPage,
-    selectDeliveryAddressPage,
-    howComfortablePrickingFingerPage,
+  test("Order test journey", async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
@@ -31,9 +27,7 @@ test.describe("HIV Test Order journeys", () => {
     expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(homeTestStartPage.headerText).toHaveText(
-      "This is what you'll need to do to give a blood sample",
-    );
+    await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
@@ -76,7 +70,7 @@ test.describe("HIV Test Order journeys", () => {
   }) => {
     await findAddressPage.fillPostCodeAndContinue(randomAddress);
     const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
-    const {actualPostcode} = await selectDeliveryAddressPage.getPostcodeValues();
+    const { actualPostcode } = await selectDeliveryAddressPage.getPostcodeValues();
     expect(filledPostcode).toBe(actualPostcode);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(

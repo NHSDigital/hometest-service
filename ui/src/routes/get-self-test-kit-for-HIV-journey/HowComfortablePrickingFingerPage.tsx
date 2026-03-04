@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Radios, Images, Button, ErrorSummary } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
@@ -10,6 +10,7 @@ import PageLayout from "@/layouts/PageLayout";
 export default function HowComfortablePrickingFingerPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { user } = useAuth();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
   const [selectedOption, setSelectedOption] = useState<string>(orderAnswers.comfortableDoingTest || "");
@@ -36,7 +37,7 @@ export default function HowComfortablePrickingFingerPage() {
         const step = returnToStep;
         setReturnToStep(null);
         goToStep(step);
-      } else if (orderAnswers.user?.phoneNumber) {
+      } else if (user?.phoneNumber) {
           goToStep(JourneyStepNames.ConfirmMobileNumber);
       } else {
         goToStep(JourneyStepNames.EnterMobileNumber);

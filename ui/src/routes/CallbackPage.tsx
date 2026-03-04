@@ -7,7 +7,6 @@ import { useEffect, useRef } from "react";
 
 import { RoutePath } from "@/lib/models/route-paths";
 import { backendUrl } from "@/settings";
-import { useCreateOrderContext } from "@/state/OrderContext";
 import { useNavigate } from "react-router-dom";
 
 function safeReturnTo(value: string | null | undefined) {
@@ -35,7 +34,6 @@ function getReturnTo(givenState: string | null | undefined): string | null {
 
 export default function CallbackPage() {
   const { setUser } = useAuth();
-  const { updateOrderAnswers } = useCreateOrderContext();
   const navigate = useNavigate();
   const didRun = useRef(false);
 
@@ -81,11 +79,6 @@ export default function CallbackPage() {
         const userData = mapAuthUser(data);
 
         setUser(userData);
-
-        // TODO: Remove after refactoring - kept for backward compatibility
-        updateOrderAnswers({
-          user: userData,
-        });
       })
       .then(() => {
         navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
@@ -94,6 +87,6 @@ export default function CallbackPage() {
         const message = err instanceof Error ? err.message : String(err);
         console.error("Fetch error:", message);
       });
-  }, [setUser, updateOrderAnswers, navigate]);
+  }, [setUser, navigate]);
   return null;
 }
