@@ -49,16 +49,15 @@ export class ConsentService {
   }
 
   /**
-   * Retrieve the most recent consent record for the given order.
-   * The index on consent(order_uid) enables efficient retrieval via indexed lookup.
+   * Retrieve the consent record for the given order, if it exists.
+   * At most one consent row exists per order due to a unique index on consent(order_uid),
+   * enabling efficient retrieval via indexed lookup.
    */
   async getConsentByOrderUid(orderUid: string): Promise<ConsentRow | null> {
     const query = `
       SELECT consent_uid, order_uid, created_at
       FROM consent
-      WHERE order_uid = $1::uuid
-      ORDER BY created_at DESC
-      LIMIT 1;
+      WHERE order_uid = $1::uuid;
     `;
 
     try {
