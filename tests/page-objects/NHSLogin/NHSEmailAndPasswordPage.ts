@@ -1,8 +1,8 @@
-import { type Locator, type Page } from '@playwright/test';
-import type { NHSLoginUser } from '../../utils/users/BaseUser';
+import { type Locator, type Page } from "@playwright/test";
+import type { NHSLoginUser } from "../../utils/users/BaseUser";
+import { BasePage } from "../BasePage";
 
-export class NHSEmailAndPasswordPage {
-  readonly page: Page;
+export class NHSEmailAndPasswordPage extends BasePage {
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly errMsg: Locator;
@@ -10,17 +10,15 @@ export class NHSEmailAndPasswordPage {
   readonly pageHeader: Locator;
 
   constructor(page: Page) {
-    this.page = page;
-    this.emailInput = page.locator('input#user-email');
-    this.passwordInput = page.locator('input#password-input');
-    this.errMsg = page.locator('.nhsuk-error-message');
-    this.continueBtn = page.locator('button:has-text("Continue")');
-    this.pageHeader = page.locator('h1:has-text("Enter your email address")');
+    super(page);
+    this.emailInput = this.page.locator("input#user-email");
+    this.passwordInput = this.page.locator("input#password-input");
+    this.errMsg = this.page.locator(".nhsuk-error-message");
+    this.continueBtn = this.page.locator('button:has-text("Continue")');
+    this.pageHeader = this.page.locator('h1:has-text("Enter your email address")');
   }
 
-  async fillAuthFormWithCredentialsAndClickContinue(
-    nhsLoginUser: NHSLoginUser
-  ): Promise<void> {
+  async fillAuthFormWithCredentialsAndClickContinue(nhsLoginUser: NHSLoginUser): Promise<void> {
     await this.emailInput.waitFor();
     await this.emailInput.fill(nhsLoginUser.email);
     await this.passwordInput.fill(nhsLoginUser.password);

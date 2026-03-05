@@ -25,7 +25,8 @@ test.describe("Order Status Update API", () => {
     );
 
     patientUid = await testOrderDb.upsertPatient(nhsNumber, birthDate);
-    orderUid = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
+    const orderResult = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
+    orderUid = orderResult.order_uid;
   });
 
   test.afterEach(async ({ testOrderDb }) => {
