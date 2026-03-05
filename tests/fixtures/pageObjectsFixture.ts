@@ -10,7 +10,7 @@ import { EnterMobileNumberPage } from "../page-objects/EnterMobileNumberPage";
 import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
 import { ConfirmAndUpdateMobileNumberPage } from "../page-objects/ConfirmAndUpdateMobileNumberPage";
 import { NegativeResultPage } from "../page-objects/NegativeResultPage";
-import { KitNotAvailableInAreaPage } from "../page-objects/KitNotAvailableInYourAreaPage";
+import { KitNotAvailableInYourAreaPage } from "../page-objects/KitNotAvailableInYourAreaPage";
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -24,7 +24,7 @@ export interface MyFixtures {
   enterMobileNumberPage: EnterMobileNumberPage;
   confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
   negativeResultPage: NegativeResultPage;
-  kitNotAvailableInAreaPage: KitNotAvailableInAreaPage;
+  kitNotAvailableInYourAreaPage: KitNotAvailableInYourAreaPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -72,7 +72,7 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new NegativeResultPage(page));
   },
 
-  kitNotAvailableInAreaPage: async ({ page }, use) => {
-    await use(new KitNotAvailableInAreaPage(page));
+  kitNotAvailableInYourAreaPage: async ({ page }, use) => {
+    await use(new KitNotAvailableInYourAreaPage(page));
   },
 });

@@ -2,8 +2,6 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 
-const randomAddress = AddressModel.getRandomAddress();
-
 test.describe("Home Test Unavailable page", () => {
   test(
     "Home Test Unavailable page - Kit not available in the area - By Postcode",
@@ -14,9 +12,10 @@ test.describe("Home Test Unavailable page", () => {
       homeTestStartPage,
       findAddressPage,
       selectDeliveryAddressPage,
-      kitNotAvailableInAreaPage,
+      kitNotAvailableInYourAreaPage,
       accessibility,
     }) => {
+      const randomAddress = AddressModel.getRandomAddress();
       randomAddress.postCode = "SW1A 1AA"; // A postcode where the kit is unavailable
 
       await homeTestStartPage.navigate();
@@ -24,17 +23,17 @@ test.describe("Home Test Unavailable page", () => {
       await findAddressPage.fillPostCodeAndContinue(randomAddress);
       await selectDeliveryAddressPage.waitUntilPageLoad();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      await kitNotAvailableInAreaPage.assertOnPage();
-      await kitNotAvailableInAreaPage.waitUntilPageLoad();
-      await kitNotAvailableInAreaPage.clickFindAnotherSexualHealthClinicAndOpenNewTab();
-      await kitNotAvailableInAreaPage.assertFindAnotherSexualHealthClinicLinkContainsPostcode(
+      await kitNotAvailableInYourAreaPage.assertOnPage();
+      await kitNotAvailableInYourAreaPage.waitUntilPageLoad();
+      await kitNotAvailableInYourAreaPage.clickFindAnotherSexualHealthClinicAndOpenNewTab();
+      await kitNotAvailableInYourAreaPage.assertFindAnotherSexualHealthClinicLinkContainsPostcode(
         randomAddress.postCode,
       );
       await homeTestStartPage.waitUntilPageLoad();
 
       const accessErrors = await accessibility.runAccessibilityCheck(
-        kitNotAvailableInAreaPage.page,
-        "Kit Not Available In Area Page",
+        kitNotAvailableInYourAreaPage.page,
+        "Kit Not Available In Your Area Page",
       );
       expect(accessErrors).toHaveLength(0);
     },
@@ -49,9 +48,10 @@ test.describe("Home Test Unavailable page", () => {
       homeTestStartPage,
       findAddressPage,
       selectDeliveryAddressPage,
-      kitNotAvailableInAreaPage,
+      kitNotAvailableInYourAreaPage,
       accessibility,
     }) => {
+      const randomAddress = AddressModel.getRandomAddress();
       randomAddress.addressLine1 = "BT GLOBAL SERVICES";
       randomAddress.addressLine2 = "1 SOVEREIGN STREET";
       randomAddress.townCity = "LEEDS";
@@ -62,17 +62,17 @@ test.describe("Home Test Unavailable page", () => {
       await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.waitUntilPageLoad();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      await kitNotAvailableInAreaPage.assertOnPage();
-      await kitNotAvailableInAreaPage.waitUntilPageLoad();
-      await kitNotAvailableInAreaPage.clickFindAnotherSexualHealthClinicAndOpenNewTab();
-      await kitNotAvailableInAreaPage.assertFindAnotherSexualHealthClinicLinkContainsPostcode(
+      await kitNotAvailableInYourAreaPage.assertOnPage();
+      await kitNotAvailableInYourAreaPage.waitUntilPageLoad();
+      await kitNotAvailableInYourAreaPage.clickFindAnotherSexualHealthClinicAndOpenNewTab();
+      await kitNotAvailableInYourAreaPage.assertFindAnotherSexualHealthClinicLinkContainsPostcode(
         randomAddress.postCode,
       );
       await homeTestStartPage.waitUntilPageLoad();
 
       const accessErrors = await accessibility.runAccessibilityCheck(
-        kitNotAvailableInAreaPage.page,
-        "Kit Not Available In Area Page",
+        kitNotAvailableInYourAreaPage.page,
+        "Kit Not Available In Your Area Page",
       );
       expect(accessErrors).toHaveLength(0);
     },
