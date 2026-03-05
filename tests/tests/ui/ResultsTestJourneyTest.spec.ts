@@ -50,9 +50,21 @@ test.describe("Results Page", () => {
     },
   );
 
-  test("Authenticated user opens a deep link", async ({ negativeResultPage }) => {
+  test("Authenticated user opens a deep link - negative result", async ({ negativeResultPage }) => {
     await negativeResultPage.navigateToOrderResult(orderId);
     await expect(negativeResultPage.result).toHaveText("Negative");
+  });
+
+  test("Authenticated user opens a deep link - positive result", async ({
+    negativeResultPage,
+    orderStatusPage,
+  }) => {
+    await dbClient.updateOrderStatus(orderId, "RECEIVED");
+    await resultDbClient.updateResultStatus(orderId, "RESULT_WITHHELD");
+    await negativeResultPage.navigateToOrderResult(orderId);
+    await expect(orderStatusPage.statusTag).toHaveText("Test received");
+    const url = await orderStatusPage.getCurrentUrl();
+    expect(url).toContain("/tracking");
   });
 
   test.describe("Unauthorized access", () => {

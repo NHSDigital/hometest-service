@@ -25,6 +25,15 @@ export class TestResultDbClient extends BaseDbClient {
     );
   }
 
+  async updateResultStatus(order_uid: UUID, status: ResultStatus): Promise<void> {
+    const rows = `
+      UPDATE result_status
+      SET status = $2
+      WHERE order_uid = $1
+    `;
+    await this.query(rows, [order_uid, status]);
+  }
+
   async getLatestResultStatusByOrderUid(orderUid: UUID): Promise<ResultStatus> {
     const rows = await this.query<TestResult>(
       `
