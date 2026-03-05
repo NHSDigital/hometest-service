@@ -744,6 +744,49 @@
         }
       }
     },
+    "suppliers-privacy-policy": {
+      "title": "Supplier privacy policy",
+      "suppliers": {
+        "preventx": {
+          "title": "Preventx privacy policy",
+          "introduction": [
+            "This is introduction paragraph for Preventx privacy policy. https://www.sh.uk/"
+          ],
+          "sections": [
+            {
+              "id": "preventx-first-section",
+              "heading": "It is first privacy section for Preventx",
+              "paragraphs": ["It is example of privacy policy content for Preventx."],
+              "subsections": [
+                {
+                  "heading": "It is the first privacy subsection for Preventx",
+                  "paragraphs": ["It is example of privacy policy content for Preventx."]
+                }
+              ]
+            }
+          ]
+        },
+        "sh:24": {
+          "title": "SH:24 privacy policy",
+          "introduction": [
+            "This is introduction paragraph for SH:24 privacy policy. https://sh24.org.uk/"
+          ],
+          "sections": [
+            {
+              "id": "sh24-first-section",
+              "heading": "It is first privacy section for SH:24",
+              "paragraphs": ["It is example of privacy policy content for SH:24."],
+              "subsections": [
+                {
+                  "heading": "It is the first privacy subsection for SH:24",
+                  "paragraphs": ["It is example of privacy policy content for SH:24."]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
     "check-your-answers": {
       "title": "Check your answers before submitting your order",
       "updateMessage": "We'll update you about your HIV test on the account you use for your NHS login.",
@@ -760,8 +803,7 @@
         "label": "I understand that {supplier}, a trusted partner of NHS, will provide the free self-test kit. I agree to their",
         "termsOfUseText": "terms of use",
         "labelAnd": "and",
-        "privacyPolicyText": "privacy policy",
-        "privacyPolicyHref": "supplier-privacy-policy"
+        "privacyPolicyText": "privacy policy"
       },
       "submitButton": "Submit order"
     }

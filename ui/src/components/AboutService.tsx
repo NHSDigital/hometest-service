@@ -43,7 +43,7 @@ export function AboutService({ supplier }: AboutServiceProps) {
         </Link>
         {` ${content.and} `}
         <Link
-          to="/suppliers-privacy-policy"
+          to={`${RoutePath.SuppliersPrivacyPolicy}?supplier=${encodeURIComponent(supplier)}`}
           className="nhsuk-link"
           aria-label={`${supplier} ${content.privacyPolicy}`}
         >

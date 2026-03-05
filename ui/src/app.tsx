@@ -10,6 +10,7 @@ import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
+import FormSuppliersPrivacyPolicyPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersPrivacyPolicyPage";
 import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
@@ -22,6 +23,7 @@ import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
 import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
@@ -90,6 +92,10 @@ const router = createBrowserRouter([
         element: <SuppliersTermsConditionsPage />,
       },
       {
+        path: RoutePath.SuppliersPrivacyPolicy,
+        element: <SuppliersPrivacyPolicyPage />,
+      },
+      {
         path: RoutePath.HomeTestPrivacyPolicyPage,
         element: <HomeTestPrivacyPolicyPage />,
       },
@@ -140,6 +146,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.SuppliersTermsConditions,
             element: <FormSuppliersTermsConditionsPage />,
+          },
+          {
+            path: JourneyStepNames.SuppliersPrivacyPolicy,
+            element: <FormSuppliersPrivacyPolicyPage />,
           },
         ],
       },

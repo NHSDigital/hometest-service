@@ -220,7 +220,16 @@ export default function CheckYourAnswersPage() {
                 {content.consent.termsOfUseText}
               </a>{" "}
               {content.consent.labelAnd}{" "}
-              <a href={content.consent.privacyPolicyHref}>{content.consent.privacyPolicyText}</a>.
+              <a
+                href={JourneyStepNames.SuppliersPrivacyPolicy}
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToStep(JourneyStepNames.SuppliersPrivacyPolicy);
+                }}
+              >
+                {content.consent.privacyPolicyText}
+              </a>
+              .
             </Checkboxes.Box>
           </Checkboxes>
         </Fieldset>

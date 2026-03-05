@@ -387,7 +387,6 @@ export interface CheckYourAnswersContent {
     termsOfUseText: string;
     labelAnd: string;
     privacyPolicyText: string;
-    privacyPolicyHref: string;
   };
   submitButton: string;
 }
@@ -416,6 +415,17 @@ export interface SuppliersTermsConditionsContent {
   suppliers: Record<string, SupplierTermsContent>;
 }
 
+export interface SupplierPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: TermsSection[];
+}
+
+export interface SuppliersPrivacyPolicyContent {
+  title: string;
+  suppliers: Record<string, SupplierPrivacyPolicyContent>;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -436,6 +446,7 @@ export interface PagesContent {
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "suppliers-terms-conditions": SuppliersTermsConditionsContent;
+  "suppliers-privacy-policy": SuppliersPrivacyPolicyContent;
 }
 
 // ============================================================================

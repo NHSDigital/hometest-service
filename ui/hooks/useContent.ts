@@ -12,6 +12,7 @@ import type {
   NoAddressFoundContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
+  SuppliersPrivacyPolicyContent,
   StartPageContent,
   SuppliersTermsConditionsContent,
   TestResultsContent,
@@ -31,6 +32,7 @@ export const PageKeys = {
   OrderTracking: "order-tracking",
   HomeTestPolicy: "home-test-privacy-policy",
   SuppliersTermsConditions: "suppliers-terms-conditions",
+  SuppliersPrivacyPolicy: "suppliers-privacy-policy",
 } as const;
 
 export type PageKey = (typeof PageKeys)[keyof typeof PageKeys];
@@ -52,6 +54,7 @@ export interface UseContentReturn {
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "suppliers-terms-conditions": SuppliersTermsConditionsContent;
+  "suppliers-privacy-policy": SuppliersPrivacyPolicyContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -72,6 +75,7 @@ export const useContent = (): UseContentReturn => {
     "blood-sample-guide": content.pages["blood-sample-guide"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
     "suppliers-terms-conditions": content.pages["suppliers-terms-conditions"],
+    "suppliers-privacy-policy": content.pages["suppliers-privacy-policy"],
   };
 };
 
@@ -98,6 +102,7 @@ export function usePageContent(page: "check-your-answers"): CheckYourAnswersCont
 export function usePageContent(page: "test-results"): TestResultsContent;
 export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
 export function usePageContent(page: "suppliers-terms-conditions"): SuppliersTermsConditionsContent;
+export function usePageContent(page: "suppliers-privacy-policy"): SuppliersPrivacyPolicyContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
@@ -114,7 +119,8 @@ export function usePageContent(
     | "check-your-answers"
     | "test-results"
     | "home-test-privacy-policy"
-    | "suppliers-terms-conditions",
+    | "suppliers-terms-conditions"
+    | "suppliers-privacy-policy",
 ) {
   return content.pages[page];
 }
