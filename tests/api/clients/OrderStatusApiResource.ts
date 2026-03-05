@@ -20,7 +20,7 @@ export class OrderStatusApiResource extends BaseApiClient {
     return response;
   }
 
-  validateResponse(response: APIResponse, expectedStatus: number = 200): void {
+  validateResponse(response: APIResponse, expectedStatus: number = 201): void {
     this.validateStatus(response, expectedStatus);
   }
 }
