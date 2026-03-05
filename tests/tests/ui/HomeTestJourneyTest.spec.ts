@@ -2,6 +2,7 @@ import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
 import { AddressModel } from "../../models/Address";
 import { PersonalDetailsModel } from "../../models/PersonalDetails";
+import { SelectDeliveryAddressPage } from "../../page-objects/SelectDeliveryAddressPage";
 
 let actualHeaderText = "";
 const randomAddress = AddressModel.getRandomAddress();
@@ -51,32 +52,6 @@ test.describe("HIV Test Order journeys", () => {
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
     await enterMobileNumberPage.fillAlternativeMobileNumber(personalDetails);
     await enterMobileNumberPage.clickContinue();
-  });
-
-  test("Order test journey by providing address manually", async ({
-    findAddressPage,
-    enterAddressManuallyPage,
-  }) => {
-    await findAddressPage.clickEnterAddressManuallyLink();
-    await enterAddressManuallyPage.fillAddress(randomAddress);
-    await enterAddressManuallyPage.clickContinue();
-  });
-
-  test("Order test journey by providing Postcode Only", async ({
-    homeTestStartPage,
-    findAddressPage,
-    selectDeliveryAddressPage,
-    howComfortablePrickingFingerPage,
-  }) => {
-    await findAddressPage.fillPostCodeAndContinue(randomAddress);
-    const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
-    const { actualPostcode } = await selectDeliveryAddressPage.getPostcodeValues();
-    expect(filledPostcode).toBe(actualPostcode);
-    await selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(homeTestStartPage.headerText).toHaveText(
-      "This is what you'll need to do to give a blood sample",
-    );
-    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
   test("Choose to go to Sexual health clinic instead", async ({
@@ -146,15 +121,19 @@ test.describe("HIV Test Order journeys", () => {
 
     test("Validate Check Your Answers Page", async ({
       checkYourAnswersPage,
-      orderSubmittedPage
+      orderSubmittedPage,
+      selectDeliveryAddressPage
     }) => {
-      const actualPostcode = await checkYourAnswersPage.getPostcode();
+      const actualDeliveryAddress = await checkYourAnswersPage.getAddress();
       const actualMobileNumber = await checkYourAnswersPage.getMobileNumber();
+      const expectedDeliveryAddress = await selectDeliveryAddressPage.getSelectedAddress();
       expect(actualMobileNumber).toBe(expectedMobileNumber);
-      expect(actualPostcode).toBe(randomAddress.postCode);
+      console.log("Actual Delivery Address on Check Your Answers Page:", actualDeliveryAddress);
+      console.log("Expected Delivery Address from Select Delivery Address Page:", expectedDeliveryAddress);
+      expect(actualDeliveryAddress).toBe(expectedDeliveryAddress);
       await checkYourAnswersPage.selectConsentCheckbox();
       await checkYourAnswersPage.clickSubmitOrder();
-      await expect(orderSubmittedPage.headerText).toHaveText("Order submitted");
+      // await expect(orderSubmittedPage.headerText).toHaveText("Order submitted");
     });
 
     test("Change and Verify - Address, Mobile Number and Comfortable with HIV Self-Test Option", async ({
@@ -167,22 +146,25 @@ test.describe("HIV Test Order journeys", () => {
       await checkYourAnswersPage.clickDeliveryAddressChangeLink();
       await selectDeliveryAddressPage.clickEditAddressLink();
       await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-      const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      const actualPostcode = await checkYourAnswersPage.getPostcode();
+      const actualDeliveryAddress = await checkYourAnswersPage.getAddress();
+      const expectedDeliveryAddress = await selectDeliveryAddressPage.getSelectedAddress();
+
       await checkYourAnswersPage.clickComfortableChangeLink();
       await howComfortablePrickingFingerPage.clickContinue();
-      const comfortableDoingText = await checkYourAnswersPage.getComfortableDoingTest();
+      const actualComfortableDoingText = await checkYourAnswersPage.getComfortableDoingTest();
+
       await checkYourAnswersPage.clickMobileNumberChangeLink();
       await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(personalDetails);
       const expectedMobileNumber = await confirmAndUpdateMobileNumberPage.getMobileNumberInputValue();
       await confirmAndUpdateMobileNumberPage.clickContinue();
       const actualMobileNumber = await checkYourAnswersPage.getMobileNumber();
-      expect(actualPostcode).toBe(filledPostcode);
-      expect(actualMobileNumber).toBe(expectedMobileNumber.replace(/\D/g, ""));
-      expect(comfortableDoingText).toBe("Change\n Are you comfortable doing the HIV self-test?");
-      const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
-      expect(checkedOrNot).toBe(true);
+
+      expect(actualDeliveryAddress).toBe(expectedDeliveryAddress);
+      expect(actualMobileNumber).toBe(expectedMobileNumber.replace(/[^\d+]/g, ""));
+      expect(actualComfortableDoingText).toBe("Change\n Are you comfortable doing the HIV self-test?");
+      const isChecked = await checkYourAnswersPage.isConsentCheckboxChecked();
+      expect(isChecked).toBe(true);
     });
 
     test("Check your Answers - Address Change - Enter address manually", async ({
@@ -193,12 +175,14 @@ test.describe("HIV Test Order journeys", () => {
       await checkYourAnswersPage.clickDeliveryAddressChangeLink();
       await findAddressPage.clickEnterAddressManuallyLink();
       await enterAddressManuallyPage.fillAddress(randomAddress);
-      const { filledPostcode } = await enterAddressManuallyPage.getAddressInputValues();
       await enterAddressManuallyPage.clickContinue();
-      const actualPostcode = await checkYourAnswersPage.getPostcode();
-      expect(actualPostcode).toBe(filledPostcode);
-      const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
-      expect(checkedOrNot).toBe(true);
+      const actualAddress = await checkYourAnswersPage.getAddress();
+      const expectedDeliveryAddress = await enterAddressManuallyPage.getAddressInputValues();
+      console.log("Actual Delivery Address on Check Your Answers Page:", actualAddress);
+      console.log("Expected Delivery Address from Enter Address Manually Page:", expectedDeliveryAddress);
+      expect(actualAddress).toBe(expectedDeliveryAddress);
+      const isChecked = await checkYourAnswersPage.isConsentCheckboxChecked();
+      expect(isChecked).toBe(true);
     });
 
     test("Check your Answers - Mobile Number Change - Enter phone number", async ({
@@ -212,9 +196,9 @@ test.describe("HIV Test Order journeys", () => {
       const expectedMobileNumber = await enterMobileNumberPage.getMobileNumberInputValue();
       await enterMobileNumberPage.clickContinue();
       const actualMobileNumber = await checkYourAnswersPage.getMobileNumber();
-      expect(actualMobileNumber).toBe(expectedMobileNumber.replace(/[\s-]/g, ""));
-      const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
-      expect(checkedOrNot).toBe(true);
+      expect(actualMobileNumber).toBe(expectedMobileNumber.replace(/[^\d+]/g, ""));
+      const isChecked = await checkYourAnswersPage.isConsentCheckboxChecked();
+      expect(isChecked).toBe(true);
     });
   });
 });

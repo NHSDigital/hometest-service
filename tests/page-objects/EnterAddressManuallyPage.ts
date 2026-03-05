@@ -28,7 +28,7 @@ export class EnterAddressManuallyPage extends BasePage {
   async fillAddress(deliveryAddress: Address): Promise<void> {
     this.addressLine1 = deliveryAddress.addressLine1 ?? "";
     this.addressLine2 = deliveryAddress.addressLine2 ?? "";
-    this.addressLine3 = deliveryAddress.addressLine3 ?? "";
+    this.addressLine3 = (deliveryAddress.addressLine3 ?? "") + "UPDATED";
     this.townCity = deliveryAddress.townCity;
     this.postcode = deliveryAddress.postCode;
     await this.addressLine1Input.fill(this.addressLine1);
@@ -42,24 +42,18 @@ export class EnterAddressManuallyPage extends BasePage {
     await this.continueButton.click();
   }
 
-  async getAddressInputValues(): Promise<{
-    filledAddressLine1: string;
-    filledAddressLine2: string;
-    filledAddressLine3: string;
-    filledTownCity: string;
-    filledPostcode: string;
-  }> {
-    const filledAddressLine1 = await this.addressLine1Input.inputValue();
-    const filledAddressLine2 = await this.addressLine2Input.inputValue();
-    const filledAddressLine3 = await this.addressLine3Input.inputValue();
-    const filledTownCity = await this.addressTownInput.inputValue();
-    const filledPostcode = await this.postCodeInput.inputValue();
-    return {
-      filledAddressLine1,
-      filledAddressLine2,
-      filledAddressLine3,
-      filledTownCity,
-      filledPostcode,
-    };
+  async getAddressInputValues(): Promise<string> {
+    const addressValues = [
+      this.addressLine1 ?? "",
+      this.addressLine2 ?? "",
+      this.addressLine3 ?? "",
+      this.townCity ?? "",
+      this.postcode ?? ""
+    ]
+      .filter(x => x.trim().length > 0)
+      .join("\n");
+
+    return addressValues;
   }
 }
+
