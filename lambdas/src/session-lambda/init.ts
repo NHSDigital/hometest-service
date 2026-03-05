@@ -1,7 +1,7 @@
 import {
   retrieveMandatoryEnvVariable,
   retrieveOptionalEnvVariable,
-} from "../lib/utils";
+} from "../lib/utils/utils";
 
 import { AuthTokenVerifier } from "../lib/auth/auth-token-verifier";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";

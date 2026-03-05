@@ -4,7 +4,7 @@ import { OrderStatusCodes } from "../lib/db/order-status-db";
 
 const mockInit = jest.fn();
 const mockCreatePatientOrderAndConsent = jest.fn();
-const mockUpdateOrderStatus = jest.fn();
+const mockAddOrderStatusUpdate = jest.fn();
 const mockSendMessage = jest.fn();
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 const mockBuildFhirServiceRequest = jest.fn();
@@ -15,8 +15,8 @@ jest.mock("./init", () => ({
   init: () => mockInit(),
 }));
 
-jest.mock("../lib/utils", () => ({
-  ...jest.requireActual("../lib/utils"),
+jest.mock("../lib/utils/utils", () => ({
+  ...jest.requireActual("../lib/utils/utils"),
   getCorrelationIdFromEventHeaders: () => mockGetCorrelationIdFromEventHeaders(),
 }));
 
@@ -74,7 +74,7 @@ describe("order-service-lambda handler", () => {
     jest.resetModules();
     mockInit.mockReset();
     mockCreatePatientOrderAndConsent.mockReset();
-    mockUpdateOrderStatus.mockReset();
+    mockAddOrderStatusUpdate.mockReset();
     mockSendMessage.mockReset();
     mockGetCorrelationIdFromEventHeaders.mockReset();
     mockBuildFhirServiceRequest.mockReset();
@@ -84,7 +84,7 @@ describe("order-service-lambda handler", () => {
         createPatientOrderAndConsent: mockCreatePatientOrderAndConsent,
       },
       orderStatusService: {
-        updateOrderStatus: mockUpdateOrderStatus,
+        addOrderStatusUpdate: mockAddOrderStatusUpdate,
       },
       sqsClient: {
         sendMessage: mockSendMessage,
@@ -123,7 +123,7 @@ describe("order-service-lambda handler", () => {
         resourceType: "ServiceRequest",
       });
       mockSendMessage.mockResolvedValue({ messageId: "message-123" });
-      mockUpdateOrderStatus.mockResolvedValue(undefined);
+      mockAddOrderStatusUpdate.mockResolvedValue(undefined);
 
       const response = await handler(buildEvent(buildValidRequestBody()));
 
@@ -201,7 +201,7 @@ describe("order-service-lambda handler", () => {
       });
       mockBuildFhirServiceRequest.mockReturnValue(mockFhirServiceRequest);
       mockSendMessage.mockResolvedValue({ messageId: "message-123" });
-      mockUpdateOrderStatus.mockResolvedValue(undefined);
+      mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
     it("should create an order and return 201", async () => {
@@ -259,7 +259,7 @@ describe("order-service-lambda handler", () => {
     it("should update order status to QUEUED", async () => {
       await handler(buildEvent(buildValidRequestBody()));
 
-      const orderStatusCallArg = mockUpdateOrderStatus.mock.calls[0][0];
+      const orderStatusCallArg = mockAddOrderStatusUpdate.mock.calls[0][0];
       expect(orderStatusCallArg).toEqual({
         orderId: "order-123",
         statusCode: OrderStatusCodes.QUEUED,
@@ -296,7 +296,7 @@ describe("order-service-lambda handler", () => {
       expect(JSON.parse(response.body)).toEqual({
         message: "Failed to enqueue order",
       });
-      expect(mockUpdateOrderStatus).not.toHaveBeenCalled();
+      expect(mockAddOrderStatusUpdate).not.toHaveBeenCalled();
     });
 
     it("should return 500 when updating order status fails", async () => {
@@ -309,7 +309,7 @@ describe("order-service-lambda handler", () => {
         resourceType: "ServiceRequest",
       });
       mockSendMessage.mockResolvedValue({ messageId: "message-123" });
-      mockUpdateOrderStatus.mockRejectedValue(new Error("DB down"));
+      mockAddOrderStatusUpdate.mockRejectedValue(new Error("DB down"));
 
       const response = await handler(buildEvent(buildValidRequestBody()));
 

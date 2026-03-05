@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { z } from "zod";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
-import { createJsonResponse, getCorrelationIdFromEventHeaders } from "../lib/utils";
+import { createJsonResponse, getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { init } from "./init";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
@@ -97,7 +97,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }
 
     try {
-      await orderStatusService.updateOrderStatus({
+      await orderStatusService.addOrderStatusUpdate({
         orderId: orderResult.orderUid,
         statusCode: OrderStatusCodes.QUEUED,
         createdAt: new Date().toISOString(),

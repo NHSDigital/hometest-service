@@ -32,6 +32,17 @@ export class TestOrderDbClient extends BaseDbClient {
     return rows[0].supplier_id;
   }
 
+  async getTestCodeByDescription(testDescription: string): Promise<string> {
+    const rows = await this.query<{ test_code: string }>(
+      `SELECT test_code
+       FROM test_type
+       WHERE description = $1
+       LIMIT 1`,
+      [testDescription],
+    );
+    return rows[0].test_code;
+  }
+
   async upsertPatient(nhsNumber: string, birthDate: string): Promise<UUID> {
     const rows = await this.query<{ patient_uid: UUID }>(
       `INSERT INTO patient_mapping (nhs_number, birth_date)
@@ -113,7 +124,8 @@ export class TestOrderDbClient extends BaseDbClient {
   ): Promise<{ status_code: string }[] | undefined> {
     const rows = await this.query<{ status_code: string }>(
       `
-      SELECT status_code FROM order_status
+      SELECT status_code
+      FROM hometest.order_status
       WHERE order_uid = $1
       ORDER BY created_at DESC
       LIMIT 5
@@ -122,5 +134,17 @@ export class TestOrderDbClient extends BaseDbClient {
     );
 
     return rows;
+  }
+
+  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<OrderStatusCode> {
+    const rows = await this.query<TestOrderModel>(
+      `SELECT status_code
+       FROM hometest.order_status
+       WHERE order_uid = $1
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [orderUid],
+    );
+    return rows[0].status_code as OrderStatusCode;
   }
 }
