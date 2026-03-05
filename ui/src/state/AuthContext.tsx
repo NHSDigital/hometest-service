@@ -5,10 +5,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
-import { registerDebugState } from "@/lib/utils/debug";
 
 export interface AuthUser {
   sub: string;
@@ -34,10 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setUser = useCallback((user: AuthUser | null) => {
     setUserState(user);
   }, []);
-
-  useEffect(() => {
-    registerDebugState('auth', () => user);
-  }, [user]);
 
   return (
     <AuthContext.Provider

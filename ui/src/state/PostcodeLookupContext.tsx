@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { registerDebugState } from '@/lib/utils/debug';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 
 export interface AddressResult {
   id: string;
@@ -76,10 +75,6 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({
     setLookupResultsStatus('idle');
     setError(null);
   }, []);
-
-  useEffect(() => {
-    registerDebugState('postcode', () => ({ postcode, addresses, selectedAddress, lookupResultsStatus, error }));
-  }, [postcode, addresses, selectedAddress, lookupResultsStatus, error]);
 
   const value: PostcodeLookupContextType = {
     postcode,

@@ -69,16 +69,21 @@ the technologies used in this project:
 
 ## Debugging State
 
-In development, all React context state is accessible via `globalThis.__appDebug` in the browser console. This is a no-op in production.
+In development, all React context state is accessible via `globalThis.__appDebug` in the browser console. Values are evaluated lazily via property getters, so you always see the current state. This is a no-op in production.
 
 ```js
-__appDebug.order()      // OrderContext — order answers collected through the journey
-__appDebug.auth()       // AuthContext — authenticated user
-__appDebug.navigation() // NavigationContext — current step and step history
-__appDebug.postcode()   // PostcodeLookupContext — address lookup results
+__appDebug.order      // OrderContext — order answers collected through the journey
+__appDebug.auth       // AuthContext — authenticated user
+__appDebug.navigation // NavigationContext — current step and step history
+__appDebug.postcode   // PostcodeLookupContext — address lookup results
 ```
 
-The utility is defined in `src/lib/utils/debug.ts`. Each context registers itself via `registerDebugState`, which is called in a `useEffect` whenever the relevant state changes, keeping the getter up to date.
+Debug registration follows a **boundary-style devtools pattern** — state providers contain no debug code. Instead, two dedicated devtools components handle all registration:
+
+- `AppDevtools` (in `MainLayout`) — registers app-level state (auth)
+- `JourneyDevtools` (in `JourneyLayout`) — registers journey-level state (order, navigation, postcode)
+
+These components are env-gated and render nothing. The core utility is in `src/lib/utils/debug.ts`.
 
 ## Deployment
 

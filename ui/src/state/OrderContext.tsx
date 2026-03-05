@@ -5,10 +5,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
-import { registerDebugState } from "@/lib/utils/debug";
 import { AuthUser } from "./AuthContext";
 
 // Address structure
@@ -71,10 +69,6 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
     setOrderAnswers((prev) => ({ ...prev, ...updates }));
   }, []);
-
-  useEffect(() => {
-    registerDebugState('order', () => orderAnswers);
-  }, [orderAnswers]);
 
   const reset = useCallback(() => {
     setOrderAnswers({});

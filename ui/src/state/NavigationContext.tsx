@@ -5,10 +5,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
-import { registerDebugState } from "@/lib/utils/debug";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { RoutePath } from "@/lib/models/route-paths";
@@ -107,10 +105,6 @@ export function JourneyNavigationProvider({
   const canGoBack = useCallback(() => {
     return stepHistory.length > 1;
   }, [stepHistory.length]);
-
-  useEffect(() => {
-    registerDebugState('navigation', () => ({ currentStep, stepHistory, returnToStep }));
-  }, [currentStep, stepHistory, returnToStep]);
 
   const clearHistory = useCallback(() => {
     setNavigation({
