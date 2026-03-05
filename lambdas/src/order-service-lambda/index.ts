@@ -70,9 +70,10 @@ export const lambdaHandler = async (
     });
 
     // Create patient, order, status and consent record in a single transaction.
-    // ALPHA: This endpoint is not explicitly idempotent. Repeated requests with the same
-    // correlation ID or payload may create multiple orders, each with its own status records;
-    // callers must not assume that this API will deduplicate identical order requests.
+    // ALPHA: This endpoint is not idempotent. Each invocation creates a new test_order row
+    // (new order_uid) and associated order_status rows (for example, GENERATED and later QUEUED).
+    // Repeating the same request (even with the same correlation ID or payload) will create
+    // additional orders; callers must not rely on this API to deduplicate identical requests.
     const orderResult = await transactionService.createPatientOrderAndConsent(
       orderRequest.patient.nhsNumber,
       orderRequest.patient.birthDate,
