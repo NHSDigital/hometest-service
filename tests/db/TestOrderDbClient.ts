@@ -113,11 +113,10 @@ export class TestOrderDbClient extends BaseDbClient {
   ): Promise<{ status_code: string }[] | undefined> {
     const rows = await this.query<{ status_code: string }>(
       `
-      SELECT status_code
-      FROM hometest.order_status
+      SELECT status_code FROM order_status
       WHERE order_uid = $1
       ORDER BY created_at DESC
-      LIMIT 2
+      LIMIT 5
     `,
       [orderUid],
     );

@@ -21,7 +21,6 @@ test.describe("GET Result API @api", () => {
     async ({ testedUser }) => {
       await dbClient.connect();
       await resultDbClient.connect();
-      console.log("Tested user:", JSON.stringify(testedUser, null, 2));
       // testedUser.nhsNumber and testedUser.dob are validated in the global fixture
 
       const result = await dbClient.createOrderWithPatientAndStatus({
