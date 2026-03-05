@@ -1,4 +1,4 @@
-import { test as base, TestInfo, expect } from '@playwright/test';
+import { test as base, TestInfo, expect } from "@playwright/test";
 
 interface ConsoleError {
   type: string;
@@ -45,17 +45,14 @@ const defaultOptions: ErrorCaptureOptions = {
     /nhsapp is not defined/,
     /"undefined" is not valid JSON/,
     // Next.js hydration warning - not an application issue
-    /No `HydrateFallback` element provided to render during initial hydration/
+    /No `HydrateFallback` element provided to render during initial hydration/,
   ],
-  ignoreStatusCodes: []
+  ignoreStatusCodes: [],
 };
 
-function shouldIgnoreError(
-  text: string,
-  patterns: (string | RegExp)[]
-): boolean {
+function shouldIgnoreError(text: string, patterns: (string | RegExp)[]): boolean {
   return patterns.some((pattern) => {
-    if (typeof pattern === 'string') {
+    if (typeof pattern === "string") {
       return text.includes(pattern);
     }
     return pattern.test(text);
@@ -70,41 +67,41 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
   page: async (
     { page, consoleErrors, networkErrors, errorCaptureOptions },
     use,
-    testInfo: TestInfo
+    testInfo: TestInfo,
   ) => {
     const options = { ...defaultOptions, ...errorCaptureOptions };
     const errors: ConsoleError[] = [];
     const netErrors: NetworkError[] = [];
 
     // Capture console errors and warnings
-    page.on('console', (msg) => {
-      if (msg.type() === 'error' || msg.type() === 'warning') {
+    page.on("console", (msg) => {
+      if (msg.type() === "error" || msg.type() === "warning") {
         const text = msg.text();
         if (!shouldIgnoreError(text, options.ignorePatterns || [])) {
           errors.push({
             type: msg.type(),
             text,
             location: msg.location()?.url,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       }
     });
 
     // Capture uncaught exceptions
-    page.on('pageerror', (error) => {
+    page.on("pageerror", (error) => {
       if (!shouldIgnoreError(error.message, options.ignorePatterns || [])) {
         errors.push({
-          type: 'pageerror',
+          type: "pageerror",
           text: error.message,
           location: error.stack,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
     });
 
     // Capture failed network requests (4xx, 5xx)
-    page.on('response', (response) => {
+    page.on("response", (response) => {
       const status = response.status();
       if (status >= 400 && !options.ignoreStatusCodes?.includes(status)) {
         const url = response.url();
@@ -114,7 +111,7 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
             status,
             statusText: response.statusText(),
             method: response.request().method(),
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       }
@@ -132,16 +129,16 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
 
     // Attach errors to test report
     if (hasConsoleErrors) {
-      await testInfo.attach('console-errors', {
+      await testInfo.attach("console-errors", {
         body: JSON.stringify(errors, null, 2),
-        contentType: 'application/json'
+        contentType: "application/json",
       });
     }
 
     if (hasNetworkErrors) {
-      await testInfo.attach('network-errors', {
+      await testInfo.attach("network-errors", {
         body: JSON.stringify(netErrors, null, 2),
-        contentType: 'application/json'
+        contentType: "application/json",
       });
     }
 
@@ -150,19 +147,19 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
 
     if (hasConsoleErrors && options.failOnConsoleError) {
       failureMessages.push(
-        `Console errors detected:\n${errors.map((e, i) => `  ${i + 1}. [${e.type}] ${e.text}`).join('\n')}`
+        `Console errors detected:\n${errors.map((e, i) => `  ${i + 1}. [${e.type}] ${e.text}`).join("\n")}`,
       );
     }
 
     if (hasNetworkErrors && options.failOnNetworkError) {
       failureMessages.push(
-        `Network errors detected:\n${netErrors.map((e, i) => `  ${i + 1}. ${e.method} ${e.url} => ${e.status} ${e.statusText}`).join('\n')}`
+        `Network errors detected:\n${netErrors.map((e, i) => `  ${i + 1}. ${e.method} ${e.url} => ${e.status} ${e.statusText}`).join("\n")}`,
       );
     }
 
     // Fail the test if errors were captured
     if (failureMessages.length > 0) {
-      expect.soft(false, failureMessages.join('\n\n')).toBeTruthy();
+      expect.soft(false, failureMessages.join("\n\n")).toBeTruthy();
     }
-  }
+  },
 });
