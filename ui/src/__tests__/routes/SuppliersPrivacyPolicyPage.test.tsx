@@ -6,9 +6,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import SuppliersPrivacyPolicyPage from "@/routes/SuppliersPrivacyPolicyPage";
 
 const mockNavigate = jest.fn();
-const mockSuppliersPrivacyPolicyContent = jest.fn(({ supplier }: { supplier?: string | null }) => (
-  <div data-testid="suppliers-privacy-content">Supplier: {supplier ?? "missing"}</div>
-));
+const mockSupplierLegalDocumentContent = jest.fn(
+  ({ supplier }: { supplier?: string | null; documentType: "terms" | "privacy" }) => (
+    <div data-testid="suppliers-privacy-content">Supplier: {supplier ?? "missing"}</div>
+  ),
+);
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom");
@@ -34,9 +36,11 @@ jest.mock("@/layouts/PageLayout", () => ({
   ),
 }));
 
-jest.mock("@/components/SuppliersPrivacyPolicyContent", () => ({
-  SuppliersPrivacyPolicyContent: (props: { supplier?: string | null }) =>
-    mockSuppliersPrivacyPolicyContent(props),
+jest.mock("@/components/SupplierLegalDocumentContent", () => ({
+  SupplierLegalDocumentContent: (props: {
+    supplier?: string | null;
+    documentType: "terms" | "privacy";
+  }) => mockSupplierLegalDocumentContent(props),
 }));
 
 const renderAt = (url: string) => {
@@ -58,14 +62,20 @@ describe("SuppliersPrivacyPolicyPage", () => {
     renderAt("/suppliers-privacy-policy?supplier=SH:24");
 
     expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: SH:24");
-    expect(mockSuppliersPrivacyPolicyContent).toHaveBeenCalledWith({ supplier: "SH:24" });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: "SH:24",
+      documentType: "privacy",
+    });
   });
 
   it("passes null supplier when query param is missing", () => {
     renderAt("/suppliers-privacy-policy");
 
     expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: missing");
-    expect(mockSuppliersPrivacyPolicyContent).toHaveBeenCalledWith({ supplier: null });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: null,
+      documentType: "privacy",
+    });
   });
 
   it("navigates back when back action is triggered", () => {

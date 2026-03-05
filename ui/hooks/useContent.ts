@@ -12,9 +12,8 @@ import type {
   NoAddressFoundContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
-  SuppliersPrivacyPolicyContent,
+  SuppliersLegalDocumentsContent,
   StartPageContent,
-  SuppliersTermsConditionsContent,
   TestResultsContent,
 } from "@/content/schema";
 
@@ -53,8 +52,8 @@ export interface UseContentReturn {
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
-  "suppliers-terms-conditions": SuppliersTermsConditionsContent;
-  "suppliers-privacy-policy": SuppliersPrivacyPolicyContent;
+  "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
+  "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -101,8 +100,8 @@ export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideCont
 export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
 export function usePageContent(page: "test-results"): TestResultsContent;
 export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
-export function usePageContent(page: "suppliers-terms-conditions"): SuppliersTermsConditionsContent;
-export function usePageContent(page: "suppliers-privacy-policy"): SuppliersPrivacyPolicyContent;
+export function usePageContent(page: "suppliers-terms-conditions"): SuppliersLegalDocumentsContent;
+export function usePageContent(page: "suppliers-privacy-policy"): SuppliersLegalDocumentsContent;
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"

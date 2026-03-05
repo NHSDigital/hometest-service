@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PageLayout from "@/layouts/PageLayout";
-import { SuppliersPrivacyPolicyContent } from "@/components/SuppliersPrivacyPolicyContent";
+import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
 
 export default function SuppliersPrivacyPolicyPage() {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ export default function SuppliersPrivacyPolicyPage() {
 
   return (
     <PageLayout onBackButtonClick={() => navigate(-1)}>
-      <SuppliersPrivacyPolicyContent supplier={supplier} />
+      <SupplierLegalDocumentContent supplier={supplier} documentType="privacy" />
     </PageLayout>
   );
 }

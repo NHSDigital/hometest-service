@@ -6,8 +6,8 @@ import FormSuppliersTermsConditionsPage from "@/routes/get-self-test-kit-for-HIV
 
 const mockUseJourneyNavigationContext = jest.fn();
 const mockUseCreateOrderContext = jest.fn();
-const mockSuppliersTermsConditionsContent = jest.fn(
-  ({ supplier }: { supplier?: string | null }) => (
+const mockSupplierLegalDocumentContent = jest.fn(
+  ({ supplier }: { supplier?: string | null; documentType: "terms" | "privacy" }) => (
     <div data-testid="suppliers-terms-content">Supplier: {supplier ?? "missing"}</div>
   ),
 );
@@ -40,9 +40,11 @@ jest.mock("@/layouts/FormPageLayout", () => ({
   }) => mockFormPageLayout(props),
 }));
 
-jest.mock("@/components/SuppliersTermsConditionsContent", () => ({
-  SuppliersTermsConditionsContent: (props: { supplier?: string | null }) =>
-    mockSuppliersTermsConditionsContent(props),
+jest.mock("@/components/SupplierLegalDocumentContent", () => ({
+  SupplierLegalDocumentContent: (props: {
+    supplier?: string | null;
+    documentType: "terms" | "privacy";
+  }) => mockSupplierLegalDocumentContent(props),
 }));
 
 describe("HIV journey FormSuppliersTermsConditionsPage", () => {
@@ -69,7 +71,10 @@ describe("HIV journey FormSuppliersTermsConditionsPage", () => {
     render(<FormSuppliersTermsConditionsPage />);
 
     expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: Preventx");
-    expect(mockSuppliersTermsConditionsContent).toHaveBeenCalledWith({ supplier: "Preventx" });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: "Preventx",
+      documentType: "terms",
+    });
   });
 
   it("shows layout with back button enabled", () => {
@@ -113,6 +118,9 @@ describe("HIV journey FormSuppliersTermsConditionsPage", () => {
     render(<FormSuppliersTermsConditionsPage />);
 
     expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: missing");
-    expect(mockSuppliersTermsConditionsContent).toHaveBeenCalledWith({ supplier: undefined });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: undefined,
+      documentType: "terms",
+    });
   });
 });

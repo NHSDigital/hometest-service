@@ -1,15 +1,23 @@
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { usePageContent } from "@/hooks";
 
-type SuppliersTermsConditionsContentProps = {
+type SupplierLegalDocumentType = "terms" | "privacy";
+
+type SupplierLegalDocumentContentProps = {
   supplier?: string | null;
+  documentType: SupplierLegalDocumentType;
 };
 
-export function SuppliersTermsConditionsContent({
+export function SupplierLegalDocumentContent({
   supplier,
-}: SuppliersTermsConditionsContentProps) {
+  documentType,
+}: Readonly<SupplierLegalDocumentContentProps>) {
   const normalizedSupplier = supplier?.trim().toLowerCase();
-  const content = usePageContent("suppliers-terms-conditions");
+  const contentKeyByDocumentType: Record<SupplierLegalDocumentType, string> = {
+    terms: "suppliers-terms-conditions",
+    privacy: "suppliers-privacy-policy",
+  };
+  const content = usePageContent(contentKeyByDocumentType[documentType]);
 
   if (!normalizedSupplier) {
     throw new Error("Unknown supplier: missing supplier");

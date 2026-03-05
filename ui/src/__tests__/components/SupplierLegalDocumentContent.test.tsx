@@ -2,21 +2,32 @@ import "@testing-library/jest-dom";
 
 import { render, screen } from "@testing-library/react";
 
-import { SuppliersTermsConditionsContent } from "@/components/SuppliersTermsConditionsContent";
+import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
 
 const mockUsePageContent = jest.fn();
 
 jest.mock("@/hooks", () => ({
-  usePageContent: () => mockUsePageContent(),
+  usePageContent: (...args: unknown[]) => mockUsePageContent(...args),
 }));
 
-describe("SuppliersTermsConditionsContent", () => {
+describe.each([
+  {
+    contentKey: "suppliers-privacy-policy",
+    documentType: "privacy" as const,
+    title: "Preventx privacy policy",
+  },
+  {
+    contentKey: "suppliers-terms-conditions",
+    documentType: "terms" as const,
+    title: "Preventx terms of use",
+  },
+])("SupplierLegalDocumentContent ($documentType)", ({ documentType, title, contentKey }) => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUsePageContent.mockReturnValue({
       suppliers: {
         preventx: {
-          title: "Preventx terms of use",
+          title,
           introduction: ["Welcome text", "Read https://example.org/info"],
           sections: [
             {
@@ -38,22 +49,23 @@ describe("SuppliersTermsConditionsContent", () => {
   });
 
   it("renders supplier content when supplier exists", () => {
-    render(<SuppliersTermsConditionsContent supplier="preventx" />);
+    render(<SupplierLegalDocumentContent supplier="preventx" documentType={documentType} />);
 
-    expect(screen.getByRole("heading", { name: "Preventx terms of use" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
     expect(screen.getByText("Welcome text")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Privacy" })).toBeInTheDocument();
     expect(screen.getByText("Data usage paragraph")).toBeInTheDocument();
+    expect(mockUsePageContent).toHaveBeenCalledWith(contentKey);
   });
 
   it("normalizes supplier using trim and lower-case", () => {
-    render(<SuppliersTermsConditionsContent supplier="  PREVENTX  " />);
+    render(<SupplierLegalDocumentContent supplier="  PREVENTX  " documentType={documentType} />);
 
-    expect(screen.getByRole("heading", { name: "Preventx terms of use" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
   });
 
   it("renders URL text as links", () => {
-    render(<SuppliersTermsConditionsContent supplier="preventx" />);
+    render(<SupplierLegalDocumentContent supplier="preventx" documentType={documentType} />);
 
     const introLink = screen.getByRole("link", { name: /https:\/\/example\.org\/info/i });
     const listLink = screen.getByRole("link", { name: /https:\/\/example\.org\/list/i });
@@ -63,14 +75,14 @@ describe("SuppliersTermsConditionsContent", () => {
   });
 
   it("throws when supplier is missing", () => {
-    expect(() => render(<SuppliersTermsConditionsContent supplier={undefined} />)).toThrow(
-      "Unknown supplier: missing supplier",
-    );
+    expect(() =>
+      render(<SupplierLegalDocumentContent supplier={undefined} documentType={documentType} />),
+    ).toThrow("Unknown supplier: missing supplier");
   });
 
   it("throws when supplier is unknown", () => {
-    expect(() => render(<SuppliersTermsConditionsContent supplier="unknown" />)).toThrow(
-      "Unknown supplier: unknown",
-    );
+    expect(() =>
+      render(<SupplierLegalDocumentContent supplier="unknown" documentType={documentType} />),
+    ).toThrow("Unknown supplier: unknown");
   });
 });

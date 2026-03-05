@@ -6,9 +6,11 @@ import FormSuppliersPrivacyPolicyPage from "@/routes/get-self-test-kit-for-HIV-j
 
 const mockUseJourneyNavigationContext = jest.fn();
 const mockUseCreateOrderContext = jest.fn();
-const mockSuppliersPrivacyPolicyContent = jest.fn(({ supplier }: { supplier?: string | null }) => (
-  <div data-testid="suppliers-privacy-content">Supplier: {supplier ?? "missing"}</div>
-));
+const mockSupplierLegalDocumentContent = jest.fn(
+  ({ supplier }: { supplier?: string | null; documentType: "terms" | "privacy" }) => (
+    <div data-testid="suppliers-privacy-content">Supplier: {supplier ?? "missing"}</div>
+  ),
+);
 const mockFormPageLayout = jest.fn(
   ({
     children,
@@ -38,9 +40,11 @@ jest.mock("@/layouts/FormPageLayout", () => ({
   }) => mockFormPageLayout(props),
 }));
 
-jest.mock("@/components/SuppliersPrivacyPolicyContent", () => ({
-  SuppliersPrivacyPolicyContent: (props: { supplier?: string | null }) =>
-    mockSuppliersPrivacyPolicyContent(props),
+jest.mock("@/components/SupplierLegalDocumentContent", () => ({
+  SupplierLegalDocumentContent: (props: {
+    supplier?: string | null;
+    documentType: "terms" | "privacy";
+  }) => mockSupplierLegalDocumentContent(props),
 }));
 
 describe("HIV journey FormSuppliersPrivacyPolicyPage", () => {
@@ -67,7 +71,10 @@ describe("HIV journey FormSuppliersPrivacyPolicyPage", () => {
     render(<FormSuppliersPrivacyPolicyPage />);
 
     expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: Preventx");
-    expect(mockSuppliersPrivacyPolicyContent).toHaveBeenCalledWith({ supplier: "Preventx" });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: "Preventx",
+      documentType: "privacy",
+    });
   });
 
   it("shows layout with back button enabled", () => {
@@ -111,6 +118,9 @@ describe("HIV journey FormSuppliersPrivacyPolicyPage", () => {
     render(<FormSuppliersPrivacyPolicyPage />);
 
     expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: missing");
-    expect(mockSuppliersPrivacyPolicyContent).toHaveBeenCalledWith({ supplier: undefined });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: undefined,
+      documentType: "privacy",
+    });
   });
 });

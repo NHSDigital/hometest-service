@@ -2,7 +2,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import { SuppliersPrivacyPolicyContent } from "@/components/SuppliersPrivacyPolicyContent";
+import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
 
 export default function FormSuppliersPrivacyPolicyPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
@@ -20,7 +20,7 @@ export default function FormSuppliersPrivacyPolicyPage() {
         }
       }}
     >
-      <SuppliersPrivacyPolicyContent supplier={supplier} />
+      <SupplierLegalDocumentContent supplier={supplier} documentType="privacy" />
     </FormPageLayout>
   );
 }
