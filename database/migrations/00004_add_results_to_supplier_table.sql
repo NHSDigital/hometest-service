@@ -1,6 +1,6 @@
 -- +goose Up
 ALTER TABLE supplier
-ADD COLUMN results_path varchar(255);
+ADD COLUMN IF NOT EXISTS results_path varchar(255);
 
 UPDATE supplier
 SET
@@ -14,4 +14,4 @@ WHERE supplier_id = 'd2b3c4d5-2345-4abc-8def-23456789abcd';
 
 -- +goose Down
 ALTER TABLE supplier
-DROP COLUMN results_path;
+DROP COLUMN IF EXISTS results_path;
