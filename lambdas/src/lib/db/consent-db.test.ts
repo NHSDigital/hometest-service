@@ -2,12 +2,6 @@ import { ConsentRow, ConsentService } from "./consent-db";
 
 const mockQuery = jest.fn();
 
-jest.mock("./db-client", () => ({
-  PostgresDbClient: jest.fn().mockImplementation(() => ({
-    query: mockQuery,
-  })),
-}));
-
 describe("ConsentService", () => {
   let service: ConsentService;
 
