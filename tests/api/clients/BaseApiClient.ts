@@ -47,30 +47,6 @@ export class BaseApiClient {
     return response;
   }
 
-  /**
-   * Perform PUT request
-   */
-  protected async put(endpoint: string, options: ApiRequestOptions = {}): Promise<APIResponse> {
-    const url = this.buildUrl(endpoint, options.params);
-
-    console.log(`[API PUT] ${url}`);
-    if (options.data) {
-      console.log(`[API Request Body]`, JSON.stringify(options.data, null, 2));
-    }
-
-    const response = await this.request.put(url, {
-      headers: this.buildHeaders(options.headers),
-      data: options.data,
-    });
-
-    console.log(`[API Response] Status: ${response.status()}`);
-
-    return response;
-  }
-
-  /**
-   * Build full URL with query parameters
-   */
   private buildUrl(endpoint: string, params?: Record<string, string | number | boolean>): string {
     let fullUrl: string;
 
