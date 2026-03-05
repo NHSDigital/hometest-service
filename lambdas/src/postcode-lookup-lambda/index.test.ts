@@ -1,10 +1,10 @@
-jest.mock('../lib/utils');
+jest.mock('../lib/utils/utils');
 jest.mock('../lib/postcode-lookup/postcode-lookup-service');
 jest.mock('./init');
 
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { lambdaHandler } from './index';
-import * as utils from '../lib/utils';
+import * as utils from '../lib/utils/utils';
 import { PostcodeLookupService } from '../lib/postcode-lookup/postcode-lookup-service';
 import { init } from './init';
 

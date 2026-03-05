@@ -1,0 +1,69 @@
+import { OrderService, OrderResultSummary } from './order-db';
+import { OrderStatus, ResultStatus } from '../types/status';
+import { Commons } from '../commons';
+
+describe('OrderService', () => {
+    let dbClient: any;
+    let orderService: OrderService;
+
+    beforeEach(() => {
+        dbClient = {
+            query: jest.fn(),
+            withTransaction: jest.fn()
+        };
+        const commons = {
+            logError: jest.fn()
+        };
+        orderService = new OrderService(dbClient, commons as any as Commons);
+    });
+
+    describe('retrieveOrderDetails', () => {
+        it('should return order details when found', async () => {
+            const mockSummary: OrderResultSummary = {
+                order_uid: 'order-123',
+                order_reference: 'ref-456',
+                supplier_id: 'supplier-789',
+                patient_uid: 'patient-abc',
+                result_status: ResultStatus.Result_Available,
+                correlation_id: 'corr-xyz',
+                order_status_code: OrderStatus.Complete,
+            };
+            dbClient.query.mockResolvedValue({ rows: [mockSummary] });
+
+            const result = await orderService.retrieveOrderDetails('order-123');
+
+            expect(dbClient.query).toHaveBeenCalledTimes(1);
+            expect(dbClient.query).toHaveBeenCalledWith(expect.any(String), ['order-123']);
+            expect(result).toEqual(mockSummary);
+        });
+
+        it('should return null when no order is found', async () => {
+            dbClient.query.mockResolvedValue({ rows: [] });
+
+            const result = await orderService.retrieveOrderDetails('order-404');
+
+            expect(dbClient.query).toHaveBeenCalledTimes(1);
+            expect(dbClient.query).toHaveBeenCalledWith(expect.any(String), ['order-404']);
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('updateOrderStatusAndResultStatus', () => {
+        it('should call dbClient.query with correct parameters', async () => {
+            dbClient.withTransaction.mockResolvedValue({});
+
+            await orderService.updateOrderStatusAndResultStatus(
+                'order-1',
+                'ref-1',
+                OrderStatus.Complete,
+                ResultStatus.Result_Available,
+                'corr-1'
+            );
+
+            expect(dbClient.withTransaction).toHaveBeenCalledTimes(1);
+            expect(dbClient.withTransaction).toHaveBeenCalledWith(
+                expect.any(Function)
+            );
+        });
+    });
+});

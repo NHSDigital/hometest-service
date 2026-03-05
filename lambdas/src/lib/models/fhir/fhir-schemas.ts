@@ -28,9 +28,7 @@ export const FHIRHumanNameSchema = z.object({
 });
 
 export const FHIRContactPointSchema = z.object({
-  system: z
-    .enum(["phone", "fax", "email", "pager", "url", "sms", "other"])
-    .optional(),
+  system: z.enum(["phone", "fax", "email", "pager", "url", "sms", "other"]).optional(),
   value: z.string(),
   use: z.enum(["home", "work", "temp", "old", "mobile"]).optional(),
 });
@@ -128,4 +126,28 @@ export const FHIRTaskSchema = z.looseObject({
   lastModified: z.string().datetime().optional(),
   requester: FHIRReferenceSchema.optional(),
   owner: FHIRReferenceSchema.optional(),
+});
+
+// Not a complete FHIR Observation schema implementation,
+export const FHIRObservationSchema = z.looseObject({
+  resourceType: z.literal("Observation"),
+  id: z.string().optional(),
+  basedOn: z.array(FHIRReferenceSchema).optional(),
+  status: z.enum([
+    "registered",
+    "preliminary",
+    "final",
+    "amended",
+    "corrected",
+    "cancelled",
+    "entered-in-error",
+    "unknown",
+  ]),
+  code: FHIRCodeableConceptSchema,
+  subject: FHIRReferenceSchema.optional(),
+  effectiveDateTime: z.iso.datetime().optional(),
+  issued: z.iso.datetime().optional(),
+  performer: z.array(FHIRReferenceSchema).optional(),
+  valueCodeableConcept: FHIRCodeableConceptSchema.optional(),
+  interpretation: z.array(FHIRCodeableConceptSchema).optional(),
 });

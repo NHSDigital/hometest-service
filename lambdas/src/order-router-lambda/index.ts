@@ -1,6 +1,6 @@
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import { init } from "./init";
-import { isUUID } from "../lib/utils";
+import { isUUID } from "../lib/utils/utils";
 import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { SupplierConfig } from "../lib/db/supplier-db";
 import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
