@@ -8,7 +8,6 @@ import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-respons
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
-import { getCorrelationIdFromEventHeaders } from "../lib/utils";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
 import httpErrorHandler from "@middy/http-error-handler";
 import middy from "@middy/core";
@@ -18,6 +17,7 @@ import { securityHeaders } from "../lib/http/security-headers";
 import { defaultCorsOptions } from "../login-lambda/cors-configuration";
 import z from "zod";
 import { IncomingBusinessStatus } from "./types";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 
 const commons = new ConsoleCommons();
 const name = "order-status-lambda";
