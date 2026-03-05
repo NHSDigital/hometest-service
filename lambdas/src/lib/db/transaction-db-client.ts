@@ -1,5 +1,6 @@
 import { DBClient } from "./db-client";
 import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
+import { ConsentService } from "./consent-db";
 
 export interface TransactionServiceProperties {
   dbClient: DBClient;
@@ -17,12 +18,27 @@ export class TransactionService {
     this.dbClient = dbClient;
   }
 
-  async createPatientAndOrderAndStatus(
+  /**
+   * Creates or updates a patient record, creates a test order, creates the GENERATED order status,
+   * and records consent for the order in a single database transaction.
+   *
+   * @param nhsNumber - The NHS number of the patient.
+   * @param birthDate - The birth date of the patient.
+   * @param supplierId - The supplier ID for the test order.
+   * @param testCode - The code for the test being ordered.
+   * @param correlationId - Correlation ID for tracking the transaction.
+   * @param consent - Indicates whether consent is given for the order.
+   * @param originator - Optional originator of the order.
+   * @returns An object containing orderUid, orderReference, and patientUid.
+   * @throws Error if any part of the transaction fails.
+   */
+  async createPatientOrderAndConsent(
     nhsNumber: string,
     birthDate: string,
     supplierId: string,
     testCode: string,
     correlationId: string,
+    consent: boolean,
     originator?: string,
   ): Promise<CreateOrderResult> {
     try {
@@ -36,10 +52,10 @@ export class TransactionService {
           RETURNING patient_uid;
         `;
 
-        const patientResult = await tx.query<
-          { patient_uid: string },
-          [string, string]
-        >(patientQuery, [nhsNumber, birthDate]);
+        const patientResult = await tx.query<{ patient_uid: string }, [string, string]>(
+          patientQuery,
+          [nhsNumber, birthDate],
+        );
 
         if (patientResult.rowCount === 0 || !patientResult.rows[0]) {
           throw new Error("Failed to create or retrieve patient record");
@@ -72,6 +88,9 @@ export class TransactionService {
           correlationId,
         });
 
+        const consentService = new ConsentService(tx);
+        await consentService.createConsent(order_uid, consent);
+
         return {
           orderUid: order_uid,
           orderReference: order_reference,
@@ -79,7 +98,7 @@ export class TransactionService {
         };
       });
     } catch (error) {
-      throw new Error("Failed to create patient and order in database", {
+      throw new Error("Failed to create patient, order and consent in database", {
         cause: error,
       });
     }
