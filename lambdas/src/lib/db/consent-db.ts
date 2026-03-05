@@ -14,14 +14,14 @@ export class ConsentService {
   }
 
   /**
-  * Record consent for a given order. Only one consent row per order can exist due to a unique index on consent(order_uid).
-  * Attempts to insert consent for the same order more than once will fail.
-  * Validates that the consent value is true before recording.
-  *
-  * @param orderUid - The UUID of the order
-  * @param consentValue - The consent value from the request (must be true)
-  * @throws Error if consent is not true, if a consent row for the order already exists, or if database operation fails
-  */
+   * Record consent for a given order. Only one consent row per order can exist due to a unique index on consent(order_uid).
+   * Attempts to insert consent for the same order more than once will fail.
+   * Validates that the consent value is true before recording.
+   *
+   * @param orderUid - The UUID of the order
+   * @param consentValue - The consent value from the request (must be true)
+   * @throws Error if consent is not true, if a consent row for the order already exists, or if database operation fails
+   */
   async createConsent(orderUid: string, consentValue: boolean): Promise<ConsentRow> {
     if (consentValue !== true) {
       throw new Error(`Consent must be true to record consent for orderId ${orderUid}`);
