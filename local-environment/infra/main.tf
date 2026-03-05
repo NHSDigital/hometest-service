@@ -337,11 +337,6 @@ resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
   batch_size       = 1
 }
 
-# SQS Queue for order results
-resource "aws_sqs_queue" "order_results" {
-  name = "${var.project_name}-order-results"
-}
-
 module "order_result_lambda" {
   source = "./modules/lambda"
 
@@ -358,10 +353,15 @@ module "order_result_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS     = "--enable-source-maps"
-    AWS_REGION       = "eu-west-1"
-    RESULT_QUEUE_URL = aws_sqs_queue.order_results.url
-    SQS_ENDPOINT     = "http://localstack:4566"
+    NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 
@@ -380,9 +380,16 @@ module "order_service_lambda" {
   http_method                   = "POST"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["POST", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization", "X-Correlation-ID"]
+  cors_allow_credentials = true
+
   environment_variables = {
     NODE_OPTIONS              = "--enable-source-maps"
     ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
+    ALLOW_ORIGIN              = "http://localhost:3000"
     DB_USERNAME               = "app_user"
     DB_ADDRESS                = "postgres-db"
     DB_PORT                   = "5432"
@@ -458,6 +465,34 @@ module "get_results_lambda" {
   }
 }
 
+module "order_status_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "order-status"
+  zip_path                      = "${path.module}/../../lambdas/dist/order-status-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "test-order/status"
+  http_method                   = "POST"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  environment_variables = {
+    NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+  }
+}
+
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -469,7 +504,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.get_results_lambda,
     module.login_lambda,
     module.order_service_lambda,
-    module.session_lambda
+    module.session_lambda,
+    module.order_status_lambda,
   ]
 
   triggers = {
@@ -480,7 +516,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.get_results_lambda,
       module.login_lambda,
       module.order_service_lambda,
-      module.session_lambda
+      module.session_lambda,
+      module.order_status_lambda,
     ]))
   }
 

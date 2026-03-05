@@ -21,5 +21,6 @@ export function mapAuthUser(data: AuthUserApiData): AuthUser {
     phoneNumber: data.phone_number,
     familyName: data.family_name,
     givenName: data.given_name,
+    email: data.email,
   };
 }

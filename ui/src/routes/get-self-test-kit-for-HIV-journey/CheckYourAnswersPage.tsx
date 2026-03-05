@@ -6,6 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/s
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
+import orderService, {OrderServiceRequest} from "@/lib/services/order-service";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
@@ -73,7 +74,7 @@ export default function CheckYourAnswersPage() {
     setConsentChecked(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!consentChecked) {
@@ -89,8 +90,49 @@ export default function CheckYourAnswersPage() {
       consentTimestamp,
     });
 
-    // TODO: Submit order via API
-    goToStep(JourneyStepNames.OrderSubmitted);
+    try {
+      // Build orderRequest from OrderAnswers and User in state
+      const addressLines = orderAnswers.deliveryAddress
+        ? formatAddress(orderAnswers.deliveryAddress)
+        : [];
+
+      const orderRequest: OrderServiceRequest = {
+        testCode: orderAnswers.supplier?.[0]?.testCode || "",
+        testDescription: "HIV antigen test",
+        supplierId: orderAnswers.supplier?.[0]?.id || "",
+        patient: {
+          family: user?.familyName || "",
+          given: [user?.givenName || ""],
+          text: `${user?.givenName || ""} ${user?.familyName || ""}`,
+          telecom: [
+            { phone: orderAnswers.mobileNumber || "" },
+            { sms: orderAnswers.mobileNumber || "" },
+            { email: user?.email || "" }
+          ],
+          address: {
+            line: addressLines,
+            city: orderAnswers.deliveryAddress?.postTown || "",
+            postalCode: orderAnswers.deliveryAddress?.postcode || "",
+            country: "United Kingdom"
+          },
+          birthDate: user?.birthdate || "",
+          nhsNumber: user?.nhsNumber || ""
+        },
+        consent: true
+      };
+
+      const orderResponse = await orderService.submitOrder(orderRequest);
+      console.log("Order router response:", orderResponse);
+
+      updateOrderAnswers({
+        orderReferenceNumber: orderResponse.orderReference,
+      });
+
+      goToStep(JourneyStepNames.OrderSubmitted);
+    } catch (err) {
+      console.error("Failed to submit order:", err);
+      // ALPHA TODO: Show error to user
+    }
   };
 
   const addressLines = orderAnswers.deliveryAddress

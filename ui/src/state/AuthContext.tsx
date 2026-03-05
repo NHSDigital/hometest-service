@@ -18,6 +18,7 @@ export interface AuthUser {
   phoneNumber: string;
   givenName: string;
   familyName: string;
+  email: string;
 }
 
 interface AuthContextType {

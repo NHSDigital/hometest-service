@@ -5,7 +5,7 @@ const allowOrigin =
 
 export const defaultCorsOptions: Options = {
   credentials: true,
-  headers: '*',
+  headers: 'Content-Type, Authorization, X-Correlation-ID',
   origin: allowOrigin,
-  methods: 'GET'
+  methods: 'GET, POST, PUT, DELETE, OPTIONS'
 };

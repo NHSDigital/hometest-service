@@ -259,7 +259,7 @@ describe("OrderSubmittedPage", () => {
         ),
       });
 
-      expect(screen.getByText(/12345/)).toBeInTheDocument();
+      expect(screen.getByText(/\[Reference Number\]/)).toBeInTheDocument();
     });
 
     it("displays provided reference number", () => {
