@@ -118,7 +118,7 @@ export const lambdaHandler = async (
     }
 
     try {
-      await orderStatusService.updateOrderStatus({
+      await orderStatusService.addOrderStatusUpdate({
         orderId: orderResult.orderUid,
         statusCode: OrderStatusCodes.QUEUED,
         createdAt: new Date().toISOString(),

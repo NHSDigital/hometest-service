@@ -82,3 +82,8 @@ output "order_service_endpoint" {
   description = "Order Service Lambda endpoint"
   value       = module.order_service_lambda.localstack_endpoint_url
 }
+
+output "order_status_endpoint" {
+  description = "Order Status Lambda endpoint"
+  value       = module.order_status_lambda.localstack_endpoint_url
+}
