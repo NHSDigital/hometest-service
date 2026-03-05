@@ -131,12 +131,11 @@ export default function CheckYourAnswersPage() {
         orderReferenceNumber: orderResponse.orderReference,
       });
 
+      goToStep(JourneyStepNames.OrderSubmitted);
     } catch (err) {
       console.error("Failed to submit order:", err);
       // ALPHA TODO: Show error to user
     }
-
-    goToStep(JourneyStepNames.OrderSubmitted);
   };
 
   const addressLines = orderAnswers.deliveryAddress
