@@ -49,14 +49,7 @@ export interface FHIRContainedPatient {
 export interface FHIRServiceRequest {
   resourceType: "ServiceRequest";
   id?: string;
-  status:
-    | "draft"
-    | "active"
-    | "on-hold"
-    | "revoked"
-    | "completed"
-    | "entered-in-error"
-    | "unknown";
+  status: "draft" | "active" | "on-hold" | "revoked" | "completed" | "entered-in-error" | "unknown";
   intent:
     | "proposal"
     | "plan"
@@ -72,4 +65,59 @@ export interface FHIRServiceRequest {
   subject: FHIRReference;
   requester: FHIRReference;
   performer?: FHIRReference[];
+}
+
+export interface FHIRIdentifier {
+  system?: string;
+  value: string;
+  use?: "usual" | "official" | "temp" | "secondary" | "old";
+}
+
+export type FHIRTaskStatus =
+  | "draft"
+  | "requested"
+  | "received"
+  | "accepted"
+  | "rejected"
+  | "ready"
+  | "cancelled"
+  | "in-progress"
+  | "on-hold"
+  | "failed"
+  | "completed"
+  | "entered-in-error";
+
+export type FHIRTaskIntent =
+  | "proposal"
+  | "plan"
+  | "order"
+  | "original-order"
+  | "reflex-order"
+  | "filler-order"
+  | "instance-order"
+  | "option"
+  | "unknown";
+
+export interface FHIRTaskPerformer {
+  actor: FHIRReference;
+}
+
+export interface FHIRTask {
+  resourceType: "Task";
+  id?: string;
+
+  identifier?: FHIRIdentifier[];
+  basedOn: FHIRReference[];
+  status: FHIRTaskStatus;
+  intent: FHIRTaskIntent;
+
+  statusReason?: FHIRCodeableConcept;
+  businessStatus?: FHIRCodeableConcept;
+
+  for: FHIRReference;
+  authoredOn?: string; // ISO datetime string
+  lastModified?: string; // ISO datetime string
+
+  requester?: FHIRReference;
+  owner?: FHIRReference;
 }

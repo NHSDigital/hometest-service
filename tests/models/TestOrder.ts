@@ -1,6 +1,13 @@
 export type UUID = string;
 
-export type OrderStatusCode = "CONFIRMED" | "DISPATCHED" | "RECEIVED" | "COMPLETE";
+export type OrderStatusCode =
+  | "GENERATED"
+  | "QUEUED"
+  | "SUBMITTED"
+  | "CONFIRMED"
+  | "DISPATCHED"
+  | "RECEIVED"
+  | "COMPLETE";
 export interface TestOrderModel {
   order_uid: string;
   order_reference: number;
@@ -12,7 +19,7 @@ export interface TestOrderModel {
   supplier_name: string;
   nhs_number: string;
   birth_date: Date;
-  status_code: OrderStatusCode;
+  status_code?: OrderStatusCode;
 }
 export interface Supplier {
   supplier_id: UUID;
