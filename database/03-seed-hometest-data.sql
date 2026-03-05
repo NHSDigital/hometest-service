@@ -17,7 +17,8 @@ INSERT INTO supplier (
   client_id,
   oauth_token_path,
   order_path,
-  oauth_scope
+  oauth_scope,
+  results_path
 )
 VALUES (
   'c1a2b3c4-1234-4def-8abc-123456789abc',
@@ -28,7 +29,8 @@ VALUES (
   'preventx-client-id',
   '/oauth/token',
   '/order',
-  'orders results'
+  'orders results',
+  '/results'
 )
 ON CONFLICT (supplier_id) DO NOTHING;
 
@@ -41,7 +43,8 @@ INSERT INTO supplier (
   client_id,
   oauth_token_path,
   order_path,
-  oauth_scope
+  oauth_scope,
+  results_path
 )
 VALUES (
   'd2b3c4d5-2345-4abc-8def-23456789abcd',
@@ -52,7 +55,8 @@ VALUES (
   'sh24-client-id',
   '/oauth/token',
   '/order',
-  'order results'
+  'order results',
+  '/results'
 )
 ON CONFLICT (supplier_id) DO NOTHING;
 
