@@ -1,10 +1,10 @@
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { FetchHttpClient } from "../lib/http/http-client";
 import { PostgresDbClient } from "../lib/db/db-client";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { SupplierService } from "../lib/db/supplier-db";
 import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { TestResultDbClient } from "../lib/db/test-result-db-client";
-import { postgresConfigFromEnv } from "../lib/db/db-config";
 
 export interface Environment {
   testResultDbClient: TestResultDbClient;

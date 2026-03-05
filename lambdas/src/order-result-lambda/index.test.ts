@@ -1,402 +1,160 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { OrderStatus, ResultStatus } from '../lib/types/status';
+import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
 
-const mockSQSClientSendMessage = jest.fn();
+const initMock = {
+  commons: {
+    logInfo: jest.fn(),
+    logError: jest.fn(),
+  },
+  orderService: {
+    retrieveOrderDetails: jest.fn(),
+    updateOrderStatusAndResultStatus: jest.fn(),
+  },
+}
 
-jest.mock('../lib/sqs/sqs-client', () => ({
-  AWSSQSClient: jest.fn().mockImplementation(() => ({
-    sendMessage: mockSQSClientSendMessage,
-    close: jest.fn(),
-  })),
+const extractAndValidateObservationFieldsMock = jest.fn();
+const extractInterpretationCodeFromFHIRObservationMock = jest.fn();
+const validateDBDataMock = jest.fn();
+
+jest.mock('./init', () => ({
+  init: () => initMock,
 }));
 
-process.env.RESULT_QUEUE_URL = 'https://sqs.eu-west-1./wiremock:8080/test-results-queue';
-process.env.AWS_REGION = 'eu-west-1';
-process.env.SQS_ENDPOINT = '"http://wiremock:8080"';
+jest.mock('./validation', () => ({
+  extractAndValidateObservationFields: extractAndValidateObservationFieldsMock,
+  extractInterpretationCodeFromFHIRObservation: extractInterpretationCodeFromFHIRObservationMock,
+  validateDBData: validateDBDataMock,
+}));
+
+jest.mock('../lib/fhir-response', () => ({
+  createFhirErrorResponse: jest.fn((code, type, message, severity) => ({
+    statusCode: code,
+    body: JSON.stringify({
+      issue: [
+        {
+          code: type,
+          diagnostics: message,
+          severity,
+        },
+      ],
+    }),
+  })),
+  createFhirResponse: jest.fn((code, resource) => ({
+    statusCode: code,
+    body: JSON.stringify(resource),
+  })),
+  ErrorStatusCode: {
+    BadRequest: 400,
+    NotFound: 404,
+    Internal: 500,
+  },
+}));
 
 import { handler } from './index';
+import { InterpretationCode } from './models';
 
-describe('Order Result Lambda Handler', () => {
-  let mockEvent: Partial<APIGatewayProxyEvent>;
-  let body;
+describe('order-result-lambda handler', () => {
+  const identifiers = {
+    orderUid: 'order-uid-1',
+    patientId: 'patient-1',
+    supplierId: 'supplier-1',
+    correlationId: 'corr-1',
+  };
+  const observation = { resourceType: 'Observation', status: 'final' };
+  const event: APIGatewayProxyEvent = {
+    path: '/result',
+    httpMethod: 'POST',
+    body: JSON.stringify(observation),
+    headers: {},
+    isBase64Encoded: false,
+    multiValueHeaders: {},
+    multiValueQueryStringParameters: null,
+    queryStringParameters: null,
+    pathParameters: null,
+    stageVariables: null,
+    requestContext: {} as any,
+    resource: '',
+  };
+  const testOrderResult = { order_reference: 'order-ref-1' };
 
   beforeEach(() => {
-    mockEvent = {
-      httpMethod: 'POST',
-      path: '/result',
-      body: null,
-      headers: {
-        'X-Correlation-ID': '550e8400-e29b-41d4-a716-446655440000',
-      },
-    };
-
-    body = {
-      resourceType: 'Observation',
-      identifier: '12345',
-      status: 'final',
-      basedOn: [
-        {
-          reference: 'ServiceRequest/12345',
-        },
-      ],
-      subject: {
-        reference: 'Patient/12345',
-      },
-      interpretation: [
-        {
-          coding: [
-            {
-              system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-              code: 'N',
-              display: 'Normal',
-            },
-          ],
-          text: 'Normal',
-        },
-      ],
-      valueCodeableConcept: {
-        coding: [
-          {
-            system: 'http://snomed.info/sct',
-            code: '260415000',
-            display: 'Not detected',
-          },
-        ],
-      },
-    };
-
-    mockSQSClientSendMessage.mockReset();
-  });
-
-  afterEach(() => {
     jest.clearAllMocks();
+    extractAndValidateObservationFieldsMock.mockReturnValue({
+      validationResult: { isValid: true },
+      observation,
+      identifiers,
+    });
+    initMock.orderService.retrieveOrderDetails.mockResolvedValue(testOrderResult);
+    validateDBDataMock.mockResolvedValue({ isValid: true, isIdempotent: false });
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
+    initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
   });
 
-  describe('Success scenarios', () => {
-    test('should process valid result successfully', async () => {
-      mockEvent.body = JSON.stringify(body);
-
-      mockSQSClientSendMessage.mockResolvedValue({
-        MessageId: 'test-message-id-123',
-        SequenceNumber: '1',
-      });
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(201);
-      expect(JSON.parse(result.body)).toEqual(body);
-      expect(mockSQSClientSendMessage).toHaveBeenCalledTimes(1);
-    });
+  it('returns 201 and resource on success', async () => {
+    const res = await handler(event);
+    expect(res.statusCode).toBe(201);
+    expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
   });
 
-  describe('Validation scenarios', () => {
-    test('should fail validation when interpretation system is missing', async () => {
-      body.interpretation[0].coding[0].system = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: expect.stringContaining('interpretation[0].coding[0].system'),
-            severity: 'error',
-          },
-        ],
-      });
+  it('returns error if validation fails', async () => {
+    extractAndValidateObservationFieldsMock.mockReturnValueOnce({
+      validationResult: { isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'fail', severity: 'error' },
     });
-
-    test('should fail validation when interpretation code is missing', async () => {
-      body.interpretation[0].coding[0].code = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: expect.stringContaining('interpretation[0].coding[0].code'),
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when interpretation display is missing', async () => {
-      body.interpretation[0].coding[0].display = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected string, received undefined → at interpretation[0].coding[0].display',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when interpretation coding is missing', async () => {
-      body.interpretation[0].coding = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected array, received undefined → at interpretation[0].coding',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when interpretation is missing', async () => {
-      body.interpretation = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected array, received undefined → at interpretation',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when subject reference is missing', async () => {
-      body.subject.reference = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected string, received undefined → at subject.reference',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when subject is missing', async () => {
-      body.subject = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected object, received undefined → at subject',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when basedOn reference is missing', async () => {
-      body.basedOn[0].reference = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected string, received undefined → at basedOn[0].reference',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should fail validation when basedOn is missing', async () => {
-      body.basedOn = undefined;
-      mockEvent.body = JSON.stringify(body);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid input: expected array, received undefined → at basedOn',
-            severity: 'error',
-          },
-        ],
-      });
-    });
+    const res = await handler(event);
+    expect(res.statusCode).toBe(400);
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(400, 'invalid', 'fail', 'error');
   });
 
-  describe('Invalid JSON scenarios', () => {
-    test('should handle invalid JSON in request body', async () => {
-      mockEvent.body = '{ invalid json body}';
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid JSON in request body',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should handle empty JSON in request body', async () => {
-      mockEvent.body = '{}';
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid JSON in request body',
-            severity: 'error',
-          },
-        ],
-      });
-    });
-
-    test('should handle null request body', async () => {
-      mockEvent.body = null;
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(400);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'invalid',
-            diagnostics: 'Invalid JSON in request body',
-            severity: 'error',
-          },
-        ],
-      });
-    });
+  it('returns 404 if order not found', async () => {
+    initMock.orderService.retrieveOrderDetails.mockResolvedValueOnce(null);
+    const res = await handler(event);
+    expect(res.statusCode).toBe(404);
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(404, 'not-found', expect.stringContaining('No order found'), 'error');
   });
 
-  describe('SQS Client error scenarios', () => {
-    beforeEach(() => {
-      mockEvent.body = JSON.stringify(body);
-    });
-
-    test('should handle SQS internal server error', async () => {
-      mockSQSClientSendMessage.mockRejectedValue({
-        name: 'InternalFailure',
-        message: 'Internal server error occurred',
-        $metadata: {
-          httpStatusCode: 500,
-        },
-      });
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'exception',
-            diagnostics: 'An internal error occurred',
-            severity: 'fatal',
-          },
-        ],
-      });
-    });
-
-    test('should handle SQS service unavailable error', async () => {
-      mockSQSClientSendMessage.mockRejectedValue({
-        name: 'ServiceUnavailable',
-        message: 'Service temporarily unavailable',
-        $metadata: {
-          httpStatusCode: 503,
-        },
-      });
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'exception',
-            diagnostics: 'An internal error occurred',
-            severity: 'fatal',
-          },
-        ],
-      });
-    });
-
-    test('should handle SQS throttling error', async () => {
-      mockSQSClientSendMessage.mockRejectedValue({
-        name: 'ThrottlingException',
-        message: 'The request was denied due to request throttling.',
-        $metadata: {
-          httpStatusCode: 403,
-        },
-      });
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
-
-      expect(result.statusCode).toBe(500);
-      expect(JSON.parse(result.body)).toMatchObject({
-        issue: [
-          {
-            code: 'exception',
-            diagnostics: 'An internal error occurred',
-            severity: 'fatal',
-          },
-        ],
-      });
-    });
+  it('returns error if db validation fails', async () => {
+    validateDBDataMock.mockResolvedValueOnce({ isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'db fail', severity: 'error' });
+    const res = await handler(event);
+    expect(res.statusCode).toBe(400);
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(400, 'invalid', 'db fail', 'error');
   });
 
-  describe('Environment configuration', () => {
-    test('should use configured queue URL from environment', async () => {
-      mockEvent.body = JSON.stringify(body);
-      mockSQSClientSendMessage.mockResolvedValue({
-        MessageId: 'test-message-id-123',
-        SequenceNumber: '1',
-      });
+  it('returns 201 if idempotent', async () => {
+    validateDBDataMock.mockResolvedValueOnce({ isValid: true, isIdempotent: true });
+    const res = await handler(event);
+    expect(res.statusCode).toBe(201);
+    expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
+  });
 
-      const result = await handler(mockEvent as APIGatewayProxyEvent);
+  it('calls updateOrderStatusAndResultStatus for interpretation code normal with order status complete and result available', async () => {
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Normal);
+    await handler(event);
+    expect(initMock.orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
+      identifiers.orderUid,
+      testOrderResult.order_reference,
+      OrderStatus.Complete,
+      ResultStatus.Result_Available,
+      identifiers.correlationId
+    );
+  });
 
-      expect(result.statusCode).toBe(201);
-      expect(mockSQSClientSendMessage).toHaveBeenCalledTimes(1);
-      expect(mockSQSClientSendMessage).toHaveBeenCalledWith(
-        'https://sqs.eu-west-1./wiremock:8080/test-results-queue',
-        expect.any(String),
-        expect.any(Object),
-      );
-    });
+  it('calls updateOrderStatusAndResultStatus for interpretation code abnormal with result withheld', async () => {
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Abnormal);
+    await handler(event);
+    expect(initMock.orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
+      identifiers.orderUid,
+      testOrderResult.order_reference,
+      OrderStatus.Received,
+      ResultStatus.Result_Withheld,
+      identifiers.correlationId
+    );
+  });
+
+  it('returns 500 if updateDatabase throws', async () => {
+    initMock.orderService.updateOrderStatusAndResultStatus.mockRejectedValueOnce(new Error('fail'));
+    const res = await handler(event);
+    expect(res.statusCode).toBe(500);
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(500, 'exception', 'An internal error occurred', 'fatal');
   });
 });

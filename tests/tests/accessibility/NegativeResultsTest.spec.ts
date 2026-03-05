@@ -14,7 +14,6 @@ test.describe("Accessibility Testing @accessibility", () => {
   test.beforeAll(async ({ testedUser }) => {
     await dbClient.connect();
     await resultDbClient.connect();
-    console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
     const result = await dbClient.createOrderWithPatientAndStatus({
       nhs_number: testedUser.nhsNumber!,
@@ -51,7 +50,7 @@ test.describe("Accessibility Testing @accessibility", () => {
     await resultDbClient.deleteResultStatusByUid(orderId);
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
+    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     await dbClient.disconnect();
     await resultDbClient.disconnect();
   });

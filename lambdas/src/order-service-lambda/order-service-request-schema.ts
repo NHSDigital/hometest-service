@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isUUID } from "../lib/utils";
+import { isUUID } from "../lib/utils/utils";
 import {
   FHIRAddressSchema,
   FHIRHumanNameSchema,
