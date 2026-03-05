@@ -17,7 +17,7 @@ export const createFhirResponse = (
   };
 };
 
-type ErrorStatusCode =
+export type ErrorStatusCode =
   | 400
   | 401
   | 403
