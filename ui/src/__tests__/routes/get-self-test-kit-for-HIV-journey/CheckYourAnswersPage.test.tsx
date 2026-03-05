@@ -379,7 +379,7 @@ describe("CheckYourAnswersPage", () => {
     });
 
     it("updates order reference number after successful submit", async () => {
-      mockSubmitOrder.mockResolvedValueOnce({ orderReference: "ORDER-123" });
+      mockSubmitOrder.mockResolvedValueOnce({ orderReference: 123 });
 
       render(
         <>
@@ -394,9 +394,7 @@ describe("CheckYourAnswersPage", () => {
 
       await waitFor(() => {
         expect(mockSubmitOrder).toHaveBeenCalled();
-        expect(screen.getByTestId("order-reference")).toHaveTextContent(
-          "ORDER-123",
-        );
+        expect(screen.getByTestId("order-reference")).toHaveTextContent("123");
       });
     });
   });
