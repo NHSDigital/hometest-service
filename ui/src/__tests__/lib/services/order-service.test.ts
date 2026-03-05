@@ -58,7 +58,7 @@ describe("OrderService", () => {
   it("should submit an order and return the response", async () => {
     const mockResponse: OrderServiceResponse = {
       orderUid: "order-uid",
-      orderReference: "order-ref",
+      orderReference: 12345,
       message: "Order created",
     };
 
