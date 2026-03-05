@@ -22,9 +22,6 @@ test.describe("Home test E2E tests", () => {
       await homeTestStartPage.clickStartNowButton();
 
       await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-      await selectDeliveryAddressPage.clickEditAddressLink();
-      await selectDeliveryAddressPage.clickContinueButton();
-
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await expect(homeTestStartPage.headerText).toHaveText(
         "This is what you'll need to do to give a blood sample",
