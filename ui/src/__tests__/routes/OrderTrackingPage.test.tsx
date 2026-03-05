@@ -47,7 +47,7 @@ describe("OrderTrackingPage", () => {
     id: orderId,
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: OrderStatus.ORDER_RECEIVED,
+    status: OrderStatus.CONFIRMED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
@@ -68,10 +68,7 @@ describe("OrderTrackingPage", () => {
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[`/orders/${orderId}/tracking`]}>
           <Routes>
-            <Route
-              path="/orders/:orderId/tracking"
-              element={<OrderTrackingPage />}
-            />
+            <Route path="/orders/:orderId/tracking" element={<OrderTrackingPage />} />
           </Routes>
         </MemoryRouter>
       </QueryClientProvider>,
@@ -99,7 +96,7 @@ describe("OrderTrackingPage", () => {
       const orderStatus = await screen.findByTestId("order-status");
       expect(orderStatus).toBeInTheDocument();
       expect(screen.getByText("HIV self-test")).toBeInTheDocument();
-      expect(screen.getByText("Status: ORDER_RECEIVED")).toBeInTheDocument();
+      expect(screen.getByText("Status: CONFIRMED")).toBeInTheDocument();
     });
 
     it("renders AboutService component with correct supplier", async () => {
@@ -168,12 +165,8 @@ describe("OrderTrackingPage", () => {
 
       const errorAlert = await screen.findByRole("alert");
       expect(errorAlert).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: "There is a problem" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("We could not find this order."),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
+      expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
     });
 
     it("displays error message when order is undefined", async () => {
@@ -185,9 +178,7 @@ describe("OrderTrackingPage", () => {
 
       const errorAlert = await screen.findByRole("alert");
       expect(errorAlert).toBeInTheDocument();
-      expect(
-        screen.getByText("We could not find this order."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
     });
 
     it("does not render OrderStatus or AboutService when order not found", async () => {
@@ -224,9 +215,7 @@ describe("OrderTrackingPage", () => {
         ...mockOrder,
         supplier: "SH:24",
       };
-      (orderDetailsService.get as jest.Mock).mockResolvedValue(
-        differentSupplierOrder,
-      );
+      (orderDetailsService.get as jest.Mock).mockResolvedValue(differentSupplierOrder);
 
       await act(async () => {
         renderWithRouter(orderId);
@@ -245,9 +234,7 @@ describe("OrderTrackingPage", () => {
 
       const errorAlert = screen.getByRole("alert");
       expect(errorAlert).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: "There is a problem" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
       expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
 
       // Should not call service with invalid ID

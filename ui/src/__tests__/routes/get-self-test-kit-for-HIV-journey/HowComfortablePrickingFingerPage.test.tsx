@@ -2,6 +2,7 @@ import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
+import { AuthProvider } from "@/state/AuthContext";
 import { CreateOrderProvider } from "@/state/OrderContext";
 import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
@@ -57,9 +58,11 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/how-comfortable-pricking-finger"]}
   >
-    <JourneyNavigationProvider>
-      <CreateOrderProvider>{children}</CreateOrderProvider>
-    </JourneyNavigationProvider>
+    <AuthProvider>
+      <JourneyNavigationProvider>
+        <CreateOrderProvider>{children}</CreateOrderProvider>
+      </JourneyNavigationProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
