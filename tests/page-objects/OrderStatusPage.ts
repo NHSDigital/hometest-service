@@ -8,7 +8,6 @@ export class OrderStatusPage extends BasePage {
   readonly statusTag: Locator;
   readonly orderedDate: Locator;
   readonly referenceNumber: Locator;
-  readonly orderNotFoundMessage: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -17,9 +16,6 @@ export class OrderStatusPage extends BasePage {
     this.orderedDate = page.locator('span[aria-label*="Order date"]');
     this.referenceNumber = page.locator("#reference-number");
     this.config = ConfigFactory.getConfig();
-    this.orderNotFoundMessage = page
-      .getByRole("alert")
-      .locator("p", { hasText: "We could not find this order." });
   }
 
   async navigateToOrder(orderId: string): Promise<void> {

@@ -11,6 +11,7 @@ import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
 import { ConfirmAndUpdateMobileNumberPage } from "../page-objects/ConfirmAndUpdateMobileNumberPage";
 import { NegativeResultPage } from "../page-objects/NegativeResultPage";
 import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPasswordPage";
+import { ErrorPage } from "../page-objects/ErrorPage";
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -25,6 +26,7 @@ export interface MyFixtures {
   confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
   negativeResultPage: NegativeResultPage;
   nhsEmailAndPasswordPage: NHSEmailAndPasswordPage;
+  errorPage: ErrorPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -74,5 +76,9 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   nhsEmailAndPasswordPage: async ({ page }, use) => {
     await use(new NHSEmailAndPasswordPage(page));
+  },
+
+  errorPage: async ({ page }, use) => {
+    await use(new ErrorPage(page));
   },
 });

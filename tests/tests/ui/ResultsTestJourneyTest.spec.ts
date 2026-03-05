@@ -8,8 +8,11 @@ let orderId: string;
 let patientId: string;
 let orderId2: string;
 let patientId2: string;
+let orderReference: number;
 const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
+const nhsNumber2 = "9876543211";
+const birthDate2 = "1990-01-01";
 
 test.describe("Results Page", () => {
   test.beforeAll(
@@ -27,8 +30,8 @@ test.describe("Results Page", () => {
       });
 
       const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: "9876543211",
-        birth_date: "1990-01-01",
+        nhs_number: nhsNumber2,
+        birth_date: birthDate2,
         supplier_name: "Preventx",
         test_code: "PCR",
         initial_status: "COMPLETE",
@@ -36,7 +39,8 @@ test.describe("Results Page", () => {
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
-      console.log(`Created test order with ID: ${orderId}`);
+      orderReference = result.order_reference;
+      console.log(`Created test order with ID: ${orderId} and reference: ${orderReference}`);
 
       orderId2 = resultSecondPatient.order_uid;
       patientId2 = resultSecondPatient.patient_uid;
@@ -52,6 +56,8 @@ test.describe("Results Page", () => {
   test("Authenticated user opens a deep link - negative result", async ({ negativeResultPage }) => {
     await negativeResultPage.navigateToOrderResult(orderId);
     await expect(negativeResultPage.result).toHaveText("Negative");
+    const orderReferenceOnPage = await negativeResultPage.getOrderReference();
+    expect(orderReferenceOnPage).toBe(orderReference);
   });
 
   test("Authenticated user opens a deep link - positive result", async ({
@@ -74,11 +80,11 @@ test.describe("Results Page", () => {
       },
     });
 
-    test("Unauthorized user opens a deep link", async ({ negativeResultPage, orderStatusPage }) => {
+    test("Unauthorized user opens a deep link", async ({ negativeResultPage, errorPage }) => {
       await negativeResultPage.navigateToOrderResult(orderId2);
-      await orderStatusPage.orderNotFoundMessage.waitFor({ state: "visible" });
+      await expect(errorPage.orderNotFoundMessage).toBeVisible();
       const url = await negativeResultPage.getCurrentUrl();
-      expect(url).toContain("/tracking");
+      expect(url).toContain(orderId2);
     });
 
     test("Unauthenticated user opens a deep link", async ({
@@ -94,7 +100,7 @@ test.describe("Results Page", () => {
   });
 
   test.afterAll(
-    "Delete result status,order status, order, and patient records from the database and disconnect",
+    "Delete result status, order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
@@ -103,7 +109,7 @@ test.describe("Results Page", () => {
       await resultDbClient.deleteResultStatusByUid(orderId2);
       await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId2);
-      await dbClient.deletePatientMapping("9876543211", "1990-01-01");
+      await dbClient.deletePatientMapping(nhsNumber2, birthDate2);
       await dbClient.disconnect();
       await resultDbClient.disconnect();
     },
