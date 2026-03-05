@@ -7,7 +7,7 @@ import { HttpError } from "../lib/http/http-client";
 const mockHttpClientPostRaw = jest.fn();
 const mockSupplierAuthGetAccessToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
-const mockUpdateOrderStatus = jest.fn();
+const mockAddOrderStatusUpdate = jest.fn();
 
 const supplierOrderBody = JSON.parse(
   readFileSync(join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"), "utf-8"),
@@ -23,7 +23,7 @@ jest.mock("./init", () => ({
     },
     secretsClient: {},
     orderStatusService: {
-      updateOrderStatus: mockUpdateOrderStatus,
+      addOrderStatusUpdate: mockAddOrderStatusUpdate,
     },
   })),
 }));
@@ -84,7 +84,7 @@ describe("order-router-lambda", () => {
     mockHttpClientPostRaw.mockReset();
     mockSupplierAuthGetAccessToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
-    mockUpdateOrderStatus.mockReset();
+    mockAddOrderStatusUpdate.mockReset();
 
     process.env.AWS_REGION = "eu-west-2";
   });
@@ -107,7 +107,7 @@ describe("order-router-lambda", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
-      mockUpdateOrderStatus.mockResolvedValue(undefined);
+      mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
     it("should process a single valid SQS message successfully", async () => {
@@ -210,7 +210,7 @@ describe("order-router-lambda", () => {
       const result = await handler(sqsEvent, mockContext as Context);
 
       expect(result.batchItemFailures).toEqual([]);
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith({
+      expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith({
         orderId: supplierOrderBody.id,
         statusCode: "SUBMITTED",
         createdAt: expect.any(String),
@@ -225,7 +225,7 @@ describe("order-router-lambda", () => {
         headers: { get: () => "application/fhir+json" },
       });
 
-      mockUpdateOrderStatus.mockRejectedValue(new Error("Database connection failed"));
+      mockAddOrderStatusUpdate.mockRejectedValue(new Error("Database connection failed"));
 
       const messageBody = JSON.stringify({
         supplier_code: validUUID,
@@ -239,7 +239,7 @@ describe("order-router-lambda", () => {
 
       // Should succeed to avoid retrying and potentially duplicating the supplier order
       expect(result.batchItemFailures).toEqual([]);
-      expect(mockUpdateOrderStatus).toHaveBeenCalled();
+      expect(mockAddOrderStatusUpdate).toHaveBeenCalled();
     });
   });
 
@@ -350,7 +350,7 @@ describe("order-router-lambda", () => {
     it("should fail for missing order_body.id", async () => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
-      mockUpdateOrderStatus.mockResolvedValue(undefined);
+      mockAddOrderStatusUpdate.mockResolvedValue(undefined);
 
       const orderBodyWithoutId = { ...supplierOrderBody };
       delete orderBodyWithoutId.id;
@@ -435,7 +435,7 @@ describe("order-router-lambda", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
-      mockUpdateOrderStatus.mockResolvedValue(undefined);
+      mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
     it("should fail when supplier returns 400 Bad Request", async () => {
@@ -544,7 +544,7 @@ describe("order-router-lambda", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
       mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
-      mockUpdateOrderStatus.mockResolvedValue(undefined);
+      mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
     it("should process successful messages and fail only invalid ones", async () => {

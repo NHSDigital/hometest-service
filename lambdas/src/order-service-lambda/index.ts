@@ -5,7 +5,7 @@ import { OrderServiceRequest } from "./order-service-request-type";
 import {
   createJsonResponse,
   getCorrelationIdFromEventHeaders,
-} from "../lib/utils";
+} from "../lib/utils/utils";
 import { init } from "./init";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
@@ -112,7 +112,7 @@ export const handler = async (
     }
 
     try {
-      await orderStatusService.updateOrderStatus({
+      await orderStatusService.addOrderStatusUpdate({
         orderId: orderResult.orderUid,
         statusCode: OrderStatusCodes.QUEUED,
         createdAt: new Date().toISOString(),

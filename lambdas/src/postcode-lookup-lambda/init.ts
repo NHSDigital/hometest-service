@@ -1,4 +1,4 @@
-import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from '../lib/utils';
+import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from '../lib/utils/utils';
 import { PostcodeLookupService } from '../lib/postcode-lookup/postcode-lookup-service';
 import { OSPlacesClient } from '../lib/postcode-lookup/osplaces/osplaces-client';
 import { StubPostcodeLookupClient } from '../lib/postcode-lookup/stub/stub-client';
