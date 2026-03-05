@@ -10,7 +10,7 @@ export class TermsOfUsePage extends BasePage {
     super(page);
     this.CyberAwareLink = page.getByRole("link", { name: "Cyber Aware website" });
     this.HelpAndSupportLink = page.getByRole("link", {
-      name: "help and support page",
+      name: "https://www.nhs.uk/nhs-app/help/",
     });
     this.HomeTestPrivacyPolicyLink = page.getByRole("link", { name: "Hometest Privacy Policy" });
   }
