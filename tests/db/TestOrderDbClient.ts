@@ -59,14 +59,17 @@ export class TestOrderDbClient extends BaseDbClient {
     patientUid: UUID,
     testCode: string,
     originator = "automatic-test",
-  ): Promise<UUID> {
+  ): Promise<{ order_uid: UUID; order_reference: number }> {
     const rows = await this.query<TestOrderModel>(
       `INSERT INTO test_order (supplier_id, patient_uid, test_code, originator)
        VALUES ($1::uuid, $2::uuid, $3, $4)
-       RETURNING order_uid`,
+       RETURNING order_uid, order_reference`,
       [supplierId, patientUid, testCode, originator],
     );
-    return rows[0].order_uid;
+    return {
+      order_uid: rows[0].order_uid,
+      order_reference: rows[0].order_reference,
+    };
   }
 
   async insertOrderStatus(orderUid: UUID, statusCode: OrderStatusCode): Promise<void> {
@@ -86,17 +89,17 @@ export class TestOrderDbClient extends BaseDbClient {
 
   async createOrderWithPatientAndStatus(
     input: CreateOrderInput,
-  ): Promise<{ order_uid: UUID; patient_uid: UUID }> {
+  ): Promise<{ order_uid: UUID; patient_uid: UUID; order_reference: number }> {
     const patient_uid = await this.upsertPatient(input.nhs_number, input.birth_date);
     const supplier_id = await this.getSupplierIdByName(input.supplier_name);
-    const order_uid = await this.createTestOrder(
+    const order = await this.createTestOrder(
       supplier_id,
       patient_uid,
       input.test_code,
       input.originator,
     );
-    await this.insertOrderStatus(order_uid, input.initial_status);
-    return { order_uid, patient_uid };
+    await this.insertOrderStatus(order.order_uid, input.initial_status);
+    return { order_uid: order.order_uid, patient_uid, order_reference: order.order_reference };
   }
 
   async deleteOrderStatusByUid(orderUid: UUID): Promise<void> {
