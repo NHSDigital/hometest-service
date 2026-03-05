@@ -1,6 +1,6 @@
 -- +goose Up
 ALTER TABLE supplier
-ADD COLUMN IF NOT EXISTS results_path varchar(255);
+ADD COLUMN results_path varchar(255);
 
 UPDATE supplier
 SET
