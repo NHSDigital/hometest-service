@@ -45,7 +45,7 @@ runs:
       with:
         name: ${{ inputs.artifact-prefix }}-coverage-data
         path: ${{ inputs.working-directory }}/coverage/lcov.info
-        retention-days: 30
+        retention-days: 1
 
     - name: "Upload coverage report"
       uses: actions/upload-artifact@v7
