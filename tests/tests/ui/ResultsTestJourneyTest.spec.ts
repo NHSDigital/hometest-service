@@ -2,7 +2,6 @@ import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
-import { NHSEmailAndPasswordPage } from "../../page-objects/NHSLogin/NHSEmailAndPasswordPage";
 import { randomUUID } from "crypto";
 
 let orderId: string;
@@ -82,13 +81,15 @@ test.describe("Results Page", () => {
       expect(url).toContain("/tracking");
     });
 
-    test("Unauthenticated user opens a deep link", async ({ negativeResultPage }) => {
+    test("Unauthenticated user opens a deep link", async ({
+      negativeResultPage,
+      nhsEmailAndPasswordPage,
+    }) => {
       const context = negativeResultPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
       await negativeResultPage.navigateToOrderResult(orderId);
-      const nhsLogin = new NHSEmailAndPasswordPage(negativeResultPage.page);
-      await expect(nhsLogin.emailInput).toBeVisible();
+      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
     });
   });
 
