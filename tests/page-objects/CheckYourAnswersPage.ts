@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class CheckYourAnswersPage extends BasePage {
@@ -23,16 +23,18 @@ export class CheckYourAnswersPage extends BasePage {
     this.mobileNumberChangeLink = page.locator('#mobile-change');
   }
 
-  async getMobileNumber(): Promise<string> {
-    return await this.mobileNumberInput.innerText();
+  async getPostcode(): Promise<string | null> {
+    const actualAddressValue = await this.actualAddress.innerText()
+    const actualPostcodeValue = extractUKPostcode(actualAddressValue);
+    return actualPostcodeValue;
   }
 
-  async getPostcodeAndMobileNumberAndComfortableDoingTest(): Promise<{ actualPostcode: string | null, actualMobileNumber: string, comfortableDoingTest: string }> {
-    const actualAddressValue = await this.actualAddress.innerText()
-    const actualMobileNumberValue = await this.actualMobileNumber.innerText();
-    const actualPostcodeValue = extractUKPostcode(actualAddressValue);
-    const comfortableDoingTestValue = await this.comfortableChangeLink.innerText();
-    return { actualPostcode: actualPostcodeValue, actualMobileNumber: actualMobileNumberValue, comfortableDoingTest: comfortableDoingTestValue };
+  async getMobileNumber(): Promise<string> {
+    return await this.actualMobileNumber.innerText();
+  }
+
+  async getComfortableDoingTest(): Promise<string> {
+    return await this.comfortableChangeLink.innerText();
   }
 
   async selectConsentCheckbox(): Promise<void> {

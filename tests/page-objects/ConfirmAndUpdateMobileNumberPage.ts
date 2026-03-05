@@ -8,7 +8,6 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
   readonly confirmMobileNumber: Locator;
   readonly continueButton: Locator;
   readonly confirmationMobileNumberLabel: Locator;
-  private mobileNumber: string | null = null;
 
   constructor(page: Page) {
     super(page);
@@ -22,9 +21,8 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
   async fillAlternativeMobileNumber(
     personalDetails: PersonalDetailsModel,
   ): Promise<void> {
-    this.mobileNumber = personalDetails.mobileNumber;
     await this.useAnotherMobileNumber.click();
-    await this.mobileNumberInput.fill(this.mobileNumber);
+    await this.mobileNumberInput.fill(personalDetails.mobileNumber);
   }
 
   async selectConfirmMobileNumber(): Promise<void> {
@@ -41,7 +39,7 @@ export class ConfirmAndUpdateMobileNumberPage extends BasePage {
   }
 
   async getMobileNumberInputValue(): Promise<string> {
-    const mobileNumber = this.mobileNumber;
-    return mobileNumber ? mobileNumber.trim() : "";
+    const mobileNumber = await this.mobileNumberInput.inputValue();
+    return mobileNumber;
   }
 }

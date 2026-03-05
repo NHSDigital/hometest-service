@@ -116,12 +116,15 @@ test.describe("HIV Test Order journeys", () => {
   });
 
   test.describe("Submit Order Journey", () => {
+    let expectedMobileNumber = "";
     test.beforeEach(
       async ({
         homeTestStartPage,
         findAddressPage,
         selectDeliveryAddressPage,
         howComfortablePrickingFingerPage,
+        confirmAndUpdateMobileNumberPage,
+        checkYourAnswersPage
       }) => {
         await homeTestStartPage.navigate();
         await expect(homeTestStartPage.headerText).toHaveText(
@@ -140,130 +143,82 @@ test.describe("HIV Test Order journeys", () => {
           "This is what you'll need to do to give a blood sample",
         );
         await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
+        expectedMobileNumber = await confirmAndUpdateMobileNumberPage.getConfirmationMobileNumberLabelText();
+        await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
+        await confirmAndUpdateMobileNumberPage.clickContinue();
+        await checkYourAnswersPage.selectConsentCheckbox();
       },
     );
 
-    test("Confirm Mobile number test journey", async ({
-      confirmAndUpdateMobileNumberPage,
+    test("Validate Check Your Answers Page", async ({
+      checkYourAnswersPage,
       orderSubmittedPage
-
     }) => {
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
+      const actualPostcode = await checkYourAnswersPage.getPostcode();
+      const actualMobileNumber = await checkYourAnswersPage.getMobileNumber();
+      expect(actualMobileNumber).toBe(expectedMobileNumber);
+      expect(actualPostcode).toBe(randomAddress.postCode);
+      await checkYourAnswersPage.selectConsentCheckbox();
+      await checkYourAnswersPage.clickSubmitOrder();
       await expect(orderSubmittedPage.headerText).toHaveText("Order submitted");
     });
 
-    test("Update alternative mobile number test journey", async ({
-      confirmAndUpdateMobileNumberPage,
-    }) => {
-      await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(
-        personalDetails,
-      );
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-    });
-
-    test("Check Your Answers Verification", async ({
-      confirmAndUpdateMobileNumberPage,
-      checkYourAnswersPage
-    }) => {
-      const expectedMobileNumber = await confirmAndUpdateMobileNumberPage.getConfirmationMobileNumberLabelText();
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      const { actualPostcode, actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumberAndComfortableDoingTest();
-      expect(actualMobileNumber).toBe(expectedMobileNumber);
-      expect(actualPostcode).toBe(actualPostcode);
-      await checkYourAnswersPage.selectConsentCheckbox();
-      await checkYourAnswersPage.clickSubmitOrder();
-    });
-
-    test("Check your Answers - Change Answer - Find Address", async ({
+    test("Change and Verify - Address, Mobile Number and Comfortable with HIV Self-Test Option", async ({
       checkYourAnswersPage,
       selectDeliveryAddressPage,
       findAddressPage,
+      howComfortablePrickingFingerPage,
       confirmAndUpdateMobileNumberPage
     }) => {
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      await checkYourAnswersPage.selectConsentCheckbox();
       await checkYourAnswersPage.clickDeliveryAddressChangeLink();
       await selectDeliveryAddressPage.clickEditAddressLink();
       await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       const { filledPostcode } = await findAddressPage.getPostcodeAndAddressInputValues();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      const { actualPostcode } = await checkYourAnswersPage.getPostcodeAndMobileNumberAndComfortableDoingTest();
+      const actualPostcode = await checkYourAnswersPage.getPostcode();
+      await checkYourAnswersPage.clickComfortableChangeLink();
+      await howComfortablePrickingFingerPage.clickContinue();
+      const comfortableDoingText = await checkYourAnswersPage.getComfortableDoingTest();
+      await checkYourAnswersPage.clickMobileNumberChangeLink();
+      await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(personalDetails);
+      const expectedMobileNumber = await confirmAndUpdateMobileNumberPage.getMobileNumberInputValue();
+      await confirmAndUpdateMobileNumberPage.clickContinue();
+      const actualMobileNumber = await checkYourAnswersPage.getMobileNumber();
       expect(actualPostcode).toBe(filledPostcode);
+      expect(actualMobileNumber).toBe(expectedMobileNumber.replace(/\D/g, ""));
+      expect(comfortableDoingText).toBe("Change\n Are you comfortable doing the HIV self-test?");
       const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
       expect(checkedOrNot).toBe(true);
     });
 
-    test("Check your Answers -  Change answer - Enter address manually", async ({
+    test("Check your Answers - Address Change - Enter address manually", async ({
       checkYourAnswersPage,
       findAddressPage,
-      enterAddressManuallyPage,
-      confirmAndUpdateMobileNumberPage
+      enterAddressManuallyPage
     }) => {
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      await checkYourAnswersPage.selectConsentCheckbox();
       await checkYourAnswersPage.clickDeliveryAddressChangeLink();
       await findAddressPage.clickEnterAddressManuallyLink();
       await enterAddressManuallyPage.fillAddress(randomAddress);
       const { filledPostcode } = await enterAddressManuallyPage.getAddressInputValues();
       await enterAddressManuallyPage.clickContinue();
-      const { actualPostcode } = await checkYourAnswersPage.getPostcodeAndMobileNumberAndComfortableDoingTest();
+      const actualPostcode = await checkYourAnswersPage.getPostcode();
       expect(actualPostcode).toBe(filledPostcode);
       const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
       expect(checkedOrNot).toBe(true);
     });
 
-    test("Change answer - Comfortable with HIV self-test", async ({
-      checkYourAnswersPage,
-      confirmAndUpdateMobileNumberPage
-    }) => {
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      await checkYourAnswersPage.selectConsentCheckbox();
-      await checkYourAnswersPage.clickComfortableChangeLink();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      const { comfortableDoingTest } = await checkYourAnswersPage.getPostcodeAndMobileNumberAndComfortableDoingTest();
-      expect(comfortableDoingTest).toBe("Change\n Are you comfortable doing the HIV self-test?");
-      const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
-      expect(checkedOrNot).toBe(true);
-    });
-
-    test("Check your Answers -  Change answer - select phone number", async ({
-      checkYourAnswersPage,
-      confirmAndUpdateMobileNumberPage,
-
-    }) => {
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      await checkYourAnswersPage.selectConsentCheckbox();
-      await checkYourAnswersPage.clickMobileNumberChangeLink();
-      await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(personalDetails);
-      const expectedMobileNumber = await confirmAndUpdateMobileNumberPage.getMobileNumberInputValue();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      const { actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumberAndComfortableDoingTest();
-      expect(actualMobileNumber).toBe(expectedMobileNumber);
-      const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
-      expect(checkedOrNot).toBe(true);
-    });
-
-    test("Check your Answers -  Change answer -  enter phone number", async ({
+    test("Check your Answers - Mobile Number Change - Enter phone number", async ({
       checkYourAnswersPage,
       enterMobileNumberPage,
       confirmAndUpdateMobileNumberPage
     }) => {
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-      await checkYourAnswersPage.selectConsentCheckbox();
       await checkYourAnswersPage.clickMobileNumberChangeLink();
       await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
       await enterMobileNumberPage.fillAlternativeMobileNumber(personalDetails);
       const expectedMobileNumber = await enterMobileNumberPage.getMobileNumberInputValue();
       await enterMobileNumberPage.clickContinue();
-      const { actualMobileNumber } = await checkYourAnswersPage.getPostcodeAndMobileNumberAndComfortableDoingTest();
-      expect(actualMobileNumber).toBe(expectedMobileNumber);
+      const actualMobileNumber = await checkYourAnswersPage.getMobileNumber();
+      expect(actualMobileNumber).toBe(expectedMobileNumber.replace(/[\s-]/g, ""));
       const checkedOrNot = await checkYourAnswersPage.isConsentCheckboxChecked();
       expect(checkedOrNot).toBe(true);
     });

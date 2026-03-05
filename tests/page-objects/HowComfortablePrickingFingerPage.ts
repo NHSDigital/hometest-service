@@ -29,4 +29,8 @@ export class HowComfortablePrickingFingerPage extends BasePage {
     await this.bloodSampleGuideLink.click();
     await this.page.waitForURL('**/blood-sample-guide');
   }
+
+  async clickContinue(): Promise<void> {
+    await this.continueButton.click();
+  }
 }

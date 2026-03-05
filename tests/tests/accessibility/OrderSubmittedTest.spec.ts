@@ -1,12 +1,11 @@
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
-import { OrderSubmittedPage } from "../../page-objects/OrderSubmittedPage";
 
 const randomAddress = AddressModel.getRandomAddress();
 
 test(
-  "Check Your Answers Page",
+  "Order Submitted Page",
   {
     tag: ["@accessibility"],
   },

@@ -45,7 +45,7 @@ export class EnterMobileNumberPage extends BasePage {
   }
 
   async getMobileNumberInputValue(): Promise<string> {
-    const mobileNumber = this.mobileNumber ?? '';
+    const mobileNumber = await this.alternativeMobileNumberInput.inputValue();
     return mobileNumber;
   }
 }
