@@ -2,7 +2,7 @@ import { ClientConfig } from "pg";
 import {
   retrieveMandatoryEnvVariable,
   retrieveOptionalEnvVariable,
-} from "../utils";
+} from "../utils/utils";
 import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
 
 import type { SecretsClient } from "../secrets/secrets-manager-client";

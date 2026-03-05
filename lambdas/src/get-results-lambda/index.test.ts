@@ -21,8 +21,8 @@ jest.mock("./init", () => ({
   })),
 }));
 
-jest.mock("../lib/utils", () => ({
-  ...jest.requireActual("../lib/utils"),
+jest.mock("../lib/utils/utils", () => ({
+  ...jest.requireActual("../lib/utils/utils"),
   getCorrelationIdFromEventHeaders: () =>
     mockGetCorrelationIdFromEventHeaders(),
 }));

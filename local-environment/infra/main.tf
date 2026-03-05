@@ -337,11 +337,6 @@ resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
   batch_size       = 1
 }
 
-# SQS Queue for order results
-resource "aws_sqs_queue" "order_results" {
-  name = "${var.project_name}-order-results"
-}
-
 module "order_result_lambda" {
   source = "./modules/lambda"
 
@@ -358,10 +353,15 @@ module "order_result_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS     = "--enable-source-maps"
-    AWS_REGION       = "eu-west-1"
-    RESULT_QUEUE_URL = aws_sqs_queue.order_results.url
-    SQS_ENDPOINT     = "http://localstack:4566"
+    NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
   }
 }
 

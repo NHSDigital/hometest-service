@@ -3,7 +3,7 @@ import { NhsLoginClient } from "../lib/login/nhs-login-client";
 import { TokenService } from "../lib/login/token-service";
 import { type INhsLoginConfig } from "../lib/models/nhs-login/nhs-login-config";
 import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
-import { retrieveMandatoryEnvVariable } from "../lib/utils";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 import { HttpClient } from "../lib/http/login-http-client";
 import { AuthTokenService } from "../lib/auth/auth-token-service";
 import {
