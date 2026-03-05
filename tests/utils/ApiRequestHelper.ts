@@ -1,8 +1,27 @@
+import { OrderStatusTaskPayload } from "../test-data/OrderStatusTypes";
+
 export interface ApiHeaders {
   [key: string]: string;
   "Content-Type": string;
   "X-Correlation-ID": string;
 }
+
+export const orderStatusPayload = (
+  orderUid: string,
+  patientUid: string,
+  defaultStatus: string,
+  defaultIntent: string,
+  overrides: Partial<OrderStatusTaskPayload> = {},
+): OrderStatusTaskPayload => ({
+  resourceType: "Task",
+  status: defaultStatus,
+  intent: defaultIntent,
+  basedOn: [{ reference: `Order/${orderUid}` }],
+  for: { reference: `Patient/${patientUid}` },
+  businessStatus: { text: "dispatched" },
+  lastModified: new Date().toISOString(),
+  ...overrides,
+});
 
 export function createHeaders(contentType: string, correlationId: string): ApiHeaders {
   return {
@@ -10,6 +29,11 @@ export function createHeaders(contentType: string, correlationId: string): ApiHe
     "X-Correlation-ID": correlationId,
   };
 }
+
+export const buildHeaders = (correlationId: string): Record<string, string> => ({
+  "Content-Type": "application/json",
+  "X-Correlation-ID": correlationId,
+});
 
 export const headersOrder: ApiHeaders = createHeaders(
   "application/json",
