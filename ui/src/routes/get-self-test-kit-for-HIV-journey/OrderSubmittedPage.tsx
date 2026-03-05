@@ -8,7 +8,7 @@ export default function OrderSubmittedPage() {
   const { orderAnswers } = useCreateOrderContext();
   const { "order-submitted": content } = useContent();
 
-  const referenceNumber = orderAnswers.orderReferenceNumber || "12345";
+  const referenceNumber = orderAnswers.orderReferenceNumber ?? "[Reference Number]";
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
   // TODO: update feedback HREF in content
