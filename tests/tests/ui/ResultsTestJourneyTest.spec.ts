@@ -7,10 +7,8 @@ import { randomUUID } from "crypto";
 
 let orderId: string;
 let patientId: string;
-let correlationId: string;
 let orderId2: string;
 let patientId2: string;
-let correlationId2: string;
 const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
 
@@ -39,14 +37,15 @@ test.describe("Results Page", () => {
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
-      correlationId = randomUUID();
       console.log(`Created test order with ID: ${orderId}`);
 
       orderId2 = resultSecondPatient.order_uid;
       patientId2 = resultSecondPatient.patient_uid;
 
+      const correlationId = randomUUID();
+      const correlationId2 = randomUUID();
+
       await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
-      correlationId2 = randomUUID();
       await resultDbClient.insertStatusResult(orderId2, "RESULT_AVAILABLE", correlationId2);
     },
   );
@@ -56,7 +55,7 @@ test.describe("Results Page", () => {
     await expect(negativeResultPage.result).toHaveText("Negative");
   });
 
-  test.describe("Unauthenticated access", () => {
+  test.describe("Unauthorized access", () => {
     test.use({
       errorCaptureOptions: {
         failOnConsoleError: false,
