@@ -19,4 +19,8 @@ export class NegativeResultPage extends BasePage {
   async waitForResultsToLoad(): Promise<void> {
     await this.result.waitFor();
   }
+
+  async getCurrentUrl(): Promise<string> {
+    return this.page.url();
+  }
 }
