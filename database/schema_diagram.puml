@@ -20,6 +20,7 @@ entity "supplier" as supplier {
   oauth_token_path : varchar(255)
   order_path : varchar(255)
   oauth_scope : varchar(255)
+  results_path : varchar(255)
 }
 
 entity "la_supplier_offering" as offering {
