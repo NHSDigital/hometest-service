@@ -1,5 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { z } from "zod";
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
 import { createJsonResponse, getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
@@ -7,6 +11,8 @@ import { init } from "./init";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { securityHeaders } from "../lib/http/security-headers";
 
 const name = "order-service-lambda";
 const { transactionService, orderStatusService, sqsClient, orderPlacementQueueUrl } = init();
@@ -30,7 +36,9 @@ const parseAndValidateRequest = (eventBody: string | null): OrderServiceRequest 
   return validationResult.data;
 };
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
   let correlationId: string;
 
   try {
@@ -120,11 +128,17 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       patientUid: orderResult.patientUid,
     });
 
-    return createJsonResponse(201, {
-      orderUid: orderResult.orderUid,
-      orderReference: orderResult.orderReference,
-      message: "Order created successfully",
-    });
+    return createJsonResponse(
+      201,
+      {
+        orderUid: orderResult.orderUid,
+        orderReference: orderResult.orderReference,
+        message: "Order created successfully",
+      },
+      {
+        "X-Correlation-ID": correlationId,
+      },
+    );
   } catch (error) {
     console.error(name, "Order request failed", { correlationId, error });
     return createJsonResponse(400, {
@@ -132,3 +146,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     });
   }
 };
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(defaultCorsOptions))
+  .use(httpErrorHandler());

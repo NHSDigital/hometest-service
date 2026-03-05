@@ -93,7 +93,7 @@ describe("order-service-lambda handler", () => {
     });
 
     const module = await import("./index");
-    handler = module.handler;
+    handler = module.lambdaHandler;
   });
 
   afterEach(() => {
