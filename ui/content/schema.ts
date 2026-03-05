@@ -325,25 +325,6 @@ export interface TestResultsContent {
   };
 }
 
-export interface PrivacyPolicySubsection {
-  heading?: string;
-  paragraphs?: string[];
-  list?: string[];
-}
-
-export interface PrivacyPolicySection {
-  id: string;
-  heading: string;
-  paragraphs: string[];
-  subsections?: PrivacyPolicySubsection[];
-}
-
-export interface HomeTestPrivacyPolicyContent {
-  title: string;
-  introduction: string[];
-  sections: PrivacyPolicySection[];
-}
-
 export interface BloodSampleGuideContent {
   title: string;
   whatsInKit: {
@@ -404,13 +385,13 @@ export interface LegalDocumentSection {
   subsections?: LegalDocumentSubsection[];
 }
 
-export interface LegalDocumentConent {
+export interface LegalDocumentContent {
   title: string;
   introduction: string[];
   sections: LegalDocumentSection[];
 }
 
-export interface SuppliersLegalDocumentsContent<TSupplierContent = LegalDocumentConent> {
+export interface SuppliersLegalDocumentsContent<TSupplierContent = LegalDocumentContent> {
   title: string;
   suppliers: Record<string, TSupplierContent>;
 }
@@ -432,7 +413,7 @@ export interface PagesContent {
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
-  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  "home-test-privacy-policy": LegalDocumentContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;

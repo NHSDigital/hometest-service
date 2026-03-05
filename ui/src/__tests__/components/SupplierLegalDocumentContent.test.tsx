@@ -1,10 +1,35 @@
 import "@testing-library/jest-dom";
 
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 
 import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
+import { type LegalDocumentContent as LegalDocumentContentType } from "@/content/schema";
 
 const mockUsePageContent = jest.fn();
+const mockLegalDocumentContent = jest.fn((_props: unknown) => null);
+
+const supplierContent: LegalDocumentContentType = {
+  title: "Preventx terms of use",
+  introduction: ["Welcome text", "Read https://example.org/info"],
+  sections: [
+    {
+      id: "privacy",
+      heading: "Privacy",
+      paragraphs: ["Privacy paragraph"],
+      subsections: [
+        {
+          heading: "How data is used",
+          paragraphs: ["Data usage paragraph"],
+          list: ["Item one", "Link item https://example.org/list"],
+        },
+      ],
+    },
+  ],
+};
+
+jest.mock("@/components/LegalDocumentContent", () => ({
+  LegalDocumentContent: (props: unknown) => mockLegalDocumentContent(props),
+}));
 
 jest.mock("@/hooks", () => ({
   usePageContent: (...args: unknown[]) => mockUsePageContent(...args),
@@ -27,51 +52,34 @@ describe.each([
     mockUsePageContent.mockReturnValue({
       suppliers: {
         preventx: {
+          ...supplierContent,
           title,
-          introduction: ["Welcome text", "Read https://example.org/info"],
-          sections: [
-            {
-              id: "privacy",
-              heading: "Privacy",
-              paragraphs: ["Privacy paragraph"],
-              subsections: [
-                {
-                  heading: "How data is used",
-                  paragraphs: ["Data usage paragraph"],
-                  list: ["Item one", "Link item https://example.org/list"],
-                },
-              ],
-            },
-          ],
         },
       },
     });
   });
 
-  it("renders supplier content when supplier exists", () => {
+  it("uses the expected content key and renders supplier content", () => {
     render(<SupplierLegalDocumentContent supplier="preventx" documentType={documentType} />);
 
-    expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
-    expect(screen.getByText("Welcome text")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Privacy" })).toBeInTheDocument();
-    expect(screen.getByText("Data usage paragraph")).toBeInTheDocument();
     expect(mockUsePageContent).toHaveBeenCalledWith(contentKey);
+    expect(mockLegalDocumentContent).toHaveBeenCalledWith({
+      content: {
+        ...supplierContent,
+        title,
+      },
+    });
   });
 
   it("normalizes supplier using trim and lower-case", () => {
     render(<SupplierLegalDocumentContent supplier="  PREVENTX  " documentType={documentType} />);
 
-    expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
-  });
-
-  it("renders URL text as links", () => {
-    render(<SupplierLegalDocumentContent supplier="preventx" documentType={documentType} />);
-
-    const introLink = screen.getByRole("link", { name: /https:\/\/example\.org\/info/i });
-    const listLink = screen.getByRole("link", { name: /https:\/\/example\.org\/list/i });
-
-    expect(introLink).toHaveAttribute("href", "https://example.org/info");
-    expect(listLink).toHaveAttribute("href", "https://example.org/list");
+    expect(mockLegalDocumentContent).toHaveBeenCalledWith({
+      content: {
+        ...supplierContent,
+        title,
+      },
+    });
   });
 
   it("throws when supplier is missing", () => {

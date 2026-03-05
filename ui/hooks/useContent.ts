@@ -7,13 +7,13 @@ import type {
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
   GlobalErrorContent,
-  HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
+  LegalDocumentContent,
   NoAddressFoundContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
-  SuppliersLegalDocumentsContent,
   StartPageContent,
+  SuppliersLegalDocumentsContent,
   TestResultsContent,
 } from "@/content/schema";
 
@@ -51,7 +51,7 @@ export interface UseContentReturn {
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
-  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  "home-test-privacy-policy": LegalDocumentContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
 }
@@ -82,46 +82,10 @@ export const useCommonContent = (): CommonContent => {
   return content.commonContent;
 };
 
-export function usePageContent(page: "get-self-test-kit-for-HIV"): StartPageContent;
-export function usePageContent(page: "enter-delivery-address"): EnterDeliveryAddressContent;
-export function usePageContent(page: "enter-address-manually"): EnterAddressManuallyContent;
-export function usePageContent(page: "enter-mobile-phone-number"): EnterMobilePhoneNumberContent;
-export function usePageContent(
-  page: "confirm-mobile-phone-number",
-): ConfirmMobilePhoneNumberContent;
-export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
-export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
-export function usePageContent(
-  page: "how-comfortable-pricking-finger",
-): HowComfortablePrickingFingerContent;
-export function usePageContent(page: "global-error"): GlobalErrorContent;
-export function usePageContent(page: "order-tracking"): OrderTrackingContent;
-export function usePageContent(page: "blood-sample-guide"): BloodSampleGuideContent;
-export function usePageContent(page: "check-your-answers"): CheckYourAnswersContent;
-export function usePageContent(page: "test-results"): TestResultsContent;
-export function usePageContent(page: "home-test-privacy-policy"): HomeTestPrivacyPolicyContent;
-export function usePageContent(page: "suppliers-terms-conditions"): SuppliersLegalDocumentsContent;
-export function usePageContent(page: "suppliers-privacy-policy"): SuppliersLegalDocumentsContent;
-export function usePageContent(
-  page:
-    | "get-self-test-kit-for-HIV"
-    | "enter-delivery-address"
-    | "enter-address-manually"
-    | "no-address-found"
-    | "select-delivery-address"
-    | "how-comfortable-pricking-finger"
-    | "enter-mobile-phone-number"
-    | "confirm-mobile-phone-number"
-    | "global-error"
-    | "order-tracking"
-    | "blood-sample-guide"
-    | "check-your-answers"
-    | "test-results"
-    | "home-test-privacy-policy"
-    | "suppliers-terms-conditions"
-    | "suppliers-privacy-policy",
-) {
-  return content.pages[page];
+type PageContentKey = Exclude<keyof UseContentReturn, "commonContent">;
+
+export function usePageContent<K extends PageContentKey>(page: K): UseContentReturn[K] {
+  return content.pages[page] as UseContentReturn[K];
 }
 
 export default useContent;
