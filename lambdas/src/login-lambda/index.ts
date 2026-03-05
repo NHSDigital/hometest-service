@@ -12,7 +12,7 @@ import { securityHeaders } from "../lib/http/security-headers";
 import {
   retrieveMandatoryEnvVariable,
   retrieveOptionalEnvVariable,
-} from "../lib/utils";
+} from "../lib/utils/utils";
 
 // ALPHA: This file will need revisiting.
 const authCookieSameSite = retrieveMandatoryEnvVariable(

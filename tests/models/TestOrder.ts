@@ -12,6 +12,7 @@ export interface TestOrderModel {
   supplier_name: string;
   nhs_number: string;
   birth_date: Date;
+  status_code: OrderStatusCode;
 }
 export interface Supplier {
   supplier_id: UUID;
