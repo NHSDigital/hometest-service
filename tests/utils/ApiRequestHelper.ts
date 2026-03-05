@@ -40,7 +40,7 @@ export const headersOrder: ApiHeaders = createHeaders(
   "123e4567-e89b-42d3-a456-426614174000",
 );
 
-export const headersTestResults: ApiHeaders = createHeaders(
-  "application/fhir+json",
-  "123e4567-e89b-12d3-a456-426614174999",
-);
+export const headersTestResults = (correlationId: string): ApiHeaders => ({
+  "Content-Type": "application/fhir+json",
+  "X-Correlation-ID": correlationId,
+});

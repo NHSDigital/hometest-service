@@ -28,7 +28,7 @@ test.describe("Results Flow - Update Order Results Logic", () => {
       birth_date: testedUser.dob!,
       supplier_name: supplierName,
       test_code: "PCR",
-      initial_status: "ORDER_RECEIVED",
+      initial_status: "RECEIVED",
     });
 
     orderId = result.order_uid;

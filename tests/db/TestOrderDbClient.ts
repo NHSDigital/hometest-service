@@ -128,7 +128,7 @@ export class TestOrderDbClient extends BaseDbClient {
       FROM hometest.order_status
       WHERE order_uid = $1
       ORDER BY created_at DESC
-      LIMIT 2
+      LIMIT 5
     `,
       [orderUid],
     );
