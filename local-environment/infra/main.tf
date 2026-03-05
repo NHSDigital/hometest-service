@@ -380,9 +380,16 @@ module "order_service_lambda" {
   http_method                   = "POST"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["POST", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization", "X-Correlation-ID"]
+  cors_allow_credentials = true
+
   environment_variables = {
     NODE_OPTIONS              = "--enable-source-maps"
     ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
+    ALLOW_ORIGIN              = "http://localhost:3000"
     DB_USERNAME               = "app_user"
     DB_ADDRESS                = "postgres-db"
     DB_PORT                   = "5432"
