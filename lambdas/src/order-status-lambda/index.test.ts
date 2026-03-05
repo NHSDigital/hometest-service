@@ -4,6 +4,7 @@ import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
+import { init } from "./init";
 
 const mockInit = jest.fn();
 
@@ -14,7 +15,7 @@ const mockAddOrderStatusUpdate = jest.fn();
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
 jest.mock("./init", () => ({
-  init: () => mockInit(),
+  init: mockInit,
 }));
 
 jest.mock("../lib/utils/utils", () => ({
@@ -73,6 +74,15 @@ describe("Order Status Lambda Handler", () => {
     },
   };
 
+  it("should reuse initialized services across multiple lambda invocations", async () => {
+    mockEvent.body = "{}";
+
+    await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+    await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+    expect(mockInit).toHaveBeenCalledTimes(1);
+  });
+
   describe("Request Parsing and Validation", () => {
     it("should return 400 if request body is empty JSON object", async () => {
       mockEvent.body = "{}";
@@ -85,7 +95,6 @@ describe("Order Status Lambda Handler", () => {
       expect(body.resourceType).toBe("OperationOutcome");
       expect(body.issue[0].code).toBe("invalid");
 
-      // Diagnostics now describe missing required fields
       expect(body.issue[0].diagnostics).toMatch(/basedOn|lastModified|businessStatus/);
     });
 
