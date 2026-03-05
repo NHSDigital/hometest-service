@@ -6,7 +6,10 @@ import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocument
 import { type LegalDocumentContent as LegalDocumentContentType } from "@/content/schema";
 
 const mockUsePageContent = jest.fn();
-const mockLegalDocumentContent = jest.fn((_props: unknown) => null);
+const mockLegalDocumentContent: jest.Mock<null, [{ content: LegalDocumentContentType }]> = jest.fn<
+  null,
+  [{ content: LegalDocumentContentType }]
+>(() => null);
 
 const supplierContent: LegalDocumentContentType = {
   title: "Preventx terms of use",
@@ -28,7 +31,8 @@ const supplierContent: LegalDocumentContentType = {
 };
 
 jest.mock("@/components/LegalDocumentContent", () => ({
-  LegalDocumentContent: (props: unknown) => mockLegalDocumentContent(props),
+  LegalDocumentContent: (props: { content: LegalDocumentContentType }) =>
+    mockLegalDocumentContent(props),
 }));
 
 jest.mock("@/hooks", () => ({

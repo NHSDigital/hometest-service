@@ -11,7 +11,7 @@ export default function HomeTestPrivacyPolicyPage() {
 
   return (
     <PageLayout onBackButtonClick={() => navigate(-1)}>
-      <LegalDocumentContent content={content} />;
+      <LegalDocumentContent content={content} />
     </PageLayout>
   );
 }

@@ -1,4 +1,4 @@
-import { LegalDocumentContent } from "./LegalDocumentContent";
+import { LegalDocumentContent } from "@/components/LegalDocumentContent";
 import { usePageContent } from "@/hooks";
 
 type SupplierLegalDocumentType = "terms" | "privacy";
