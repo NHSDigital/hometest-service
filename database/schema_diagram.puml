@@ -67,6 +67,12 @@ entity "result_status" as result_status {
   correlation_id : uuid
 }
 
+entity "consent" as consent {
+  **consent_uid : uuid**
+  *order_uid : uuid*
+  created_at : timestamp
+}
+
 ' Relationships
 patient ||--o{ orders : "patient_uid"
 supplier ||--o{ orders : "supplier_id"
@@ -77,6 +83,7 @@ test ||--o{ offering : "test_code"
 
 orders ||--o{ order_status : "order_uid"
 orders ||--o{ result_status : "order_uid"
+orders ||--o| consent : "order_uid"
 
 status_type ||--o{ order_status : "status_code"
 result_type ||--o{ result_status : "status"
