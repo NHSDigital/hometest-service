@@ -6,7 +6,6 @@ import { SelectDeliveryAddressPage } from "../page-objects/SelectDeliveryAddress
 import { OrderStatusPage } from "../page-objects/OrderStatusPage";
 import { HowComfortablePrickingFingerPage } from "../page-objects/HowComfortablePrickingFingerPage";
 import { BloodSampleGuidePage } from "../page-objects/BloodSampleGuidePage";
-import { EnterMobileNumberPage } from "../page-objects/EnterMobileNumberPage";
 import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
 import { ConfirmMobileNumberPage } from "../page-objects/ConfirmMobileNumberPage";
 import { NegativeResultPage } from "../page-objects/NegativeResultPage";
@@ -24,7 +23,6 @@ export interface MyFixtures {
   howComfortablePrickingFingerPage: HowComfortablePrickingFingerPage;
   privacyPolicyPage: PrivacyPolicyPage;
   bloodSampleGuidePage: BloodSampleGuidePage;
-  enterMobileNumberPage: EnterMobileNumberPage;
   confirmMobileNumberPage: ConfirmMobileNumberPage;
   negativeResultPage: NegativeResultPage;
   nhsEmailAndPasswordPage: NHSEmailAndPasswordPage;
@@ -64,10 +62,6 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   bloodSampleGuidePage: async ({ page }, use) => {
     await use(new BloodSampleGuidePage(page));
-  },
-
-  enterMobileNumberPage: async ({ page }, use) => {
-    await use(new EnterMobileNumberPage(page));
   },
 
   confirmMobileNumberPage: async ({ page }, use) => {
