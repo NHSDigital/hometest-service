@@ -4,8 +4,8 @@ import { test } from "../../fixtures/CombinedTestFixture";
 test.describe("Home Test Unavailable page", () => {
   test.use({
     errorCaptureOptions: {
-      failOnNetworkError: false, // Don't fail on network errors to allow assertions on the page content
-      failOnConsoleError: false, // Don't fail on console errors to allow assertions on the page content
+      failOnNetworkError: false,
+      failOnConsoleError: false,
     },
   });
 
