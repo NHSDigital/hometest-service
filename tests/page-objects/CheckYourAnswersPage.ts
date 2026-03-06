@@ -1,5 +1,5 @@
-import { Locator, Page } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { Locator, Page } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 export class CheckYourAnswersPage extends BasePage {
   readonly consentCheckbox: Locator;

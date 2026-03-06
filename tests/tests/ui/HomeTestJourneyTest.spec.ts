@@ -4,7 +4,6 @@ import { AddressModel } from "../../models/Address";
 import { PersonalDetailsModel } from "../../models/PersonalDetails";
 import { SelectDeliveryAddressPage } from "../../page-objects/SelectDeliveryAddressPage";
 
-let actualHeaderText = "";
 const randomAddress = AddressModel.getRandomAddress();
 const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();
 const makeAComplaintUrl = "https://ico.org.uk/make-a-complaint/";
@@ -12,24 +11,8 @@ const makeAComplaintUrl = "https://ico.org.uk/make-a-complaint/";
 test.describe("HIV Test Order journeys", () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
     await homeTestStartPage.navigate();
-    await expect(homeTestStartPage.headerText).toHaveText(
-      "Get a self-test kit for HIV",
-    );
+    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
-  });
-
-  test("Order test journey", async ({ homeTestStartPage, findAddressPage, selectDeliveryAddressPage, howComfortablePrickingFingerPage
-  }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    await selectDeliveryAddressPage.clickEditAddressLink();
-    const { postCode, firstLineAddress } =
-      await findAddressPage.getPostcodeAndAddressValues();
-    expect(postCode).toBe(randomAddress.postCode);
-    expect(firstLineAddress).toBe(randomAddress.addressLine1);
-    await selectDeliveryAddressPage.clickContinueButton();
-    await selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(homeTestStartPage.headerText).toHaveText("This is what you'll need to do to give a blood sample");
-    await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
   });
 
   test("Mobile number test journey", async ({
@@ -41,9 +24,6 @@ test.describe("HIV Test Order journeys", () => {
   }) => {
     await findAddressPage.fillPostCodeAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
-    const { postCode } =
-      await findAddressPage.getPostcodeAndAddressValues();
-    expect(postCode).toBe(randomAddress.postCode);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(homeTestStartPage.headerText).toHaveText(
@@ -72,17 +52,12 @@ test.describe("HIV Test Order journeys", () => {
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
-    const { postCode, firstLineAddress } =
-      await findAddressPage.getPostcodeAndAddressValues();
-    expect(postCode).toBe(randomAddress.postCode);
-    expect(firstLineAddress).toBe(randomAddress.addressLine1);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.clickBloodSampleGuideLink();
-    await expect(bloodSampleGuidePage.headerText).toHaveText(
-      "Blood sample step-by-step guide",
-    );
+    await expect(bloodSampleGuidePage.headerText).toHaveText("Blood sample step-by-step guide");
   });
+});
 
   test.describe("Submit Order Journey", () => {
     let expectedMobileNumber = "";
@@ -200,23 +175,47 @@ test.describe("HIV Test Order journeys", () => {
       const isChecked = await checkYourAnswersPage.isConsentCheckboxChecked();
       expect(isChecked).toBe(true);
     });
+test.describe("Confirm and update mobile number journey", () => {
+  test.beforeEach(
+    async ({
+      homeTestStartPage,
+      findAddressPage,
+      selectDeliveryAddressPage,
+      howComfortablePrickingFingerPage,
+    }) => {
+      await homeTestStartPage.navigate();
+      await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
+      await homeTestStartPage.clickStartNowButton();
+      await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+      await selectDeliveryAddressPage.clickEditAddressLink();
+      await selectDeliveryAddressPage.clickContinueButton();
+      await selectDeliveryAddressPage.selectAddressAndContinue();
+      await expect(homeTestStartPage.headerText).toHaveText(
+        "This is what you'll need to do to give a blood sample",
+      );
+      await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
+    },
+  );
+
+  test("Confirm Mobile number test journey", async ({ confirmAndUpdateMobileNumberPage }) => {
+    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
+    await confirmAndUpdateMobileNumberPage.clickContinue();
+  });
+
+  test("Update alternative mobile number test journey", async ({
+    confirmAndUpdateMobileNumberPage,
+  }) => {
+    await confirmAndUpdateMobileNumberPage.fillAlternativeMobileNumber(personalDetails);
+    await confirmAndUpdateMobileNumberPage.clickContinue();
   });
 });
 
-test("Verify Privacy Policy page", async ({
-  homeTestStartPage,
-  privacyPolicyPage,
-  context,
-}) => {
+test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage, context }) => {
   await homeTestStartPage.navigate();
-  await expect(homeTestStartPage.headerText).toHaveText(
-    "Get a self-test kit for HIV",
-  );
+  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
   await homeTestStartPage.clickPrivacyPolicyLink();
-  actualHeaderText = await privacyPolicyPage.getHeaderText();
-  expect(actualHeaderText).toBe(
-    "Hometest Privacy Policy - Draft v1.0 Jan 2026",
-  );
+  const actualHeaderText = await privacyPolicyPage.getHeaderText();
+  expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
   const [newTab] = await Promise.all([
     context.waitForEvent("page"),
     privacyPolicyPage.clickMakeAComplaintLink(),

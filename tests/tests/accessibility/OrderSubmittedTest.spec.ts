@@ -5,7 +5,7 @@ import { AddressModel } from "../../models/Address";
 const randomAddress = AddressModel.getRandomAddress();
 
 test(
-  "Order Submitted Page",
+  "Order Submitted page",
   {
     tag: ["@accessibility"],
   },
@@ -14,8 +14,8 @@ test(
     findAddressPage,
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
-    checkYourAnswersPage,
     confirmAndUpdateMobileNumberPage,
+    checkYourAnswersPage,
     orderSubmittedPage,
     accessibility,
   }) => {
