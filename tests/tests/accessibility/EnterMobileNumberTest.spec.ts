@@ -11,7 +11,7 @@ test(
   },
   async ({
     homeTestStartPage,
-    findAddressPage,
+    enterDeliveryAddressPage,
     selectDeliveryAddressPage,
     accessibility,
     enterMobileNumberPage,
@@ -19,16 +19,13 @@ test(
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    await selectDeliveryAddressPage.waitUntilPageLoad();
+    await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await howComfortablePrickingFingerPage.waitUntilPageLoad();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
     await enterMobileNumberPage.waitUntilPageLoad();
-    await enterMobileNumberPage.clickUseAnotherNumber();
     const postInputAccessErrors = await accessibility.runAccessibilityCheck(
       enterMobileNumberPage.page,
-      "Enter Mobile Number Page - After Input",
+      "Enter Mobile Number Page",
     );
     expect(postInputAccessErrors).toHaveLength(0);
   },

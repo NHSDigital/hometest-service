@@ -9,11 +9,6 @@ export class EnterAddressManuallyPage extends BasePage {
   readonly addressTownInput: Locator;
   readonly postCodeInput: Locator;
   readonly continueButton: Locator;
-  private addressLine1: string | null = null;
-  private addressLine2: string | null = null;
-  private addressLine3: string | null = null;
-  private townCity: string | null = null;
-  private postcode: string | null = null;
 
   constructor(page: Page) {
     super(page);
@@ -25,35 +20,48 @@ export class EnterAddressManuallyPage extends BasePage {
     this.continueButton = page.getByRole("button", { name: "Continue" });
   }
 
-  async fillAddress(deliveryAddress: Address): Promise<void> {
-    this.addressLine1 = deliveryAddress.addressLine1 ?? "";
-    this.addressLine2 = deliveryAddress.addressLine2 ?? "";
-    this.addressLine3 = (deliveryAddress.addressLine3 ?? "") + "UPDATED";
-    this.townCity = deliveryAddress.townCity;
-    this.postcode = deliveryAddress.postCode;
-    await this.addressLine1Input.fill(this.addressLine1);
-    await this.addressLine2Input.fill(this.addressLine2);
-    await this.addressLine3Input.fill(this.addressLine3);
-    await this.addressTownInput.fill(this.townCity);
-    await this.postCodeInput.fill(this.postcode);
-  }
-
   async clickContinue(): Promise<void> {
     await this.continueButton.click();
   }
 
-  async getAddressInputValues(): Promise<string> {
-    const addressValues = [
-      this.addressLine1 ?? "",
-      this.addressLine2 ?? "",
-      this.addressLine3 ?? "",
-      this.townCity ?? "",
-      this.postcode ?? ""
-    ]
-      .filter(x => x.trim().length > 0)
-      .join("\n");
+  async fillAddressLine1Field(addressLine1: string): Promise<void> {
+    await this.addressLine1Input.fill(addressLine1);
+  }
 
-    return addressValues;
+  async fillAddressLine2Field(addressLine2: string): Promise<void> {
+    await this.addressLine2Input.fill(addressLine2);
+  }
+
+  async fillAddressLine3Field(addressLine3: string): Promise<void> {
+    await this.addressLine3Input.fill(addressLine3);
+  }
+
+  async fillTownCityField(townCity: string): Promise<void> {
+    await this.addressTownInput.fill(townCity);
+  }
+
+  async fillPostCodeField(postCode: string): Promise<void> {
+    await this.postCodeInput.fill(postCode);
+  }
+
+  async getAddressInputValues(): Promise<string> {
+    const values = await Promise.all([
+      this.addressLine1Input.inputValue(),
+      this.addressLine2Input.inputValue(),
+      this.addressLine3Input.inputValue(),
+      this.addressTownInput.inputValue(),
+      this.postCodeInput.inputValue(),
+    ]);
+    return values.filter(Boolean).join("");
+  }
+
+  async fillDeliveryAddressFields(deliveryAddress: Address): Promise<void> {
+    await this.fillAddressLine1Field(deliveryAddress.addressLine1);
+    if (deliveryAddress.addressLine2 !== undefined)
+      await this.fillAddressLine2Field(deliveryAddress.addressLine2);
+    await this.fillTownCityField(deliveryAddress.townCity);
+    if (deliveryAddress.addressLine3 !== undefined)
+      await this.fillAddressLine3Field(deliveryAddress.addressLine3);
+    await this.fillPostCodeField(deliveryAddress.postCode);
   }
 }
-

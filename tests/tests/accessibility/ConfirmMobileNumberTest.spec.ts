@@ -5,7 +5,7 @@ import { AddressModel } from "../../models/Address";
 const randomAddress = AddressModel.getRandomAddress();
 
 test(
-  "Order Submitted page",
+  "Confirm mobile number page",
   {
     tag: ["@accessibility"],
   },
@@ -13,24 +13,19 @@ test(
     homeTestStartPage,
     enterDeliveryAddressPage,
     selectDeliveryAddressPage,
-    howComfortablePrickingFingerPage,
-    confirmMobileNumberPage,
-    checkYourAnswersPage,
-    orderSubmittedPage,
     accessibility,
+    confirmMobileNumberPage,
+    howComfortablePrickingFingerPage,
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
-    await checkYourAnswersPage.checkConsentCheckbox();
-    await checkYourAnswersPage.clickSubmitOrder();
-    await orderSubmittedPage.waitUntilPageLoad();
+    await confirmMobileNumberPage.selectUseAnotherMobileNumberOption();
     const accessErrors = await accessibility.runAccessibilityCheck(
-      orderSubmittedPage.page,
-      "Order Submitted Page",
+      confirmMobileNumberPage.page,
+      "Confirm mobile number page",
     );
     expect(accessErrors).toHaveLength(0);
   },
