@@ -105,11 +105,21 @@ export default function EnterAddressManuallyPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
   const { commonContent, "enter-address-manually": content } = useContent();
 
-  const [addressLine1, setAddressLine1] = useState(orderAnswers.deliveryAddress?.addressLine1 || "");
-  const [addressLine2, setAddressLine2] = useState(orderAnswers.deliveryAddress?.addressLine2 || "");
-  const [addressLine3, setAddressLine3] = useState(orderAnswers.deliveryAddress?.addressLine3 || "");
-  const [townOrCity, setTownOrCity] = useState(orderAnswers.deliveryAddress?.postTown || "");
-  const [postcode, setPostcode] = useState(orderAnswers.deliveryAddress?.postcode || "");
+  const [addressLine1, setAddressLine1] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine1 || "") : ""
+  );
+  const [addressLine2, setAddressLine2] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine2 || "") : ""
+  );
+  const [addressLine3, setAddressLine3] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine3 || "") : ""
+  );
+  const [townOrCity, setTownOrCity] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.postTown || "") : ""
+  );
+  const [postcode, setPostcode] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.postcode || "") : ""
+  );
 
   const [addressLine1Error, setAddressLine1Error] = useState<string | null>(
     null,
