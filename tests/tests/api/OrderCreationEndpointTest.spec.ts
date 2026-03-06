@@ -45,6 +45,6 @@ test.describe("Backend API, order endpoint", () => {
       await testOrderDb.deleteOrderByUid(createdOrderUid);
     }
 
-     await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);   
+     await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);
   });
 });
