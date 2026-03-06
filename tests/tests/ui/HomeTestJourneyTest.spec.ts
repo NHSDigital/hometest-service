@@ -169,15 +169,12 @@ test("Verify Terms of Use page", async ({
 
   // Home Test Privacy Policy Link
   await termsOfUsePage.clickHomeTestPrivacyPolicyLink();
-  actualHeaderText = await privacyPolicyPage.getHeaderText();
-  expect(actualHeaderText).toBe(
-    "Hometest Privacy Policy - Draft v1.0 Jan 2026",
-  );
+  const privacyPolicyHeaderText = await privacyPolicyPage.getHeaderText();
+  expect(privacyPolicyHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
   await privacyPolicyPage.clickBackLink();
   actualHeaderText = await termsOfUsePage.getHeaderText();
   expect(actualHeaderText).toBe(
-    "Hometest Terms of Use - Draft V1 January 2026",
-  );
+    "Hometest Terms of Use - Draft V1 January 2026");
   //
   await termsOfUsePage.clickBackLink();
   await expect(homeTestStartPage.headerText).toHaveText(
