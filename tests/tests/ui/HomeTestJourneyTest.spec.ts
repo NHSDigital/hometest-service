@@ -142,7 +142,7 @@ test("Verify Terms of Use page", async ({
     "Get a self-test kit for HIV",
   );
   await homeTestStartPage.clickTermsOfUseLink();
-  actualHeaderText = await termsOfUsePage.getHeaderText();
+  let actualHeaderText = await termsOfUsePage.getHeaderText();
   expect(actualHeaderText).toBe(
     "Hometest Terms of Use - Draft V1 January 2026",
   );
