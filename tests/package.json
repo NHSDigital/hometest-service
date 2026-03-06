@@ -38,7 +38,7 @@
   "dependencies": {
     "@axe-core/playwright": "^4.11.1",
     "axe-html-reporter": "^2.2.11",
-    "pg": "^8.18.0",
+    "pg": "^8.19.0",
     "uuid": "^13.0.0"
   }
 }
