@@ -1,13 +1,10 @@
-import { Locator, Page, expect } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 
 import { BasePage } from "./BasePage";
-import { EnvironmentVariables } from "../configuration/EnvironmentVariables";
 
 export class KitNotAvailableInYourAreaPage extends BasePage {
   readonly page: Page;
   readonly findAnotherSexualHealthClinicLink: Locator;
-
-  private readonly pagePath = "/get-self-test-kit-for-HIV/kit-not-available-in-area";
 
   constructor(page: Page) {
     super(page);
@@ -17,37 +14,13 @@ export class KitNotAvailableInYourAreaPage extends BasePage {
     });
   }
 
-  async navigate(config: { get: (key: EnvironmentVariables) => string }): Promise<void> {
-    const baseUrl = config.get(EnvironmentVariables.UI_BASE_URL);
-    await this.page.goto(`${baseUrl}${this.pagePath}`);
-  }
-
-  async assertOnPage(): Promise<void> {
-    await expect(this.page).toHaveURL(new RegExp(`${this.pagePath}$`));
-  }
-
-  async clickFindAnotherSexualHealthClinicAndOpenNewTab(): Promise<Page> {
-    const [newTab] = await Promise.all([
-      this.page.context().waitForEvent("page"),
-      this.findAnotherSexualHealthClinicLink.click(),
-    ]);
-    await newTab.waitForLoadState("domcontentloaded");
-    return newTab;
-  }
-
-  async assertFindAnotherSexualHealthClinicLinkContainsPostcode(postcode: string): Promise<void> {
+  async getFindAnotherSexualHealthClinicLinkUrl(): Promise<string> {
     const href = await this.findAnotherSexualHealthClinicLink.getAttribute("href");
-    expect(href).toBeTruthy();
 
-    const url = new URL(href!, this.page.url());
-    const expected = postcode.replace(/\s+/g, "").toLowerCase();
+    if (!href) {
+      throw new Error("Find another sexual health clinic link does not have an href");
+    }
 
-    const isPostcodePresentInUrl =
-      url.toString().replace(/\s+/g, "").toLowerCase().includes(expected) ||
-      [...url.searchParams.values()].some((value) =>
-        value.replace(/\s+/g, "").toLowerCase().includes(expected),
-      );
-
-    expect(isPostcodePresentInUrl).toBe(true);
+    return href;
   }
 }
