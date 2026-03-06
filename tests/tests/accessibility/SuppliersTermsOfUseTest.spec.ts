@@ -7,7 +7,7 @@ test(
     tag: ["@accessibility"],
   },
   async ({ suppliersTermsOfUsePage, accessibility }) => {
-    await suppliersTermsOfUsePage.navigateToSuppliersTerms("SH:24");
+    await suppliersTermsOfUsePage.navigate("SH:24");
     await suppliersTermsOfUsePage.waitUntilPageLoad();
 
     const accessErrors = await accessibility.runAccessibilityCheck(

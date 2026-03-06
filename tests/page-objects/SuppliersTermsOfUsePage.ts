@@ -11,7 +11,7 @@ export class SuppliersTermsOfUsePage extends BasePage {
     this.config = ConfigFactory.getConfig();
   }
 
-  async navigateToSuppliersTerms(supplierInput: Supplier["supplier_name"]): Promise<void> {
+  async navigate(supplierInput: Supplier["supplier_name"]): Promise<void> {
     const url = `${this.config.uiBaseUrl}/suppliers-terms-conditions?supplier=${encodeURIComponent(supplierInput)}`;
     await this.page.goto(url);
   }
