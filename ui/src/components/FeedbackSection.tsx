@@ -1,4 +1,4 @@
-import { OpensInNewTabLink } from "./OpensInNewTabLink";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { useCommonContent } from "@/hooks";
 
 export function FeedbackSection() {

@@ -1,12 +1,13 @@
-import { expect, Locator, Page } from "@playwright/test";
-import { EnvironmentVariables } from "../configuration/EnvironmentVariables";
+import { Locator, Page, expect } from "@playwright/test";
+
 import { BasePage } from "./BasePage";
+import { EnvironmentVariables } from "../configuration/EnvironmentVariables";
 
 export class KitNotAvailableInYourAreaPage extends BasePage {
   readonly page: Page;
   readonly findAnotherSexualHealthClinicLink: Locator;
 
-  private readonly pagePath = "/get-self-test-kit-for-HIV/kit-not-available-in-your-area";
+  private readonly pagePath = "/get-self-test-kit-for-HIV/kit-not-available-in-area";
 
   constructor(page: Page) {
     super(page);
