@@ -151,16 +151,15 @@ export class TestOrderDbClient extends BaseDbClient {
     return rows[0].status_code as OrderStatusCode;
   }
 
-  async getConsentCountByOrderUid(orderUid: string): Promise<string | undefined> {
-    const rows = await this.query<{ consent_count: string }>(
+  async getConsentCountByOrderUid(orderUid: string): Promise<number> {
+    const rows = await this.query<{ consent_count: number }>(
       `
-      SELECT count(*) AS consent_count
+      SELECT count(*)::int AS consent_count
       FROM hometest.consent
       WHERE order_uid = $1::uuid
     `,
       [orderUid],
     );
-    console.log("Consent count for order_uid", orderUid, "is", rows[0]?.consent_count);
     return rows[0]?.consent_count;
   }
 
