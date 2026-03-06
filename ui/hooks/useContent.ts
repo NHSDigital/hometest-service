@@ -10,6 +10,7 @@ import type {
   HowComfortablePrickingFingerContent,
   LegalDocumentContent,
   NoAddressFoundContent,
+  OrderSubmittedContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
   StartPageContent,
@@ -52,6 +53,7 @@ export interface UseContentReturn {
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": LegalDocumentContent;
+  "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
 }
@@ -73,6 +75,7 @@ export const useContent = (): UseContentReturn => {
     "test-results": content.pages["test-results"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
+    "order-submitted": content.pages["order-submitted"],
     "suppliers-terms-conditions": content.pages["suppliers-terms-conditions"],
     "suppliers-privacy-policy": content.pages["suppliers-privacy-policy"],
   };

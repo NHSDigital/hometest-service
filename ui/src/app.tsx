@@ -21,6 +21,7 @@ import JourneyLayout from "./layouts/JourneyLayout";
 import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
+import OrderSubmittedPage from "./routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
@@ -142,6 +143,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.CheckYourAnswers,
             element: <CheckYourAnswersPage />,
+          },
+          {
+            path: JourneyStepNames.OrderSubmitted,
+            element: <OrderSubmittedPage />,
           },
           {
             path: JourneyStepNames.SuppliersTermsConditions,

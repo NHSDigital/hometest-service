@@ -9,7 +9,6 @@ import {
   useContext,
   useState,
 } from "react";
-import { AuthUser } from "./AuthContext";
 
 // Address structure
 export interface Address {
@@ -22,10 +21,6 @@ export interface Address {
 
 // Order state
 export interface OrderAnswers {
-  // From auth
-  // todo: replace with AuthCondext
-  user?: AuthUser;
-
   // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
@@ -56,6 +51,9 @@ export interface OrderAnswers {
   // Consent
   consentGiven?: boolean;
   consentTimestamp?: string;
+
+  // Order confirmation
+  orderReferenceNumber?: number;
 }
 
 interface CreateOrderContextType {

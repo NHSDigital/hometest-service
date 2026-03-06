@@ -32,6 +32,17 @@ export class TestOrderDbClient extends BaseDbClient {
     return rows[0].supplier_id;
   }
 
+  async getTestCodeByDescription(testDescription: string): Promise<string> {
+    const rows = await this.query<{ test_code: string }>(
+      `SELECT test_code
+       FROM test_type
+       WHERE description = $1
+       LIMIT 1`,
+      [testDescription],
+    );
+    return rows[0].test_code;
+  }
+
   async upsertPatient(nhsNumber: string, birthDate: string): Promise<UUID> {
     const rows = await this.query<{ patient_uid: UUID }>(
       `INSERT INTO patient_mapping (nhs_number, birth_date)
@@ -48,20 +59,20 @@ export class TestOrderDbClient extends BaseDbClient {
     patientUid: UUID,
     testCode: string,
     originator = "automatic-test",
-  ): Promise<UUID> {
+  ): Promise<{ order_uid: UUID; order_reference: number }> {
     const rows = await this.query<TestOrderModel>(
       `INSERT INTO test_order (supplier_id, patient_uid, test_code, originator)
        VALUES ($1::uuid, $2::uuid, $3, $4)
-       RETURNING order_uid`,
+       RETURNING order_uid, order_reference`,
       [supplierId, patientUid, testCode, originator],
     );
-    return rows[0].order_uid;
+    return {
+      order_uid: rows[0].order_uid,
+      order_reference: rows[0].order_reference,
+    };
   }
 
-  async insertOrderStatus(
-    orderUid: UUID,
-    statusCode: OrderStatusCode,
-  ): Promise<void> {
+  async insertOrderStatus(orderUid: UUID, statusCode: OrderStatusCode): Promise<void> {
     await this.query(
       `INSERT INTO order_status (order_uid, status_code)
        VALUES ($1::uuid, $2)`,
@@ -69,49 +80,37 @@ export class TestOrderDbClient extends BaseDbClient {
     );
   }
 
-  async updateOrderStatus(
-    orderUid: UUID,
-    statusCode: OrderStatusCode,
-  ): Promise<void> {
-    await this.query(
-      `UPDATE order_status SET status_code = $2 WHERE order_uid = $1::uuid`,
-      [orderUid, statusCode],
-    );
+  async updateOrderStatus(orderUid: UUID, statusCode: OrderStatusCode): Promise<void> {
+    await this.query(`UPDATE order_status SET status_code = $2 WHERE order_uid = $1::uuid`, [
+      orderUid,
+      statusCode,
+    ]);
   }
 
   async createOrderWithPatientAndStatus(
     input: CreateOrderInput,
-  ): Promise<{ order_uid: UUID; patient_uid: UUID }> {
-    const patient_uid = await this.upsertPatient(
-      input.nhs_number,
-      input.birth_date,
-    );
+  ): Promise<{ order_uid: UUID; patient_uid: UUID; order_reference: number }> {
+    const patient_uid = await this.upsertPatient(input.nhs_number, input.birth_date);
     const supplier_id = await this.getSupplierIdByName(input.supplier_name);
-    const order_uid = await this.createTestOrder(
+    const order = await this.createTestOrder(
       supplier_id,
       patient_uid,
       input.test_code,
       input.originator,
     );
-    await this.insertOrderStatus(order_uid, input.initial_status);
-    return { order_uid, patient_uid };
+    await this.insertOrderStatus(order.order_uid, input.initial_status);
+    return { order_uid: order.order_uid, patient_uid, order_reference: order.order_reference };
   }
 
   async deleteOrderStatusByUid(orderUid: UUID): Promise<void> {
-    await this.query(`DELETE FROM order_status WHERE order_uid = $1::uuid`, [
-      orderUid,
-    ]);
+    await this.query(`DELETE FROM order_status WHERE order_uid = $1::uuid`, [orderUid]);
   }
 
   async deleteOrderByPatientUid(patientUid: UUID): Promise<void> {
-    await this.query(`DELETE FROM test_order WHERE patient_uid = $1::uuid`, [
-      patientUid,
-    ]);
+    await this.query(`DELETE FROM test_order WHERE patient_uid = $1::uuid`, [patientUid]);
   }
 
-  async deletePatientMapping(nhsNumber: string,
-    birthDate: string,
-  ): Promise<void> {
+  async deletePatientMapping(nhsNumber: string, birthDate: string): Promise<void> {
     await this.query(
       `DELETE FROM patient_mapping
        WHERE nhs_number = $1 AND birth_date = $2::date`,
@@ -120,20 +119,35 @@ export class TestOrderDbClient extends BaseDbClient {
   }
 
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
-    await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [
-      orderUid,
-    ]);
+    await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }
 
-  async getOrderStatusesByOrderUid(orderUid: string): Promise<{ status_code: string }[] | undefined> {
-    const rows = await this.query<{ status_code: string }>(`
+  async getOrderStatusesByOrderUid(
+    orderUid: string,
+  ): Promise<{ status_code: string }[] | undefined> {
+    const rows = await this.query<{ status_code: string }>(
+      `
       SELECT status_code
       FROM hometest.order_status
       WHERE order_uid = $1
       ORDER BY created_at DESC
-      LIMIT 2
-    `, [orderUid]);
+      LIMIT 5
+    `,
+      [orderUid],
+    );
 
     return rows;
+  }
+
+  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<OrderStatusCode> {
+    const rows = await this.query<TestOrderModel>(
+      `SELECT status_code
+       FROM hometest.order_status
+       WHERE order_uid = $1
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [orderUid],
+    );
+    return rows[0].status_code as OrderStatusCode;
   }
 }

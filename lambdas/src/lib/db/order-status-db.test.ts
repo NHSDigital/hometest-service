@@ -1,6 +1,5 @@
 import {
   OrderRow,
-  OrderStatusRow,
   OrderStatusCodes,
   OrderStatusService,
   OrderStatusUpdateParams,
@@ -26,14 +25,14 @@ describe("OrderStatusService", () => {
     service = new OrderStatusService(mockDbClient as any);
   });
 
-  describe("getOrder", () => {
+  describe("getPatientIdFromOrder", () => {
     it("should fetch order by UUID", async () => {
       const mockOrder: OrderRow = {
-        order_uid: "550e8400-e29b-41d4-a716-446655440000",
-        patient_uid: "patient-123",
+        order_uid: "some-mocked-order-id",
+        patient_uid: "some-mocked-patient-id",
         order_reference: 100001,
-        supplier_id: "supplier-123",
-        test_code: "TEST001",
+        supplier_id: "some-mocked-supplier-id",
+        test_code: "some-mocked-test-code",
         created_at: "2024-01-01T00:00:00Z",
       };
 
@@ -42,15 +41,12 @@ describe("OrderStatusService", () => {
         rowCount: 1,
       });
 
-      const result = await service.getOrder(
-        "550e8400-e29b-41d4-a716-446655440000",
-      );
+      const result = await service.getPatientIdFromOrder("some-mocked-order-id");
 
-      expect(result).toEqual(mockOrder);
-      expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining("SELECT"), // TODO: Look into this type of assertion
-        ["550e8400-e29b-41d4-a716-446655440000"],
-      );
+      expect(result).toEqual(mockOrder.patient_uid);
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
+        "some-mocked-order-id",
+      ]);
     });
 
     it("should return null when order does not exist", async () => {
@@ -59,7 +55,7 @@ describe("OrderStatusService", () => {
         rowCount: 0,
       });
 
-      const result = await service.getOrder("nonexistent-id");
+      const result = await service.getPatientIdFromOrder("nonexistent-id");
 
       expect(result).toBeNull();
     });
@@ -67,7 +63,7 @@ describe("OrderStatusService", () => {
     it("should throw error on database failure", async () => {
       mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
-      await expect(service.getOrder("order-123")).rejects.toThrow(
+      await expect(service.getPatientIdFromOrder("order-123")).rejects.toThrow(
         "Failed to fetch order from database",
       );
     });
@@ -78,15 +74,15 @@ describe("OrderStatusService", () => {
       mockQuery.mockResolvedValue({ rows: [{ 1: 1 }], rowCount: 1 });
 
       const result = await service.checkIdempotency(
-        "550e8400-e29b-41d4-a716-446655440000",
-        "corr-123",
+        "some-mocked-order-id",
+        "some-mocked-correlation-id",
       );
 
       expect(result.isDuplicate).toBe(true);
-      expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining("correlation_id"),
-        ["550e8400-e29b-41d4-a716-446655440000", "corr-123"],
-      );
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("correlation_id"), [
+        "some-mocked-order-id",
+        "some-mocked-correlation-id",
+      ]);
     });
 
     it("should return false for new correlation IDs", async () => {
@@ -98,44 +94,33 @@ describe("OrderStatusService", () => {
       const result = await service.checkIdempotency("order-123", "new-corr-id");
 
       expect(result.isDuplicate).toBe(false);
-      expect(result.lastUpdate).toBeUndefined();
     });
   });
 
-  describe("updateOrderStatus", () => {
+  describe("addUpdateOrderStatus", () => {
     it("should insert new order status record", async () => {
-      const mockNewStatus: OrderStatusRow = {
-        status_id: "status-456",
-        order_uid: "550e8400-e29b-41d4-a716-446655440000",
-        order_reference: 100001,
-        status_code: OrderStatusCodes.COMPLETE,
-        created_at: "2024-01-15T11:00:00Z",
-        correlation_id: "corr-123",
+      const mockParams: OrderStatusUpdateParams = {
+        orderId: "some-mocked-order-id",
+        statusCode: OrderStatusCodes.COMPLETE,
+        createdAt: "2024-01-15T11:00:00Z",
+        correlationId: "some-mocked-correlation-id",
       };
 
       mockQuery.mockResolvedValue({
-        rows: [mockNewStatus],
+        rows: [],
         rowCount: 1,
       });
 
-      const result = await service.updateOrderStatus({
-        orderId: "550e8400-e29b-41d4-a716-446655440000",
-        orderReference: 100001,
-        statusCode: OrderStatusCodes.COMPLETE,
-        createdAt: "2024-01-15T11:00:00Z",
-        correlationId: "corr-123",
-      });
+      await expect(service.addOrderStatusUpdate(mockParams)).resolves.toBeUndefined();
 
-      expect(result).toEqual(mockNewStatus);
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),
-        [
-          "550e8400-e29b-41d4-a716-446655440000",
-          100001,
-          OrderStatusCodes.COMPLETE,
-          "2024-01-15T11:00:00Z",
-          "corr-123",
-        ],
+        Object.values([
+          mockParams.orderId,
+          mockParams.statusCode,
+          mockParams.createdAt,
+          mockParams.correlationId,
+        ]),
       );
     });
 
@@ -143,11 +128,11 @@ describe("OrderStatusService", () => {
       mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
       await expect(
-        service.updateOrderStatus({
-          orderId: "order-123",
+        service.addOrderStatusUpdate({
+          orderId: "some-mocked-order-id",
           statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "corr-123",
+          correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
     });
@@ -159,11 +144,11 @@ describe("OrderStatusService", () => {
       });
 
       await expect(
-        service.updateOrderStatus({
-          orderId: "order-123",
+        service.addOrderStatusUpdate({
+          orderId: "some-mocked-order-id",
           statusCode: OrderStatusCodes.COMPLETE,
           createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "corr-123",
+          correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
     });

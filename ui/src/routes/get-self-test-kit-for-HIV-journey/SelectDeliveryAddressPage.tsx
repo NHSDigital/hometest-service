@@ -181,7 +181,7 @@ export default function SelectDeliveryAddressPage() {
           href="enter-address-manually"
           onClick={(e) => {
             e.preventDefault();
-            goToStep(JourneyStepNames.EnterDeliveryAddress);
+            goToStep(JourneyStepNames.EnterAddressManually);
           }}
         >
           {commonContent.navigation.manualEntryLink}

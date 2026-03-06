@@ -372,6 +372,22 @@ export interface CheckYourAnswersContent {
   submitButton: string;
 }
 
+export interface OrderSubmittedContent {
+  panel: {
+    title: string;
+    referenceNumberPrefix: string;
+  };
+  whatHappensNext: {
+    heading: string;
+    steps: string[];
+  };
+  feedback: {
+    text: string;
+    linkText: string;
+    linkHref: string;
+  };
+}
+
 export interface LegalDocumentSubsection {
   heading?: string;
   paragraphs?: string[];
@@ -415,6 +431,7 @@ export interface PagesContent {
   "test-results": TestResultsContent;
   "home-test-privacy-policy": LegalDocumentContent;
   "blood-sample-guide": BloodSampleGuideContent;
+  "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
 }
