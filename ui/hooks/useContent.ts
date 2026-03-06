@@ -7,6 +7,7 @@ import type {
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
   GlobalErrorContent,
+  HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
   LegalDocumentContent,
   NoAddressFoundContent,
@@ -52,7 +53,7 @@ export interface UseContentReturn {
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
-  "home-test-privacy-policy": LegalDocumentContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;

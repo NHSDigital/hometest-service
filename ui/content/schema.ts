@@ -325,6 +325,25 @@ export interface TestResultsContent {
   };
 }
 
+export interface PrivacyPolicySubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface PrivacyPolicySection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: PrivacyPolicySubsection[];
+}
+
+export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
+}
+
 export interface BloodSampleGuideContent {
   title: string;
   whatsInKit: {
@@ -429,7 +448,7 @@ export interface PagesContent {
   "global-error": GlobalErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
-  "home-test-privacy-policy": LegalDocumentContent;
+  "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
