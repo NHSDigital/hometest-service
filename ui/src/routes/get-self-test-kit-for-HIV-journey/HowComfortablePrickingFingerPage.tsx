@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, ErrorSummary, Images, Radios } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
@@ -12,6 +12,7 @@ export default function HowComfortablePrickingFingerPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
     useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { user } = useAuth();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
   const [selectedOption, setSelectedOption] = useState<string>(
@@ -42,7 +43,7 @@ export default function HowComfortablePrickingFingerPage() {
         const step = returnToStep;
         setReturnToStep(null);
         goToStep(step);
-      } else if (orderAnswers.user?.phoneNumber) {
+      } else if (user?.phoneNumber) {
         goToStep(JourneyStepNames.ConfirmMobileNumber);
       } else {
         goToStep(JourneyStepNames.EnterMobileNumber);

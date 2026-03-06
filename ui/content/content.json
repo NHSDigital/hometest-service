@@ -764,6 +764,26 @@
         "privacyPolicyHref": "supplier-privacy-policy"
       },
       "submitButton": "Submit order"
+    },
+    "order-submitted": {
+      "panel": {
+        "title": "Order submitted",
+        "referenceNumberPrefix": "Your reference number"
+      },
+      "whatHappensNext": {
+        "heading": "What happens next:",
+        "steps": [
+          "{supplier} will send you a text message confirming the order",
+          "the self-test kit will then be sent to you within 5 working days",
+          "you will receive updates through the app to help you keep track of your order",
+          "you do not need to do anything else at this stage"
+        ]
+      },
+      "feedback": {
+        "text": "This is a new service. Help us improve it and",
+        "linkText": "give your feedback",
+        "linkHref": "#"
+      }
     }
   }
 }

@@ -19,5 +19,6 @@ export enum JourneyStepNames {
   EnterMobileNumber = "enter-mobile-phone-number",
   CheckYourAnswers = "check-your-answers",
   ConfirmMobileNumber = "confirm-mobile-phone-number",
+  OrderSubmitted = "order-submitted",
   SuppliersTermsConditions = "suppliers-terms-conditions",
 }

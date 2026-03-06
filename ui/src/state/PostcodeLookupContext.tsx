@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
 export interface AddressResult {
   id: string;
@@ -10,35 +10,32 @@ export interface AddressResult {
   fullAddress: string;
 }
 
-
 interface PostcodeLookupContextType {
   postcode: string;
   addresses: AddressResult[];
   selectedAddress: AddressResult | null;
   isLoading: boolean;
-  lookupResultsStatus: 'idle' | 'found' | 'not_found' | 'error';
+  lookupResultsStatus: "idle" | "found" | "not_found" | "error";
   error: string | null;
   lookupPostcode: (postcode: string) => Promise<void>;
   setSelectedAddress: (address: AddressResult | null) => void;
   clearAddresses: () => void;
 }
 
-const PostcodeLookupContext = createContext<PostcodeLookupContextType | undefined>(
-  undefined
-);
+const PostcodeLookupContext = createContext<PostcodeLookupContextType | undefined>(undefined);
 
 interface PostcodeLookupProviderProps {
   children: ReactNode;
 }
 
-export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({
-  children,
-}) => {
-  const [postcode, setPostcode] = useState<string>('');
+export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ children }) => {
+  const [postcode, setPostcode] = useState<string>("");
   const [addresses, setAddresses] = useState<AddressResult[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [lookupResultsStatus, setLookupResultsStatus] = useState<'idle' | 'found' | 'not_found' | 'error'>('idle');
+  const [lookupResultsStatus, setLookupResultsStatus] = useState<
+    "idle" | "found" | "not_found" | "error"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
 
   const lookupPostcode = async (postcodeValue: string): Promise<void> => {
@@ -48,21 +45,23 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({
 
     try {
       const postcodeLookupLambdaUrl = process.env.NEXT_PUBLIC_POSTCODE_LOOKUP_LAMBDA_ENDPOINT;
-      const response = await fetch(postcodeLookupLambdaUrl + `?postcode=${encodeURIComponent(postcodeValue)}`);
+      const response = await fetch(
+        postcodeLookupLambdaUrl + `?postcode=${encodeURIComponent(postcodeValue)}`,
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to lookup postcode');
+        throw new Error("Failed to lookup postcode");
       }
 
       const data = await response.json();
       const foundAddresses = data.addresses || [];
       setAddresses(foundAddresses);
       setPostcode(postcodeValue);
-      setLookupResultsStatus(foundAddresses.length > 0 ? 'found' : 'not_found');
+      setLookupResultsStatus(foundAddresses.length > 0 ? "found" : "not_found");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
       setAddresses([]);
-      setLookupResultsStatus('error');
+      setLookupResultsStatus("error");
     } finally {
       setIsLoading(false);
     }
@@ -71,8 +70,8 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({
   const clearAddresses = useCallback((): void => {
     setAddresses([]);
     setSelectedAddress(null);
-    setPostcode('');
-    setLookupResultsStatus('idle');
+    setPostcode("");
+    setLookupResultsStatus("idle");
     setError(null);
   }, []);
 
@@ -88,18 +87,14 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({
     clearAddresses,
   };
 
-  return (
-    <PostcodeLookupContext.Provider value={value}>
-      {children}
-    </PostcodeLookupContext.Provider>
-  );
+  return <PostcodeLookupContext.Provider value={value}>{children}</PostcodeLookupContext.Provider>;
 };
 
 export const usePostcodeLookup = (): PostcodeLookupContextType => {
   const context = useContext(PostcodeLookupContext);
 
   if (context === undefined) {
-    throw new Error('usePostcodeLookup must be used within a PostcodeLookupProvider');
+    throw new Error("usePostcodeLookup must be used within a PostcodeLookupProvider");
   }
 
   return context;
