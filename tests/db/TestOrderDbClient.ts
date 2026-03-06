@@ -133,7 +133,7 @@ export class TestOrderDbClient extends BaseDbClient {
     `,
       [orderUid],
     );
-   
+    console.log(`Consent count for order ${orderUid}:`, rows[0]?.consent_count);
     return rows[0]?.consent_count;
   }
 
