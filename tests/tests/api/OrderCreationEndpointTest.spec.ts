@@ -35,20 +35,16 @@ test.describe("Backend API, order endpoint", () => {
       expect(statusRows?.[0].status_code).toBe("SUBMITTED");
 
       const count = await testOrderDb.getConsentCountByOrderUid(createdOrderUid);
-      expect(count).toBe("1");
+      expect(count).toBe(1);
     }
   );
 
-   test.afterEach(async ({ testOrderDb }) => {
+  test.afterEach(async ({ testOrderDb }) => {
     if (createdOrderUid) {
       await testOrderDb.deleteConsentByOrderUid(createdOrderUid);
       await testOrderDb.deleteOrderByUid(createdOrderUid);
     }
 
-    await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);
-
-    if (patientUid) {
-      await testOrderDb.deleteOrderByPatientUid(patientUid);
-    }
+     await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);   
   });
 });

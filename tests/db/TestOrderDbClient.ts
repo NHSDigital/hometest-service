@@ -128,7 +128,7 @@ export class TestOrderDbClient extends BaseDbClient {
     const rows = await this.query<{ status_code: string }>(
       `
       SELECT status_code
-      FROM hometest.order_status
+      FROM order_status
       WHERE order_uid = $1::uuid
       ORDER BY created_at DESC
       LIMIT 5
@@ -142,7 +142,7 @@ export class TestOrderDbClient extends BaseDbClient {
   async getLatestOrderStatusByOrderUid(orderUid: string): Promise<OrderStatusCode> {
     const rows = await this.query<TestOrderModel>(
       `SELECT status_code
-       FROM hometest.order_status
+       FROM order_status
        WHERE order_uid = $1::uuid
        ORDER BY created_at DESC
        LIMIT 1`,
@@ -155,15 +155,15 @@ export class TestOrderDbClient extends BaseDbClient {
     const rows = await this.query<{ consent_count: number }>(
       `
       SELECT count(*)::int AS consent_count
-      FROM hometest.consent
+      FROM consent
       WHERE order_uid = $1::uuid
     `,
       [orderUid],
     );
-    return rows[0]?.consent_count;
+    return rows[0]?.consent_count ?? 0;
   }
 
   async deleteConsentByOrderUid(orderUid: UUID): Promise<void> {
-    await this.query(`DELETE FROM hometest.consent WHERE order_uid = $1::uuid`, [orderUid]);
+    await this.query(`DELETE FROM consent WHERE order_uid = $1::uuid`, [orderUid]);
   }
 }
