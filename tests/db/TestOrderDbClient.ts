@@ -123,4 +123,21 @@ export class TestOrderDbClient extends BaseDbClient {
 
     return rows;
   }
+
+  async getConsentCountByOrderUid(orderUid: string): Promise<string | undefined> {
+    const rows = await this.query<{ consent_count: string }>(
+      `
+      SELECT count(*) AS consent_count
+      FROM hometest.consent
+      WHERE order_uid = $1
+    `,
+      [orderUid],
+    );
+    console.log("Consent count for order_uid", orderUid, "is", rows[0]?.consent_count);
+    return rows[0]?.consent_count;
+  } 
+
+  async deleteConsentByOrderUid(orderUid: UUID): Promise<void> {
+   await this.query(`DELETE FROM hometest.consent WHERE order_uid = $1::uuid`, [orderUid]);
+   }
 }
