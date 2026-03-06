@@ -3,12 +3,10 @@ import { Locator, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class KitNotAvailableInYourAreaPage extends BasePage {
-  readonly page: Page;
   readonly findAnotherSexualHealthClinicLink: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.page = page;
     this.findAnotherSexualHealthClinicLink = page.getByRole("link", {
       name: "Find another sexual health clinic",
     });
