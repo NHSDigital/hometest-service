@@ -17,11 +17,43 @@ describe("OAuthSupplierAuthClient", () => {
       "/oauth/token",
       "client-id",
       "secret-name",
+      "orders results",
     );
 
     const token = await client.getAccessToken();
 
     expect(token).toBe("token-123");
+    expect(secretsClient.getSecretValue).toHaveBeenCalledWith("secret-name");
+    expect(httpClient.post).toHaveBeenCalledWith(
+      "https://supplier.example.com/oauth/token",
+      "grant_type=client_credentials&client_id=client-id&client_secret=secret-abc&scope=orders+results",
+      { Accept: "application/json" },
+      "application/x-www-form-urlencoded",
+    );
+  });
+
+  it("accepts supplier config via factory", async () => {
+    const httpClient = {
+      post: jest.fn().mockResolvedValue({ access_token: "token-config" }),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
+    } as any;
+
+    const client = OAuthSupplierAuthClient.fromSupplierConfig(httpClient, secretsClient, {
+      serviceUrl: "https://supplier.example.com",
+      clientSecretName: "secret-name",
+      clientId: "client-id",
+      oauthTokenPath: "/oauth/token",
+      oauthScope: "orders results",
+      orderPath: "/order",
+      resultsPath: "/results",
+    });
+
+    const token = await client.getAccessToken();
+
+    expect(token).toBe("token-config");
     expect(secretsClient.getSecretValue).toHaveBeenCalledWith("secret-name");
     expect(httpClient.post).toHaveBeenCalledWith(
       "https://supplier.example.com/oauth/token",
@@ -47,6 +79,7 @@ describe("OAuthSupplierAuthClient", () => {
       "/custom/token",
       "client-id",
       "secret-name",
+      "orders results",
     );
 
     const token = await client.getAccessToken();
@@ -103,6 +136,7 @@ describe("OAuthSupplierAuthClient", () => {
       "/oauth/token",
       "client-id",
       "secret-name",
+      "orders results",
     );
 
     await expect(client.getAccessToken()).rejects.toThrow("secret error");
@@ -124,6 +158,7 @@ describe("OAuthSupplierAuthClient", () => {
       "/oauth/token",
       "client-id",
       "secret-name",
+      "orders results",
     );
 
     await expect(client.getAccessToken()).rejects.toThrow("http error");
@@ -145,6 +180,7 @@ describe("OAuthSupplierAuthClient", () => {
       "/oauth/token",
       "client-id",
       "secret-name",
+      "orders results",
     );
 
     await client.getAccessToken();

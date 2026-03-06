@@ -35,6 +35,18 @@ export interface SupplierConfig {
   resultsPath: string;
 }
 
+const DEFAULT_CONFIG = {
+  oauthTokenPath: "/oauth/token",
+  oauthScope: "orders results",
+  orderPath: "/order",
+  resultsPath: "/results",
+} as const;
+
+const getOrDefault = (value: string | null | undefined, fallback: string): string => {
+  const normalizedValue = value?.trim();
+  return normalizedValue && normalizedValue.length > 0 ? normalizedValue : fallback;
+};
+
 export class SupplierConfigError extends Error {
   constructor(message: string) {
     super(message);
@@ -68,10 +80,10 @@ export class SupplierService {
           service_url: string;
           client_secret_name: string;
           client_id: string;
-          oauth_token_path: string;
-          oauth_scope: string;
-          order_path: string;
-          results_path: string;
+          oauth_token_path: string | null;
+          oauth_scope: string | null;
+          order_path: string | null;
+          results_path: string | null;
         },
         [string]
       >(query, [supplierId]);
@@ -101,10 +113,10 @@ export class SupplierService {
         serviceUrl: row.service_url,
         clientSecretName: row.client_secret_name,
         clientId: row.client_id,
-        oauthTokenPath: row.oauth_token_path,
-        oauthScope: row.oauth_scope,
-        orderPath: row.order_path,
-        resultsPath: row.results_path,
+        oauthTokenPath: getOrDefault(row.oauth_token_path, DEFAULT_CONFIG.oauthTokenPath),
+        oauthScope: getOrDefault(row.oauth_scope, DEFAULT_CONFIG.oauthScope),
+        orderPath: getOrDefault(row.order_path, DEFAULT_CONFIG.orderPath),
+        resultsPath: getOrDefault(row.results_path, DEFAULT_CONFIG.resultsPath),
       };
     } catch (error: any) {
       if (error instanceof SupplierConfigError) {

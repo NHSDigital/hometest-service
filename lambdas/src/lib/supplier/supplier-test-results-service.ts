@@ -29,14 +29,10 @@ export class SupplierTestResultsService {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const supplierAuthClient = new OAuthSupplierAuthClient(
+    const supplierAuthClient = OAuthSupplierAuthClient.fromSupplierConfig(
       this.httpClient,
       this.secretsClient,
-      serviceConfig.serviceUrl,
-      serviceConfig.oauthTokenPath,
-      serviceConfig.clientId,
-      serviceConfig.clientSecretName,
-      serviceConfig.oauthScope,
+      serviceConfig,
     );
 
     const accessToken = await supplierAuthClient.getAccessToken();
