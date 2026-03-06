@@ -460,6 +460,7 @@ describe("ConfirmMobileNumberPage", () => {
               phoneNumber,
               givenName: "John",
               familyName: "Smith",
+              email: "john.smith@example.com"
             });
           }, [setUser]);
 

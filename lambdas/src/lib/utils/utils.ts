@@ -143,8 +143,12 @@ export const getCorrelationIdFromEventHeaders = (
 export const createJsonResponse = (
   statusCode: number,
   body: Record<string, unknown>,
+  additionalHeaders?: Record<string, string>,
 ): APIGatewayProxyResult => ({
   statusCode,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    ...additionalHeaders,
+  },
   body: JSON.stringify(body),
 });

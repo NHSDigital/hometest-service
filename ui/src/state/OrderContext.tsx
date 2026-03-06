@@ -53,7 +53,7 @@ export interface OrderAnswers {
   consentTimestamp?: string;
 
   // Order confirmation
-  orderReferenceNumber?: string;
+  orderReferenceNumber?: number;
 }
 
 interface CreateOrderContextType {
