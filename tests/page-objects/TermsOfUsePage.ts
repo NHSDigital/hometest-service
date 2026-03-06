@@ -9,10 +9,8 @@ export class TermsOfUsePage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.CyberAwareLink = page.getByRole("link", { name: "Cyber Aware website" });
-    this.HelpAndSupportLink = page.getByRole("link", {
-      name: "https://www.nhs.uk/nhs-app/help/",
-    });
-    this.HomeTestPrivacyPolicyLink = page.getByRole("link", { name: "Hometest Privacy Policy" });
+    this.HelpAndSupportLink = page.getByRole("link", { name: /help and support page/i }).first();
+    this.HomeTestPrivacyPolicyLink = page.getByRole("link", { name: "Hometest Privacy Policy" }).first();
   }
 
   async clickCyberAwareLink(): Promise<void> {
