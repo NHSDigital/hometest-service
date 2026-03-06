@@ -21,4 +21,4 @@ credentials.ts
 .env
 .env.local
 .env.*.local
-.env.*
+.env*

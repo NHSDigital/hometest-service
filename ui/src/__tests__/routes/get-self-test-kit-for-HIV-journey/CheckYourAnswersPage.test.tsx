@@ -1,12 +1,15 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
+  AuthProvider,
+  AuthUser,
   CreateOrderProvider,
-  JourneyNavigationProvider,
+  useAuth,
   useCreateOrderContext,
 } from "@/state";
 import { useEffect } from "react";
+import orderService from "@/lib/services/order-service";
 
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
@@ -29,6 +32,15 @@ jest.mock("@/state", () => {
   };
 });
 
+jest.mock("@/lib/services/order-service", () => ({
+  __esModule: true,
+  default: {
+    submitOrder: jest.fn(),
+  },
+}));
+
+const mockSubmitOrder = orderService.submitOrder as jest.Mock;
+
 // Helper component to pre-populate order state
 function StateSeeder({
   children,
@@ -46,8 +58,10 @@ function StateSeeder({
   return <>{children}</>;
 }
 
-const defaultOrderData = {
-  user: {
+// Helper component to set auth user
+function AuthSeeder({
+  children,
+  user = {
     sub: "test-sub",
     nhsNumber: "1234567890",
     birthdate: "1990-01-01",
@@ -55,7 +69,30 @@ const defaultOrderData = {
     phoneNumber: "07402123123",
     givenName: "John",
     familyName: "Smith",
+    email: "john.smith@example.com"
   },
+}: {
+  children: React.ReactNode;
+  user?: AuthUser;
+}) {
+  const { setUser } = useAuth();
+
+  useEffect(() => {
+    setUser(user);
+  }, []);
+
+  return <>{children}</>;
+}
+
+function OrderReferenceObserver() {
+  const { orderAnswers } = useCreateOrderContext();
+
+  return (
+    <span data-testid="order-reference">{orderAnswers.orderReferenceNumber || ""}</span>
+  );
+}
+
+const defaultOrderData = {
   deliveryAddress: {
     addressLine1: "73 Roman Rd",
     postTown: "Leeds",
@@ -75,9 +112,13 @@ const TestWrapper = ({
   <MemoryRouter
     initialEntries={["/get-self-test-kit-for-HIV/check-your-answers"]}
   >
-    <CreateOrderProvider>
-      <StateSeeder orderData={orderData}>{children}</StateSeeder>
-    </CreateOrderProvider>
+    <AuthProvider>
+      <CreateOrderProvider>
+        <AuthSeeder>
+          <StateSeeder orderData={orderData}>{children}</StateSeeder>
+        </AuthSeeder>
+      </CreateOrderProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
@@ -335,6 +376,26 @@ describe("CheckYourAnswersPage", () => {
       );
 
       consoleSpy.mockRestore();
+    });
+
+    it("updates order reference number after successful submit", async () => {
+      mockSubmitOrder.mockResolvedValueOnce({ orderReference: 123 });
+
+      render(
+        <>
+          <CheckYourAnswersPage />
+          <OrderReferenceObserver />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      fireEvent.click(screen.getByRole("checkbox"));
+      fireEvent.click(screen.getByRole("button", { name: /submit order/i }));
+
+      await waitFor(() => {
+        expect(mockSubmitOrder).toHaveBeenCalled();
+        expect(screen.getByTestId("order-reference")).toHaveTextContent("123");
+      });
     });
   });
 

@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
 import { useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import PageLayout from "@/layouts/PageLayout";
+import orderService, {OrderServiceRequest} from "@/lib/services/order-service";
+
+// TODO: update to dynamically render supplier based on API (probably stored in state)
+// TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -23,14 +27,18 @@ function formatAddress(address: {
   ].filter((line): line is string => Boolean(line));
 }
 
-function formatUserName(user?: { givenName: string; familyName: string }): string {
+function formatUserName(user?: { givenName: string; familyName: string } | null): string {
   if (!user) return "";
-  return `${user.givenName} ${user.familyName}`;
+  if (user.givenName && user.familyName) {
+    return `${user.givenName} ${user.familyName}`;
+  }
+  return user.familyName || "";
 }
 
 export default function CheckYourAnswersPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
 
   const [consentChecked, setConsentChecked] = useState(false);
@@ -66,7 +74,7 @@ export default function CheckYourAnswersPage() {
     setConsentChecked(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!consentChecked) {
@@ -83,8 +91,51 @@ export default function CheckYourAnswersPage() {
     });
 
     console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
-    // TODO: Submit order via API
     console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
+
+    try {
+      // Build orderRequest from OrderAnswers and User in state
+      const addressLines = orderAnswers.deliveryAddress
+        ? formatAddress(orderAnswers.deliveryAddress)
+        : [];
+
+      const orderRequest: OrderServiceRequest = {
+        testCode: orderAnswers.supplier?.[0]?.testCode || "",
+        testDescription: "HIV antigen test",
+        supplierId: orderAnswers.supplier?.[0]?.id || "",
+        patient: {
+          family: user?.familyName || "",
+          given: [user?.givenName || ""],
+          text: `${user?.givenName || ""} ${user?.familyName || ""}`,
+          telecom: [
+            { phone: orderAnswers.mobileNumber || "" },
+            { sms: orderAnswers.mobileNumber || "" },
+            { email: user?.email || "" }
+          ],
+          address: {
+            line: addressLines,
+            city: orderAnswers.deliveryAddress?.postTown || "",
+            postalCode: orderAnswers.deliveryAddress?.postcode || "",
+            country: "United Kingdom"
+          },
+          birthDate: user?.birthdate || "",
+          nhsNumber: user?.nhsNumber || ""
+        },
+        consent: true
+      };
+
+      const orderResponse = await orderService.submitOrder(orderRequest);
+      console.log("Order router response:", orderResponse);
+
+      updateOrderAnswers({
+        orderReferenceNumber: orderResponse.orderReference,
+      });
+
+      goToStep(JourneyStepNames.OrderSubmitted);
+    } catch (err) {
+      console.error("Failed to submit order:", err);
+      // ALPHA TODO: Show error to user
+    }
   };
 
   const addressLines = orderAnswers.deliveryAddress
@@ -132,7 +183,7 @@ export default function CheckYourAnswersPage() {
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
           <SummaryList.Value>
-            {formatUserName(orderAnswers.user)}
+            {formatUserName(user)}
           </SummaryList.Value>
         </SummaryList.Row>
 

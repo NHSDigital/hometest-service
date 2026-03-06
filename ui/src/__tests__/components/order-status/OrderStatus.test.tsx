@@ -1,7 +1,4 @@
-import {
-  OrderDetails,
-  OrderStatus as OrderStatusEnum,
-} from "@/lib/models/order-details";
+import { OrderDetails, OrderStatus as OrderStatusEnum } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
 import { MemoryRouter } from "react-router-dom";
@@ -16,24 +13,34 @@ describe("OrderStatus", () => {
     id: "123",
     orderedDate: "2026-01-15",
     referenceNumber: "12345",
-    status: OrderStatusEnum.ORDER_RECEIVED,
+    status: OrderStatusEnum.CONFIRMED,
     supplier: "Preventx",
     maxDeliveryDays: 5,
   };
 
   it("renders OrderStatusHeader component", () => {
     renderWithRouter(<OrderStatus order={mockOrder} />);
-    expect(
-      screen.getByRole("heading", { name: "HIV self-test" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
     expect(screen.getByText(/15 January 2026/i)).toBeInTheDocument();
   });
 
   it("renders OrderStatusContent component", () => {
     renderWithRouter(<OrderStatus order={mockOrder} />);
-    expect(
-      screen.getByText(/wait for your kit to be dispatched/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/wait for your kit to be dispatched/i)).toBeInTheDocument();
+  });
+
+  it("renders both header and content for processing status", () => {
+    const processingOrder: OrderDetails = {
+      ...mockOrder,
+      status: OrderStatusEnum.PROCESSING,
+    };
+    renderWithRouter(<OrderStatus order={processingOrder} />);
+
+    // Header content
+    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
+
+    // Status content
+    expect(screen.getByText(/PROCESSING/i)).toBeInTheDocument();
   });
 
   it("renders both header and content for dispatched status", () => {
@@ -45,14 +52,10 @@ describe("OrderStatus", () => {
     renderWithRouter(<OrderStatus order={dispatchedOrder} />);
 
     // Header content
-    expect(
-      screen.getByRole("heading", { name: "HIV self-test" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
 
     // Status content
-    expect(
-      screen.getByText(/wait for your kit to arrive/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/wait for your kit to arrive/i)).toBeInTheDocument();
   });
 
   it("renders both header and content for received status", () => {
@@ -63,9 +66,7 @@ describe("OrderStatus", () => {
     renderWithRouter(<OrderStatus order={receivedOrder} />);
 
     // Header content
-    expect(
-      screen.getByRole("heading", { name: "HIV self-test" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
 
     // Status content
     expect(screen.getByText(/wait for your result/i)).toBeInTheDocument();
@@ -79,9 +80,7 @@ describe("OrderStatus", () => {
     renderWithRouter(<OrderStatus order={readyOrder} />);
 
     // Header content
-    expect(
-      screen.getByRole("heading", { name: "HIV self-test" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
 
     // Status content
     expect(screen.getByText(/your result is ready/i)).toBeInTheDocument();

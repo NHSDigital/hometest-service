@@ -402,6 +402,22 @@ export interface CheckYourAnswersContent {
   submitButton: string;
 }
 
+export interface OrderSubmittedContent {
+  panel: {
+    title: string;
+    referenceNumberPrefix: string;
+  };
+  whatHappensNext: {
+    heading: string;
+    steps: string[];
+  };
+  feedback: {
+    text: string;
+    linkText: string;
+    linkHref: string;
+  };
+}
+
 export interface KitNotAvailableInAreaContent {
   title: string;
   description: string;
@@ -427,6 +443,7 @@ export interface PagesContent {
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
+  "order-submitted": OrderSubmittedContent;
   "kit-not-available-in-area": KitNotAvailableInAreaContent;
 }
 
