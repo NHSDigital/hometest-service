@@ -39,10 +39,16 @@ test.describe("Backend API, order endpoint", () => {
     }
   );
 
-  test.afterEach(async ({ testOrderDb }) => {
-    await testOrderDb.deleteConsentByOrderUid(createdOrderUid);
-    await testOrderDb.deleteOrderByUid(createdOrderUid);
+   test.afterEach(async ({ testOrderDb }) => {
+    if (createdOrderUid) {
+      await testOrderDb.deleteConsentByOrderUid(createdOrderUid);
+      await testOrderDb.deleteOrderByUid(createdOrderUid);
+    }
+
     await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);
-    await testOrderDb.deleteOrderByPatientUid(patientUid!);
+
+    if (patientUid) {
+      await testOrderDb.deleteOrderByPatientUid(patientUid);
+    }
   });
 });
