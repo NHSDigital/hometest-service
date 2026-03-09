@@ -16,7 +16,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </MemoryRouter>
 );
 
-describe("PageLayout", () => {
+describe("FormPageLayout", () => {
   it("renders without crashing", () => {
     render(
       <FormPageLayout>
