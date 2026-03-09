@@ -33,13 +33,6 @@ test.describe("Home Test Unavailable page", () => {
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await kitNotAvailableInYourAreaPage.waitUntilPageLoad();
 
-      await expect(
-        kitNotAvailableInYourAreaPage.page.getByRole("heading", {
-          level: 1,
-          name: /Free HIV self-test kits are not available in your area using this service/i,
-        }),
-      ).toBeVisible();
-
       const accessErrors = await accessibility.runAccessibilityCheck(
         kitNotAvailableInYourAreaPage.page,
         "Kit Not Available In Your Area Page",

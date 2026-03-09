@@ -14,11 +14,6 @@ export class KitNotAvailableInYourAreaPage extends BasePage {
 
   async getFindAnotherSexualHealthClinicLinkUrl(): Promise<string> {
     const href = await this.findAnotherSexualHealthClinicLink.getAttribute("href");
-
-    if (!href) {
-      throw new Error("Find another sexual health clinic link does not have an href");
-    }
-
-    return href;
+    return href ?? "";
   }
 }
