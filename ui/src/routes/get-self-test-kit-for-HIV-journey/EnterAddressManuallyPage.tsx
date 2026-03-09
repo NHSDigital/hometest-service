@@ -6,6 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import type { ValidationMessages } from "@/content/schema";
+import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
 import { useState } from "react";
 
@@ -161,7 +162,7 @@ export default function EnterAddressManuallyPage() {
     setPostcode(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const addressLine1ValidationError = validateAddressLine1(
@@ -192,25 +193,48 @@ export default function EnterAddressManuallyPage() {
       !townOrCityValidationError &&
       postcodeValidation.valid
     ) {
-      const updatedData = {
-        deliveryAddress: {
-          addressLine1: addressLine1.trim(),
-          addressLine2: addressLine2.trim() || undefined,
-          addressLine3: addressLine3.trim() || undefined,
-          postTown: townOrCity.trim(),
-          postcode: postcodeValidation.value,
-        },
-        addressEntryMethod: "manual" as const,
-      };
-      console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
-      updateOrderAnswers(updatedData);
+      try {
+        const postcode = postcodeValidation.value;
+        const laResponse = await laLookupService.getByPostcode(postcode);
+        if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+          updateOrderAnswers({ postcodeSearch: postcode });
+          goToStep(JourneyStepNames.KitNotAvailableInArea);
+          return;
+        }
 
-      if (returnToStep) {
-        const step = returnToStep;
-        setReturnToStep(null);
-        goToStep(step);
-      } else {
-        goToStep("how-comfortable-pricking-finger");
+        const updatedData = {
+          deliveryAddress: {
+            addressLine1: addressLine1.trim(),
+            addressLine2: addressLine2.trim() || undefined,
+            addressLine3: addressLine3.trim() || undefined,
+            postTown: townOrCity.trim(),
+            postcode: postcode,
+          },
+          addressEntryMethod: "manual" as const,
+          localAuthority: {
+            code: laResponse.localAuthority.localAuthorityCode,
+            region: laResponse.localAuthority.region,
+          },
+          supplier: laResponse.suppliers.map((supplier) => ({
+            id: supplier.id,
+            name: supplier.name,
+            testCode: supplier.testCode,
+          })),
+        };
+
+        console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
+        updateOrderAnswers(updatedData);
+
+        if (returnToStep) {
+          const step = returnToStep;
+          setReturnToStep(null);
+          goToStep(step);
+        } else {
+          goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+        }
+      } catch (err) {
+        // ALPHA: Remove the console log and use proper logging pattern
+        console.error("Failed to lookup local authority:", err);
       }
     }
   };
