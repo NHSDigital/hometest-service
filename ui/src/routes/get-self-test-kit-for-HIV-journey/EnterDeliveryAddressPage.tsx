@@ -2,11 +2,12 @@
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
-import { useContent } from "@/hooks";
-import type { ValidationMessages } from "@/content/schema";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
 import { useEffect, useRef, useState } from "react";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import type { ValidationMessages } from "@/content/schema";
+import { useContent } from "@/hooks";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -119,7 +120,7 @@ export default function EnterDeliveryAddressPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -212,6 +213,6 @@ export default function EnterDeliveryAddressPage() {
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }
