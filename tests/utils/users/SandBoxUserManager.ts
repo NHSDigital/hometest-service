@@ -1,7 +1,7 @@
 import { BaseUserManager } from "./BaseUserManager";
 import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
 import type { NHSLoginUser } from "./BaseUser";
-import NhsLoginHelper from "../../page-objects/NHSLoginHelper";
+import NhsLoginHelper from "../../page-objects/NhsLoginHelper";
 import type { Page } from "@playwright/test";
 
 export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
@@ -20,10 +20,9 @@ export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
         console.error(
           "Error loading users.ts. Please create users.ts file with your local user details.",
         );
-        throw new Error(
-          "users.ts file not found. Please create it based on users.ts.example",
-          { cause: error },
-        );
+        throw new Error("users.ts file not found. Please create it based on users.ts.example", {
+          cause: error,
+        });
       }
     }
 
@@ -77,10 +76,7 @@ export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {
     ];
   }
 
-  protected async loginWorkerUser(
-    user: NHSLoginUser,
-    page: Page,
-  ): Promise<Page> {
+  protected async loginWorkerUser(user: NHSLoginUser, page: Page): Promise<Page> {
     console.log(`Logging in the user : ${user.email} (${user.nhsNumber})`);
     const loginHelper = new NhsLoginHelper();
     return await loginHelper.loginNhsUser(page, user);

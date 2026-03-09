@@ -9,6 +9,7 @@ import type {
   GlobalErrorContent,
   HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
+  KitNotAvailableInAreaContent,
   NoAddressFoundContent,
   OrderSubmittedContent,
   OrderTrackingContent,
@@ -22,6 +23,7 @@ import { content } from "@/content/ContentService";
 
 export const PageKeys = {
   GetSelfTest: "get-self-test-kit-for-HIV",
+  KitNotAvailableInArea: "kit-not-available-in-area",
   EnterDeliveryAddress: "enter-delivery-address",
   EnterAddressManually: "enter-address-manually",
   NoAddressFound: "no-address-found",
@@ -39,6 +41,7 @@ export type PageKey = (typeof PageKeys)[keyof typeof PageKeys];
 export interface UseContentReturn {
   commonContent: CommonContent;
   "get-self-test-kit-for-HIV": StartPageContent;
+  "kit-not-available-in-area": KitNotAvailableInAreaContent;
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
   "no-address-found": NoAddressFoundContent;
@@ -60,6 +63,7 @@ export const useContent = (): UseContentReturn => {
   return {
     commonContent: content.commonContent,
     "get-self-test-kit-for-HIV": content.pages["get-self-test-kit-for-HIV"],
+    "kit-not-available-in-area": content.pages["kit-not-available-in-area"],
     "enter-delivery-address": content.pages["enter-delivery-address"],
     "enter-address-manually": content.pages["enter-address-manually"],
     "no-address-found": content.pages["no-address-found"],
@@ -84,6 +88,7 @@ export const useCommonContent = (): CommonContent => {
 
 export function usePageContent(page: "get-self-test-kit-for-HIV"): StartPageContent;
 export function usePageContent(page: "enter-delivery-address"): EnterDeliveryAddressContent;
+export function usePageContent(page: "kit-not-available-in-area"): KitNotAvailableInAreaContent;
 export function usePageContent(page: "enter-address-manually"): EnterAddressManuallyContent;
 export function usePageContent(page: "enter-mobile-phone-number"): EnterMobilePhoneNumberContent;
 export function usePageContent(
@@ -104,6 +109,7 @@ export function usePageContent(page: "suppliers-terms-conditions"): SuppliersTer
 export function usePageContent(
   page:
     | "get-self-test-kit-for-HIV"
+    | "kit-not-available-in-area"
     | "enter-delivery-address"
     | "enter-address-manually"
     | "no-address-found"
