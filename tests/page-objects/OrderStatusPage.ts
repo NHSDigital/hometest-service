@@ -9,6 +9,7 @@ export class OrderStatusPage extends BasePage {
   readonly orderedDate: Locator;
   readonly referenceNumber: Locator;
   readonly orderReference: Locator;
+  readonly suppliersTermsOfUseLink: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -18,6 +19,7 @@ export class OrderStatusPage extends BasePage {
     this.referenceNumber = page.locator("#reference-number");
     this.config = ConfigFactory.getConfig();
     this.orderReference = page.getByLabel(/^Reference number:/);
+    this.suppliersTermsOfUseLink = page.locator('a[href*="suppliers-terms-conditions"]');
   }
 
   async navigateToOrder(orderId: string): Promise<void> {
@@ -32,5 +34,10 @@ export class OrderStatusPage extends BasePage {
     const labelText = await this.orderReference.innerText();
     const displayedNumber = labelText.replace("Reference number", "").trim();
     return displayedNumber;
+  }
+  
+  async clickSuppliersTermsOfUseLink(): Promise<void> {
+    await this.suppliersTermsOfUseLink.click();
+    await this.page.waitForURL(/suppliers-terms-conditions/);
   }
 }

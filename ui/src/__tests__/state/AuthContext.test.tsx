@@ -10,6 +10,9 @@ describe("AuthContext", () => {
     birthdate: "1985-05-15",
     identityProofingLevel: "P9",
     phoneNumber: "07700900123",
+    givenName: "John",
+    familyName: "Smith",
+    email: "john.smith@example.com",
   };
 
   describe("AuthProvider", () => {
@@ -113,6 +116,9 @@ describe("AuthContext", () => {
         birthdate: "1990-01-01",
         identityProofingLevel: "P9",
         phoneNumber: "07700900111",
+        givenName: "John",
+        familyName: "Smith",
+        email: "john.smith@example.com",
       };
 
       const secondUser: AuthUser = {
@@ -121,6 +127,9 @@ describe("AuthContext", () => {
         birthdate: "1995-12-31",
         identityProofingLevel: "P9",
         phoneNumber: "07700900222",
+        givenName: "John",
+        familyName: "Smith2",
+        email: "john.smith2@example.com",
       };
 
       act(() => {
@@ -151,6 +160,9 @@ describe("AuthContext", () => {
         birthdate: "1985-05-15",
         identityProofingLevel: "P9",
         phoneNumber: "07700900123",
+        givenName: "John",
+        familyName: "Smith",
+        email: "john.smith@example.com",
       };
 
       act(() => {

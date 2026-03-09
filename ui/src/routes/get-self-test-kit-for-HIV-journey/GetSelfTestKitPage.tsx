@@ -1,11 +1,13 @@
 "use client";
 
 import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { Link } from "react-router-dom";
-import PageLayout from "@/layouts/PageLayout";
+import { useContent } from "@/hooks";
 
 export default function GetSelfTestKitPage() {
   const { updateOrderAnswers } = useCreateOrderContext();
@@ -13,7 +15,7 @@ export default function GetSelfTestKitPage() {
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
   return (
-    <PageLayout>
+    <FormPageLayout>
       <h1>{content.title}</h1>
 
       <p>{content.ageRequirement}</p>
@@ -34,10 +36,7 @@ export default function GetSelfTestKitPage() {
 
           <p>
             {content.urgentCard.aeAdvice}{" "}
-            <a href={commonContent.links.nearestAE.href}>
-              {commonContent.links.nearestAE.text}
-            </a>
-            .
+            <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>.
           </p>
         </Card.Content>
       </Card>
@@ -58,14 +57,16 @@ export default function GetSelfTestKitPage() {
         <Details.Text>{content.dataSharing.details}</Details.Text>
       </Details>
 
-      <Button onClick={() => {
-        updateOrderAnswers({
-          postcodeSearch: undefined,
-          buildingNumber: undefined,
-          deliveryAddress: undefined
-        });
-        goToStep(JourneyStepNames.EnterDeliveryAddress);
-      }}>
+      <Button
+        onClick={() => {
+          updateOrderAnswers({
+            postcodeSearch: undefined,
+            buildingNumber: undefined,
+            deliveryAddress: undefined,
+          });
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
+        }}
+      >
         {content.startButton}
       </Button>
 
@@ -91,11 +92,7 @@ export default function GetSelfTestKitPage() {
         </a>
         .
       </p>
-      <p>
-        <a href={content.otherOptions.learnMoreLink.href}>
-          {content.otherOptions.learnMoreLink.text}
-        </a>
-      </p>
-    </PageLayout>
+      <LearnMoreAboutHivAndAidsLink />
+    </FormPageLayout>
   );
 }
