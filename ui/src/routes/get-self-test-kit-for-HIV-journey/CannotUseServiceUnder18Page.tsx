@@ -1,12 +1,13 @@
 "use client";
 
-import PageLayout from "@/layouts/PageLayout";
 import { useContent } from "@/hooks";
 import { useJourneyNavigationContext } from "@/state/NavigationContext";
 import { ActionLink } from "nhsuk-react-components";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { useCreateOrderContext } from "@/state/OrderContext";
-import { JourneyStepNames } from "@/lib/models/route-paths";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { Route } from "react-router-dom";
 
 export const HARD_CODED_CLINIC_DATA = {
   name: "Sexual Health Clinic - Kendal",
@@ -42,13 +43,13 @@ export default function CannotUseServiceUnder18Page() {
     : NHS_LINKS.findYoungPeoplesServices;
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(JourneyStepNames.GetSelfTestKitPage);
+          goToStep(RoutePath.GetSelfTestKitPage);
         }
       }}
     >
@@ -121,6 +122,6 @@ export default function CannotUseServiceUnder18Page() {
           </div>
         </div>
       </div>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

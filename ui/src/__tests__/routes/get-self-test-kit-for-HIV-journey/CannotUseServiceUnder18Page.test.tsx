@@ -247,6 +247,6 @@ describe("Back Navigation", () => {
     fireEvent.click(screen.getByText("Back"));
 
     expect(goBackMock).not.toHaveBeenCalled();
-    expect(goToStepMock).toHaveBeenCalledWith(JourneyStepNames.GetSelfTestKitPage);
+    expect(goToStepMock).toHaveBeenCalledWith(RoutePath.GetSelfTestKitPage);
   });
 });

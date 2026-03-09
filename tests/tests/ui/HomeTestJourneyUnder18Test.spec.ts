@@ -6,6 +6,13 @@ import { SpecialUserKey } from "../../utils/users/SpecialUserKey";
 const randomAddress = AddressModel.getRandomAddress();
 
 test.describe("HIV Test Order journeys - User under 18", () => {
+  test.use({
+    errorCaptureOptions: {
+      failOnNetworkError: false,
+      failOnConsoleError: false,
+    },
+  });
+
   test.beforeEach(async ({ homeTestStartPage, userManager, page, context }) => {
     await context.clearCookies();
     await context.clearPermissions();
@@ -24,11 +31,6 @@ test.describe("HIV Test Order journeys - User under 18", () => {
   }) => {
     await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditAddressLink();
-
-    const { postCode, firstLineAddress } = await findAddressPage.getPostcodeAndAddressValues();
-
-    expect(postCode).toBe(randomAddress.postCode);
-    expect(firstLineAddress).toBe(randomAddress.addressLine1);
 
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();

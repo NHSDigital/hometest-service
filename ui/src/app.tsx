@@ -167,10 +167,6 @@ const router = createBrowserRouter([
             path: JourneyStepNames.CannotUseServiceUnder18,
             element: <CannotUseServiceUnder18Page />,
           },
-          {
-            path: JourneyStepNames.CannotUseServiceUnder18,
-            element: <CannotUseServiceUnder18Page />,
-          },
         ],
       },
     ],
