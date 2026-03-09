@@ -189,12 +189,6 @@ export default function EnterAddressManuallyPage() {
     setTownOrCityError(townOrCityValidationError);
     setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
 
-    if (isUnder18User) {
-      goToStep(JourneyStepNames.CannotUseServiceUnder18);
-
-      return;
-    }
-
     if (
       !addressLine1ValidationError &&
       !addressLine2ValidationError &&
@@ -233,6 +227,12 @@ export default function EnterAddressManuallyPage() {
 
         console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
         updateOrderAnswers(updatedData);
+
+        if (isUnder18User) {
+          goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+          return;
+        }
 
         if (returnToStep) {
           const step = returnToStep;
