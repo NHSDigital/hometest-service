@@ -58,6 +58,9 @@ describe("OrderTrackingPage", () => {
     birthdate: "1990-08-11",
     identityProofingLevel: "P9",
     phoneNumber: "07700900000",
+    givenName: "John",
+    familyName: "Smith",
+    email: "john.smith@example.com",
   };
 
   // Helper function to render with router and query client
