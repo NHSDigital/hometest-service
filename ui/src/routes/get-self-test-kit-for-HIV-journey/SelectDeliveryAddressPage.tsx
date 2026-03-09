@@ -2,6 +2,7 @@
 
 import {
   AddressResult,
+  useAuth,
   useCreateOrderContext,
   useJourneyNavigationContext,
   usePostcodeLookup,
@@ -13,6 +14,7 @@ import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
 import { useState } from "react";
+import { isUnder18 } from "@/lib/utils/is-under-18";
 
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
@@ -24,6 +26,9 @@ export default function SelectDeliveryAddressPage() {
     orderAnswers.selectedAddressId || "",
   );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -39,6 +44,12 @@ export default function SelectDeliveryAddressPage() {
       (addr) => addr.id === selectedAddress,
     );
     if (!selected) return;
+
+    if (isUnder18User) {
+      goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+      return;
+    }
 
     try {
       const postcode = selected.postcode;

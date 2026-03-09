@@ -1,14 +1,14 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import type { ValidationMessages } from "@/content/schema";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
 import { useState } from "react";
+import { isUnder18 } from "@/lib/utils/is-under-18";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -121,6 +121,7 @@ export default function EnterAddressManuallyPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
     useJourneyNavigationContext();
   const { commonContent, "enter-address-manually": content } = useContent();
+  const { user } = useAuth();
 
   const [addressLine1, setAddressLine1] = useState(
     orderAnswers.deliveryAddress?.addressLine1 || "",
@@ -141,6 +142,8 @@ export default function EnterAddressManuallyPage() {
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
   console.log("[EnterAddressManuallyPage] Current order state:", orderAnswers);
+
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
   const handleAddressLine1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddressLine1(e.target.value);
@@ -185,6 +188,12 @@ export default function EnterAddressManuallyPage() {
     setAddressLine3Error(addressLine3ValidationError);
     setTownOrCityError(townOrCityValidationError);
     setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
+
+    if (isUnder18User) {
+      goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+      return;
+    }
 
     if (
       !addressLine1ValidationError &&

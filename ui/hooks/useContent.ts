@@ -1,5 +1,6 @@
 import type {
   BloodSampleGuideContent,
+  CannotUseServiceUnder18Content,
   CheckYourAnswersContent,
   CommonContent,
   ConfirmMobilePhoneNumberContent,
@@ -30,6 +31,7 @@ export const PageKeys = {
   NoAddressFound: "no-address-found",
   SelectDeliveryAddress: "select-delivery-address",
   ComfortablePricking: "how-comfortable-pricking-finger",
+  CannotUseServiceUnder18: "cannot-use-service-under-18",
   BloodSampleGuide: "blood-sample-guide",
   GlobalError: "global-error",
   OrderTracking: "order-tracking",
@@ -50,6 +52,7 @@ export interface UseContentReturn {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "cannot-use-service-under-18": CannotUseServiceUnder18Content;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
@@ -74,6 +77,7 @@ export const useContent = (): UseContentReturn => {
     "no-address-found": content.pages["no-address-found"],
     "select-delivery-address": content.pages["select-delivery-address"],
     "how-comfortable-pricking-finger": content.pages["how-comfortable-pricking-finger"],
+    "cannot-use-service-under-18": content.pages["cannot-use-service-under-18"],
     "confirm-mobile-phone-number": content.pages["confirm-mobile-phone-number"],
     "enter-mobile-phone-number": content.pages["enter-mobile-phone-number"],
     "check-your-answers": content.pages["check-your-answers"],

@@ -32,6 +32,7 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "no-address-found",
   "select-delivery-address",
   "how-comfortable-pricking-finger",
+  "cannot-use-service-under-18",
   "enter-mobile-phone-number",
   "global-error",
   "order-tracking",
