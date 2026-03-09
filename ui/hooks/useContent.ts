@@ -96,7 +96,6 @@ export function usePageContent(
 ): ConfirmMobilePhoneNumberContent;
 export function usePageContent(page: "no-address-found"): NoAddressFoundContent;
 export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
-export function usePageContent(page: "select-delivery-address"): SelectDeliveryAddressContent;
 export function usePageContent(
   page: "how-comfortable-pricking-finger",
 ): HowComfortablePrickingFingerContent;
