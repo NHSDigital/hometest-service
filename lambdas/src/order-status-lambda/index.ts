@@ -14,7 +14,7 @@ import middy from "@middy/core";
 import cors from "@middy/http-cors";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../login-lambda/cors-configuration";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import z from "zod";
 import { IncomingBusinessStatus } from "./types";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
