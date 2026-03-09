@@ -6,6 +6,7 @@ export enum RoutePath {
   OrderTrackingPage = "/orders/:orderId/tracking",
   TestResultsPage = "/orders/:orderId/results",
   HomeTestPrivacyPolicyPage = "/home-test-privacy-policy",
+  SuppliersTermsConditions = "/suppliers-terms-conditions",
 }
 
 export enum JourneyStepNames {
@@ -19,4 +20,5 @@ export enum JourneyStepNames {
   CheckYourAnswers = "check-your-answers",
   ConfirmMobileNumber = "confirm-mobile-phone-number",
   OrderSubmitted = "order-submitted",
+  SuppliersTermsConditions = "suppliers-terms-conditions",
 }

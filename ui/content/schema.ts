@@ -385,7 +385,6 @@ export interface CheckYourAnswersContent {
     legend: string;
     label: string;
     termsOfUseText: string;
-    termsOfUseHref: string;
     labelAnd: string;
     privacyPolicyText: string;
     privacyPolicyHref: string;
@@ -409,6 +408,30 @@ export interface OrderSubmittedContent {
   };
 }
 
+export interface SupplierTermsContent {
+  title: string;
+  introduction: string[];
+  sections: TermsSection[];
+}
+
+export interface TermsSubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface TermsSection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: TermsSubsection[];
+}
+
+export interface SuppliersTermsConditionsContent {
+  title: string;
+  suppliers: Record<string, SupplierTermsContent>;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -429,6 +452,7 @@ export interface PagesContent {
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "order-submitted": OrderSubmittedContent;
+  "suppliers-terms-conditions": SuppliersTermsConditionsContent;
 }
 
 // ============================================================================

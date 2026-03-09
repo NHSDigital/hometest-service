@@ -66,6 +66,7 @@ describe("TestResultsPage", () => {
     phoneNumber: "07700900000",
     givenName: "Test",
     familyName: "Surname",
+    email: "john.smith@example.com",
   };
 
   const renderWithRouter = (currentOrderId: string) => {

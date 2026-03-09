@@ -5,7 +5,7 @@ import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { init } from "./init";
 import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../login-lambda/cors-configuration";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { validatePostcodeFormat } from "./postcode-validator";
 const name = "eligibility-lookup-lambda";
 const { laLookupService, supplierDb, commons } = init();
