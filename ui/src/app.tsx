@@ -19,6 +19,7 @@ import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import JourneyLayout from "./layouts/JourneyLayout";
 import KitNotAvailableInAreaPage from "./routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
+import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
@@ -124,6 +125,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.KitNotAvailableInArea,
             element: <KitNotAvailableInAreaPage />,
+          },
+          {
+            path: JourneyStepNames.GoToClinic,
+            element: <GoToClinicPage />,
           },
           {
             path: JourneyStepNames.SelectDeliveryAddress,

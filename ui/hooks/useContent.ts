@@ -7,6 +7,7 @@ import type {
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
   GlobalErrorContent,
+  GoToClinicContent,
   HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
   KitNotAvailableInAreaContent,
@@ -35,6 +36,7 @@ export const PageKeys = {
   HomeTestPolicy: "home-test-privacy-policy",
   SuppliersTermsConditions: "suppliers-terms-conditions",
   SuppliersPrivacyPolicy: "suppliers-privacy-policy",
+  GoToClinic: "go-to-clinic",
 } as const;
 
 export type PageKey = (typeof PageKeys)[keyof typeof PageKeys];
@@ -59,6 +61,7 @@ export interface UseContentReturn {
   "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
+  "go-to-clinic": GoToClinicContent;
 }
 
 export const useContent = (): UseContentReturn => {
@@ -82,6 +85,7 @@ export const useContent = (): UseContentReturn => {
     "order-submitted": content.pages["order-submitted"],
     "suppliers-terms-conditions": content.pages["suppliers-terms-conditions"],
     "suppliers-privacy-policy": content.pages["suppliers-privacy-policy"],
+    "go-to-clinic": content.pages["go-to-clinic"],
   };
 };
 

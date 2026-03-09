@@ -1,10 +1,10 @@
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 
 // stub, will be replaced later
-export function NearestSexualHealthClinicSection() {
+export function NearestSexualHealthClinicSection({ showTitle = true }: Readonly<{ showTitle?: boolean }>) {
   return (
     <>
-      <h2>Contact your nearest sexual health clinic</h2>
+      {showTitle && <h2>Contact your nearest sexual health clinic</h2>}
       <p className="nhsuk-body">
         To get tested for HIV, go to your nearest sexual health clinic, which is:
       </p>

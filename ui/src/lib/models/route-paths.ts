@@ -23,5 +23,6 @@ export enum JourneyStepNames {
   OrderSubmitted = "order-submitted",
   KitNotAvailableInArea = "kit-not-available-in-area",
   SuppliersTermsConditions = "suppliers-terms-conditions",
+  GoToClinic = "go-to-clinic",
   SuppliersPrivacyPolicy = "suppliers-privacy-policy",
 }
