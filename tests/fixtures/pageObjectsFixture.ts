@@ -14,6 +14,7 @@ import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPas
 import { ErrorPage } from "../page-objects/ErrorPage";
 import { CheckYourAnswersPage } from "../page-objects/CheckYourAnswersPage";
 import { OrderSubmittedPage } from "../page-objects/OrderSubmittedPage";
+import { CodeSecurityPage } from "../page-objects/NHSLogin/CodeSecurityPage";
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -31,6 +32,7 @@ export interface MyFixtures {
   errorPage: ErrorPage;
   checkYourAnswersPage: CheckYourAnswersPage;
   orderSubmittedPage: OrderSubmittedPage;
+  codeSecurityPage: CodeSecurityPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -92,5 +94,9 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   orderSubmittedPage: async ({ page }, use) => {
     await use(new OrderSubmittedPage(page));
+  },
+
+  codeSecurityPage: async ({ page }, use) => {
+    await use(new CodeSecurityPage(page));
   },
 });
