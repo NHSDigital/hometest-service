@@ -164,6 +164,10 @@ const router = createBrowserRouter([
             element: <FormSuppliersTermsConditionsPage />,
           },
           {
+            path: JourneyStepNames.SuppliersPrivacyPolicy,
+            element: <FormSuppliersPrivacyPolicyPage />,
+          },
+          {
             path: JourneyStepNames.CannotUseServiceUnder18,
             element: <CannotUseServiceUnder18Page />,
           },
