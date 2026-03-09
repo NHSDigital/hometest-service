@@ -5,7 +5,7 @@ import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
 import { useEffect, useRef, useState } from "react";
 
-import PageLayout from "@/layouts/PageLayout";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import type { ValidationMessages } from "@/content/schema";
 import { useContent } from "@/hooks";
 
@@ -121,7 +121,7 @@ export default function EnterDeliveryAddressPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -214,6 +214,6 @@ export default function EnterDeliveryAddressPage() {
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

@@ -717,6 +717,45 @@
         }
       ]
     },
+    "suppliers-terms-conditions": {
+      "title": "Supplier terms of use",
+      "suppliers": {
+        "preventx": {
+          "title": "Preventx terms of use",
+          "introduction": ["This is introduction paragraph for Preventx. https://www.sh.uk/"],
+          "sections": [
+            {
+              "id": "preventx-first-section",
+              "heading": "It is first section for Preventx",
+              "paragraphs": ["It is example of content for Preventx."],
+              "subsections": [
+                {
+                  "heading": "It is the first subsection for Preventx",
+                  "paragraphs": ["It is example of content for Preventx."]
+                }
+              ]
+            }
+          ]
+        },
+        "sh:24": {
+          "title": "SH:24 terms of use",
+          "introduction": ["This is introduction paragraph for SH:24. https://sh24.org.uk/"],
+          "sections": [
+            {
+              "id": "sh24-first-section",
+              "heading": "It is first section for SH:24 ",
+              "paragraphs": ["It is example of content for SH:24."],
+              "subsections": [
+                {
+                  "heading": "It is the first subsection for SH:24",
+                  "paragraphs": ["It is example of content for SH:24."]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
     "check-your-answers": {
       "title": "Check your answers before submitting your order",
       "updateMessage": "We'll update you about your HIV test on the account you use for your NHS login.",
@@ -732,7 +771,6 @@
         "legend": "Your consent",
         "label": "I understand that {supplier}, a trusted partner of NHS, will provide the free self-test kit. I agree to their",
         "termsOfUseText": "terms of use",
-        "termsOfUseHref": "supplier-terms-and-conditions",
         "labelAnd": "and",
         "privacyPolicyText": "privacy policy",
         "privacyPolicyHref": "supplier-privacy-policy"

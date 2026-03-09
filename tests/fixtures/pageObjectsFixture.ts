@@ -14,6 +14,7 @@ import { OrderStatusPage } from "../page-objects/OrderStatusPage";
 import { OrderSubmittedPage } from "../page-objects/OrderSubmittedPage";
 import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
 import { SelectDeliveryAddressPage } from "../page-objects/SelectDeliveryAddressPage";
+import { SuppliersTermsOfUsePage } from "../page-objects/SuppliersTermsOfUsePage";
 import { test as base } from "@playwright/test";
 
 export interface MyFixtures {
@@ -33,6 +34,7 @@ export interface MyFixtures {
   errorPage: ErrorPage;
   checkYourAnswersPage: CheckYourAnswersPage;
   orderSubmittedPage: OrderSubmittedPage;
+  suppliersTermsOfUsePage: SuppliersTermsOfUsePage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -98,5 +100,9 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   orderSubmittedPage: async ({ page }, use) => {
     await use(new OrderSubmittedPage(page));
+  },
+
+  suppliersTermsOfUsePage: async ({ page }, use) => {
+    await use(new SuppliersTermsOfUsePage(page));
   },
 });

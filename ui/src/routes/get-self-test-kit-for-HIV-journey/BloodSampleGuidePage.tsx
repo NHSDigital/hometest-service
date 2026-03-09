@@ -2,7 +2,7 @@
 
 import { Details, Images } from "nhsuk-react-components";
 
-import PageLayout from "@/layouts/PageLayout";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
 import { useContent } from "@/hooks";
 import { useJourneyNavigationContext } from "@/state";
@@ -12,7 +12,7 @@ export default function BloodSampleGuidePage() {
   const { "blood-sample-guide": content } = useContent();
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -72,6 +72,6 @@ export default function BloodSampleGuidePage() {
           </div>
         ),
       )}
-    </PageLayout>
+    </FormPageLayout>
   );
 }

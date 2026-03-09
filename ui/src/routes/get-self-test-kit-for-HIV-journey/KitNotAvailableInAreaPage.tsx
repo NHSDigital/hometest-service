@@ -4,10 +4,10 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import { FeedbackSection } from "@/components/FeedbackSection";
 import { FindAnotherSexualHealthClinicLink } from "@/components/FindAnotherSexualHealthClinicLink";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { NearestSexualHealthClinicSection } from "@/components/NearestSexualHealthClinicSection";
-import PageLayout from "@/layouts/PageLayout";
 import { usePageContent } from "@/hooks";
 
 export default function KitNotAvailableInAreaPage() {
@@ -16,7 +16,7 @@ export default function KitNotAvailableInAreaPage() {
   const content = usePageContent("kit-not-available-in-area");
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -35,6 +35,6 @@ export default function KitNotAvailableInAreaPage() {
       <h2>{content.moreOptionsHeading}</h2>
       <LearnMoreAboutHivAndAidsLink />
       <FeedbackSection />
-    </PageLayout>
+    </FormPageLayout>
   );
 }

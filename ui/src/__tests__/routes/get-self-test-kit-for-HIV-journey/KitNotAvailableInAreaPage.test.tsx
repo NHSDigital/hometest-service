@@ -29,7 +29,7 @@ jest.mock("@/hooks", () => ({
   usePageContent: jest.fn(),
 }));
 
-jest.mock("@/layouts/PageLayout", () => ({
+jest.mock("@/layouts/FormPageLayout", () => ({
   __esModule: true,
   default: ({
     children,

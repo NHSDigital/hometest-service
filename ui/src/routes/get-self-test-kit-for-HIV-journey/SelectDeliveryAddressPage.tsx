@@ -8,8 +8,8 @@ import {
 } from "@/state";
 import { Button, ErrorSummary, Radios } from "nhsuk-react-components";
 
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
 import { useState } from "react";
@@ -88,7 +88,7 @@ export default function SelectDeliveryAddressPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         updateOrderAnswers({
@@ -177,6 +177,6 @@ export default function SelectDeliveryAddressPage() {
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

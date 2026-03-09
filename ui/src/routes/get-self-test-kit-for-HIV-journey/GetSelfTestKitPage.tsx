@@ -4,9 +4,9 @@ import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { Link } from "react-router-dom";
-import PageLayout from "@/layouts/PageLayout";
 import { useContent } from "@/hooks";
 
 export default function GetSelfTestKitPage() {
@@ -15,7 +15,7 @@ export default function GetSelfTestKitPage() {
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
   return (
-    <PageLayout>
+    <FormPageLayout>
       <h1>{content.title}</h1>
 
       <p>{content.ageRequirement}</p>
@@ -93,6 +93,6 @@ export default function GetSelfTestKitPage() {
         .
       </p>
       <LearnMoreAboutHivAndAidsLink />
-    </PageLayout>
+    </FormPageLayout>
   );
 }

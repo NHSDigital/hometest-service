@@ -3,8 +3,8 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
 import { useContent } from "@/hooks";
 import { useState } from "react";
@@ -50,7 +50,7 @@ export default function EnterMobileNumberPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -103,6 +103,6 @@ export default function EnterMobileNumberPage() {
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

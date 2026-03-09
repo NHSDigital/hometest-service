@@ -3,8 +3,8 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
 import type { ValidationMessages } from "@/content/schema";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
@@ -240,7 +240,7 @@ export default function EnterAddressManuallyPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -399,6 +399,6 @@ export default function EnterAddressManuallyPage() {
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

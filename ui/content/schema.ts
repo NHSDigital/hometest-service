@@ -394,7 +394,6 @@ export interface CheckYourAnswersContent {
     legend: string;
     label: string;
     termsOfUseText: string;
-    termsOfUseHref: string;
     labelAnd: string;
     privacyPolicyText: string;
     privacyPolicyHref: string;
@@ -424,6 +423,30 @@ export interface KitNotAvailableInAreaContent {
   moreOptionsHeading: string;
 }
 
+export interface SupplierTermsContent {
+  title: string;
+  introduction: string[];
+  sections: TermsSection[];
+}
+
+export interface TermsSubsection {
+  heading?: string;
+  paragraphs?: string[];
+  list?: string[];
+}
+
+export interface TermsSection {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+  subsections?: TermsSubsection[];
+}
+
+export interface SuppliersTermsConditionsContent {
+  title: string;
+  suppliers: Record<string, SupplierTermsContent>;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -445,6 +468,7 @@ export interface PagesContent {
   "blood-sample-guide": BloodSampleGuideContent;
   "order-submitted": OrderSubmittedContent;
   "kit-not-available-in-area": KitNotAvailableInAreaContent;
+  "suppliers-terms-conditions": SuppliersTermsConditionsContent;
 }
 
 // ============================================================================
