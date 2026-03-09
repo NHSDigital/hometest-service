@@ -35,7 +35,7 @@ export class OrderStatusPage extends BasePage {
     const displayedNumber = labelText.replace("Reference number", "").trim();
     return displayedNumber;
   }
-  
+
   async clickSuppliersTermsOfUseLink(): Promise<void> {
     await this.suppliersTermsOfUseLink.click();
     await this.page.waitForURL(/suppliers-terms-conditions/);

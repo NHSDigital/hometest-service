@@ -107,7 +107,7 @@ export const pageObjectFixture = base.extend<MyFixtures>({
   codeSecurityPage: async ({ page }, use) => {
     await use(new CodeSecurityPage(page));
   },
-  
+
   suppliersTermsOfUsePage: async ({ page }, use) => {
     await use(new SuppliersTermsOfUsePage(page));
   },
