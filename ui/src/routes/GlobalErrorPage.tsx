@@ -1,6 +1,6 @@
 import PageLayout from "@/layouts/PageLayout";
-import { useRouteError } from "react-router-dom";
 import { useContent } from "@/hooks";
+import { useRouteError } from "react-router-dom";
 
 export default function ErrorPage() {
   const error: unknown = useRouteError();
