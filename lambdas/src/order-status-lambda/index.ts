@@ -25,7 +25,7 @@ const { orderStatusDb } = init();
 const name = "order-status-lambda";
 
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
-  identifier: z.array(FHIRIdentifierSchema).min(1),
+  identifier: z.array(FHIRIdentifierSchema).min(1).max(1),
   for: FHIRReferenceSchema,
   lastModified: z.string().datetime(),
   businessStatus: FHIRCodeableConceptSchema.extend({
