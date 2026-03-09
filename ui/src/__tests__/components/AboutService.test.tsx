@@ -54,7 +54,7 @@ describe("AboutService", () => {
     );
     const link = screen.getByRole("link", { name: "Preventx privacy policy" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/suppliers-privacy-policy");
+    expect(link).toHaveAttribute("href", "/suppliers-privacy-policy?supplier=Preventx");
   });
 
   it("renders supplier terms link with SH24 name", () => {
@@ -76,6 +76,6 @@ describe("AboutService", () => {
     );
     const link = screen.getByRole("link", { name: "SH:24 privacy policy" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/suppliers-privacy-policy");
+    expect(link).toHaveAttribute("href", "/suppliers-privacy-policy?supplier=SH%3A24");
   });
 });
