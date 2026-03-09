@@ -1,10 +1,8 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { OrderStatusFHIRTask } from "./index";
-import { FHIRTask } from "src/lib/models/fhir/fhir-service-request-type";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
-import { init } from "./init";
 
 const mockInit = jest.fn();
 
@@ -53,16 +51,16 @@ describe("Order Status Lambda Handler", () => {
 
     const module = await import("./index");
 
-    handler = module.handler;
+    handler = module.lambdaHandler;
   });
 
   const validTaskBody: OrderStatusFHIRTask = {
     resourceType: "Task",
     status: "in-progress",
     intent: "order",
-    basedOn: [
+    identifier: [
       {
-        reference: `ServiceRequest/${MOCK_ORDER_UID}`,
+        value: MOCK_ORDER_UID,
       },
     ],
     for: {
@@ -95,7 +93,7 @@ describe("Order Status Lambda Handler", () => {
       expect(body.resourceType).toBe("OperationOutcome");
       expect(body.issue[0].code).toBe("invalid");
 
-      expect(body.issue[0].diagnostics).toMatch(/basedOn|lastModified|businessStatus/);
+      expect(body.issue[0].diagnostics).toMatch(/identifier|lastModified|businessStatus/);
     });
 
     it("should return 400 if request body is null", async () => {
@@ -133,7 +131,7 @@ describe("Order Status Lambda Handler", () => {
         businessStatus: {
           text: "invalid-business-status",
         },
-      } satisfies Partial<Omit<FHIRTask, "basedOn">>);
+      } satisfies Partial<Omit<OrderStatusFHIRTask, "identifier">>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
@@ -143,21 +141,6 @@ describe("Order Status Lambda Handler", () => {
 
       expect(body.resourceType).toBe("OperationOutcome");
       expect(body.issue[0].code).toBe("invalid");
-    });
-
-    it("should return 400 if basedOn reference format is invalid", async () => {
-      mockEvent.body = JSON.stringify({
-        ...validTaskBody,
-        basedOn: [{ reference: "invalid-reference" }],
-      } satisfies Partial<OrderStatusFHIRTask>);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
-
-      expect(result.statusCode).toBe(400);
-
-      const body = JSON.parse(result.body);
-
-      expect(body.issue[0].diagnostics).toContain("Invalid order reference");
     });
   });
 
@@ -430,7 +413,7 @@ describe("Order Status Lambda Handler", () => {
       mockEvent.body = JSON.stringify({
         resourceType: "Task",
         // Invalid - missing required fields
-      } satisfies Partial<FHIRTask>);
+      } satisfies Partial<OrderStatusFHIRTask>);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
