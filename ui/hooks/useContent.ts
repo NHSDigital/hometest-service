@@ -10,7 +10,6 @@ import type {
   HomeTestPrivacyPolicyContent,
   HowComfortablePrickingFingerContent,
   KitNotAvailableInAreaContent,
-  LegalDocumentContent,
   NoAddressFoundContent,
   OrderSubmittedContent,
   OrderTrackingContent,
