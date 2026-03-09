@@ -7,6 +7,7 @@ export enum RoutePath {
   TestResultsPage = "/orders/:orderId/results",
   HomeTestPrivacyPolicyPage = "/home-test-privacy-policy",
   SuppliersTermsConditions = "/suppliers-terms-conditions",
+  SuppliersPrivacyPolicy = "/suppliers-privacy-policy",
 }
 
 export enum JourneyStepNames {
@@ -22,4 +23,5 @@ export enum JourneyStepNames {
   OrderSubmitted = "order-submitted",
   KitNotAvailableInArea = "kit-not-available-in-area",
   SuppliersTermsConditions = "suppliers-terms-conditions",
+  SuppliersPrivacyPolicy = "suppliers-privacy-policy",
 }
