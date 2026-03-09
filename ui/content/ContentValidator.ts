@@ -19,11 +19,13 @@ const REQUIRED_COMMON_KEYS: (keyof CommonContent)[] = [
   "links",
   "errorSummary",
   "orderStatus",
+  "feedback",
   "footer",
 ];
 
 const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "get-self-test-kit-for-HIV",
+  "kit-not-available-in-area",
   "enter-delivery-address",
   "enter-address-manually",
   "no-address-found",
@@ -35,6 +37,7 @@ const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "test-results",
   "blood-sample-guide",
   "home-test-privacy-policy",
+  "suppliers-terms-conditions",
 ];
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -43,10 +46,7 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
 
-const validateCommonContent = (
-  content: unknown,
-  errors: string[],
-): content is CommonContent => {
+const validateCommonContent = (content: unknown, errors: string[]): content is CommonContent => {
   if (!isObject(content)) {
     errors.push("commonContent must be an object");
     return false;
@@ -65,19 +65,14 @@ const validateCommonContent = (
       errors.push("commonContent.navigation.back must be a non-empty string");
     }
     if (!isNonEmptyString(content.navigation.continue)) {
-      errors.push(
-        "commonContent.navigation.continue must be a non-empty string",
-      );
+      errors.push("commonContent.navigation.continue must be a non-empty string");
     }
   }
 
   return errors.length === 0;
 };
 
-const validatePagesContent = (
-  content: unknown,
-  errors: string[],
-): content is PagesContent => {
+const validatePagesContent = (content: unknown, errors: string[]): content is PagesContent => {
   if (!isObject(content)) {
     errors.push("pages must be an object");
     return false;
@@ -129,16 +124,14 @@ export const validateContent = (content: unknown): ValidationResult => {
   };
 };
 
-export const isValidContentFile = (
-  content: unknown,
-): content is ContentFile => {
+export const isValidContentFile = (content: unknown): content is ContentFile => {
   const result = validateContent(content);
   return result.valid;
 };
 
-export const assertValidContent: (
-  content: unknown,
-) => asserts content is ContentFile = (content) => {
+export const assertValidContent: (content: unknown) => asserts content is ContentFile = (
+  content,
+) => {
   const result = validateContent(content);
   if (!result.valid) {
     throw new Error(

@@ -1,19 +1,21 @@
-import { test as base } from "@playwright/test";
-import { HomeTestStartPage } from "../page-objects/HomeTestStartPage";
-import { FindAddressPage } from "../page-objects/FindAddressPage";
-import { EnterAddressManuallyPage } from "../page-objects/EnterAddressManuallyPage";
-import { SelectDeliveryAddressPage } from "../page-objects/SelectDeliveryAddressPage";
-import { OrderStatusPage } from "../page-objects/OrderStatusPage";
-import { HowComfortablePrickingFingerPage } from "../page-objects/HowComfortablePrickingFingerPage";
 import { BloodSampleGuidePage } from "../page-objects/BloodSampleGuidePage";
-import { EnterMobileNumberPage } from "../page-objects/EnterMobileNumberPage";
-import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
-import { ConfirmAndUpdateMobileNumberPage } from "../page-objects/ConfirmAndUpdateMobileNumberPage";
-import { NegativeResultPage } from "../page-objects/NegativeResultPage";
-import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPasswordPage";
-import { ErrorPage } from "../page-objects/ErrorPage";
 import { CheckYourAnswersPage } from "../page-objects/CheckYourAnswersPage";
+import { ConfirmAndUpdateMobileNumberPage } from "../page-objects/ConfirmAndUpdateMobileNumberPage";
+import { EnterAddressManuallyPage } from "../page-objects/EnterAddressManuallyPage";
+import { EnterMobileNumberPage } from "../page-objects/EnterMobileNumberPage";
+import { ErrorPage } from "../page-objects/ErrorPage";
+import { FindAddressPage } from "../page-objects/FindAddressPage";
+import { HomeTestStartPage } from "../page-objects/HomeTestStartPage";
+import { HowComfortablePrickingFingerPage } from "../page-objects/HowComfortablePrickingFingerPage";
+import { KitNotAvailableInYourAreaPage } from "../page-objects/KitNotAvailableInYourAreaPage";
+import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPasswordPage";
+import { NegativeResultPage } from "../page-objects/NegativeResultPage";
+import { OrderStatusPage } from "../page-objects/OrderStatusPage";
 import { OrderSubmittedPage } from "../page-objects/OrderSubmittedPage";
+import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
+import { SelectDeliveryAddressPage } from "../page-objects/SelectDeliveryAddressPage";
+import { SuppliersTermsOfUsePage } from "../page-objects/SuppliersTermsOfUsePage";
+import { test as base } from "@playwright/test";
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -27,10 +29,12 @@ export interface MyFixtures {
   enterMobileNumberPage: EnterMobileNumberPage;
   confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
   negativeResultPage: NegativeResultPage;
+  kitNotAvailableInYourAreaPage: KitNotAvailableInYourAreaPage;
   nhsEmailAndPasswordPage: NHSEmailAndPasswordPage;
   errorPage: ErrorPage;
   checkYourAnswersPage: CheckYourAnswersPage;
   orderSubmittedPage: OrderSubmittedPage;
+  suppliersTermsOfUsePage: SuppliersTermsOfUsePage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -78,6 +82,10 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new NegativeResultPage(page));
   },
 
+  kitNotAvailableInYourAreaPage: async ({ page }, use) => {
+    await use(new KitNotAvailableInYourAreaPage(page));
+  },
+
   nhsEmailAndPasswordPage: async ({ page }, use) => {
     await use(new NHSEmailAndPasswordPage(page));
   },
@@ -92,5 +100,9 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   orderSubmittedPage: async ({ page }, use) => {
     await use(new OrderSubmittedPage(page));
+  },
+
+  suppliersTermsOfUsePage: async ({ page }, use) => {
+    await use(new SuppliersTermsOfUsePage(page));
   },
 });
