@@ -103,22 +103,6 @@ describe("SupplierTestResultsService", () => {
       );
     });
 
-    it("should handle trailing slash in service URL", async () => {
-      mockHttpClient.get.mockResolvedValue(mockBundle);
-      const configWithTrailingSlash = {
-        ...serviceConfig,
-        serviceUrl: "https://supplier-api.example.com/",
-      };
-      mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(configWithTrailingSlash);
-
-      await service.getResults(orderId, supplierId, correlationId);
-
-      expect(mockHttpClient.get).toHaveBeenCalledWith(
-        "https://supplier-api.example.com/api/results?order_uid=test-order-123",
-        expect.any(Object),
-      );
-    });
-
     it("should throw error when supplier config is missing", async () => {
       mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(null);
 

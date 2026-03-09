@@ -37,7 +37,7 @@ export class SupplierTestResultsService {
 
     const accessToken = await supplierAuthClient.getAccessToken();
 
-    const resultsUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}${serviceConfig.resultsPath}`;
+    const resultsUrl = `${serviceConfig.serviceUrl}${serviceConfig.resultsPath}`;
     const url = new URL(resultsUrl);
     url.searchParams.append("order_uid", orderId);
 

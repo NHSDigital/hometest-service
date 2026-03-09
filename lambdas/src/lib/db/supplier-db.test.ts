@@ -282,6 +282,27 @@ describe("SupplierService", () => {
       expect(normalizeSql(sql)).toBe(normalizeSql(expectedSql));
     });
 
+    it("should trim trailing slash from service URL", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [
+          {
+            service_url: "https://supplier.example.com/",
+            client_secret_name: "secret-name",
+            client_id: "client-id",
+            oauth_token_path: "/oauth/token",
+            order_path: "/orders",
+            oauth_scope: "scope-value",
+            results_path: "/results",
+          },
+        ],
+        rowCount: 1,
+      });
+
+      const result = await supplierService.getSupplierConfigBySupplierId("SUP001");
+
+      expect(result?.serviceUrl).toBe("https://supplier.example.com");
+    });
+
     it("should return null when supplier does not exist", async () => {
       mockDbClient.query.mockResolvedValue({
         rows: [],

@@ -93,7 +93,9 @@ export class SupplierService {
       }
 
       const row = result.rows[0];
-      if (!row.service_url) {
+      const serviceUrl = row.service_url?.trim();
+
+      if (!serviceUrl) {
         throw new SupplierConfigError(
           `Supplier configuration missing service URL for supplierId ${supplierId}`,
         );
@@ -110,7 +112,7 @@ export class SupplierService {
       }
 
       return {
-        serviceUrl: row.service_url,
+        serviceUrl: serviceUrl.replace(/\/$/, ""),
         clientSecretName: row.client_secret_name,
         clientId: row.client_id,
         oauthTokenPath: getOrDefault(row.oauth_token_path, DEFAULT_CONFIG.oauthTokenPath),
