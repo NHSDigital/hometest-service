@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
-  FHIRCodeableConceptSchema, FHIRIdentifierSchema,
+  FHIRCodeableConceptSchema,
+  FHIRIdentifierSchema,
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
@@ -26,7 +27,6 @@ const name = "order-status-lambda";
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
   identifier: z.array(FHIRIdentifierSchema).min(1),
   for: FHIRReferenceSchema,
-  basedOn: z.array(FHIRReferenceSchema).min(1).max(1),
   lastModified: z.string().datetime(),
   businessStatus: FHIRCodeableConceptSchema.extend({
     text: z.enum(IncomingBusinessStatus),
@@ -78,18 +78,9 @@ export const lambdaHandler = async (
   }
 
   const validatedTask = validationResult.data;
+  const orderId = validatedTask.identifier[0].value;
 
   try {
-    const orderId = validatedTask.identifier[0].value;
-
-    if (!orderId) {
-      commons.logError(name, "Invalid order reference format", {
-        reference: validatedTask.identifier[0].value,
-      });
-
-      return createFhirErrorResponse(400, "invalid", "Invalid order reference format", "error");
-    }
-
     let correlationId: string;
 
     try {
