@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import {
+  AddressResult,
   useCreateOrderContext,
   useJourneyNavigationContext,
   usePostcodeLookup,
-  AddressResult,
 } from "@/state";
-import { useContent } from "@/hooks";
-import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
-import PageLayout from "@/layouts/PageLayout";
+import { Button, ErrorSummary, Radios } from "nhsuk-react-components";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
+import { useContent } from "@/hooks";
+import { useState } from "react";
 
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
@@ -97,7 +98,7 @@ export default function SelectDeliveryAddressPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         updateOrderAnswers({
@@ -186,6 +187,6 @@ export default function SelectDeliveryAddressPage() {
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

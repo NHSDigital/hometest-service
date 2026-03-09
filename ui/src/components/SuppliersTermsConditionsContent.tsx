@@ -1,32 +1,33 @@
-"use client";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+import { usePageContent } from "@/hooks";
 
-import PageLayout from "@/layouts/PageLayout";
-import { useContent } from "@/hooks";
-import { useNavigate } from "react-router-dom";
+type SuppliersTermsConditionsContentProps = {
+  supplier?: string | null;
+};
 
-export default function HomeTestPrivacyPolicyPage() {
-  const navigate = useNavigate();
-  const { "home-test-privacy-policy": content } = useContent();
+export function SuppliersTermsConditionsContent({
+  supplier,
+}: SuppliersTermsConditionsContentProps) {
+  const normalizedSupplier = supplier?.trim().toLowerCase();
+  const content = usePageContent("suppliers-terms-conditions");
+
+  if (!normalizedSupplier) {
+    throw new Error("Unknown supplier: missing supplier");
+  }
+
+  if (!Object.hasOwn(content.suppliers, normalizedSupplier)) {
+    throw new Error(`Unknown supplier: ${normalizedSupplier}`);
+  }
+
+  const supplierContent = content.suppliers[normalizedSupplier];
 
   const renderTextWithLinks = (text: string) => {
-    // Regular expression to detect URLs
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = text.split(urlRegex);
 
     return parts.map((part, index) => {
       if (part.match(urlRegex)) {
-        return (
-          <a
-            key={index}
-            href={part}
-            className="nhsuk-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${part} (opens in new tab)`}
-          >
-            {part}
-          </a>
-        );
+        return <OpensInNewTabLink key={index} linkHref={part} linkText={part} />;
       }
       return <span key={index}>{part}</span>;
     });
@@ -45,12 +46,12 @@ export default function HomeTestPrivacyPolicyPage() {
   };
 
   return (
-    <PageLayout onBackButtonClick={() => navigate(-1)}>
-      <h1 className="nhsuk-heading-l">{content.title}</h1>
+    <>
+      <h1 className="nhsuk-heading-l">{supplierContent.title}</h1>
 
-      {renderParagraphs(content.introduction)}
+      {renderParagraphs(supplierContent.introduction)}
 
-      {content.sections.map((section) => (
+      {supplierContent.sections.map((section) => (
         <section
           key={section.id}
           aria-labelledby={`section-${section.id}`}
@@ -63,7 +64,7 @@ export default function HomeTestPrivacyPolicyPage() {
           {renderParagraphs(section.paragraphs)}
 
           {section.subsections?.map((subsection, subIndex) => (
-            <div key={subIndex} className="nhsuk-u-margin-top-4">
+            <div key={subIndex}>
               {subsection.heading && <h3 className="nhsuk-heading-s">{subsection.heading}</h3>}
 
               {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
@@ -77,6 +78,6 @@ export default function HomeTestPrivacyPolicyPage() {
           ))}
         </section>
       ))}
-    </PageLayout>
+    </>
   );
 }

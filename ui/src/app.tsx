@@ -10,6 +10,7 @@ import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
+import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
@@ -19,12 +20,13 @@ import JourneyLayout from "./layouts/JourneyLayout";
 import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
+import OrderSubmittedPage from "./routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
-import OrderSubmittedPage from "./routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -85,6 +87,10 @@ const router = createBrowserRouter([
         element: <TestResultsPage />,
       },
       {
+        path: RoutePath.SuppliersTermsConditions,
+        element: <SuppliersTermsConditionsPage />,
+      },
+      {
         path: RoutePath.HomeTestPrivacyPolicyPage,
         element: <HomeTestPrivacyPolicyPage />,
       },
@@ -135,6 +141,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.OrderSubmitted,
             element: <OrderSubmittedPage />,
+          },
+          {
+            path: JourneyStepNames.SuppliersTermsConditions,
+            element: <FormSuppliersTermsConditionsPage />,
           },
         ],
       },
