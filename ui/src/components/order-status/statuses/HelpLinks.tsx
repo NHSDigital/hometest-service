@@ -1,3 +1,4 @@
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { Link } from "react-router-dom";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import supplierService from "@/lib/services/supplier-service";
@@ -11,10 +12,7 @@ export function HelpLinks({ supplier }: HelpLinksProps) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.helpLinks;
   const supplierLinks = supplierService.getLinksBySupplierName(supplier);
-  const contactSupplierText = content.contactSupplier.replace(
-    "{supplier}",
-    supplier,
-  );
+  const contactSupplierText = content.contactSupplier.replace("{supplier}", supplier);
 
   return (
     <section aria-labelledby="help-links-heading">
@@ -22,10 +20,7 @@ export function HelpLinks({ supplier }: HelpLinksProps) {
         {content.heading}
       </h2>
       <p className="nhsuk-body">
-        <OpensInNewTabLink
-          linkHref={supplierLinks.contact}
-          linkText={contactSupplierText}
-        />
+        <OpensInNewTabLink linkHref={supplierLinks.contact} linkText={contactSupplierText} />
       </p>
       <p className="nhsuk-body">
         <Link to="/blood-sample-guide" className="nhsuk-link">
@@ -38,12 +33,7 @@ export function HelpLinks({ supplier }: HelpLinksProps) {
           linkText={content.contactClinic}
         />
       </p>
-      <p className="nhsuk-body">
-        <OpensInNewTabLink
-          linkHref="https://www.nhs.uk/conditions/hiv-and-aids/"
-          linkText={content.learnMoreHIV}
-        />
-      </p>
+      <LearnMoreAboutHivAndAidsLink />
     </section>
   );
 }
