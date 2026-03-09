@@ -19,9 +19,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.1003.0",
-    "@aws-sdk/client-sqs": "^3.1003.0",
-    "@aws-sdk/rds-signer": "^3.1003.0",
+    "@aws-sdk/client-secrets-manager": "^3.1004.0",
+    "@aws-sdk/client-sqs": "^3.1004.0",
+    "@aws-sdk/rds-signer": "^3.1004.0",
     "@middy/core": "^7.1.3",
     "@middy/http-cors": "^7.1.3",
     "@middy/http-error-handler": "^7.1.3",
@@ -50,7 +50,7 @@
     "@types/pg": "^8.18.0",
     "archiver": "7.0.1",
     "esbuild": "^0.27.3",
-    "eslint": "^10.0.2",
+    "eslint": "^10.0.3",
     "globals": "^17.4.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
