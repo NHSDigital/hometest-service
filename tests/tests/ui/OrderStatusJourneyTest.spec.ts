@@ -39,10 +39,10 @@ test.describe("Order Status Page", () => {
       patientId = result.patient_uid;
       orderReference = result.order_reference;
       console.log(`Created test order with ID: ${orderId} and reference: ${orderReference}`);
-      console.log(`Created second test order with ID: ${orderId2}`);
 
       orderId2 = resultSecondPatient.order_uid;
       patientId2 = resultSecondPatient.patient_uid;
+      console.log(`Created second test order with ID: ${orderId2}`);
     },
   );
 
