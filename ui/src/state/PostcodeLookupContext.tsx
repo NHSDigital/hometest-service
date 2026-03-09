@@ -1,5 +1,7 @@
 import React, { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
+import { backendUrl } from "@/settings";
+
 export interface AddressResult {
   id: string;
   line1: string;
@@ -44,10 +46,9 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
     setAddresses([]);
 
     try {
-      const postcodeLookupLambdaUrl = process.env.NEXT_PUBLIC_POSTCODE_LOOKUP_LAMBDA_ENDPOINT;
-      const response = await fetch(
-        postcodeLookupLambdaUrl + `?postcode=${encodeURIComponent(postcodeValue)}`,
-      );
+      const url = new URL(`${backendUrl}/postcode-lookup`);
+      url.searchParams.append("postcode", postcodeValue);
+      const response = await fetch(url.toString());
 
       if (!response.ok) {
         throw new Error("Failed to lookup postcode");

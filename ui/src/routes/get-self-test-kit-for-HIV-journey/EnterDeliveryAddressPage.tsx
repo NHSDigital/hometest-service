@@ -1,11 +1,11 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
 import { useEffect, useRef, useState } from "react";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { JourneyStepNames } from "@/lib/models/route-paths";
 import type { ValidationMessages } from "@/content/schema";
 import { useContent } from "@/hooks";
 
@@ -74,10 +74,10 @@ export default function EnterDeliveryAddressPage() {
       hasSubmittedRef.current = false;
       switch (lookupResultsStatus) {
         case "not_found":
-          goToStep("no-address-found");
+          goToStep(JourneyStepNames.NoAddressFound);
           break;
         case "found":
-          goToStep("select-delivery-address");
+          goToStep(JourneyStepNames.SelectDeliveryAddress);
           break;
         case "error":
           console.error("Postcode lookup failed");
@@ -94,7 +94,7 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
@@ -111,6 +111,7 @@ export default function EnterDeliveryAddressPage() {
         postcodeSearch: postcodeValidation.value,
         buildingNumber: buildingName.trim() || undefined,
       };
+
       console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
@@ -126,7 +127,7 @@ export default function EnterDeliveryAddressPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("get-self-test-kit-for-HIV");
+          goToStep(RoutePath.GetSelfTestKitPage);
         }
       }}
     >
@@ -200,7 +201,7 @@ export default function EnterDeliveryAddressPage() {
 
       <p className="nhsuk-body">
         <a
-          href="enter-address-manually"
+          href={JourneyStepNames.EnterAddressManually}
           onClick={(e) => {
             e.preventDefault();
             updateOrderAnswers({

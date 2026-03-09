@@ -1,16 +1,30 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { CreateOrderProvider } from "@/state/OrderContext";
 import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
+import laLookupService from "@/lib/services/la-lookup-service";
+import { useCreateOrderContext } from "@/state/OrderContext";
+import { useJourneyNavigationContext } from "@/state/NavigationContext";
+
+jest.mock("@/lib/services/la-lookup-service", () => ({
+  __esModule: true,
+  default: {
+    getByPostcode: jest.fn().mockResolvedValue({
+      localAuthority: {
+        localAuthorityCode: "4230",
+        region: "Salford",
+      },
+      suppliers: [{ id: "SUP1", name: "Supplier One", testCode: "31676001" }],
+    }),
+  },
+}));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/enter-address-manually"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-address-manually"]}>
     <JourneyNavigationProvider>
       <CreateOrderProvider>{children}</CreateOrderProvider>
     </JourneyNavigationProvider>
@@ -18,6 +32,18 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("EnterAddressManuallyPage", () => {
+  const ContextObserver = () => {
+    const { orderAnswers } = useCreateOrderContext();
+    const { currentStep } = useJourneyNavigationContext();
+
+    return (
+      <>
+        <div data-testid="postcode-search">{orderAnswers.postcodeSearch ?? ""}</div>
+        <div data-testid="current-step">{currentStep}</div>
+      </>
+    );
+  };
+
   describe("Component Rendering", () => {
     it("renders the main heading", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
@@ -36,9 +62,7 @@ describe("EnterAddressManuallyPage", () => {
       expect(screen.getByLabelText(/address line 3/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/town or city/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/postcode/i)).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /continue/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
     });
   });
 
@@ -72,28 +96,38 @@ describe("EnterAddressManuallyPage", () => {
       expect(errorLink).toHaveAttribute("href", "#address-line-1");
     });
 
-    it("should link to town field in error summary", () => {
+    it("should link to town field in error summary and focus it when clicked", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
+      const townInput = screen.getByLabelText(/town or city/i);
       const errorLink = screen.getByRole("link", {
         name: "Enter a city or town",
       });
       expect(errorLink).toHaveAttribute("href", "#address-town");
+
+      fireEvent.click(errorLink);
+
+      expect(townInput).toHaveFocus();
     });
 
-    it("should link to postcode field in error summary", () => {
+    it("should link to postcode field in error summary and focus it when clicked", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
+      const postcodeInput = screen.getByLabelText(/postcode/i);
       const errorLink = screen.getByRole("link", {
         name: "Enter a full UK postcode",
       });
       expect(errorLink).toHaveAttribute("href", "#postcode");
+
+      fireEvent.click(errorLink);
+
+      expect(postcodeInput).toHaveFocus();
     });
 
     it("should link to address line 2 field in error summary when address line 2 is too long", () => {
@@ -110,6 +144,36 @@ describe("EnterAddressManuallyPage", () => {
         name: "Address line 2 must be 100 characters or less",
       });
       expect(errorLink).toHaveAttribute("href", "#address-line-2");
+    });
+
+    it("should focus address line 2 and 3 fields when their error summary links are clicked", () => {
+      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+
+      const addressLine2Input = screen.getByLabelText(/address line 2/i);
+      const addressLine3Input = screen.getByLabelText(/address line 3/i);
+
+      fireEvent.change(addressLine2Input, {
+        target: { value: "B".repeat(101) },
+      });
+      fireEvent.change(addressLine3Input, {
+        target: { value: "C".repeat(101) },
+      });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      const addressLine2ErrorLink = screen.getByRole("link", {
+        name: "Address line 2 must be 100 characters or less",
+      });
+      const addressLine3ErrorLink = screen.getByRole("link", {
+        name: "Address line 3 must be 100 characters or less",
+      });
+
+      fireEvent.click(addressLine2ErrorLink);
+      expect(addressLine2Input).toHaveFocus();
+
+      fireEvent.click(addressLine3ErrorLink);
+      expect(addressLine3Input).toHaveFocus();
     });
 
     it("should show multiple errors in error summary", () => {
@@ -137,9 +201,7 @@ describe("EnterAddressManuallyPage", () => {
           name: "Address line 2 must be 100 characters or less",
         }),
       ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "Enter a city or town" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Enter a city or town" })).toBeInTheDocument();
       expect(
         screen.getByRole("link", {
           name: "Enter a postcode using letters and numbers",
@@ -156,9 +218,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.getAllByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 1, typically the building and street"),
       ).toHaveLength(2);
     });
 
@@ -174,9 +234,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.getAllByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 1, typically the building and street"),
       ).toHaveLength(2);
     });
 
@@ -197,9 +255,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.queryByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.queryByText("Enter address line 1, typically the building and street"),
       ).not.toBeInTheDocument();
     });
 
@@ -213,9 +269,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Address line 1 must be 100 characters or less"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Address line 1 must be 100 characters or less")).toHaveLength(2);
     });
   });
 
@@ -236,9 +290,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText(/address line 2 must be/i),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/address line 2 must be/i)).not.toBeInTheDocument();
     });
 
     it("should return error for invalid special characters in address line 2", () => {
@@ -253,9 +305,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.getAllByText(
-          "Enter address line 2, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 2, typically the building and street"),
       ).toHaveLength(2);
     });
 
@@ -280,9 +330,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.queryByText(
-          "Enter address line 2, typically the building and street",
-        ),
+        screen.queryByText("Enter address line 2, typically the building and street"),
       ).not.toBeInTheDocument();
     });
 
@@ -296,9 +344,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Address line 2 must be 100 characters or less"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Address line 2 must be 100 characters or less")).toHaveLength(2);
     });
   });
 
@@ -319,9 +365,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText(/address line 3 must be/i),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/address line 3 must be/i)).not.toBeInTheDocument();
     });
 
     it("should return error for invalid special characters in address line 3", () => {
@@ -334,9 +378,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.getAllByText(
-          "Enter address line 3, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 3, typically the building and street"),
       ).toHaveLength(2);
     });
 
@@ -361,9 +403,7 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.queryByText(
-          "Enter address line 3, typically the building and street",
-        ),
+        screen.queryByText("Enter address line 3, typically the building and street"),
       ).not.toBeInTheDocument();
     });
 
@@ -377,9 +417,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Address line 3 must be 100 characters or less"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Address line 3 must be 100 characters or less")).toHaveLength(2);
     });
   });
 
@@ -432,12 +470,7 @@ describe("EnterAddressManuallyPage", () => {
       const townInput = screen.getByLabelText(/town or city/i);
       const postcodeInput = screen.getByLabelText(/postcode/i);
 
-      const validTowns = [
-        "London",
-        "St. Mary's",
-        "Newton-le-Willows",
-        "St. Albans",
-      ];
+      const validTowns = ["London", "St. Mary's", "Newton-le-Willows", "St. Albans"];
 
       validTowns.forEach((town) => {
         fireEvent.change(addressLine1Input, {
@@ -449,9 +482,7 @@ describe("EnterAddressManuallyPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.queryByText("Enter a city or town"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Enter a city or town")).not.toBeInTheDocument();
       });
     });
 
@@ -465,9 +496,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("City or town must be 100 characters or less"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("City or town must be 100 characters or less")).toHaveLength(2);
     });
   });
 
@@ -501,9 +530,7 @@ describe("EnterAddressManuallyPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a postcode using letters and numbers"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a postcode using letters and numbers")).toHaveLength(2);
       });
     });
 
@@ -516,9 +543,7 @@ describe("EnterAddressManuallyPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Postcode must be 8 characters or less"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Postcode must be 8 characters or less")).toHaveLength(2);
     });
 
     it("should accept valid UK postcodes with and without spaces", () => {
@@ -528,14 +553,7 @@ describe("EnterAddressManuallyPage", () => {
       const townInput = screen.getByLabelText(/town or city/i);
       const postcodeInput = screen.getByLabelText(/postcode/i);
 
-      const validPostcodes = [
-        "SW1A 1AA",
-        "SW1A1AA",
-        "M1 1AE",
-        "B33 8TH",
-        "CR2 6XH",
-        "DN55 1PT",
-      ];
+      const validPostcodes = ["SW1A 1AA", "SW1A1AA", "M1 1AE", "B33 8TH", "CR2 6XH", "DN55 1PT"];
 
       validPostcodes.forEach((postcode) => {
         fireEvent.change(addressLine1Input, {
@@ -547,12 +565,8 @@ describe("EnterAddressManuallyPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.queryByText("Enter a full UK postcode"),
-        ).not.toBeInTheDocument();
-        expect(
-          screen.queryByText("Postcode must be 8 characters or less"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
+        expect(screen.queryByText("Postcode must be 8 characters or less")).not.toBeInTheDocument();
       });
     });
   });
@@ -567,9 +581,7 @@ describe("EnterAddressManuallyPage", () => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
       expect(
-        screen.getAllByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 1, typically the building and street"),
       ).toHaveLength(2);
       expect(screen.getAllByText("Enter a city or town")).toHaveLength(2);
       expect(screen.getAllByText("Enter a full UK postcode")).toHaveLength(2);
@@ -597,16 +609,69 @@ describe("EnterAddressManuallyPage", () => {
 
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
       expect(
-        screen.queryByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.queryByText("Enter address line 1, typically the building and street"),
       ).not.toBeInTheDocument();
-      expect(
-        screen.queryByText("Enter a city or town"),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByText("Enter a full UK postcode"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a city or town")).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
     });
+  });
+
+  describe("Eligibility Check", () => {
+    const mockedGetByPostcode = laLookupService.getByPostcode as jest.MockedFunction<
+      typeof laLookupService.getByPostcode
+    >;
+
+    const fillValidRequiredFields = () => {
+      fireEvent.change(screen.getByLabelText(/address line 1/i), {
+        target: { value: "123 Main Street" },
+      });
+      fireEvent.change(screen.getByLabelText(/town or city/i), {
+        target: { value: "London" },
+      });
+      fireEvent.change(screen.getByLabelText(/postcode/i), {
+        target: { value: "SW1A 1AA" },
+      });
+    };
+
+    beforeEach(() => {
+      mockedGetByPostcode.mockClear();
+    });
+
+    it.each([
+      ["LA lookup returns null", null],
+      [
+        "LA lookup returns empty suppliers list",
+        {
+          localAuthority: {
+            localAuthorityCode: "4230",
+            region: "Salford",
+          },
+          suppliers: [],
+        },
+      ],
+    ])(
+      "should navigate to KitNotAvailableInArea and save postcodeSearch when %s",
+      async (_caseName, laResponse) => {
+        mockedGetByPostcode.mockResolvedValueOnce(laResponse as never);
+
+        render(
+          <>
+            <EnterAddressManuallyPage />
+            <ContextObserver />
+          </>,
+          { wrapper: TestWrapper },
+        );
+
+        fillValidRequiredFields();
+        fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+        await waitFor(() => {
+          expect(screen.getByTestId("postcode-search")).toHaveTextContent("SW1A 1AA");
+          expect(screen.getByTestId("current-step")).toHaveTextContent("kit-not-available-in-area");
+        });
+
+        expect(mockedGetByPostcode).toHaveBeenCalledWith("SW1A 1AA");
+      },
+    );
   });
 });

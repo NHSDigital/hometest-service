@@ -10,11 +10,11 @@ import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 
 const mockLookupPostcode = jest.fn();
 const mockClearAddresses = jest.fn();
-let mockLookupResultsStatus = 'idle';
+let mockLookupResultsStatus = "idle";
 let mockIsLoading = false;
 
-jest.mock('@/state', () => ({
-  ...jest.requireActual('@/state'),
+jest.mock("@/state", () => ({
+  ...jest.requireActual("@/state"),
   usePostcodeLookup: () => ({
     lookupPostcode: mockLookupPostcode,
     lookupResultsStatus: mockLookupResultsStatus,
@@ -25,9 +25,7 @@ jest.mock('@/state', () => ({
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/enter-delivery-address"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-delivery-address"]}>
     <JourneyNavigationProvider>
       <CreateOrderProvider>
         <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
@@ -39,7 +37,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe("EnterDeliveryAddressPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLookupResultsStatus = 'idle';
+    mockLookupResultsStatus = "idle";
     mockIsLoading = false;
   });
 
@@ -57,12 +55,8 @@ describe("EnterDeliveryAddressPage", () => {
       render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
 
       expect(screen.getByLabelText(/postcode/i)).toBeInTheDocument();
-      expect(
-        screen.getByLabelText(/building number or name/i),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /continue/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/building number or name/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
       expect(screen.getByText(/enter address manually/i)).toBeInTheDocument();
     });
   });
@@ -141,9 +135,7 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Postcode must be 8 characters or less"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Postcode must be 8 characters or less")).toHaveLength(2);
     });
 
     it("should return error for invalid postcode format", () => {
@@ -156,14 +148,12 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a postcode using letters and numbers"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a postcode using letters and numbers")).toHaveLength(2);
     });
 
     it("should accept valid UK postcodes", async () => {
-      mockLookupPostcode.mockResolvedValue('valid');
-      mockLookupResultsStatus = 'found';
+      mockLookupPostcode.mockResolvedValue("valid");
+      mockLookupResultsStatus = "found";
 
       const validPostcodes = ["M1 1AA", "B33 8TH", "W1A 0AX", "EC1A 1BB"];
 
@@ -177,9 +167,7 @@ describe("EnterDeliveryAddressPage", () => {
         fireEvent.click(submitButton);
 
         await waitFor(() => {
-          expect(
-            screen.queryByText("Enter a full UK postcode"),
-          ).not.toBeInTheDocument();
+          expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
           expect(
             screen.queryByText("Postcode must be 8 characters or less"),
           ).not.toBeInTheDocument();
@@ -204,9 +192,7 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText(/building number or name must be/i),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/building number or name must be/i)).not.toBeInTheDocument();
     });
 
     it("should return error for building name too long", () => {
@@ -220,9 +206,7 @@ describe("EnterDeliveryAddressPage", () => {
       fireEvent.click(submitButton);
 
       expect(
-        screen.getAllByText(
-          "Building number or name must be 100 characters or less",
-        ),
+        screen.getAllByText("Building number or name must be 100 characters or less"),
       ).toHaveLength(2);
     });
 
@@ -233,13 +217,7 @@ describe("EnterDeliveryAddressPage", () => {
       fireEvent.change(postcodeInput, { target: { value: "M1 1AA" } });
 
       const buildingInput = screen.getByLabelText(/building number or name/i);
-      const validNames = [
-        "15",
-        "Prospect Cottage",
-        "Flat 2B",
-        "123-125",
-        "O'Connor House",
-      ];
+      const validNames = ["15", "Prospect Cottage", "Flat 2B", "123-125", "O'Connor House"];
 
       validNames.forEach((name) => {
         fireEvent.change(buildingInput, { target: { value: name } });
@@ -248,9 +226,7 @@ describe("EnterDeliveryAddressPage", () => {
         fireEvent.click(submitButton);
 
         expect(
-          screen.queryByText(
-            "Building number or name must be 100 characters or less",
-          ),
+          screen.queryByText("Building number or name must be 100 characters or less"),
         ).not.toBeInTheDocument();
       });
     });
@@ -283,9 +259,7 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a full UK postcode"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
     });
   });
 });

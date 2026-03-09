@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 
 import { CreateOrderProvider } from "@/state/OrderContext";
 import FormPageLayout from "@/layouts/FormPageLayout";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import GetSelfTestKitPage from "@/routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
@@ -16,7 +17,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </MemoryRouter>
 );
 
-describe("PageLayout", () => {
+describe("FormPageLayout", () => {
   it("renders without crashing", () => {
     render(
       <FormPageLayout>

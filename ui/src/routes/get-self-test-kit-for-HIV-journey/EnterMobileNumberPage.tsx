@@ -44,7 +44,7 @@ export default function EnterMobileNumberPage() {
         setReturnToStep(null);
         goToStep(step);
       } else {
-        goToStep("check-your-answers");
+        goToStep(JourneyStepNames.CheckYourAnswers);
       }
     }
   };

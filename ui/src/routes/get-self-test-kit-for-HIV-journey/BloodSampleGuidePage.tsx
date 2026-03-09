@@ -3,6 +3,7 @@
 import { Details, Images } from "nhsuk-react-components";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
+import { RoutePath } from "@/lib/models/route-paths";
 import { useContent } from "@/hooks";
 import { useJourneyNavigationContext } from "@/state";
 
@@ -17,7 +18,7 @@ export default function BloodSampleGuidePage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("get-self-test-kit-for-HIV");
+          goToStep(RoutePath.GetSelfTestKitPage);
         }
       }}
     >
