@@ -3,12 +3,12 @@ import "@testing-library/jest-dom";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import SuppliersTermsConditionsPage from "@/routes/SuppliersTermsConditionsPage";
+import SuppliersPrivacyPolicyPage from "@/routes/SuppliersPrivacyPolicyPage";
 
 const mockNavigate = jest.fn();
 const mockSupplierLegalDocumentContent = jest.fn(
   ({ supplier }: { supplier?: string | null; documentType: "terms" | "privacy" }) => (
-    <div data-testid="suppliers-terms-content">Supplier: {supplier ?? "missing"}</div>
+    <div data-testid="suppliers-privacy-content">Supplier: {supplier ?? "missing"}</div>
   ),
 );
 
@@ -47,39 +47,39 @@ const renderAt = (url: string) => {
   return render(
     <MemoryRouter initialEntries={[url]}>
       <Routes>
-        <Route path="/suppliers-terms-conditions" element={<SuppliersTermsConditionsPage />} />
+        <Route path="/suppliers-privacy-policy" element={<SuppliersPrivacyPolicyPage />} />
       </Routes>
     </MemoryRouter>,
   );
 };
 
-describe("SuppliersTermsConditionsPage", () => {
+describe("SuppliersPrivacyPolicyPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("passes supplier from query params to shared content component", () => {
-    renderAt("/suppliers-terms-conditions?supplier=SH:24");
+    renderAt("/suppliers-privacy-policy?supplier=SH:24");
 
-    expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: SH:24");
+    expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: SH:24");
     expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
       supplier: "SH:24",
-      documentType: "terms",
+      documentType: "privacy",
     });
   });
 
   it("passes null supplier when query param is missing", () => {
-    renderAt("/suppliers-terms-conditions");
+    renderAt("/suppliers-privacy-policy");
 
-    expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: missing");
+    expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: missing");
     expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
       supplier: null,
-      documentType: "terms",
+      documentType: "privacy",
     });
   });
 
   it("navigates back when back action is triggered", () => {
-    renderAt("/suppliers-terms-conditions?supplier=Preventx");
+    renderAt("/suppliers-privacy-policy?supplier=Preventx");
 
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
 
@@ -87,7 +87,7 @@ describe("SuppliersTermsConditionsPage", () => {
   });
 
   it("renders inside PageLayout", () => {
-    renderAt("/suppliers-terms-conditions?supplier=Preventx");
+    renderAt("/suppliers-privacy-policy?supplier=Preventx");
 
     expect(screen.getByTestId("page-layout")).toBeInTheDocument();
   });
