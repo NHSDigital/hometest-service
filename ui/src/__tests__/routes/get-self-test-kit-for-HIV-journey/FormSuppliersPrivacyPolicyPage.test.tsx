@@ -2,13 +2,13 @@ import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import FormSuppliersTermsConditionsPage from "@/routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
+import FormSuppliersPrivacyPolicyPage from "@/routes/get-self-test-kit-for-HIV-journey/FormSuppliersPrivacyPolicyPage";
 
 const mockUseJourneyNavigationContext = jest.fn();
 const mockUseCreateOrderContext = jest.fn();
 const mockSupplierLegalDocumentContent = jest.fn(
   ({ supplier }: { supplier?: string | null; documentType: "terms" | "privacy" }) => (
-    <div data-testid="suppliers-terms-content">Supplier: {supplier ?? "missing"}</div>
+    <div data-testid="suppliers-privacy-content">Supplier: {supplier ?? "missing"}</div>
   ),
 );
 const mockFormPageLayout = jest.fn(
@@ -47,7 +47,7 @@ jest.mock("@/components/SupplierLegalDocumentContent", () => ({
   }) => mockSupplierLegalDocumentContent(props),
 }));
 
-describe("HIV journey FormSuppliersTermsConditionsPage", () => {
+describe("HIV journey FormSuppliersPrivacyPolicyPage", () => {
   const mockGoToStep = jest.fn();
   const mockGoBack = jest.fn();
 
@@ -63,22 +63,22 @@ describe("HIV journey FormSuppliersTermsConditionsPage", () => {
     mockUseJourneyNavigationContext.mockReturnValue({
       goToStep: mockGoToStep,
       goBack: mockGoBack,
-      stepHistory: ["how-comfortable-pricking-finger", "suppliers-terms-conditions"],
+      stepHistory: ["check-your-answers", "suppliers-privacy-policy"],
     });
   });
 
   it("passes supplier from order answers to shared content component", () => {
-    render(<FormSuppliersTermsConditionsPage />);
+    render(<FormSuppliersPrivacyPolicyPage />);
 
-    expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: Preventx");
+    expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: Preventx");
     expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
       supplier: "Preventx",
-      documentType: "terms",
+      documentType: "privacy",
     });
   });
 
   it("shows layout with back button enabled", () => {
-    render(<FormSuppliersTermsConditionsPage />);
+    render(<FormSuppliersPrivacyPolicyPage />);
 
     expect(screen.getByTestId("form-page-layout")).toBeInTheDocument();
     expect(mockFormPageLayout).toHaveBeenCalledWith(
@@ -87,7 +87,7 @@ describe("HIV journey FormSuppliersTermsConditionsPage", () => {
   });
 
   it("goes back when history has previous steps", () => {
-    render(<FormSuppliersTermsConditionsPage />);
+    render(<FormSuppliersPrivacyPolicyPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
 
@@ -99,10 +99,10 @@ describe("HIV journey FormSuppliersTermsConditionsPage", () => {
     mockUseJourneyNavigationContext.mockReturnValue({
       goToStep: mockGoToStep,
       goBack: mockGoBack,
-      stepHistory: ["suppliers-terms-conditions"],
+      stepHistory: ["suppliers-privacy-policy"],
     });
 
-    render(<FormSuppliersTermsConditionsPage />);
+    render(<FormSuppliersPrivacyPolicyPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
 
@@ -115,12 +115,12 @@ describe("HIV journey FormSuppliersTermsConditionsPage", () => {
       orderAnswers: {},
     });
 
-    render(<FormSuppliersTermsConditionsPage />);
+    render(<FormSuppliersPrivacyPolicyPage />);
 
-    expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: missing");
+    expect(screen.getByTestId("suppliers-privacy-content")).toHaveTextContent("Supplier: missing");
     expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
       supplier: undefined,
-      documentType: "terms",
+      documentType: "privacy",
     });
   });
 });
