@@ -1,7 +1,7 @@
-import orderDetailsService from "@/lib/services/order-details-service";
-import {OrderStatus} from "@/lib/models/order-details";
-
 jest.mock("@/settings", () => ({backendUrl: "http://mock-backend"}));
+
+import orderDetailsService from "@/lib/services/order-details-service";
+import { OrderStatus } from "@/lib/models/order-details";
 
 const mockFetch = jest.fn();
 globalThis.fetch = mockFetch as typeof fetch;
@@ -81,7 +81,7 @@ describe("OrderDetailsService", () => {
       maxDeliveryDays: 5,
       orderedDate: "2026-03-09T13:56:17.471Z",
       referenceNumber: "100007",
-      status: "DISPATCHED",
+      status: OrderStatus.DISPATCHED,
       supplier: "SH:24"
     });
 
