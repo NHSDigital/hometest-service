@@ -2,13 +2,11 @@ import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import { CreateOrderProvider } from "@/state/OrderContext";
+import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
 import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
-import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { JourneyNavigationProvider, useJourneyNavigationContext } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useCreateOrderContext } from "@/state/OrderContext";
-import { useJourneyNavigationContext } from "@/state/NavigationContext";
 
 jest.mock("@/lib/services/la-lookup-service", () => ({
   __esModule: true,

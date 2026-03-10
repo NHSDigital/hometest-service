@@ -295,5 +295,27 @@ describe("EnterDeliveryAddressPage", () => {
         expect(screen.getByText("Postcode lookup failed")).toBeInTheDocument();
       });
     });
+
+    it("shows the error boundary when lookupPostcode rejects", async () => {
+      mockLookupPostcode.mockRejectedValue(new Error("Network error"));
+
+      render(
+        <TestErrorBoundary>
+          <EnterDeliveryAddressPage />
+        </TestErrorBoundary>,
+        { wrapper: TestWrapper },
+      );
+
+      const postcodeInput = screen.getByLabelText(/postcode/i);
+      fireEvent.change(postcodeInput, { target: { value: "M1 1AA" } });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("Network error")).toBeInTheDocument();
+        expect(screen.queryByText("Postcode lookup failed")).not.toBeInTheDocument();
+      });
+    });
   });
 });
