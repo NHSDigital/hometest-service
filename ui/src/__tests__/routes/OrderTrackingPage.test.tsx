@@ -165,7 +165,8 @@ describe("OrderTrackingPage", () => {
         renderWithRouter(orderId);
       });
 
-      const [errorAlert] = await screen.findAllByRole("alert");
+      const errorHeading = await screen.findByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
       expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
@@ -178,7 +179,8 @@ describe("OrderTrackingPage", () => {
         renderWithRouter(orderId);
       });
 
-      const [errorAlert] = await screen.findAllByRole("alert");
+      const errorHeading = await screen.findByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
     });
@@ -234,7 +236,8 @@ describe("OrderTrackingPage", () => {
 
       renderWithRouter(invalidOrderId);
 
-      const [errorAlert] = screen.getAllByRole("alert");
+      const errorHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
       expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
@@ -248,7 +251,8 @@ describe("OrderTrackingPage", () => {
 
       renderWithRouter(malformedGuid);
 
-      const [errorAlert] = screen.getAllByRole("alert");
+      const errorHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
       expect(orderDetailsService.get).not.toHaveBeenCalled();

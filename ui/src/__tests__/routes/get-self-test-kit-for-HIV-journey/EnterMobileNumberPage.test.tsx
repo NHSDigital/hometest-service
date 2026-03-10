@@ -1,15 +1,11 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import EnterMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
-import {
-  CreateOrderProvider,
-  JourneyNavigationProvider,
-} from "@/state";
+import { MemoryRouter } from "react-router-dom";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>
     <JourneyNavigationProvider>
       <CreateOrderProvider>{children}</CreateOrderProvider>
     </JourneyNavigationProvider>
@@ -30,20 +26,14 @@ describe("EnterMobileNumberPage", () => {
     it("renders the description text", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByText(/you'll get updates to this number/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/you'll get updates to this number/i)).toBeInTheDocument();
     });
 
     it("renders all form elements", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByLabelText(/uk mobile phone number/i),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /continue/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/uk mobile phone number/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
     });
 
     it("renders the hint text", () => {
@@ -62,14 +52,19 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("should not show error summary when there are no errors", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
     });
 
@@ -109,9 +104,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should return error for mobile number with only spaces", () => {
@@ -123,9 +116,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
   });
 
@@ -134,12 +125,7 @@ describe("EnterMobileNumberPage", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       const mobileInput = screen.getByLabelText(/uk mobile phone number/i);
-      const invalidPrefixes = [
-        "06777 900 900",
-        "08777 900 900",
-        "09777 900 900",
-        "05777 900 900",
-      ];
+      const invalidPrefixes = ["06777 900 900", "08777 900 900", "09777 900 900", "05777 900 900"];
 
       invalidPrefixes.forEach((number) => {
         fireEvent.change(mobileInput, { target: { value: number } });
@@ -147,9 +133,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a UK mobile phone number"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
       });
     });
 
@@ -157,11 +141,7 @@ describe("EnterMobileNumberPage", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       const mobileInput = screen.getByLabelText(/uk mobile phone number/i);
-      const landlineNumbers = [
-        "01234 567890",
-        "02071 234567",
-        "0131 496 0000",
-      ];
+      const landlineNumbers = ["01234 567890", "02071 234567", "0131 496 0000"];
 
       landlineNumbers.forEach((number) => {
         fireEvent.change(mobileInput, { target: { value: number } });
@@ -169,9 +149,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a UK mobile phone number"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
       });
     });
 
@@ -179,10 +157,7 @@ describe("EnterMobileNumberPage", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       const mobileInput = screen.getByLabelText(/uk mobile phone number/i);
-      const tooManyDigits = [
-        "07771 900 900 1234 5678",
-        "+44 7771 900 900 1234 5678",
-      ];
+      const tooManyDigits = ["07771 900 900 1234 5678", "+44 7771 900 900 1234 5678"];
 
       tooManyDigits.forEach((number) => {
         fireEvent.change(mobileInput, { target: { value: number } });
@@ -190,9 +165,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a UK mobile phone number"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
       });
     });
 
@@ -214,9 +187,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a UK mobile phone number"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
       });
     });
 
@@ -237,9 +208,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a UK mobile phone number"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
       });
     });
 
@@ -247,13 +216,7 @@ describe("EnterMobileNumberPage", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       const mobileInput = screen.getByLabelText(/uk mobile phone number/i);
-      const incompleteNumbers = [
-        "077",
-        "07771",
-        "07771 900",
-        "+44",
-        "+44 7",
-      ];
+      const incompleteNumbers = ["077", "07771", "07771 900", "+44", "+44 7"];
 
       incompleteNumbers.forEach((number) => {
         fireEvent.change(mobileInput, { target: { value: number } });
@@ -261,9 +224,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.getAllByText("Enter a UK mobile phone number"),
-        ).toHaveLength(2);
+        expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
       });
     });
 
@@ -276,9 +237,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should return error for number with letters", () => {
@@ -290,9 +249,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
   });
 
@@ -306,9 +263,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile number without spaces", () => {
@@ -320,9 +275,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile number with +44 prefix", () => {
@@ -334,9 +287,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile number with +44 and no spaces", () => {
@@ -348,9 +299,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile number with hyphens", () => {
@@ -362,9 +311,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile number with mixed separators", () => {
@@ -378,9 +325,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept various valid UK mobile numbers", () => {
@@ -403,9 +348,7 @@ describe("EnterMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.queryByText("Enter a UK mobile phone number"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
       });
     });
   });
@@ -417,11 +360,12 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should update OrderContext with valid mobile number", () => {
@@ -433,18 +377,16 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
       expect(
-        screen.queryByText("Enter a UK mobile phone number"),
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
       ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should preserve user input format after validation", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      const mobileInput = screen.getByLabelText(
-        /uk mobile phone number/i,
-      ) as HTMLInputElement;
+      const mobileInput = screen.getByLabelText(/uk mobile phone number/i) as HTMLInputElement;
       const inputValue = "07771 900 900";
       fireEvent.change(mobileInput, { target: { value: inputValue } });
 
@@ -462,21 +404,23 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
 
       const mobileInput = screen.getByLabelText(/uk mobile phone number/i);
       fireEvent.change(mobileInput, { target: { value: "07" } });
 
       // Error should still be visible until form is submitted again
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should update input value as user types", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      const mobileInput = screen.getByLabelText(/uk mobile phone number/i,) as HTMLInputElement;
+      const mobileInput = screen.getByLabelText(/uk mobile phone number/i) as HTMLInputElement;
 
       fireEvent.change(mobileInput, { target: { value: "077" } });
       expect(mobileInput.value).toBe("077");

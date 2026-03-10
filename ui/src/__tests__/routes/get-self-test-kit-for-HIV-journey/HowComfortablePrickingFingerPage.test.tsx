@@ -1,13 +1,13 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen } from "@testing-library/react";
-import { useEffect } from "react";
-
 import { AuthProvider, useAuth } from "@/state/AuthContext";
+import { MemoryRouter, useLocation } from "react-router-dom";
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
 import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
-import { MemoryRouter, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 jest.mock("@/hooks", () => ({
   useContent: () => ({
@@ -56,9 +56,7 @@ jest.mock("@/hooks", () => ({
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/how-comfortable-pricking-finger"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/how-comfortable-pricking-finger"]}>
     <AuthProvider>
       <JourneyNavigationProvider>
         <CreateOrderProvider>{children}</CreateOrderProvider>
@@ -121,7 +119,9 @@ describe("HowComfortablePrickingFingerPage", () => {
     it("renders all form elements", () => {
       render(<HowComfortablePrickingFingerPage />, { wrapper: TestWrapper });
 
-      expect(screen.getByText(/are you comfortable doing the hiv self-test\?/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/are you comfortable doing the hiv self-test\?/i),
+      ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
     });
 
@@ -129,8 +129,12 @@ describe("HowComfortablePrickingFingerPage", () => {
       render(<HowComfortablePrickingFingerPage />, { wrapper: TestWrapper });
 
       expect(screen.getByText(/yes i'm comfortable, send me the kit/i)).toBeInTheDocument();
-      expect(screen.getByText(/the test is supplied by \[supplier\], a trusted partner of the nhs/i)).toBeInTheDocument();
-      expect(screen.getByText(/no, i'd rather go to a sexual health clinic instead/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/the test is supplied by \[supplier\], a trusted partner of the nhs/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/no, i'd rather go to a sexual health clinic instead/i),
+      ).toBeInTheDocument();
       expect(screen.getByText(/they will take a blood sample for you/i)).toBeInTheDocument();
     });
 
@@ -156,14 +160,19 @@ describe("HowComfortablePrickingFingerPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("should not show error summary initially", () => {
       render(<HowComfortablePrickingFingerPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
     });
 
@@ -173,7 +182,9 @@ describe("HowComfortablePrickingFingerPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      const errorLink = screen.getByRole("link", { name: "Select yes if you're comfortable doing the test yourself" });
+      const errorLink = screen.getByRole("link", {
+        name: "Select yes if you're comfortable doing the test yourself",
+      });
       expect(errorLink).toHaveAttribute("href", "#comfortable");
     });
 
@@ -183,14 +194,20 @@ describe("HowComfortablePrickingFingerPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
 
       const radios = screen.getAllByRole("radio");
       fireEvent.click(radios[0]);
 
       fireEvent.click(submitButton);
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -201,7 +218,9 @@ describe("HowComfortablePrickingFingerPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByText("Select yes if you're comfortable doing the test yourself")).toHaveLength(2);
+      expect(
+        screen.getAllByText("Select yes if you're comfortable doing the test yourself"),
+      ).toHaveLength(2);
     });
 
     it("should not show error when an option is selected and form is submitted", () => {
@@ -213,7 +232,9 @@ describe("HowComfortablePrickingFingerPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.queryByText("Select yes if you're comfortable doing the test yourself")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Select yes if you're comfortable doing the test yourself"),
+      ).not.toBeInTheDocument();
     });
 
     it("should allow selecting different options", () => {
@@ -238,15 +259,19 @@ describe("HowComfortablePrickingFingerPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      const [alert] = screen.getAllByRole("alert");
-      expect(alert).toHaveAttribute("aria-labelledby", "error-summary-title");
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
+      expect(errorSummary).toHaveAttribute("aria-labelledby", "error-summary-title");
     });
 
     it("should have unique ids for each radio button", () => {
       render(<HowComfortablePrickingFingerPage />, { wrapper: TestWrapper });
 
       const radios = screen.getAllByRole("radio");
-      const ids = radios.map(radio => radio.id);
+      const ids = radios.map((radio) => radio.id);
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);

@@ -68,8 +68,11 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("should not show error summary when there are no errors", () => {
@@ -240,8 +243,11 @@ describe("EnterDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
 
       expect(screen.getAllByText("Enter a full UK postcode")).toHaveLength(2);
     });

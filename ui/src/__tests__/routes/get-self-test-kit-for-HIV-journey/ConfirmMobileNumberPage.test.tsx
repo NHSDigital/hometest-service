@@ -1,25 +1,17 @@
 import "@testing-library/jest-dom";
 
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import ConfirmMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
-import {
-  AuthProvider,
-  CreateOrderProvider,
-  JourneyNavigationProvider,
-  useAuth,
-} from "@/state";
+import { MemoryRouter } from "react-router-dom";
+import React from "react";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
     <AuthProvider>
       <JourneyNavigationProvider>
-        <CreateOrderProvider>
-          {children}
-        </CreateOrderProvider>
+        <CreateOrderProvider>{children}</CreateOrderProvider>
       </JourneyNavigationProvider>
     </AuthProvider>
   </MemoryRouter>
@@ -39,9 +31,7 @@ describe("ConfirmMobileNumberPage", () => {
     it("renders the description text", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByText(/you'll get updates to this number/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/you'll get updates to this number/i)).toBeInTheDocument();
     });
 
     it("renders NHS Login phone number as first radio option", () => {
@@ -54,17 +44,13 @@ describe("ConfirmMobileNumberPage", () => {
     it("renders 'Use another mobile phone number' radio option", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByLabelText(/use another mobile phone number/i),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/use another mobile phone number/i)).toBeInTheDocument();
     });
 
     it("renders continue button", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByRole("button", { name: /continue/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
     });
   });
 
@@ -75,14 +61,19 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("should not show error summary when there are no errors", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
     });
   });
@@ -117,9 +108,7 @@ describe("ConfirmMobileNumberPage", () => {
     it("should not show alternative number input initially", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.queryByLabelText(/uk mobile phone number/i),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/uk mobile phone number/i)).not.toBeInTheDocument();
     });
 
     it("should show alternative number input when 'Use another' is selected", () => {
@@ -128,9 +117,7 @@ describe("ConfirmMobileNumberPage", () => {
       const alternativeRadio = screen.getByLabelText(/use another mobile phone number/i);
       fireEvent.click(alternativeRadio);
 
-      expect(
-        screen.getByLabelText(/uk mobile phone number/i),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/uk mobile phone number/i)).toBeInTheDocument();
     });
 
     it("should show hint text for alternative number input", () => {
@@ -158,9 +145,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should show error for non-UK mobile number", () => {
@@ -175,9 +160,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should show error for mobile number with invalid characters", () => {
@@ -192,9 +175,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
   });
 
@@ -208,9 +189,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
 
     it("should show error when alternative selected with only spaces", () => {
@@ -225,9 +204,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.getAllByText("Enter a UK mobile phone number"),
-      ).toHaveLength(2);
+      expect(screen.getAllByText("Enter a UK mobile phone number")).toHaveLength(2);
     });
   });
 
@@ -244,9 +221,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile with +44 prefix", () => {
@@ -261,9 +236,7 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(
-        screen.queryByText("Enter a UK mobile phone number"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
     });
 
     it("should accept valid UK mobile with various formatting", () => {
@@ -272,11 +245,7 @@ describe("ConfirmMobileNumberPage", () => {
       const alternativeRadio = screen.getByLabelText(/use another mobile phone number/i);
       fireEvent.click(alternativeRadio);
 
-      const validNumbers = [
-        "07999888777",
-        "07999-888-777",
-        "(07999) 888777",
-      ];
+      const validNumbers = ["07999888777", "07999-888-777", "(07999) 888777"];
 
       validNumbers.forEach((number) => {
         const alternativeInput = screen.getByLabelText(/uk mobile phone number/i);
@@ -285,9 +254,7 @@ describe("ConfirmMobileNumberPage", () => {
         const submitButton = screen.getByRole("button", { name: /continue/i });
         fireEvent.click(submitButton);
 
-        expect(
-          screen.queryByText("Enter a UK mobile phone number"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Enter a UK mobile phone number")).not.toBeInTheDocument();
       });
     });
   });
@@ -303,7 +270,9 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
       expect(
         screen.queryByText("Select your mobile phone number or use another mobile phone number"),
       ).not.toBeInTheDocument();
@@ -439,7 +408,9 @@ describe("ConfirmMobileNumberPage", () => {
       fireEvent.click(nhsRadio);
       fireEvent.click(alternativeRadio);
 
-      const alternativeInputAgain = screen.getByLabelText(/uk mobile phone number/i) as HTMLInputElement;
+      const alternativeInputAgain = screen.getByLabelText(
+        /uk mobile phone number/i,
+      ) as HTMLInputElement;
       expect(alternativeInputAgain.value).toBe("07999 888 777");
     });
   });
@@ -460,7 +431,7 @@ describe("ConfirmMobileNumberPage", () => {
               phoneNumber,
               givenName: "John",
               familyName: "Smith",
-              email: "john.smith@example.com"
+              email: "john.smith@example.com",
             });
           }, [setUser]);
 
@@ -468,9 +439,7 @@ describe("ConfirmMobileNumberPage", () => {
         };
 
         return (
-          <MemoryRouter
-            initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
-          >
+          <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
             <AuthProvider>
               <JourneyNavigationProvider>
                 <CreateOrderProvider>
@@ -500,9 +469,11 @@ describe("ConfirmMobileNumberPage", () => {
     it("should handle user without NHS Login phone number", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: createWrapperWithPhone("") });
 
-      expect(screen.getByRole("heading", {
-        name: /what's your mobile phone number\?/i,
-      })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", {
+          name: /what's your mobile phone number\?/i,
+        }),
+      ).toBeInTheDocument();
 
       const radioButtons = screen.getAllByRole("radio");
       expect(radioButtons).toHaveLength(2);
@@ -523,7 +494,9 @@ describe("ConfirmMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.queryAllByRole("alert")).toHaveLength(0);
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
     });
   });
 });
