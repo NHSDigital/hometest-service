@@ -20,12 +20,12 @@ export class HowComfortablePrickingFingerPage extends BasePage {
   }
 
   async selectYesOptionAndContinue(): Promise<void> {
-    await this.yesOption.click();
+    await this.yesOption.check();
     await this.continueButton.click();
   }
 
   async selectNoOptionAndContinue(): Promise<void> {
-    await this.noOption.click();
+    await this.noOption.check();
     await this.continueButton.click();
   }
 
