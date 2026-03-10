@@ -1,11 +1,8 @@
+import { CreateOrderProvider, JourneyNavigationProvider, useCreateOrderContext } from "@/state";
 import { render, screen } from "@testing-library/react";
+
 import { MemoryRouter } from "react-router-dom";
 import OrderSubmittedPage from "@/routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
-import {
-  CreateOrderProvider,
-  JourneyNavigationProvider,
-  useCreateOrderContext,
-} from "@/state";
 import { useEffect } from "react";
 
 const mockGoToStep = jest.fn();
@@ -41,7 +38,7 @@ function StateSeeder({
 
   useEffect(() => {
     updateOrderAnswers(orderData);
-  }, []);
+  }, [orderData, updateOrderAnswers]);
 
   return <>{children}</>;
 }
@@ -144,9 +141,7 @@ describe("OrderSubmittedPage", () => {
       render(<OrderSubmittedPage />, { wrapper: TestWrapper });
 
       expect(
-        screen.getByText(
-          /preventx will send you a text message confirming the order/i,
-        ),
+        screen.getByText(/preventx will send you a text message confirming the order/i),
       ).toBeInTheDocument();
     });
 
@@ -157,15 +152,11 @@ describe("OrderSubmittedPage", () => {
       };
 
       render(<OrderSubmittedPage />, {
-        wrapper: (props) => (
-          <TestWrapper orderData={orderDataWithoutSupplier} {...props} />
-        ),
+        wrapper: (props) => <TestWrapper orderData={orderDataWithoutSupplier} {...props} />,
       });
 
       expect(
-        screen.getByText(
-          /\[supplier\] will send you a text message confirming the order/i,
-        ),
+        screen.getByText(/\[supplier\] will send you a text message confirming the order/i),
       ).toBeInTheDocument();
     });
 
@@ -176,15 +167,11 @@ describe("OrderSubmittedPage", () => {
       };
 
       render(<OrderSubmittedPage />, {
-        wrapper: (props) => (
-          <TestWrapper orderData={orderDataWithEmptySupplier} {...props} />
-        ),
+        wrapper: (props) => <TestWrapper orderData={orderDataWithEmptySupplier} {...props} />,
       });
 
       expect(
-        screen.getByText(
-          /\[supplier\] will send you a text message confirming the order/i,
-        ),
+        screen.getByText(/\[supplier\] will send you a text message confirming the order/i),
       ).toBeInTheDocument();
     });
 
@@ -201,9 +188,7 @@ describe("OrderSubmittedPage", () => {
       };
 
       render(<OrderSubmittedPage />, {
-        wrapper: (props) => (
-          <TestWrapper orderData={orderDataWithDifferentSupplier} {...props} />
-        ),
+        wrapper: (props) => <TestWrapper orderData={orderDataWithDifferentSupplier} {...props} />,
       });
 
       expect(
@@ -230,18 +215,14 @@ describe("OrderSubmittedPage", () => {
       expect(listItems[2]).toHaveTextContent(
         /you will receive updates through the app to help you keep track of your order/i,
       );
-      expect(listItems[3]).toHaveTextContent(
-        /you do not need to do anything else at this stage/i,
-      );
+      expect(listItems[3]).toHaveTextContent(/you do not need to do anything else at this stage/i);
     });
 
     it("displays the timeline with max days", () => {
       render(<OrderSubmittedPage />, { wrapper: TestWrapper });
 
       expect(
-        screen.getByText(
-          /the self-test kit will then be sent to you within 5 working days/i,
-        ),
+        screen.getByText(/the self-test kit will then be sent to you within 5 working days/i),
       ).toBeInTheDocument();
     });
   });
@@ -254,9 +235,7 @@ describe("OrderSubmittedPage", () => {
       };
 
       render(<OrderSubmittedPage />, {
-        wrapper: (props) => (
-          <TestWrapper orderData={orderDataWithoutReference} {...props} />
-        ),
+        wrapper: (props) => <TestWrapper orderData={orderDataWithoutReference} {...props} />,
       });
 
       expect(screen.getByText(/\[Reference Number\]/)).toBeInTheDocument();

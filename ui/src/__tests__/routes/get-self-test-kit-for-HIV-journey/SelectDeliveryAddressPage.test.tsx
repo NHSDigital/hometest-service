@@ -1,55 +1,82 @@
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen } from "@testing-library/react";
+
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
-import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import { MemoryRouter } from "react-router-dom";
+import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import laLookupService from "@/lib/services/la-lookup-service";
+import { useCreateOrderContext } from "@/state";
+import { useEffect } from "react";
 
 const mockLookupPostcode = jest.fn();
-const mockLookupResultsStatus = 'idle';
+const mockLookupResultsStatus = "idle";
+const mockGoToStep = jest.fn();
 
-jest.mock('@/state', () => ({
-  ...jest.requireActual('@/state'),
+const mockNavigationContext: {
+  currentStep: string;
+  goToStep: jest.Mock;
+  goBack: jest.Mock;
+  canGoBack: jest.Mock;
+  clearHistory: jest.Mock;
+  stepHistory: string[];
+  returnToStep: string | null;
+  setReturnToStep: jest.Mock;
+} = {
+  currentStep: "select-delivery-address",
+  goToStep: mockGoToStep,
+  goBack: jest.fn(),
+  canGoBack: jest.fn(() => true),
+  clearHistory: jest.fn(),
+  stepHistory: ["enter-delivery-address", "select-delivery-address"],
+  returnToStep: null,
+  setReturnToStep: jest.fn(),
+};
+
+jest.mock("@/state", () => ({
+  ...jest.requireActual("@/state"),
+  useJourneyNavigationContext: () => mockNavigationContext,
   usePostcodeLookup: () => ({
     lookupPostcode: mockLookupPostcode,
     lookupResultsStatus: mockLookupResultsStatus,
     addresses: [
       {
-        "id": "MOCK0000001",
-        "buildingNumber": "1",
-        "buildingName": "",
-        "subBuildingName": "",
-        "fullAddress": "1 TEST ROAD, CHECK TOWN, B99 95C",
-        "thoroughfare": "TEST ROAD",
-        "town": "CHECK TOWN",
-        "postcode": "B99 95C"
+        id: "MOCK0000001",
+        buildingNumber: "1",
+        buildingName: "",
+        subBuildingName: "",
+        fullAddress: "1 TEST ROAD, CHECK TOWN, B99 95C",
+        thoroughfare: "TEST ROAD",
+        town: "CHECK TOWN",
+        postcode: "B99 95C",
       },
       {
-        "id": "MOCK0000002",
-        "buildingNumber": "2",
-        "buildingName": "",
-        "subBuildingName": "",
-        "fullAddress": "2 TEST ROAD, CHECK TOWN, B99 95C",
-        "thoroughfare": "TEST ROAD",
-        "town": "CHECK TOWN",
-        "postcode": "B99 95C"
+        id: "MOCK0000002",
+        buildingNumber: "2",
+        buildingName: "",
+        subBuildingName: "",
+        fullAddress: "2 TEST ROAD, CHECK TOWN, B99 95C",
+        thoroughfare: "TEST ROAD",
+        town: "CHECK TOWN",
+        postcode: "B99 95C",
       },
       {
-        "id": "MOCK0000003",
-        "buildingNumber": "3",
-        "buildingName": "TEST BUILDING",
-        "subBuildingName": "FLAT 1",
-        "fullAddress": "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
-        "thoroughfare": "TEST ROAD",
-        "town": "CHECK TOWN",
-        "postcode": "B99 95C"
+        id: "MOCK0000003",
+        buildingNumber: "3",
+        buildingName: "TEST BUILDING",
+        subBuildingName: "FLAT 1",
+        fullAddress: "FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C",
+        thoroughfare: "TEST ROAD",
+        town: "CHECK TOWN",
+        postcode: "B99 95C",
       },
     ],
   }),
 }));
 
-jest.mock('@/lib/services/la-lookup-service', () => ({
+jest.mock("@/lib/services/la-lookup-service", () => ({
   __esModule: true,
   default: {
     getByPostcode: jest.fn().mockResolvedValue({
@@ -65,44 +92,60 @@ jest.mock('@/lib/services/la-lookup-service', () => ({
   },
 }));
 
-jest.mock('@/hooks/useContent', () => ({
+jest.mock("@/hooks/useContent", () => ({
   useContent: () => ({
     commonContent: {
       validation: {
         deliveryAddress: {
-          required: 'Select a delivery address',
+          required: "Select a delivery address",
         },
       },
       errorSummary: {
-        title: 'There is a problem',
+        title: "There is a problem",
       },
       navigation: {
-        continue: 'Continue',
-        manualEntryLink: 'Enter address manually',
+        continue: "Continue",
+        manualEntryLink: "Enter address manually",
       },
     },
-    'select-delivery-address': {
-      title: 'addresses found',
-      postcodeLabel: 'Postcode:',
-      editPostcodeLink: 'Edit postcode',
-      formLabel: 'Select your delivery address',
+    "select-delivery-address": {
+      title: "addresses found",
+      postcodeLabel: "Postcode:",
+      editPostcodeLink: "Edit postcode",
+      formLabel: "Select your delivery address",
     },
   }),
 }));
 
+function StateSeeder({ children }: { children: React.ReactNode }) {
+  const { updateOrderAnswers } = useCreateOrderContext();
+
+  useEffect(() => {
+    updateOrderAnswers({ postcodeSearch: "B99 95C" });
+  }, [updateOrderAnswers]);
+
+  return <>{children}</>;
+}
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
     <JourneyNavigationProvider>
       <CreateOrderProvider>
-        <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
+        <StateSeeder>
+          <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
+        </StateSeeder>
       </CreateOrderProvider>
     </JourneyNavigationProvider>
   </MemoryRouter>
 );
 
 describe("SelectDeliveryAddressPage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockNavigationContext.stepHistory = ["enter-delivery-address", "select-delivery-address"];
+    mockNavigationContext.returnToStep = null;
+  });
+
   describe("Component Rendering", () => {
     it("renders the main heading with correct address count", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
@@ -138,7 +181,9 @@ describe("SelectDeliveryAddressPage", () => {
 
       expect(screen.getByText(/1 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
       expect(screen.getByText(/2 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
-      expect(screen.getByText(/FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/FLAT 1, TEST BUILDING, 3 TEST ROAD, CHECK TOWN, B99 95C/i),
+      ).toBeInTheDocument();
     });
 
     it("renders correct number of radio buttons", () => {
@@ -175,6 +220,19 @@ describe("SelectDeliveryAddressPage", () => {
 
       const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
       expect(errorLink).toHaveAttribute("href", "#collection-point");
+    });
+
+    it("should focus first address radio when error summary link is clicked", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      const radios = screen.getAllByRole("radio");
+      const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
+      fireEvent.click(errorLink);
+
+      expect(radios[0]).toHaveFocus();
     });
   });
 
@@ -226,6 +284,44 @@ describe("SelectDeliveryAddressPage", () => {
 
       await screen.findByText(/1 TEST ROAD/i);
     });
+
+    it("navigates to returnToStep and clears it when return step is set", async () => {
+      mockNavigationContext.returnToStep = "check-your-answers";
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockNavigationContext.setReturnToStep).toHaveBeenCalledWith(null);
+        expect(mockGoToStep).toHaveBeenCalledWith("check-your-answers");
+      });
+    });
+
+    it("navigates to kit not available when lookup returns no suppliers", async () => {
+      (laLookupService.getByPostcode as jest.Mock).mockResolvedValueOnce({
+        localAuthority: {
+          localAuthorityCode: "4230",
+          region: "Salford",
+        },
+        suppliers: [],
+      });
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockGoToStep).toHaveBeenCalledWith("kit-not-available-in-area");
+      });
+    });
   });
 
   describe("Navigation Links", () => {
@@ -235,6 +331,44 @@ describe("SelectDeliveryAddressPage", () => {
       const manualLink = screen.getByRole("link", { name: /enter address manually/i });
       expect(manualLink).toBeInTheDocument();
       expect(manualLink).toHaveAttribute("href", "enter-address-manually");
+    });
+
+    it("navigates to enter delivery address when edit postcode link is clicked", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const editLink = screen.getByRole("link", { name: /edit postcode/i });
+      fireEvent.click(editLink);
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
+    });
+
+    it("navigates to manual address entry when manual link is clicked", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const manualLink = screen.getByRole("link", { name: /enter address manually/i });
+      fireEvent.click(manualLink);
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-address-manually");
+    });
+
+    it("uses goBack when back link is clicked and history has previous steps", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const backLink = screen.getByText(/^back$/i);
+      fireEvent.click(backLink);
+
+      expect(mockNavigationContext.goBack).toHaveBeenCalled();
+    });
+
+    it("navigates to enter delivery address when back link is clicked with no history", () => {
+      mockNavigationContext.stepHistory = ["select-delivery-address"];
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const backLink = screen.getByText(/^back$/i);
+      fireEvent.click(backLink);
+
+      expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
     });
   });
 
@@ -253,7 +387,7 @@ describe("SelectDeliveryAddressPage", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
       const radios = screen.getAllByRole("radio");
-      const ids = radios.map(radio => radio.id);
+      const ids = radios.map((radio) => radio.id);
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);

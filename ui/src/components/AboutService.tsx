@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { RoutePath } from "@/lib/models/route-paths";
 import { useCommonContent } from "@/hooks";
 
 interface AboutServiceProps {
@@ -23,7 +24,7 @@ export function AboutService({ supplier }: AboutServiceProps) {
         </Link>
         {` ${content.and} `}
         <Link
-          to="/home-test-privacy-policy"
+          to={RoutePath.HomeTestPrivacyPolicyPage}
           className="nhsuk-link"
           aria-label={`${content.homeTestPrefix} ${content.privacyPolicy}`}
         >
@@ -34,7 +35,7 @@ export function AboutService({ supplier }: AboutServiceProps) {
       <p className="nhsuk-body">
         {`${supplier} `}
         <Link
-          to="/suppliers-terms-conditions"
+          to={`${RoutePath.SuppliersTermsConditions}?supplier=${encodeURIComponent(supplier)}`}
           className="nhsuk-link"
           aria-label={`${supplier} ${content.termsOfUse}`}
         >
@@ -42,7 +43,7 @@ export function AboutService({ supplier }: AboutServiceProps) {
         </Link>
         {` ${content.and} `}
         <Link
-          to="/suppliers-privacy-policy"
+          to={`${RoutePath.SuppliersPrivacyPolicy}?supplier=${encodeURIComponent(supplier)}`}
           className="nhsuk-link"
           aria-label={`${supplier} ${content.privacyPolicy}`}
         >
