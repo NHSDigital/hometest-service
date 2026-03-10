@@ -30,7 +30,6 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     cannotUseServiceUnder18Page,
   }) => {
     await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
-    await selectDeliveryAddressPage.clickEditPostcodeLink();
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
