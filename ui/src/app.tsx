@@ -10,22 +10,29 @@ import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import EnterDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
+import FormSuppliersPrivacyPolicyPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersPrivacyPolicyPage";
+import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
 import HomePage from "./routes/HomePage";
 import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import JourneyLayout from "./layouts/JourneyLayout";
+import KitNotAvailableInAreaPage from "./routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
+import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
+import OrderSubmittedPage from "./routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
 import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
+import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
+import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import HomeTestTermsOfUsePage from "./routes/HomeTestTermsOfUsePage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
-import OrderSubmittedPage from "./routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
+import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -86,6 +93,14 @@ const router = createBrowserRouter([
         element: <TestResultsPage />,
       },
       {
+        path: RoutePath.SuppliersTermsConditions,
+        element: <SuppliersTermsConditionsPage />,
+      },
+      {
+        path: RoutePath.SuppliersPrivacyPolicy,
+        element: <SuppliersPrivacyPolicyPage />,
+      },
+      {
         path: RoutePath.HomeTestPrivacyPolicyPage,
         element: <HomeTestPrivacyPolicyPage />,
       },
@@ -114,6 +129,14 @@ const router = createBrowserRouter([
             element: <NoAddressFoundPage />,
           },
           {
+            path: JourneyStepNames.KitNotAvailableInArea,
+            element: <KitNotAvailableInAreaPage />,
+          },
+          {
+            path: JourneyStepNames.GoToClinic,
+            element: <GoToClinicPage />,
+          },
+          {
             path: JourneyStepNames.SelectDeliveryAddress,
             element: <SelectDeliveryAddressPage />,
           },
@@ -140,6 +163,18 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.OrderSubmitted,
             element: <OrderSubmittedPage />,
+          },
+          {
+            path: JourneyStepNames.SuppliersTermsConditions,
+            element: <FormSuppliersTermsConditionsPage />,
+          },
+          {
+            path: JourneyStepNames.SuppliersPrivacyPolicy,
+            element: <FormSuppliersPrivacyPolicyPage />,
+          },
+          {
+            path: JourneyStepNames.CannotUseServiceUnder18,
+            element: <CannotUseServiceUnder18Page />,
           },
         ],
       },

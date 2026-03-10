@@ -1,13 +1,12 @@
 import "@testing-library/jest-dom";
 
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+
 import HomeTestPrivacyPolicyPage from "@/routes/HomeTestPrivacyPolicyPage";
+import { MemoryRouter } from "react-router-dom";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter initialEntries={["/home-test-privacy-policy"]}>
-    {children}
-  </MemoryRouter>
+  <MemoryRouter initialEntries={["/home-test-privacy-policy"]}>{children}</MemoryRouter>
 );
 
 describe("HomeTestPrivacyPolicyPage", () => {
@@ -22,49 +21,38 @@ describe("HomeTestPrivacyPolicyPage", () => {
       expect(heading).toBeInTheDocument();
     });
 
-    it("renders the Back link", () => {
-      render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
-
-      const backLink = screen.getByRole("link", { name: /back/i });
-      expect(backLink).toBeInTheDocument();
-    });
-
     it("renders introduction paragraphs from content config", () => {
       render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
       expect(
-        screen.getAllByText(/is operated by NHS England/i).length
+        screen.getAllByText(
+          (_content, element) =>
+            (element?.textContent ?? "").match(/\[Hometest\] is operated by NHS England/i) !== null,
+        ).length,
       ).toBeGreaterThan(0);
+      expect(screen.getAllByText(/is operated by NHS England/i).length).toBeGreaterThan(0);
       expect(
-        screen.getByText(
-          /This privacy policy provides an explanation as to what happens/i
-        )
+        screen.getByText(/This privacy policy provides an explanation as to what happens/i),
       ).toBeInTheDocument();
     });
 
     it("renders all main section headings", () => {
       render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByRole("heading", { name: /Introduction/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Introduction/i })).toBeInTheDocument();
       expect(
         screen.getByRole("heading", {
           name: /Information About NHS England and its Partners/i,
-        })
+        }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("heading", { name: /The Purposes of Processing/i })
+        screen.getByRole("heading", { name: /The Purposes of Processing/i }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("heading", { name: /Lawful Basis for Processing/i })
+        screen.getByRole("heading", { name: /Lawful Basis for Processing/i }),
       ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: /What Data We Collect/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: /Your Rights/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /What Data We Collect/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Your Rights/i })).toBeInTheDocument();
     });
   });
 
@@ -77,10 +65,7 @@ describe("HomeTestPrivacyPolicyPage", () => {
       });
 
       expect(icoLink).toBeInTheDocument();
-      expect(icoLink).toHaveAttribute(
-        "href",
-        "https://ico.org.uk/make-a-complaint/"
-      );
+      expect(icoLink).toHaveAttribute("href", "https://ico.org.uk/make-a-complaint/");
     });
 
     it("adds target='_blank' to external links", () => {
@@ -129,18 +114,19 @@ describe("HomeTestPrivacyPolicyPage", () => {
 
       // h1 for main title
       expect(
-        screen.getByRole("heading", { name: /Hometest Privacy Policy/i, level: 1 })
+        screen.getByRole("heading", { name: /Hometest Privacy Policy/i, level: 1 }),
       ).toBeInTheDocument();
 
       // h2 for section headings
-      expect(
-        screen.getByRole("heading", { name: /Introduction/i, level: 2 })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Introduction/i, level: 2 })).toBeInTheDocument();
 
       // inline subsection headings render as bold text in paragraphs
       expect(
-        screen.getAllByText(/Hometest App Services/i).length
-      ).toBeGreaterThan(0);
+        screen.getByRole("heading", {
+          name: /Hometest App Services/i,
+          level: 3,
+        }),
+      ).toBeInTheDocument();
     });
   });
 

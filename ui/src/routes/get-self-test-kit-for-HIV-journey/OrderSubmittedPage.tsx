@@ -1,8 +1,8 @@
 "use client";
 
-import { useCreateOrderContext } from "@/state";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { useContent } from "@/hooks";
-import PageLayout from "@/layouts/PageLayout";
+import { useCreateOrderContext } from "@/state";
 
 export default function OrderSubmittedPage() {
   const { orderAnswers } = useCreateOrderContext();
@@ -14,7 +14,7 @@ export default function OrderSubmittedPage() {
   // TODO: update feedback HREF in content
 
   return (
-    <PageLayout showBackButton={false}>
+    <FormPageLayout showBackButton={false}>
       <div className="nhsuk-panel nhsuk-panel--confirmation">
         <h1 className="nhsuk-panel__title">{content.panel.title}</h1>
         <div className="nhsuk-panel__body">
@@ -24,9 +24,7 @@ export default function OrderSubmittedPage() {
 
       <h2 className="nhsuk-heading-m">{content.whatHappensNext.heading}</h2>
       <ul className="nhsuk-list nhsuk-list--bullet">
-        <li>
-          {content.whatHappensNext.steps[0].replace("{supplier}", supplierName)}
-        </li>
+        <li>{content.whatHappensNext.steps[0].replace("{supplier}", supplierName)}</li>
         <li>{content.whatHappensNext.steps[1]}</li>
         <li>{content.whatHappensNext.steps[2]}</li>
         <li>{content.whatHappensNext.steps[3]}</li>
@@ -43,6 +41,6 @@ export default function OrderSubmittedPage() {
           </p>
         </div>
       </div>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

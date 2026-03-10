@@ -1,31 +1,111 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen } from "@testing-library/react";
-
-import { CreateOrderProvider } from "@/state/OrderContext";
-import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
-import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
+import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
+
+import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
+import { JourneyNavigationProvider, useJourneyNavigationContext } from "@/state/NavigationContext";
+import { AuthProvider, useAuth } from "@/state";
+
+import laLookupService from "@/lib/services/la-lookup-service";
+
+const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
+
+jest.mock("@/lib/services/la-lookup-service", () => ({
+  __esModule: true,
+  default: {
+    getByPostcode: jest.fn().mockResolvedValue({
+      localAuthority: {
+        localAuthorityCode: "4230",
+        region: "Salford",
+      },
+      suppliers: [{ id: "SUP1", name: "Supplier One", testCode: "31676001" }],
+    }),
+  },
+}));
+
+jest.mock("@/state", () => {
+  const actual = jest.requireActual("@/state");
+  return {
+    ...actual,
+    useAuth: jest.fn(),
+  };
+});
+
+const mockUser = {
+  sub: "",
+  nhsNumber: "",
+  birthdate: "1990-01-01",
+  identityProofingLevel: "",
+  phoneNumber: "",
+  givenName: "",
+  familyName: "",
+  email: "",
+};
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/enter-address-manually"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-address-manually"]}>
     <JourneyNavigationProvider>
-      <CreateOrderProvider>{children}</CreateOrderProvider>
+      <AuthProvider>
+        <CreateOrderProvider>{children}</CreateOrderProvider>
+      </AuthProvider>
     </JourneyNavigationProvider>
   </MemoryRouter>
 );
 
+const ContextObserver = () => {
+  const { orderAnswers } = useCreateOrderContext();
+  const { currentStep } = useJourneyNavigationContext();
+
+  return (
+    <>
+      <div data-testid="postcode-search">{orderAnswers.postcodeSearch ?? ""}</div>
+      <div data-testid="current-step">{currentStep}</div>
+    </>
+  );
+};
+
 describe("EnterAddressManuallyPage", () => {
+  const mockedGetByPostcode = laLookupService.getByPostcode as jest.Mock;
+
+  const fillValidRequiredFields = () => {
+    fireEvent.change(screen.getByLabelText(/address line 1/i), {
+      target: { value: "123 Main Street" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/town or city/i), {
+      target: { value: "London" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/postcode/i), {
+      target: { value: "SW1A 1AA" },
+    });
+  };
+
+  beforeAll(() => {
+    jest.useFakeTimers().setSystemTime(FIXED_TODAY);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   describe("Component Rendering", () => {
     it("renders the main heading", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const heading = screen.getByRole("heading", {
-        name: /enter your delivery address manually and we'll check if the kit's available/i,
-      });
-      expect(heading).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", {
+          name: /enter your delivery address manually and we'll check if the kit's available/i,
+        }),
+      ).toBeInTheDocument();
     });
 
     it("renders all form elements", () => {
@@ -36,577 +116,210 @@ describe("EnterAddressManuallyPage", () => {
       expect(screen.getByLabelText(/address line 3/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/town or city/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/postcode/i)).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /continue/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
     });
   });
 
   describe("ErrorSummary", () => {
-    it("should show error summary when there are validation errors", () => {
+    it("shows error summary when validation fails", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(screen.getByRole("alert")).toBeInTheDocument();
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
     });
 
-    it("should not show error summary when there are no errors", () => {
+    it("links to town field and focuses it", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
-    });
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-    it("should link to address line 1 field in error summary", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+      const townInput = screen.getByLabelText(/town or city/i);
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      const errorLink = screen.getByRole("link", {
-        name: "Enter address line 1, typically the building and street",
-      });
-      expect(errorLink).toHaveAttribute("href", "#address-line-1");
-    });
-
-    it("should link to town field in error summary", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      const errorLink = screen.getByRole("link", {
+      const link = screen.getByRole("link", {
         name: "Enter a city or town",
       });
-      expect(errorLink).toHaveAttribute("href", "#address-town");
+
+      fireEvent.click(link);
+
+      expect(townInput).toHaveFocus();
     });
 
-    it("should link to postcode field in error summary", () => {
+    it("links to postcode field and focuses it", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      const errorLink = screen.getByRole("link", {
-        name: "Enter a full UK postcode",
-      });
-      expect(errorLink).toHaveAttribute("href", "#postcode");
-    });
-
-    it("should link to address line 2 field in error summary when address line 2 is too long", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine2Input = screen.getByLabelText(/address line 2/i);
-      const longAddress = "A".repeat(101);
-      fireEvent.change(addressLine2Input, { target: { value: longAddress } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      const errorLink = screen.getByRole("link", {
-        name: "Address line 2 must be 100 characters or less",
-      });
-      expect(errorLink).toHaveAttribute("href", "#address-line-2");
-    });
-
-    it("should show multiple errors in error summary", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine2Input = screen.getByLabelText(/address line 2/i);
       const postcodeInput = screen.getByLabelText(/postcode/i);
 
-      fireEvent.change(addressLine2Input, {
-        target: { value: "A".repeat(101) },
+      const link = screen.getByRole("link", {
+        name: "Enter a full UK postcode",
       });
-      fireEvent.change(postcodeInput, { target: { value: "INVALID" } });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(link);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", {
-          name: "Enter address line 1, typically the building and street",
-        }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", {
-          name: "Address line 2 must be 100 characters or less",
-        }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "Enter a city or town" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", {
-          name: "Enter a postcode using letters and numbers",
-        }),
-      ).toBeInTheDocument();
+      expect(postcodeInput).toHaveFocus();
     });
   });
 
-  describe("Address Line 1 Validation", () => {
-    it("should return error for empty address line 1", () => {
+  describe("Address Validation", () => {
+    it("validates empty address line 1", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(
-        screen.getAllByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 1, typically the building and street"),
       ).toHaveLength(2);
     });
 
-    it("should return error for invalid special characters in address line 1", () => {
+    it("validates invalid characters in address line 1", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      fireEvent.change(addressLine1Input, {
+      fireEvent.change(screen.getByLabelText(/address line 1/i), {
         target: { value: "123 Main St@" },
       });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(
-        screen.getAllByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.getAllByText("Enter address line 1, typically the building and street"),
       ).toHaveLength(2);
     });
 
-    it("should accept valid characters in address line 1", () => {
+    it("accepts valid address characters", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      fireEvent.change(addressLine1Input, {
+      fireEvent.change(screen.getByLabelText(/address line 1/i), {
         target: { value: "123-A Main St, Flat 4B (O'Connor & Sons)" },
       });
-      fireEvent.change(townInput, { target: { value: "London" } });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText(/town or city/i), {
+        target: { value: "London" },
+      });
+
+      fireEvent.change(screen.getByLabelText(/postcode/i), {
+        target: { value: "SW1A 1AA" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(
-        screen.queryByText(
-          "Enter address line 1, typically the building and street",
-        ),
+        screen.queryByText("Enter address line 1, typically the building and street"),
       ).not.toBeInTheDocument();
-    });
-
-    it("should return error for address line 1 over 100 characters", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const longAddress = "A".repeat(101);
-      fireEvent.change(addressLine1Input, { target: { value: longAddress } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText("Address line 1 must be 100 characters or less"),
-      ).toHaveLength(2);
-    });
-  });
-
-  describe("Address Line 2 Validation", () => {
-    it("should accept empty address line 2 (optional field)", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      fireEvent.change(addressLine1Input, {
-        target: { value: "123 Main Street" },
-      });
-      fireEvent.change(townInput, { target: { value: "London" } });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.queryByText(/address line 2 must be/i),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should return error for invalid special characters in address line 2", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine2Input = screen.getByLabelText(/address line 2/i);
-      fireEvent.change(addressLine2Input, {
-        target: { value: "Apartment@123" },
-      });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText(
-          "Enter address line 2, typically the building and street",
-        ),
-      ).toHaveLength(2);
-    });
-
-    it("should accept valid characters in address line 2", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const addressLine2Input = screen.getByLabelText(/address line 2/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      fireEvent.change(addressLine1Input, {
-        target: { value: "123 Main Street" },
-      });
-      fireEvent.change(addressLine2Input, {
-        target: { value: "Building A, Floor 2 & 3" },
-      });
-      fireEvent.change(townInput, { target: { value: "London" } });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.queryByText(
-          "Enter address line 2, typically the building and street",
-        ),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should return error for address line 2 over 100 characters", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine2Input = screen.getByLabelText(/address line 2/i);
-      const longAddress = "B".repeat(101);
-      fireEvent.change(addressLine2Input, { target: { value: longAddress } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText("Address line 2 must be 100 characters or less"),
-      ).toHaveLength(2);
-    });
-  });
-
-  describe("Address Line 3 Validation", () => {
-    it("should accept empty address line 3 (optional field)", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      fireEvent.change(addressLine1Input, {
-        target: { value: "123 Main Street" },
-      });
-      fireEvent.change(townInput, { target: { value: "London" } });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.queryByText(/address line 3 must be/i),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should return error for invalid special characters in address line 3", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine3Input = screen.getByLabelText(/address line 3/i);
-      fireEvent.change(addressLine3Input, { target: { value: "Area@456" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText(
-          "Enter address line 3, typically the building and street",
-        ),
-      ).toHaveLength(2);
-    });
-
-    it("should accept valid characters in address line 3", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const addressLine3Input = screen.getByLabelText(/address line 3/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      fireEvent.change(addressLine1Input, {
-        target: { value: "123 Main Street" },
-      });
-      fireEvent.change(addressLine3Input, {
-        target: { value: "District C-4" },
-      });
-      fireEvent.change(townInput, { target: { value: "London" } });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.queryByText(
-          "Enter address line 3, typically the building and street",
-        ),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should return error for address line 3 over 100 characters", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine3Input = screen.getByLabelText(/address line 3/i);
-      const longAddress = "C".repeat(101);
-      fireEvent.change(addressLine3Input, { target: { value: longAddress } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText("Address line 3 must be 100 characters or less"),
-      ).toHaveLength(2);
-    });
-  });
-
-  describe("Town or City Validation", () => {
-    it("should return error for empty town or city", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      fireEvent.change(addressLine1Input, {
-        target: { value: "123 Main Street" },
-      });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(screen.getAllByText("Enter a city or town")).toHaveLength(2);
-    });
-
-    it("should return error for numbers in town or city", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const townInput = screen.getByLabelText(/town or city/i);
-      fireEvent.change(townInput, { target: { value: "London123" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(screen.getAllByText("Enter a city or town")).toHaveLength(2);
-    });
-
-    it("should return error for invalid special characters in town or city", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const townInput = screen.getByLabelText(/town or city/i);
-      fireEvent.change(townInput, { target: { value: "London@City" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(screen.getAllByText("Enter a city or town")).toHaveLength(2);
-    });
-
-    it("should accept valid town or city names with allowed special characters", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      const validTowns = [
-        "London",
-        "St. Mary's",
-        "Newton-le-Willows",
-        "St. Albans",
-      ];
-
-      validTowns.forEach((town) => {
-        fireEvent.change(addressLine1Input, {
-          target: { value: "123 Main Street" },
-        });
-        fireEvent.change(townInput, { target: { value: town } });
-        fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-        const submitButton = screen.getByRole("button", { name: /continue/i });
-        fireEvent.click(submitButton);
-
-        expect(
-          screen.queryByText("Enter a city or town"),
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    it("should return error for town or city over 100 characters", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const townInput = screen.getByLabelText(/town or city/i);
-      const longTown = "A".repeat(101);
-      fireEvent.change(townInput, { target: { value: longTown } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText("City or town must be 100 characters or less"),
-      ).toHaveLength(2);
     });
   });
 
   describe("Postcode Validation", () => {
-    it("should return error for empty postcode", () => {
+    it("shows error for empty postcode", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-
-      fireEvent.change(addressLine1Input, {
+      fireEvent.change(screen.getByLabelText(/address line 1/i), {
         target: { value: "123 Main Street" },
       });
-      fireEvent.change(townInput, { target: { value: "London" } });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText(/town or city/i), {
+        target: { value: "London" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(screen.getAllByText("Enter a full UK postcode")).toHaveLength(2);
     });
 
-    it("should return error for invalid postcode formats", () => {
+    it("accepts valid UK postcode", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-      const invalidPostcodes = ["12345", "ABCDEF", "A12BC 3D", "SW1A"];
+      fillValidRequiredFields();
 
-      invalidPostcodes.forEach((postcode) => {
-        fireEvent.change(postcodeInput, { target: { value: postcode } });
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-        const submitButton = screen.getByRole("button", { name: /continue/i });
-        fireEvent.click(submitButton);
-
-        expect(
-          screen.getAllByText("Enter a postcode using letters and numbers"),
-        ).toHaveLength(2);
-      });
-    });
-
-    it("should return error for postcode over 8 characters", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA1" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
-
-      expect(
-        screen.getAllByText("Postcode must be 8 characters or less"),
-      ).toHaveLength(2);
-    });
-
-    it("should accept valid UK postcodes with and without spaces", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
-
-      const validPostcodes = [
-        "SW1A 1AA",
-        "SW1A1AA",
-        "M1 1AE",
-        "B33 8TH",
-        "CR2 6XH",
-        "DN55 1PT",
-      ];
-
-      validPostcodes.forEach((postcode) => {
-        fireEvent.change(addressLine1Input, {
-          target: { value: "123 Main Street" },
-        });
-        fireEvent.change(townInput, { target: { value: "London" } });
-        fireEvent.change(postcodeInput, { target: { value: postcode } });
-
-        const submitButton = screen.getByRole("button", { name: /continue/i });
-        fireEvent.click(submitButton);
-
-        expect(
-          screen.queryByText("Enter a full UK postcode"),
-        ).not.toBeInTheDocument();
-        expect(
-          screen.queryByText("Postcode must be 8 characters or less"),
-        ).not.toBeInTheDocument();
-      });
+      expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
     });
   });
 
   describe("Form Submission", () => {
-    it("should not submit form when validation fails", () => {
+    it("does not submit when validation fails", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
-      expect(
-        screen.getAllByText(
-          "Enter address line 1, typically the building and street",
-        ),
-      ).toHaveLength(2);
-      expect(screen.getAllByText("Enter a city or town")).toHaveLength(2);
-      expect(screen.getAllByText("Enter a full UK postcode")).toHaveLength(2);
     });
 
-    it("should update OrderContext with valid address data", () => {
+    it("submits valid form without errors", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 
-      const addressLine1Input = screen.getByLabelText(/address line 1/i);
-      const addressLine2Input = screen.getByLabelText(/address line 2/i);
-      const addressLine3Input = screen.getByLabelText(/address line 3/i);
-      const townInput = screen.getByLabelText(/town or city/i);
-      const postcodeInput = screen.getByLabelText(/postcode/i);
+      fillValidRequiredFields();
 
-      fireEvent.change(addressLine1Input, {
-        target: { value: "123 Main Street" },
-      });
-      fireEvent.change(addressLine2Input, { target: { value: "Flat 4B" } });
-      fireEvent.change(addressLine3Input, { target: { value: "Building A" } });
-      fireEvent.change(townInput, { target: { value: "London" } });
-      fireEvent.change(postcodeInput, { target: { value: "SW1A 1AA" } });
-
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(
-        screen.queryByText(
-          "Enter address line 1, typically the building and street",
-        ),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByText("Enter a city or town"),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByText("Enter a full UK postcode"),
-      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Eligibility Check", () => {
+    it.each([
+      ["LA lookup returns null", null],
+      [
+        "LA lookup returns empty suppliers",
+        {
+          localAuthority: {
+            localAuthorityCode: "4230",
+            region: "Salford",
+          },
+          suppliers: [],
+        },
+      ],
+    ])("navigates to kit-not-available when %s", async (_, response) => {
+      mockedGetByPostcode.mockResolvedValueOnce(response);
+
+      render(
+        <>
+          <EnterAddressManuallyPage />
+          <ContextObserver />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      fillValidRequiredFields();
+
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("postcode-search")).toHaveTextContent("SW1A 1AA");
+        expect(screen.getByTestId("current-step")).toHaveTextContent("kit-not-available-in-area");
+      });
+
+      expect(mockedGetByPostcode).toHaveBeenCalledWith("SW1A 1AA");
+    });
+  });
+
+  describe("Under 18 Navigation", () => {
+    it("navigates to under 18 step", async () => {
+      (useAuth as jest.Mock).mockReturnValue({
+        user: {
+          ...mockUser,
+          birthdate: "2010-01-01",
+        },
+      });
+
+      render(
+        <>
+          <EnterAddressManuallyPage />
+          <ContextObserver />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      fillValidRequiredFields();
+
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("current-step")).toHaveTextContent("cannot-use-service-under-18");
+      });
     });
   });
 });

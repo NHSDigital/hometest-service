@@ -1,11 +1,9 @@
 "use client";
 
-import { useNavigate } from "react-router-dom";
-import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
-import { BackLink } from "nhsuk-react-components";
+import { useContent } from "@/hooks";
+import { useNavigate } from "react-router-dom";
 import { renderTextWithLinks, cleanListItems, getListClass } from "@/utils/renderTextWithLinks";
-import "@/styles/lists.css";
 
 export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
@@ -47,12 +45,8 @@ export default function HomeTestPrivacyPolicyPage() {
   };
 
   return (
-    <PageLayout>
-      <BackLink onClick={() => navigate(-1)} href="#">
-        Back
-      </BackLink>
-
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-top-5">{content.title}</h1>
+    <PageLayout onBackButtonClick={() => navigate(-1)}>
+      <h1 className="nhsuk-heading-l">{content.title}</h1>
 
       {renderParagraphs(content.introduction)}
 
@@ -70,24 +64,16 @@ export default function HomeTestPrivacyPolicyPage() {
 
           {section.subsections?.map((subsection, subIndex) => (
             <div key={subIndex} className="nhsuk-u-margin-top-4">
-              {subsection.inlineHeading && subsection.heading ? (
-                subsection.paragraphs?.map((paragraph, pIdx) => (
-                  <p key={pIdx} className="nhsuk-body">
-                    {pIdx === 0 && (
-                      <>
-                        <strong>{subsection.heading}</strong>
-                        {" – "}
-                      </>
-                    )}
-                    {renderTextWithLinks(paragraph, `sub${subIndex}-p${pIdx}-`)}
-                  </p>
-                ))
-              ) : (
-                <>
-                  {subsection.heading && <h3 className="nhsuk-heading-s">{subsection.heading}</h3>}
-                  {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
-                </>
-              )}
+              {subsection.heading &&
+                (subsection.inlineHeading ? (
+                  <h3 className="nhsuk-heading-s" style={{ display: "inline" }}>
+                    {subsection.heading}
+                  </h3>
+                ) : (
+                  <h3 className="nhsuk-heading-s">{subsection.heading}</h3>
+                ))}
+
+              {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
 
               {subsection.list &&
                 renderList(

@@ -23,6 +23,9 @@ paths = [
   '''local-environment/*''',
   '''lambdas/.*\.test\..*''', '''lambdas/dist/*''',
   '''tests/playwright.config.ts''',
+  '''tests/testResults/*''',
+  '''tests/.session-cache/*''',
+  '''.session-cache/*''',
   '''ui/.next/*''', '''ui/build/*''',
   '''cdk.out/*''',
   '''.idea/*'''
