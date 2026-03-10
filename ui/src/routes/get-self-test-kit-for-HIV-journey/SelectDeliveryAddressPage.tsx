@@ -54,7 +54,6 @@ export default function SelectDeliveryAddressPage() {
         goToStep(JourneyStepNames.KitNotAvailableInArea);
         return;
       }
-
       updateOrderAnswers({
         deliveryAddress: {
           addressLine1: selected.line1,

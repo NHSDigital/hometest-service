@@ -141,8 +141,6 @@ export default function EnterAddressManuallyPage() {
   const [townOrCityError, setTownOrCityError] = useState<string | null>(null);
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
-  console.log("[EnterAddressManuallyPage] Current order state:", orderAnswers);
-
   const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
   const handleAddressLine1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,7 +223,6 @@ export default function EnterAddressManuallyPage() {
           })),
         };
 
-        console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
         updateOrderAnswers(updatedData);
 
         if (isUnder18User) {

@@ -63,8 +63,6 @@ export default function EnterDeliveryAddressPage() {
 
   const hasSubmittedRef = useRef(false);
 
-  console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
-
   useEffect(() => {
     clearAddresses();
   }, [clearAddresses]);
@@ -111,8 +109,6 @@ export default function EnterDeliveryAddressPage() {
         postcodeSearch: postcodeValidation.value,
         buildingNumber: buildingName.trim() || undefined,
       };
-
-      console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
       hasSubmittedRef.current = true;
