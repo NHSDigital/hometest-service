@@ -157,6 +157,7 @@ const TestWrapper = ({ children, user }: { children: React.ReactNode; user?: Aut
 
 const TestWrapperWithoutPostcode = ({
   children,
+  user,
 }: {
   children: React.ReactNode;
   user?: AuthUser;
