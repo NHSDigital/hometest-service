@@ -14,7 +14,7 @@ test.describe("Home Test Unavailable page", () => {
     { tag: ["@accessibility"] },
     async ({
       homeTestStartPage,
-      findAddressPage,
+      enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       kitNotAvailableInYourAreaPage,
       accessibility,
@@ -28,7 +28,7 @@ test.describe("Home Test Unavailable page", () => {
 
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
-      await findAddressPage.fillPostCodeAndAddressAndContinue(unavailableAddress);
+      await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(unavailableAddress);
       await selectDeliveryAddressPage.waitUntilPageLoad();
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await kitNotAvailableInYourAreaPage.waitUntilPageLoad();
