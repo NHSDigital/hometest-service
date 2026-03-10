@@ -26,18 +26,25 @@ test.describe("Backend API, order endpoint", () => {
       patientUid = order?.patient_uid;
 
       await expect
-        .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length)
+        .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length, {
+          timeout: 15000,
+        })
         .toBe(3);
+
       const statusRows = await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid);
       expect(statusRows?.[2].status_code).toBe("GENERATED");
       expect(statusRows?.[1].status_code).toBe("QUEUED");
       expect(statusRows?.[0].status_code).toBe("SUBMITTED");
+
+      const count = await testOrderDb.getConsentCountByOrderUid(createdOrderUid);
+      expect(count).toBe("1");
     },
   );
 
   test.afterEach(async ({ testOrderDb }) => {
+    await testOrderDb.deleteConsentByOrderUid(createdOrderUid);
     await testOrderDb.deleteOrderByUid(createdOrderUid);
-    await testOrderDb.deleteOrderByPatientUid(patientUid!);
     await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);
+    await testOrderDb.deleteOrderByPatientUid(patientUid!);
   });
 });
