@@ -141,13 +141,8 @@ export default function EnterAddressManuallyPage() {
   const [townOrCityError, setTownOrCityError] = useState<string | null>(null);
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
-<<<<<<< feature/hote-699/state-logging
-=======
-  console.log("[EnterAddressManuallyPage] Current order state:", orderAnswers);
-
   const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
->>>>>>> main
   const handleAddressLine1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddressLine1(e.target.value);
   };
