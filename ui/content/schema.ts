@@ -445,6 +445,11 @@ export interface SuppliersLegalDocumentsContent<TSupplierContent = LegalDocument
   suppliers: Record<string, TSupplierContent>;
 }
 
+export interface GoToClinicContent {
+  title: string;
+  moreOptionsHeading: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
@@ -466,6 +471,7 @@ export interface PagesContent {
   "blood-sample-guide": BloodSampleGuideContent;
   "order-submitted": OrderSubmittedContent;
   "kit-not-available-in-area": KitNotAvailableInAreaContent;
+  "go-to-clinic": GoToClinicContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
 }

@@ -1,12 +1,13 @@
 import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen } from "@testing-library/react";
+import { useEffect } from "react";
 
-import { AuthProvider } from "@/state/AuthContext";
+import { AuthProvider, useAuth } from "@/state/AuthContext";
 import { CreateOrderProvider } from "@/state/OrderContext";
 import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 
 jest.mock("@/hooks", () => ({
   useContent: () => ({
@@ -65,6 +66,30 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     </AuthProvider>
   </MemoryRouter>
 );
+
+const LocationDisplay = () => {
+  const location = useLocation();
+  return <div data-testid="location-display">{location.pathname}</div>;
+};
+
+const SetUserWithPhoneNumber = () => {
+  const { setUser } = useAuth();
+
+  useEffect(() => {
+    setUser({
+      sub: "user-id",
+      nhsNumber: "1234567890",
+      birthdate: "1990-01-01",
+      identityProofingLevel: "P9",
+      phoneNumber: "07123456789",
+      givenName: "John",
+      familyName: "Doe",
+      email: "john.doe@example.com",
+    });
+  }, [setUser]);
+
+  return null;
+};
 
 describe("HowComfortablePrickingFingerPage", () => {
   describe("Component Rendering", () => {
@@ -225,6 +250,69 @@ describe("HowComfortablePrickingFingerPage", () => {
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);
+    });
+  });
+
+  describe("Navigation", () => {
+    it("navigates to enter mobile number when Yes is selected and user has no phone number", () => {
+      render(
+        <>
+          <HowComfortablePrickingFingerPage />
+          <LocationDisplay />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByTestId("location-display")).toHaveTextContent(
+        "/get-self-test-kit-for-HIV/enter-mobile-phone-number",
+      );
+    });
+
+    it("navigates to confirm mobile number when Yes is selected and user has a phone number", () => {
+      render(
+        <>
+          <SetUserWithPhoneNumber />
+          <HowComfortablePrickingFingerPage />
+          <LocationDisplay />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByTestId("location-display")).toHaveTextContent(
+        "/get-self-test-kit-for-HIV/confirm-mobile-phone-number",
+      );
+    });
+
+    it("navigates to go to clinic when No is selected", () => {
+      render(
+        <>
+          <HowComfortablePrickingFingerPage />
+          <LocationDisplay />
+        </>,
+        { wrapper: TestWrapper },
+      );
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[1]);
+
+      const submitButton = screen.getByRole("button", { name: /continue/i });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByTestId("location-display")).toHaveTextContent(
+        "/get-self-test-kit-for-HIV/go-to-clinic",
+      );
     });
   });
 });

@@ -49,7 +49,7 @@ export default function HowComfortablePrickingFingerPage() {
         goToStep(JourneyStepNames.EnterMobileNumber);
       }
     } else {
-      // goToStep(JourneyStepNames.VisitNearestClinic);
+      goToStep(JourneyStepNames.GoToClinic);
     }
   };
 
