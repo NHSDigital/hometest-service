@@ -5,9 +5,8 @@ import { useJourneyNavigationContext } from "@/state/NavigationContext";
 import { ActionLink } from "nhsuk-react-components";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { useCreateOrderContext } from "@/state/OrderContext";
-import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import { RoutePath } from "@/lib/models/route-paths";
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { Route } from "react-router-dom";
 
 export const HARD_CODED_CLINIC_DATA = {
   name: "Sexual Health Clinic - Kendal",
