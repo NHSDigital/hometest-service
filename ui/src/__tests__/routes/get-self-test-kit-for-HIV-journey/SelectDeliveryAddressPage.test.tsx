@@ -8,8 +8,11 @@ import { MemoryRouter } from "react-router-dom";
 import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useCreateOrderContext } from "@/state";
+import { AuthContext, AuthUser, useCreateOrderContext } from "@/state";
 import { useEffect } from "react";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+
+const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
 
 const mockLookupPostcode = jest.fn();
 const mockLookupResultsStatus = "idle";
@@ -33,6 +36,19 @@ const mockNavigationContext: {
   stepHistory: ["enter-delivery-address", "select-delivery-address"],
   returnToStep: null,
   setReturnToStep: jest.fn(),
+};
+
+const mockUseAuth = jest.fn(() => ({ user: mockUser }));
+
+const mockUser: AuthUser = {
+  sub: "",
+  nhsNumber: "",
+  birthdate: "1990-01-01",
+  identityProofingLevel: "",
+  phoneNumber: "",
+  givenName: "",
+  familyName: "",
+  email: "",
 };
 
 jest.mock("@/state", () => ({
@@ -127,23 +143,34 @@ function StateSeeder({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+const TestWrapper = ({ children, user }: { children: React.ReactNode; user?: AuthUser }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
-    <JourneyNavigationProvider>
-      <CreateOrderProvider>
-        <StateSeeder>
-          <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
-        </StateSeeder>
-      </CreateOrderProvider>
-    </JourneyNavigationProvider>
+    <AuthContext.Provider value={{ user: user || mockUser, setUser: jest.fn() }}>
+      <JourneyNavigationProvider>
+        <CreateOrderProvider>
+          <StateSeeder>
+            <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
+          </StateSeeder>
+        </CreateOrderProvider>
+      </JourneyNavigationProvider>
+    </AuthContext.Provider>
   </MemoryRouter>
 );
 
 describe("SelectDeliveryAddressPage", () => {
+  beforeAll(() => {
+    jest.useFakeTimers().setSystemTime(FIXED_TODAY);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockNavigationContext.stepHistory = ["enter-delivery-address", "select-delivery-address"];
     mockNavigationContext.returnToStep = null;
+    mockUseAuth.mockImplementation(() => ({ user: mockUser }));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   describe("Component Rendering", () => {
@@ -391,6 +418,25 @@ describe("SelectDeliveryAddressPage", () => {
       const uniqueIds = new Set(ids);
 
       expect(uniqueIds.size).toBe(radios.length);
+    });
+  });
+
+  it("navigates to under 18 step when user is under 18", async () => {
+    const under18User: AuthUser = {
+      ...mockUser,
+      birthdate: "2010-01-01", // User is under 18 as of FIXED_TODAY
+    };
+
+    render(<SelectDeliveryAddressPage />, {
+      wrapper: ({ children }) => <TestWrapper user={under18User}>{children}</TestWrapper>,
+    });
+
+    const radios = screen.getAllByRole("radio");
+    fireEvent.click(radios[0]);
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await waitFor(() => {
+      expect(mockGoToStep).toHaveBeenCalledWith(JourneyStepNames.CannotUseServiceUnder18);
     });
   });
 });

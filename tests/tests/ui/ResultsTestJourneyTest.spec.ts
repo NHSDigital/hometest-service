@@ -15,7 +15,7 @@ const resultDbClient = new TestResultDbClient();
 const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
 
-test.describe("Results Page", () => {
+test.describe("Results Page", { tag: "@ui" }, () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser }) => {

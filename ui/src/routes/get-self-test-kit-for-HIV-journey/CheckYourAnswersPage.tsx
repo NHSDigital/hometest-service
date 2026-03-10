@@ -42,7 +42,9 @@ export default function CheckYourAnswersPage() {
   const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
 
-  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(
+    orderAnswers.consentCheckboxChecked ?? false,
+  );
   const [consentError, setConsentError] = useState<string | null>(null);
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
@@ -73,6 +75,7 @@ export default function CheckYourAnswersPage() {
 
   const handleConsentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setConsentChecked(e.target.checked);
+    updateOrderAnswers({ consentCheckboxChecked: e.target.checked });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,7 +189,7 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.deliveryAddress}</SummaryList.Key>
-          <SummaryList.Value>
+          <SummaryList.Value id="delivery-address-value">
             {addressLines.map((line, index) => (
               <span key={index}>
                 {line}
@@ -195,6 +198,7 @@ export default function CheckYourAnswersPage() {
             ))}
           </SummaryList.Value>
           <SummaryList.Action
+            id="address-change"
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -208,12 +212,13 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.comfortableDoingTest}</SummaryList.Key>
-          <SummaryList.Value>
+          <SummaryList.Value id="comfortable-doing-test-value">
             {orderAnswers.comfortableDoingTest === "Yes"
               ? "Yes I'm comfortable, send me the kit"
               : orderAnswers.comfortableDoingTest}
           </SummaryList.Value>
           <SummaryList.Action
+            id="comfortable-change"
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -227,8 +232,11 @@ export default function CheckYourAnswersPage() {
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.mobileNumber}</SummaryList.Key>
-          <SummaryList.Value>{orderAnswers.mobileNumber}</SummaryList.Value>
+          <SummaryList.Value id="mobile-number-value">
+            {orderAnswers.mobileNumber}
+          </SummaryList.Value>
           <SummaryList.Action
+            id="mobile-change"
             href="#"
             onClick={(e) => {
               e.preventDefault();

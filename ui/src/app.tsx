@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import CallbackPage from "./routes/CallbackPage";
+import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
@@ -14,6 +15,7 @@ import FormSuppliersPrivacyPolicyPage from "./routes/get-self-test-kit-for-HIV-j
 import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GlobalErrorPage from "./routes/GlobalErrorPage";
+import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import HomePage from "./routes/HomePage";
 import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
@@ -125,6 +127,10 @@ const router = createBrowserRouter([
             element: <KitNotAvailableInAreaPage />,
           },
           {
+            path: JourneyStepNames.GoToClinic,
+            element: <GoToClinicPage />,
+          },
+          {
             path: JourneyStepNames.SelectDeliveryAddress,
             element: <SelectDeliveryAddressPage />,
           },
@@ -159,6 +165,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.SuppliersPrivacyPolicy,
             element: <FormSuppliersPrivacyPolicyPage />,
+          },
+          {
+            path: JourneyStepNames.CannotUseServiceUnder18,
+            element: <CannotUseServiceUnder18Page />,
           },
         ],
       },

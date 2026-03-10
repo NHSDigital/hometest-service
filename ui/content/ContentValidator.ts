@@ -26,11 +26,13 @@ const REQUIRED_COMMON_KEYS: (keyof CommonContent)[] = [
 const REQUIRED_PAGE_KEYS: (keyof PagesContent)[] = [
   "get-self-test-kit-for-HIV",
   "kit-not-available-in-area",
+  "go-to-clinic",
   "enter-delivery-address",
   "enter-address-manually",
   "no-address-found",
   "select-delivery-address",
   "how-comfortable-pricking-finger",
+  "cannot-use-service-under-18",
   "enter-mobile-phone-number",
   "global-error",
   "order-tracking",
