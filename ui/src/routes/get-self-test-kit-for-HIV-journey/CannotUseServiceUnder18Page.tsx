@@ -7,6 +7,7 @@ import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { useCreateOrderContext } from "@/state/OrderContext";
 import { RoutePath } from "@/lib/models/route-paths";
 import FormPageLayout from "@/layouts/FormPageLayout";
+import { FeedbackSection } from "@/components/FeedbackSection";
 
 export const HARD_CODED_CLINIC_DATA = {
   name: "Sexual Health Clinic - Kendal",
@@ -105,21 +106,7 @@ export default function CannotUseServiceUnder18Page() {
           />
         </p>
 
-        <div
-          className="nhsuk-grid-row nhsuk-u-padding-top-4 nhsuk-u-padding-bottom-4 nhsuk-u-background-color-blue"
-          style={{ backgroundColor: "#D2E1EF" }}
-        >
-          <div className="nhsuk-grid-column-full flex-center-container">
-            <p className="nhsuk-u-margin-bottom-0">
-              {content.feedbackText}{" "}
-              <OpensInNewTabLink
-                linkHref={content.feedbackLinkHref}
-                linkText={content.feedbackLinkText}
-              />
-              .
-            </p>
-          </div>
-        </div>
+        <FeedbackSection />
       </div>
     </FormPageLayout>
   );

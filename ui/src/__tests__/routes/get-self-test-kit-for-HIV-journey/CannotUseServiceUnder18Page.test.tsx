@@ -4,7 +4,7 @@ import CannotUseServiceUnder18Page, {
   HARD_CODED_CLINIC_DATA,
   NHS_LINKS,
 } from "@/routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
-import { CannotUseServiceUnder18Content } from "@/content/index";
+import { CannotUseServiceUnder18Content, CommonContent } from "@/content/index";
 import { MemoryRouter } from "react-router-dom";
 import { JourneyNavigationContext } from "@/state/NavigationContext";
 import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
@@ -23,15 +23,21 @@ const mockedContent: CannotUseServiceUnder18Content = {
   youngPeopleServicesLinkText: "some-mocked-young-people-services-link-text",
   learnMoreLinkHref: "some-mocked-learn-more-link-href",
   learnMoreLinkText: "some-mocked-learn-more-link-text",
-  feedbackText: "some-mocked-feedback-text",
-  feedbackLinkHref: "some-mocked-feedback-link-href",
-  feedbackLinkText: "some-mocked-feedback-link-text",
+};
+
+const mockedCommonContent: Partial<CommonContent> = {
+  feedback: {
+    text: "some-mocked-feedback-text",
+    linkHref: "some-mocked-feedback-link-href",
+    linkText: "some-mocked-feedback-link-text",
+  },
 };
 
 jest.mock("@/hooks", () => ({
   useContent: () => ({
     "cannot-use-service-under-18": mockedContent,
   }),
+  useCommonContent: () => mockedCommonContent,
 }));
 
 const goBackMock = jest.fn();
@@ -185,10 +191,12 @@ describe("CannotUseServiceUnder18Page", () => {
       screen.getByRole("link", { name: new RegExp(`^${mockedContent.learnMoreLinkText}`) }),
     ).toHaveAttribute("href", mockedContent.learnMoreLinkHref);
 
-    expect(screen.getByText(mockedContent.feedbackText, { exact: false })).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: new RegExp(`^${mockedContent.feedbackLinkText}`) }),
-    ).toHaveAttribute("href", mockedContent.feedbackLinkHref);
+      screen.getByText(mockedCommonContent.feedback.text, { exact: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: new RegExp(`^${mockedCommonContent.feedback.linkText}`) }),
+    ).toHaveAttribute("href", mockedCommonContent.feedback.linkHref);
   });
 
   it("renders the follow-on support and feedback links when a postcode is NOT set", () => {
@@ -216,11 +224,13 @@ describe("CannotUseServiceUnder18Page", () => {
       screen.getByRole("link", { name: new RegExp(`^${mockedContent.learnMoreLinkText}`) }),
     ).toHaveAttribute("href", mockedContent.learnMoreLinkHref);
 
-    expect(screen.getByText(mockedContent.feedbackText, { exact: false })).toBeInTheDocument();
+    expect(
+      screen.getByText(mockedCommonContent.feedback.text, { exact: false }),
+    ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("link", { name: new RegExp(`^${mockedContent.feedbackLinkText}`) }),
-    ).toHaveAttribute("href", mockedContent.feedbackLinkHref);
+      screen.getByRole("link", { name: new RegExp(`^${mockedCommonContent.feedback.linkText}`) }),
+    ).toHaveAttribute("href", mockedCommonContent.feedback.linkHref);
   });
 });
 

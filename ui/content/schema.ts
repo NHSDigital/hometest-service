@@ -279,9 +279,6 @@ export interface CannotUseServiceUnder18Content {
   youngPeopleServicesLinkText: string;
   learnMoreLinkText: string;
   learnMoreLinkHref: string;
-  feedbackText: string;
-  feedbackLinkText: string;
-  feedbackLinkHref: string;
 }
 
 export interface EnterMobilePhoneNumberContent {

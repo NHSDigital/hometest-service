@@ -237,10 +237,7 @@
       "youngPeopleServicesText": "You can also use the",
       "youngPeopleServicesLinkText": "NHS find young people's sexual health services",
       "learnMoreLinkText": "Learn more about HIV and AIDS",
-      "learnMoreLinkHref": "https://www.nhs.uk/conditions/hiv-and-aids/",
-      "feedbackText": "This is a new service. Help us improve it and",
-      "feedbackLinkText": "give your feedback",
-      "feedbackLinkHref": "https://www.nhs.uk/contact-us/"
+      "learnMoreLinkHref": "https://www.nhs.uk/conditions/hiv-and-aids/"
     },
     "enter-mobile-phone-number": {
       "title": "What's your mobile phone number?",
