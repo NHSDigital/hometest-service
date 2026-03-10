@@ -67,6 +67,24 @@ the technologies used in this project:
 - [React Documentation](https://react.dev/) - UI library
 - [NHS UK Frontend](https://nhsuk.github.io/nhsuk-frontend/) - NHS design system components
 
+## Debugging State
+
+In development, all React context state is accessible via `globalThis.__appDebug` in the browser console. Values are evaluated lazily via property getters, so you always see the current state. This is a no-op in production.
+
+```js
+__appDebug.order      // OrderContext — order answers collected through the journey
+__appDebug.auth       // AuthContext — authenticated user
+__appDebug.navigation // NavigationContext — current step and step history
+__appDebug.postcode   // PostcodeLookupContext — address lookup results
+```
+
+Debug registration follows a **boundary-style devtools pattern** — state providers contain no debug code. Instead, two dedicated devtools components handle all registration:
+
+- `AppDevtools` (in `MainLayout`) — registers app-level state (auth)
+- `JourneyDevtools` (in `JourneyLayout`) — registers journey-level state (order, navigation, postcode)
+
+These components are env-gated and render nothing. The core utility is in `src/lib/utils/debug.ts`.
+
 ## Deployment
 
 Since this is a static SPA, you can deploy the built files to any static hosting service:
