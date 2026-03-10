@@ -6,11 +6,11 @@ export function FeedbackSection() {
 
   return (
     <div
-      className="nhsuk-grid-row nhsuk-u-margin-bottom-0 nhsuk-u-margin-top-6 nhsuk-u-padding-top-4"
+      className="nhsuk-grid-row nhsuk-u-padding-top-4 nhsuk-u-padding-bottom-4"
       style={{ backgroundColor: "#D2E1EF" }}
     >
       <div className="nhsuk-grid-column-full">
-        <p>
+        <p className="nhsuk-u-margin-bottom-0">
           {`${commonContent.feedback.text} `}
           <OpensInNewTabLink
             linkHref={commonContent.feedback.linkHref}

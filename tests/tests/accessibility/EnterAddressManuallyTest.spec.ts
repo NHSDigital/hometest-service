@@ -1,25 +1,25 @@
-import { expect } from '@playwright/test';
-import { test } from '../../fixtures/CombinedTestFixture';
+import { expect } from "@playwright/test";
+import { test } from "../../fixtures/CombinedTestFixture";
 
 test(
-  'Enter address manually page',
+  "Enter address manually page",
   {
-    tag: ['@accessibility']
+    tag: ["@accessibility"],
   },
   async ({
     homeTestStartPage,
-    findAddressPage,
+    enterDeliveryAddressPage,
     enterAddressManuallyPage,
-    accessibility
+    accessibility,
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.clickEnterAddressManuallyLink();
+    await enterDeliveryAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(
       enterAddressManuallyPage.page,
-      'Enter Address Manually Page'
+      "Enter Address Manually Page",
     );
     expect(accessErrors).toHaveLength(0);
-  }
+  },
 );

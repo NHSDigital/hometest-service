@@ -11,6 +11,7 @@ export type {
   StartPageContent,
   EnterDeliveryAddressContent,
   EnterAddressManuallyContent,
+  CannotUseServiceUnder18Content,
   NoAddressFoundContent,
   GlobalErrorContent,
   OrderTrackingContent,

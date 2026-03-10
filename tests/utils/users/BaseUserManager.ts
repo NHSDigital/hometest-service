@@ -1,16 +1,12 @@
-import {
-  chromium,
-  type Browser,
-  type BrowserContext,
-  type Page
-} from '@playwright/test';
-import type { BaseTestUser } from './BaseUser';
-import { defaultUserAgent } from '../../playwright.config';
+import { chromium, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import type { BaseTestUser } from "./BaseUser";
+import { defaultUserAgent } from "../../playwright.config";
 
-import { ConfigFactory } from '../../configuration/EnvironmentConfiguration';
-import { v4 as uuidv4 } from 'uuid';
-import * as fs from 'fs';
-import * as path from 'path';
+import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import { v4 as uuidv4 } from "uuid";
+import * as fs from "fs";
+import * as path from "path";
+import { SpecialUserKey } from "./SpecialUserKey";
 
 interface NetworkError {
   url: string;
@@ -23,8 +19,9 @@ interface NetworkError {
 export abstract class BaseUserManager<TUser extends BaseTestUser> {
   protected readonly workerUsers: TUser[];
   private readonly numberOfWorkerUsers: number;
-
+  protected readonly specialUsers: Map<SpecialUserKey, TUser>;
   protected abstract getWorkerUsers(): TUser[];
+  protected abstract getSpecialUsers(): Map<SpecialUserKey, TUser>;
   protected abstract loginWorkerUser(user: TUser, page: Page): Promise<Page>;
 
   config = ConfigFactory.getConfig();
@@ -33,14 +30,15 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     this.numberOfWorkerUsers = numberOfWorkerUsers;
 
     if (numberOfWorkerUsers <= 0) {
-      throw new Error('numberOfWorkerUsers must be greater than 0');
+      throw new Error("numberOfWorkerUsers must be greater than 0");
     }
 
     this.workerUsers = this.getWorkerUsers();
+    this.specialUsers = this.getSpecialUsers();
 
     if (numberOfWorkerUsers > this.workerUsers.length) {
       throw new Error(
-        `numberOfWorkerUsers (${numberOfWorkerUsers}) exceeds available worker users (${this.workerUsers.length})`
+        `numberOfWorkerUsers (${numberOfWorkerUsers}) exceeds available worker users (${this.workerUsers.length})`,
       );
     }
   }
@@ -52,7 +50,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     return this.workerUsers[index];
   }
 
-  private static readonly SESSION_CACHE_DIR = './.session-cache';
+  private static readonly SESSION_CACHE_DIR = "./.session-cache";
 
   getWorkerUserSessionFilePath(index: number): string {
     const cacheDir = BaseUserManager.SESSION_CACHE_DIR;
@@ -67,10 +65,10 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
   }> {
     const browser: Browser = await chromium.launch({
       headless: this.config.headless ?? true,
-      timeout: 60000
+      timeout: 60000,
     });
     const context = await browser.newContext({
-      userAgent: defaultUserAgent
+      userAgent: defaultUserAgent,
     });
     const page = await context.newPage();
     return { page, browser, context };
@@ -79,7 +77,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
   private setupNetworkErrorCapture(page: Page): NetworkError[] {
     const networkErrors: NetworkError[] = [];
 
-    page.on('response', (response) => {
+    page.on("response", (response) => {
       const status = response.status();
       if (status >= 400) {
         networkErrors.push({
@@ -89,12 +87,14 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
           method: response.request().method(),
           timestamp: new Date().toISOString(),
         });
-        console.error(`❌ HTTP ${status} ${response.statusText()}: ${response.request().method()} ${response.url()}`);
+        console.error(
+          `❌ HTTP ${status} ${response.statusText()}: ${response.request().method()} ${response.url()}`,
+        );
       }
     });
 
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
         console.error(`❌ Console error: ${msg.text()}`);
       }
     });
@@ -107,38 +107,35 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     context: BrowserContext,
     user: BaseTestUser,
     error: Error,
-    networkErrors: NetworkError[]
+    networkErrors: NetworkError[],
   ): Promise<void> {
-    const outputDir = 'testResults/global-setup-failures';
+    const outputDir = "testResults/global-setup-failures";
     fs.mkdirSync(outputDir, { recursive: true });
 
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const prefix = `${outputDir}/global-setup-${user.nhsNumber}-${timestamp}`;
 
     try {
       // Take screenshot
       await page.screenshot({
         path: `${prefix}-screenshot.png`,
-        fullPage: true
+        fullPage: true,
       });
       console.log(`📸 Screenshot saved: ${prefix}-screenshot.png`);
     } catch (screenshotError) {
-      console.error('Failed to capture screenshot:', screenshotError);
+      console.error("Failed to capture screenshot:", screenshotError);
     }
 
     // Save network errors
     if (networkErrors.length > 0) {
-      fs.writeFileSync(
-        `${prefix}-network-errors.json`,
-        JSON.stringify(networkErrors, null, 2)
-      );
+      fs.writeFileSync(`${prefix}-network-errors.json`, JSON.stringify(networkErrors, null, 2));
       console.log(`🌐 Network errors saved: ${prefix}-network-errors.json`);
     }
 
     // Save error details
     fs.writeFileSync(
       `${prefix}-error.txt`,
-      `Error: ${error.message}\n\nStack trace:\n${error.stack}\n\nNetwork errors:\n${JSON.stringify(networkErrors, null, 2)}`
+      `Error: ${error.message}\n\nStack trace:\n${error.stack}\n\nNetwork errors:\n${JSON.stringify(networkErrors, null, 2)}`,
     );
     console.log(`📝 Error details saved: ${prefix}-error.txt`);
 
@@ -146,25 +143,23 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     if (this.config.enableTracingOnGlobalSetup) {
       try {
         await context.tracing.stop({
-          path: `${prefix}-trace.zip`
+          path: `${prefix}-trace.zip`,
         });
         console.log(`🔍 Trace saved: ${prefix}-trace.zip`);
       } catch (traceError) {
-        console.error('Failed to save trace:', traceError);
+        console.error("Failed to save trace:", traceError);
       }
     }
   }
 
   async loginWorkerUsers(): Promise<void> {
     process.env.GLOBAL_START_TIME = new Date().toISOString();
-    console.log(
-      `Tests will run on environment: ${process.env.ENV ?? 'local'}`
-    );
+    console.log(`Tests will run on environment: ${process.env.ENV ?? "local"}`);
 
     for (let i = 0; i < this.workerUsers.length; i++) {
       if (i >= this.numberOfWorkerUsers) {
         console.log(
-          `Skipping login for worker user at index ${i} due to numberOfWorkerUsers limit.`
+          `Skipping login for worker user at index ${i} due to numberOfWorkerUsers limit.`,
         );
         break;
       }
@@ -172,8 +167,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       console.log(this.getWorkerUserSessionFilePath(i));
 
       const user = this.workerUsers[i];
-      const { browser, page, context } =
-        await this.initializeBrowserForInitialLogin();
+      const { browser, page, context } = await this.initializeBrowserForInitialLogin();
 
       // Setup network error capture
       const networkErrors = this.setupNetworkErrorCapture(page);
@@ -182,7 +176,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
         await context.tracing.start({
           name: `global-setup-${uuidv4()}`,
           screenshots: true,
-          snapshots: true
+          snapshots: true,
         });
       }
 
@@ -190,12 +184,12 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
         await this.loginWorkerUser(user, page);
 
         await page.context().storageState({
-          path: this.getWorkerUserSessionFilePath(i)
+          path: this.getWorkerUserSessionFilePath(i),
         });
 
         if (this.config.enableTracingOnGlobalSetup) {
           await context.tracing.stop({
-            path: `testResults/global-setup-trace/global-setup-trace-${user.nhsNumber}.zip`
+            path: `testResults/global-setup-trace/global-setup-trace-${user.nhsNumber}.zip`,
           });
         }
       } catch (error) {
@@ -205,7 +199,9 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
         if (networkErrors.length > 0) {
           console.error(`\n🌐 Network errors detected during setup:`);
           networkErrors.forEach((err, idx) => {
-            console.error(`   ${idx + 1}. ${err.method} ${err.url} => ${err.status} ${err.statusText}`);
+            console.error(
+              `   ${idx + 1}. ${err.method} ${err.url} => ${err.status} ${err.statusText}`,
+            );
           });
         }
 
@@ -216,5 +212,20 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
 
       await browser.close();
     }
+  }
+  getSpecialUser(key: SpecialUserKey): TUser {
+    if (!this.specialUsers.has(key)) {
+      throw new Error(`Special user not found for key: ${key}`);
+    }
+
+    const user = this.specialUsers.get(key);
+    if (user === undefined) {
+      throw new Error(`Special user is undefined for key: ${key}`);
+    }
+    return user;
+  }
+
+  public async login(user: TUser, page: Page): Promise<void> {
+    await this.loginWorkerUser(user, page);
   }
 }

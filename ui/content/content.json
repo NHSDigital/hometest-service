@@ -170,6 +170,10 @@
       "description": "There are other options to get an HIV test.",
       "moreOptionsHeading": "More options and information"
     },
+    "go-to-clinic": {
+      "title": "Contact your nearest sexual health clinic",
+      "moreOptionsHeading": "More options and information"
+    },
     "enter-delivery-address": {
       "title": "Enter your delivery address and we'll check if the kit's available",
       "form": {
@@ -222,6 +226,18 @@
           "hint": "They will take a blood sample for you"
         }
       }
+    },
+    "cannot-use-service-under-18": {
+      "title": "You cannot use this service as you are under 18",
+      "intro": "To get tested for HIV, go to your nearest sexual health clinic, which is:",
+      "phoneLabel": "Phone:",
+      "directionsLinkText": "Get directions (opens in Google Maps)",
+      "findAnotherClinicLinkText": "Find another sexual health clinic",
+      "moreOptionsHeading": "More options and information",
+      "youngPeopleServicesText": "You can also use the",
+      "youngPeopleServicesLinkText": "NHS find young people's sexual health services",
+      "learnMoreLinkText": "Learn more about HIV and AIDS",
+      "learnMoreLinkHref": "https://www.nhs.uk/conditions/hiv-and-aids/"
     },
     "enter-mobile-phone-number": {
       "title": "What's your mobile phone number?",
@@ -756,6 +772,49 @@
         }
       }
     },
+    "suppliers-privacy-policy": {
+      "title": "Supplier privacy policy",
+      "suppliers": {
+        "preventx": {
+          "title": "Preventx privacy policy",
+          "introduction": [
+            "This is introduction paragraph for Preventx privacy policy. https://www.sh.uk/"
+          ],
+          "sections": [
+            {
+              "id": "preventx-first-section",
+              "heading": "It is first privacy section for Preventx",
+              "paragraphs": ["It is example of privacy policy content for Preventx."],
+              "subsections": [
+                {
+                  "heading": "It is the first privacy subsection for Preventx",
+                  "paragraphs": ["It is example of privacy policy content for Preventx."]
+                }
+              ]
+            }
+          ]
+        },
+        "sh:24": {
+          "title": "SH:24 privacy policy",
+          "introduction": [
+            "This is introduction paragraph for SH:24 privacy policy. https://sh24.org.uk/"
+          ],
+          "sections": [
+            {
+              "id": "sh24-first-section",
+              "heading": "It is first privacy section for SH:24",
+              "paragraphs": ["It is example of privacy policy content for SH:24."],
+              "subsections": [
+                {
+                  "heading": "It is the first privacy subsection for SH:24",
+                  "paragraphs": ["It is example of privacy policy content for SH:24."]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
     "check-your-answers": {
       "title": "Check your answers before submitting your order",
       "updateMessage": "We'll update you about your HIV test on the account you use for your NHS login.",
@@ -772,8 +831,7 @@
         "label": "I understand that {supplier}, a trusted partner of NHS, will provide the free self-test kit. I agree to their",
         "termsOfUseText": "terms of use",
         "labelAnd": "and",
-        "privacyPolicyText": "privacy policy",
-        "privacyPolicyHref": "supplier-privacy-policy"
+        "privacyPolicyText": "privacy policy"
       },
       "submitButton": "Submit order"
     },
