@@ -1,3 +1,9 @@
+
+// This ErrorBoundary is a global safety net for any unhandled client-side errors.
+// It catches errors during hydration, dynamic import, or anywhere in the React tree,
+// including before React Router's own error handling (ErrorRedirect) is mounted.
+// This ensures users are redirected to a safe error page even if the app's own
+// error handling fails to mount or an unexpected error occurs outside the router.
 "use client";
 
 import React from "react";
