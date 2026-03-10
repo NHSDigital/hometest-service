@@ -32,7 +32,7 @@ class OrderDetailsService {
     orderId: string,
     patient: Patient,
   ): Promise<Response> {
-    const url = new URL(`${backendUrl}/order`);
+    const url = new URL(`${backendUrl}/get-order`);
     url.searchParams.append("nhs_number", patient.nhsNumber);
     url.searchParams.append("date_of_birth", patient.dateOfBirth);
     url.searchParams.append("order_id", orderId);
