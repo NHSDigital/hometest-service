@@ -8,13 +8,13 @@ describe("debug utilities", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv });
+    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv, configurable: true, writable: true });
     delete globalThis.__appDebug;
   });
 
   describe("registerDebugState", () => {
     it("registers a state getter accessible via __appDebug in development", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
       const state = { count: 1 };
 
       registerDebugState("test", () => state);
@@ -24,7 +24,7 @@ describe("debug utilities", () => {
     });
 
     it("returns live values via the getter", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
       let state = { count: 1 };
 
       registerDebugState("test", () => state);
@@ -35,7 +35,7 @@ describe("debug utilities", () => {
     });
 
     it("does nothing in production", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "production" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
 
       registerDebugState("test", () => "value");
 
@@ -43,7 +43,7 @@ describe("debug utilities", () => {
     });
 
     it("allows registering multiple slices", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
       registerDebugState("auth", () => ({ user: "alice" }));
       registerDebugState("order", () => ({ id: 1 }));
@@ -53,7 +53,7 @@ describe("debug utilities", () => {
     });
 
     it("overwrites a previously registered slice", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
       registerDebugState("test", () => "first");
       registerDebugState("test", () => "second");
@@ -62,7 +62,7 @@ describe("debug utilities", () => {
     });
 
     it("enumerates registered slices", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
       registerDebugState("a", () => 1);
       registerDebugState("b", () => 2);
@@ -75,7 +75,7 @@ describe("debug utilities", () => {
 
   describe("unregisterDebugState", () => {
     it("removes a registered slice", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
       registerDebugState("test", () => "value");
       expect(globalThis.__appDebug!.test).toBe("value");
@@ -85,7 +85,7 @@ describe("debug utilities", () => {
     });
 
     it("does nothing in production", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "production" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
 
       unregisterDebugState("test");
 
@@ -93,7 +93,7 @@ describe("debug utilities", () => {
     });
 
     it("does nothing if __appDebug does not exist", () => {
-      Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+      Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
       expect(() => unregisterDebugState("test")).not.toThrow();
     });

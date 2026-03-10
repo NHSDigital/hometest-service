@@ -27,12 +27,12 @@ describe("JourneyDevtools", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv });
+    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv, configurable: true, writable: true });
     delete globalThis.__appDebug;
   });
 
   it("renders nothing to the DOM", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
     const { container } = render(
       <JourneyWrapper>
@@ -44,7 +44,7 @@ describe("JourneyDevtools", () => {
   });
 
   it("registers order, navigation and postcode debug state in development", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
     render(
       <JourneyWrapper>
@@ -59,7 +59,7 @@ describe("JourneyDevtools", () => {
   });
 
   it("does not register debug state in production", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "production" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
 
     render(
       <JourneyWrapper>
@@ -71,7 +71,7 @@ describe("JourneyDevtools", () => {
   });
 
   it("cleans up all debug slices on unmount", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
     const { unmount } = render(
       <JourneyWrapper>

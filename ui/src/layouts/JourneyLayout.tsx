@@ -8,8 +8,8 @@ export default function JourneyLayout() {
     <JourneyNavigationProvider>
       <CreateOrderProvider>
         <PostcodeLookupProvider>
-        <JourneyDevtools />
-        <Outlet />
+          <JourneyDevtools />
+          <Outlet />
         </PostcodeLookupProvider>
       </CreateOrderProvider>
     </JourneyNavigationProvider>

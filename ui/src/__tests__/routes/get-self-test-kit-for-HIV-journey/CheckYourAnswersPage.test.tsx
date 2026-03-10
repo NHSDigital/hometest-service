@@ -325,21 +325,11 @@ describe("CheckYourAnswersPage", () => {
     });
 
     it("does not submit when consent is not ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /submit order/i }));
 
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
+      expect(mockSubmitOrder).not.toHaveBeenCalled();
     });
 
     it("updates order reference number after successful submit", async () => {

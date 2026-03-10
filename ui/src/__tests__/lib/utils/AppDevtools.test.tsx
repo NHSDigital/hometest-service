@@ -12,12 +12,12 @@ describe("AppDevtools", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv });
+    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv, configurable: true, writable: true });
     delete globalThis.__appDebug;
   });
 
   it("renders nothing to the DOM", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
     const { container } = render(
       <AuthProvider>
@@ -29,7 +29,7 @@ describe("AppDevtools", () => {
   });
 
   it("registers auth debug state in development", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
     render(
       <AuthProvider>
@@ -42,7 +42,7 @@ describe("AppDevtools", () => {
   });
 
   it("does not register debug state in production", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "production" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
 
     render(
       <AuthProvider>
@@ -54,7 +54,7 @@ describe("AppDevtools", () => {
   });
 
   it("cleans up debug state on unmount", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development" });
+    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
 
     const { unmount } = render(
       <AuthProvider>
