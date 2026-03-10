@@ -11,6 +11,8 @@ import { AuthProvider, useAuth } from "@/state";
 
 import laLookupService from "@/lib/services/la-lookup-service";
 
+const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
+
 jest.mock("@/lib/services/la-lookup-service", () => ({
   __esModule: true,
   default: {
@@ -82,9 +84,17 @@ describe("EnterAddressManuallyPage", () => {
     });
   };
 
+  beforeAll(() => {
+    jest.useFakeTimers().setSystemTime(FIXED_TODAY);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   describe("Component Rendering", () => {
