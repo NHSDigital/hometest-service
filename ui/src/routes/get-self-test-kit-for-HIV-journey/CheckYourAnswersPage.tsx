@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
+import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
@@ -161,19 +161,17 @@ export default function CheckYourAnswersPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#consent"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("consent-1")?.focus();
-                }}
-              >
-                {consentError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#consent"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("consent-1")?.focus();
+              }}
+            >
+              {consentError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
@@ -196,21 +194,16 @@ export default function CheckYourAnswersPage() {
               </span>
             ))}
           </SummaryList.Value>
-          <SummaryList.Actions>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleChangeClick("address");
-              }}
-            >
-              {content.changeLink}
-              <span className="nhsuk-u-visually-hidden">
-                {" "}
-                {content.summaryLabels.deliveryAddress}
-              </span>
-            </a>
-          </SummaryList.Actions>
+          <SummaryList.Action
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleChangeClick("address");
+            }}
+            visuallyHiddenText={content.summaryLabels.deliveryAddress}
+          >
+            {content.changeLink}
+          </SummaryList.Action>
         </SummaryList.Row>
 
         <SummaryList.Row>
@@ -220,71 +213,66 @@ export default function CheckYourAnswersPage() {
               ? "Yes I'm comfortable, send me the kit"
               : orderAnswers.comfortableDoingTest}
           </SummaryList.Value>
-          <SummaryList.Actions>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleChangeClick("comfort");
-              }}
-            >
-              {content.changeLink}
-              <span className="nhsuk-u-visually-hidden">
-                {" "}
-                {content.summaryLabels.comfortableDoingTest}
-              </span>
-            </a>
-          </SummaryList.Actions>
+          <SummaryList.Action
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleChangeClick("comfort");
+            }}
+            visuallyHiddenText={content.summaryLabels.comfortableDoingTest}
+          >
+            {content.changeLink}
+          </SummaryList.Action>
         </SummaryList.Row>
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.mobileNumber}</SummaryList.Key>
           <SummaryList.Value>{orderAnswers.mobileNumber}</SummaryList.Value>
-          <SummaryList.Actions>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleChangeClick("mobile");
-              }}
-            >
-              {content.changeLink}
-              <span className="nhsuk-u-visually-hidden"> {content.summaryLabels.mobileNumber}</span>
-            </a>
-          </SummaryList.Actions>
+          <SummaryList.Action
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleChangeClick("mobile");
+            }}
+            visuallyHiddenText={content.summaryLabels.mobileNumber}
+          >
+            {content.changeLink}
+          </SummaryList.Action>
         </SummaryList.Row>
       </SummaryList>
 
       <form onSubmit={handleSubmit}>
-        <Fieldset>
-          <Fieldset.Legend size="m">{content.consent.legend}</Fieldset.Legend>
-          <Checkboxes id="consent" name="consent" error={consentError || undefined}>
-            <Checkboxes.Box value="consent" checked={consentChecked} onChange={handleConsentChange}>
-              {content.consent.label.replace("{supplier}", supplierName)}{" "}
-              <a
-                href={JourneyStepNames.SuppliersTermsConditions}
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToStep(JourneyStepNames.SuppliersTermsConditions);
-                }}
-              >
-                {content.consent.termsOfUseText}
-              </a>{" "}
-              {content.consent.labelAnd}{" "}
-              <a
-                href={JourneyStepNames.SuppliersPrivacyPolicy}
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToStep(JourneyStepNames.SuppliersPrivacyPolicy);
-                }}
-              >
-                {content.consent.privacyPolicyText}
-              </a>
-              .
-            </Checkboxes.Box>
-          </Checkboxes>
-        </Fieldset>
-
+        <Checkboxes
+          legend={content.consent.legend}
+          legendProps={{ size: "m" }}
+          id="consent"
+          name="consent"
+          error={consentError || undefined}
+        >
+          <Checkboxes.Item value="consent" checked={consentChecked} onChange={handleConsentChange}>
+            {content.consent.label.replace("{supplier}", supplierName)}{" "}
+            <a
+              href={JourneyStepNames.SuppliersTermsConditions}
+              onClick={(e) => {
+                e.preventDefault();
+                goToStep(JourneyStepNames.SuppliersTermsConditions);
+              }}
+            >
+              {content.consent.termsOfUseText}
+            </a>{" "}
+            {content.consent.labelAnd}{" "}
+            <a
+              href={JourneyStepNames.SuppliersPrivacyPolicy}
+              onClick={(e) => {
+                e.preventDefault();
+                goToStep(JourneyStepNames.SuppliersPrivacyPolicy);
+              }}
+            >
+              {content.consent.privacyPolicyText}
+            </a>
+            .
+          </Checkboxes.Item>
+        </Checkboxes>
         <Button type="submit">{content.submitButton}</Button>
       </form>
     </FormPageLayout>

@@ -261,65 +261,63 @@ export default function EnterAddressManuallyPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              {addressLine1Error && (
-                <ErrorSummary.Item
-                  href="#address-line-1"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("address-line-1")?.focus();
-                  }}
-                >
-                  {addressLine1Error}
-                </ErrorSummary.Item>
-              )}
-              {addressLine2Error && (
-                <ErrorSummary.Item
-                  href="#address-line-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("address-line-2")?.focus();
-                  }}
-                >
-                  {addressLine2Error}
-                </ErrorSummary.Item>
-              )}
-              {addressLine3Error && (
-                <ErrorSummary.Item
-                  href="#address-line-3"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("address-line-3")?.focus();
-                  }}
-                >
-                  {addressLine3Error}
-                </ErrorSummary.Item>
-              )}
-              {townOrCityError && (
-                <ErrorSummary.Item
-                  href="#address-town"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("address-town")?.focus();
-                  }}
-                >
-                  {townOrCityError}
-                </ErrorSummary.Item>
-              )}
-              {postcodeError && (
-                <ErrorSummary.Item
-                  href="#postcode"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("postcode")?.focus();
-                  }}
-                >
-                  {postcodeError}
-                </ErrorSummary.Item>
-              )}
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            {addressLine1Error && (
+              <ErrorSummary.ListItem
+                href="#address-line-1"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("address-line-1")?.focus();
+                }}
+              >
+                {addressLine1Error}
+              </ErrorSummary.ListItem>
+            )}
+            {addressLine2Error && (
+              <ErrorSummary.ListItem
+                href="#address-line-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("address-line-2")?.focus();
+                }}
+              >
+                {addressLine2Error}
+              </ErrorSummary.ListItem>
+            )}
+            {addressLine3Error && (
+              <ErrorSummary.ListItem
+                href="#address-line-3"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("address-line-3")?.focus();
+                }}
+              >
+                {addressLine3Error}
+              </ErrorSummary.ListItem>
+            )}
+            {townOrCityError && (
+              <ErrorSummary.ListItem
+                href="#address-town"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("address-town")?.focus();
+                }}
+              >
+                {townOrCityError}
+              </ErrorSummary.ListItem>
+            )}
+            {postcodeError && (
+              <ErrorSummary.ListItem
+                href="#postcode"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("postcode")?.focus();
+                }}
+              >
+                {postcodeError}
+              </ErrorSummary.ListItem>
+            )}
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 

@@ -29,7 +29,6 @@ import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
 import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
-import { setBodyClassName } from "./js/setClassName";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -166,8 +165,6 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-
-setBodyClassName();
 
 function App() {
   return (

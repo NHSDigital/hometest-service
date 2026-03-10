@@ -69,19 +69,17 @@ export default function EnterMobileNumberPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#mobile-number"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("mobile-number")?.focus();
-                }}
-              >
-                {mobileNumberError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#mobile-number"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("mobile-number")?.focus();
+              }}
+            >
+              {mobileNumberError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 

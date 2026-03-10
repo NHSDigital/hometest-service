@@ -75,19 +75,17 @@ export default function HowComfortablePrickingFingerPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#comfortable"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("comfortable-1")?.focus();
-                }}
-              >
-                {optionError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#comfortable"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("comfortable-1")?.focus();
+              }}
+            >
+              {optionError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
@@ -121,24 +119,24 @@ export default function HowComfortablePrickingFingerPage() {
         <Radios
           id="comfortable"
           name="comfortable"
-          label={content.formLabel}
-          labelProps={{
+          legend={content.formLabel}
+          legendProps={{
             isPageHeading: false,
             size: "m",
           }}
           error={optionError || undefined}
           onChange={handleRadioChange}
         >
-          <Radios.Radio
+          <Radios.Item
             value="Yes"
             hint={content.options.yes.hint.replace("{supplier}", supplierName)}
             checked={selectedOption === "Yes"}
           >
             {content.options.yes.text}
-          </Radios.Radio>
-          <Radios.Radio value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>
+          </Radios.Item>
+          <Radios.Item value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>
             {content.options.no.text}
-          </Radios.Radio>
+          </Radios.Item>
         </Radios>
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
