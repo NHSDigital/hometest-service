@@ -127,9 +127,6 @@ const TestWrapper = ({
 );
 
 describe("CheckYourAnswersPage", () => {
-  // Suppress React/error-boundary logging for tests that intentionally render failures.
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
-
   const submitForm = () => {
     const form = screen.getByRole("button", { name: /submit order/i }).closest("form");
 
@@ -142,10 +139,6 @@ describe("CheckYourAnswersPage", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  afterAll(() => {
-    consoleErrorSpy.mockRestore();
   });
 
   describe("Component Rendering", () => {

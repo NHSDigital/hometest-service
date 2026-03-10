@@ -42,7 +42,7 @@ export default function SelectDeliveryAddressPage() {
     const postcode = orderAnswers.postcodeSearch;
 
     if (!postcode) {
-      console.error("[SelectDeliveryAddressPage] Missing postcode in journey context.");
+      console.error("Missing postcode in journey context.");
 
       throw new Error("Postcode is required for address selection.");
     }
@@ -50,12 +50,11 @@ export default function SelectDeliveryAddressPage() {
     const laResponse = await laLookupService.getByPostcode(postcode);
 
     if (!laResponse?.suppliers?.length) {
-      console.warn(
-        "[SelectDeliveryAddressPage] LA lookup returned null or incomplete data",
-        laResponse,
-      );
+      console.warn("LA lookup returned null or incomplete data", laResponse);
 
-      throw new Error("Unable to determine local authority or suppliers for the selected address.");
+      updateOrderAnswers({ postcodeSearch: postcode });
+      goToStep(JourneyStepNames.KitNotAvailableInArea);
+      return;
     }
     console.log("Eligibility lookup response:", laResponse);
 

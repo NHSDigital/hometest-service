@@ -45,15 +45,8 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("EnterDeliveryAddressPage", () => {
-  // Suppress React/error-boundary logging for tests that intentionally render failures.
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
-
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  afterAll(() => {
-    consoleErrorSpy.mockRestore();
   });
 
   describe("Component Rendering", () => {

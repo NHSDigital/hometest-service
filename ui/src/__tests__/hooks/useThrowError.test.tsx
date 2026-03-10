@@ -2,31 +2,8 @@ import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import { useThrowError } from "@/hooks/useThrowError";
-
-class TestErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { errorMessage: string | null }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { errorMessage: null };
-  }
-
-  static getDerivedStateFromError(error: unknown) {
-    return {
-      errorMessage: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
-
-  render() {
-    if (this.state.errorMessage) {
-      return <div>{this.state.errorMessage}</div>;
-    }
-
-    return this.props.children;
-  }
-}
 
 function AsyncSubmitter({ error }: Readonly<{ error: Error }>) {
   const throwError = useThrowError();
@@ -45,16 +22,6 @@ function AsyncSubmitter({ error }: Readonly<{ error: Error }>) {
 }
 
 describe("useThrowError", () => {
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
-
-  afterEach(() => {
-    consoleErrorSpy.mockClear();
-  });
-
-  afterAll(() => {
-    consoleErrorSpy.mockRestore();
-  });
-
   it("rethrows async submit-handler errors during render so an error boundary can handle them", async () => {
     const error = new Error("Unable to determine local authority or suppliers");
 

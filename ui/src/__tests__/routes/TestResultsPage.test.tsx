@@ -42,9 +42,6 @@ jest.mock("@/components/order-status", () => ({
 }));
 
 describe("TestResultsPage", () => {
-  // Suppress React/error-boundary logging for tests that intentionally render failures.
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
-
   const orderId = "550e8400-e29b-41d4-a716-446655440000";
 
   const mockOrder: OrderDetails = {
@@ -132,10 +129,6 @@ describe("TestResultsPage", () => {
       user: mockUser,
       setUser: jest.fn(),
     });
-  });
-
-  afterAll(() => {
-    consoleErrorSpy.mockRestore();
   });
 
   it("renders order status header when result is found", async () => {

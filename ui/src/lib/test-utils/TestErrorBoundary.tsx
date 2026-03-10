@@ -1,3 +1,5 @@
+// Test-only error boundary: catches errors thrown by children during render/lifecycle,
+// and displays the error message. Used to assert error handling in tests.
 import React from "react";
 
 export class TestErrorBoundary extends React.Component<
@@ -9,6 +11,7 @@ export class TestErrorBoundary extends React.Component<
     this.state = { errorMessage: null };
   }
 
+  // React calls this static method if a child throws during render/lifecycle.
   static getDerivedStateFromError(error: unknown) {
     return {
       errorMessage: error instanceof Error ? error.message : "Unknown error",
