@@ -1,5 +1,4 @@
 import React, { ReactNode, createContext, useCallback, useContext, useState } from "react";
-
 import { backendUrl } from "@/settings";
 
 export interface AddressResult {
@@ -12,7 +11,7 @@ export interface AddressResult {
   fullAddress: string;
 }
 
-interface PostcodeLookupContextType {
+export interface PostcodeLookupContextType {
   postcode: string;
   addresses: AddressResult[];
   selectedAddress: AddressResult | null;
@@ -24,7 +23,9 @@ interface PostcodeLookupContextType {
   clearAddresses: () => void;
 }
 
-const PostcodeLookupContext = createContext<PostcodeLookupContextType | undefined>(undefined);
+export const PostcodeLookupContext = createContext<PostcodeLookupContextType | undefined>(
+  undefined,
+);
 
 interface PostcodeLookupProviderProps {
   children: ReactNode;
