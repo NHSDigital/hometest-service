@@ -118,6 +118,14 @@ export class TestOrderDbClient extends BaseDbClient {
     );
   }
 
+  async deletePatientMappingByPatientUid(patientUid: UUID): Promise<void> {
+    await this.query(
+      `DELETE FROM patient_mapping
+       WHERE patient_uid = $1::uuid`,
+      [patientUid],
+    );
+  }
+
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
     await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }
@@ -149,5 +157,35 @@ export class TestOrderDbClient extends BaseDbClient {
       [orderUid],
     );
     return rows[0].status_code as OrderStatusCode;
+  }
+
+  async getOrderUidPatientUidByReferenceNumber(
+    orderReference: string,
+  ): Promise<{ order_uid: UUID; patient_uid: UUID }> {
+    const rows = await this.query<{ order_uid: UUID; patient_uid: UUID }>(
+      `SELECT order_uid, patient_uid
+       FROM test_order
+       WHERE order_reference = $1::int
+       LIMIT 1`,
+      [orderReference],
+    );
+    return { order_uid: rows[0].order_uid, patient_uid: rows[0].patient_uid };
+  }
+
+  async getConsentCountByOrderUid(orderUid: string): Promise<string | undefined> {
+    const rows = await this.query<{ consent_count: string }>(
+      `
+      SELECT count(*) AS consent_count
+      FROM hometest.consent
+      WHERE order_uid = $1
+    `,
+      [orderUid],
+    );
+    console.log("Consent count for order_uid", orderUid, "is", rows[0]?.consent_count);
+    return rows[0]?.consent_count;
+  }
+
+  async deleteConsentByOrderUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM hometest.consent WHERE order_uid = $1::uuid`, [orderUid]);
   }
 }
