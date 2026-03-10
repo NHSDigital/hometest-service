@@ -5,31 +5,28 @@ import { AddressModel } from "../../models/Address";
 const randomAddress = AddressModel.getRandomAddress();
 
 test(
-  "Enter mobile number page",
+  "Confirm mobile number page",
   {
     tag: ["@accessibility"],
   },
   async ({
     homeTestStartPage,
-    findAddressPage,
+    enterDeliveryAddressPage,
     selectDeliveryAddressPage,
     accessibility,
-    enterMobileNumberPage,
+    confirmMobileNumberPage,
     howComfortablePrickingFingerPage,
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    await selectDeliveryAddressPage.waitUntilPageLoad();
+    await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await howComfortablePrickingFingerPage.waitUntilPageLoad();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await enterMobileNumberPage.waitUntilPageLoad();
-    await enterMobileNumberPage.clickUseAnotherNumber();
-    const postInputAccessErrors = await accessibility.runAccessibilityCheck(
-      enterMobileNumberPage.page,
-      "Enter Mobile Number Page - After Input",
+    await confirmMobileNumberPage.selectUseAnotherMobileNumberOption();
+    const accessErrors = await accessibility.runAccessibilityCheck(
+      confirmMobileNumberPage.page,
+      "Confirm mobile number page",
     );
-    expect(postInputAccessErrors).toHaveLength(0);
+    expect(accessErrors).toHaveLength(0);
   },
 );
