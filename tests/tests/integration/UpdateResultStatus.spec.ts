@@ -5,6 +5,7 @@ import { ResultsObservationData } from "../../test-data/ResultsObservationData";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { headersTestResults } from "../../utils/ApiRequestHelper";
 import { randomUUID } from "crypto";
+import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
 let patientId: string;
@@ -23,13 +24,9 @@ test.describe("Results Flow - Update Order Results Logic", () => {
   test.beforeEach("Create a patient, order, initial order status", async ({ testedUser }) => {
     console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
-    const result = await dbClient.createOrderWithPatientAndStatus({
-      nhs_number: testedUser.nhsNumber!,
-      birth_date: testedUser.dob!,
-      supplier_name: supplierName,
-      test_code: "PCR",
-      initial_status: "RECEIVED",
-    });
+    const result = await dbClient.createOrderWithPatientAndStatus(
+      new OrderBuilder().withUser(testedUser).withSupplier(supplierName).build(),
+    );
 
     orderId = result.order_uid;
     patientId = result.patient_uid;

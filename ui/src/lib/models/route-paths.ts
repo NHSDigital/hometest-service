@@ -16,6 +16,7 @@ export enum JourneyStepNames {
   NoAddressFound = "no-address-found",
   SelectDeliveryAddress = "select-delivery-address",
   HowComfortablePrickingFinger = "how-comfortable-pricking-finger",
+  CannotUseServiceUnder18 = "cannot-use-service-under-18",
   BloodSampleGuide = "blood-sample-guide",
   EnterMobileNumber = "enter-mobile-phone-number",
   CheckYourAnswers = "check-your-answers",
@@ -23,5 +24,6 @@ export enum JourneyStepNames {
   OrderSubmitted = "order-submitted",
   KitNotAvailableInArea = "kit-not-available-in-area",
   SuppliersTermsConditions = "suppliers-terms-conditions",
+  GoToClinic = "go-to-clinic",
   SuppliersPrivacyPolicy = "suppliers-privacy-policy",
 }
