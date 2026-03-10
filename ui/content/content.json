@@ -227,6 +227,18 @@
         }
       }
     },
+    "cannot-use-service-under-18": {
+      "title": "You cannot use this service as you are under 18",
+      "intro": "To get tested for HIV, go to your nearest sexual health clinic, which is:",
+      "phoneLabel": "Phone:",
+      "directionsLinkText": "Get directions (opens in Google Maps)",
+      "findAnotherClinicLinkText": "Find another sexual health clinic",
+      "moreOptionsHeading": "More options and information",
+      "youngPeopleServicesText": "You can also use the",
+      "youngPeopleServicesLinkText": "NHS find young people's sexual health services",
+      "learnMoreLinkText": "Learn more about HIV and AIDS",
+      "learnMoreLinkHref": "https://www.nhs.uk/conditions/hiv-and-aids/"
+    },
     "enter-mobile-phone-number": {
       "title": "What's your mobile phone number?",
       "description": "You'll get updates to this number.",
