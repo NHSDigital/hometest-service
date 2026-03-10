@@ -1,8 +1,15 @@
-import { BloodSampleGuidePage } from "../page-objects/BloodSampleGuidePage";
-import { CheckYourAnswersPage } from "../page-objects/CheckYourAnswersPage";
-import { ConfirmAndUpdateMobileNumberPage } from "../page-objects/ConfirmAndUpdateMobileNumberPage";
+import { test as base } from "@playwright/test";
+import { HomeTestStartPage } from "../page-objects/HomeTestStartPage";
+import { EnterDeliveryAddressPage } from "../page-objects/EnterDeliveryAddressPage";
 import { EnterAddressManuallyPage } from "../page-objects/EnterAddressManuallyPage";
-import { EnterMobileNumberPage } from "../page-objects/EnterMobileNumberPage";
+import { SelectDeliveryAddressPage } from "../page-objects/SelectDeliveryAddressPage";
+import { OrderStatusPage } from "../page-objects/OrderStatusPage";
+import { HowComfortablePrickingFingerPage } from "../page-objects/HowComfortablePrickingFingerPage";
+import { BloodSampleGuidePage } from "../page-objects/BloodSampleGuidePage";
+import { PrivacyPolicyPage } from "../page-objects/PrivacyPolicyPage";
+import { ConfirmMobileNumberPage } from "../page-objects/ConfirmMobileNumberPage";
+import { NegativeResultPage } from "../page-objects/NegativeResultPage";
+import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPasswordPage";
 import { ErrorPage } from "../page-objects/ErrorPage";
 import { FindAddressPage } from "../page-objects/FindAddressPage";
 import { HomeTestStartPage } from "../page-objects/HomeTestStartPage";
@@ -20,15 +27,14 @@ import { test as base } from "@playwright/test";
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
-  findAddressPage: FindAddressPage;
+  enterDeliveryAddressPage: EnterDeliveryAddressPage;
   enterAddressManuallyPage: EnterAddressManuallyPage;
   selectDeliveryAddressPage: SelectDeliveryAddressPage;
   orderStatusPage: OrderStatusPage;
   howComfortablePrickingFingerPage: HowComfortablePrickingFingerPage;
   privacyPolicyPage: PrivacyPolicyPage;
   bloodSampleGuidePage: BloodSampleGuidePage;
-  enterMobileNumberPage: EnterMobileNumberPage;
-  confirmAndUpdateMobileNumberPage: ConfirmAndUpdateMobileNumberPage;
+  confirmMobileNumberPage: ConfirmMobileNumberPage;
   negativeResultPage: NegativeResultPage;
   kitNotAvailableInYourAreaPage: KitNotAvailableInYourAreaPage;
   nhsEmailAndPasswordPage: NHSEmailAndPasswordPage;
@@ -44,8 +50,8 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new HomeTestStartPage(page));
   },
 
-  findAddressPage: async ({ page }, use) => {
-    await use(new FindAddressPage(page));
+  enterDeliveryAddressPage: async ({ page }, use) => {
+    await use(new EnterDeliveryAddressPage(page));
   },
 
   enterAddressManuallyPage: async ({ page }, use) => {
@@ -72,12 +78,8 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new BloodSampleGuidePage(page));
   },
 
-  enterMobileNumberPage: async ({ page }, use) => {
-    await use(new EnterMobileNumberPage(page));
-  },
-
-  confirmAndUpdateMobileNumberPage: async ({ page }, use) => {
-    await use(new ConfirmAndUpdateMobileNumberPage(page));
+  confirmMobileNumberPage: async ({ page }, use) => {
+    await use(new ConfirmMobileNumberPage(page));
   },
 
   negativeResultPage: async ({ page }, use) => {
