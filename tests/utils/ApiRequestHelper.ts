@@ -16,7 +16,7 @@ export const orderStatusPayload = (
   resourceType: "Task",
   status: defaultStatus,
   intent: defaultIntent,
-  basedOn: [{ reference: `Order/${orderUid}` }],
+  identifier: [{ value: orderUid }],
   for: { reference: `Patient/${patientUid}` },
   businessStatus: { text: "dispatched" },
   lastModified: new Date().toISOString(),

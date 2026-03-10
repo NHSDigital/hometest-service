@@ -1,19 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { Radios, Images, Button, ErrorSummary } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext, useAuth } from "@/state";
-import { useContent } from "@/hooks";
+import { Button, ErrorSummary, Images, Radios } from "nhsuk-react-components";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
+import { useContent } from "@/hooks";
+import { useState } from "react";
 
 export default function HowComfortablePrickingFingerPage() {
-  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
+    useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { user } = useAuth();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
 
-  const [selectedOption, setSelectedOption] = useState<string>(orderAnswers.comfortableDoingTest || "");
+  const [selectedOption, setSelectedOption] = useState<string>(
+    orderAnswers.comfortableDoingTest || "",
+  );
   const [optionError, setOptionError] = useState<string | null>(null);
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
@@ -38,12 +42,12 @@ export default function HowComfortablePrickingFingerPage() {
         setReturnToStep(null);
         goToStep(step);
       } else if (user?.phoneNumber) {
-          goToStep(JourneyStepNames.ConfirmMobileNumber);
+        goToStep(JourneyStepNames.ConfirmMobileNumber);
       } else {
         goToStep(JourneyStepNames.EnterMobileNumber);
       }
     } else {
-      // goToStep(JourneyStepNames.VisitNearestClinic);
+      goToStep(JourneyStepNames.GoToClinic);
     }
   };
 
@@ -52,7 +56,7 @@ export default function HowComfortablePrickingFingerPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -60,7 +64,8 @@ export default function HowComfortablePrickingFingerPage() {
         } else {
           goToStep(JourneyStepNames.EnterDeliveryAddress);
         }
-      }}>
+      }}
+    >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       {optionError && (
@@ -74,7 +79,7 @@ export default function HowComfortablePrickingFingerPage() {
                 href="#comfortable"
                 onClick={(e) => {
                   e.preventDefault();
-                  document.getElementById('comfortable-1')?.focus();
+                  document.getElementById("comfortable-1")?.focus();
                 }}
               >
                 {optionError}
@@ -91,9 +96,7 @@ export default function HowComfortablePrickingFingerPage() {
         alt={content.image.alt}
       />
 
-      <p className="nhsuk-body">
-        {content.instructions}
-      </p>
+      <p className="nhsuk-body">{content.instructions}</p>
 
       <ul className="nhsuk-list nhsuk-list--bullet">
         <li>{content.steps.prickFinger}</li>
@@ -102,14 +105,14 @@ export default function HowComfortablePrickingFingerPage() {
 
       <p>
         <a
-            href="blood-sample-guide"
-            onClick={(e) => {
-              e.preventDefault();
-              goToStep(JourneyStepNames.BloodSampleGuide);
-            }}
-          >
-            {commonContent.links.bloodSampleGuide.text}
-          </a>
+          href="blood-sample-guide"
+          onClick={(e) => {
+            e.preventDefault();
+            goToStep(JourneyStepNames.BloodSampleGuide);
+          }}
+        >
+          {commonContent.links.bloodSampleGuide.text}
+        </a>
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -126,7 +129,7 @@ export default function HowComfortablePrickingFingerPage() {
         >
           <Radios.Radio
             value="Yes"
-            hint={content.options.yes.hint.replace('{supplier}', supplierName)}
+            hint={content.options.yes.hint.replace("{supplier}", supplierName)}
             checked={selectedOption === "Yes"}
           >
             {content.options.yes.text}
@@ -138,6 +141,6 @@ export default function HowComfortablePrickingFingerPage() {
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

@@ -1,65 +1,53 @@
 "use client";
 
-import {
-  ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-} from "react";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { RoutePath } from "@/lib/models/route-paths";
+type Step = JourneyStepNames | RoutePath.GetSelfTestKitPage;
 
 export interface NavigationState {
-  currentStep: string;
-  stepHistory: string[];
+  currentStep: Step;
+  stepHistory: Step[];
 }
 
 interface JourneyNavigationContextType {
-  currentStep: string;
-  stepHistory: string[];
-  returnToStep: string | null;
-  goToStep: (step: string) => void;
+  currentStep: Step;
+  stepHistory: Step[];
+  returnToStep: Step | null;
+  goToStep: (step: Step) => void;
   goBack: () => void;
   canGoBack: () => boolean;
   clearHistory: () => void;
-  setReturnToStep: (step: string | null) => void;
+  setReturnToStep: (step: Step | null) => void;
 }
 
-const JourneyNavigationContext = createContext<
-  JourneyNavigationContextType | undefined
->(undefined);
+const JourneyNavigationContext = createContext<JourneyNavigationContextType | undefined>(undefined);
 
-export function JourneyNavigationProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function JourneyNavigationProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Extract current step from the HIV test journey path
-  const getStepFromPath = (path: string): string => {
-    if (path === RoutePath.GetSelfTestKitPage)
-      return "get-self-test-kit-for-HIV";
+  const getStepFromPath = (path: string): Step => {
+    if (path === RoutePath.GetSelfTestKitPage) return RoutePath.GetSelfTestKitPage;
     return (
-      path.replace(`${RoutePath.GetSelfTestKitPage}/`, "") ||
-      "get-self-test-kit-for-HIV"
+      (path.replace(`${RoutePath.GetSelfTestKitPage}/`, "") as JourneyStepNames) ||
+      RoutePath.GetSelfTestKitPage
     );
   };
 
   const currentStep = getStepFromPath(location.pathname);
 
   const [navigation, setNavigation] = useState<{
-    stepHistory: string[];
-    lastStep: string;
+    stepHistory: Step[];
+    lastStep: Step;
   }>(() => ({
     stepHistory: [currentStep],
     lastStep: currentStep,
   }));
 
-  const [returnToStep, setReturnToStep] = useState<string | null>(null);
+  const [returnToStep, setReturnToStep] = useState<Step | null>(null);
 
   let stepHistory = navigation.stepHistory;
   if (navigation.lastStep !== currentStep) {
@@ -79,7 +67,7 @@ export function JourneyNavigationProvider({
     (step: string) => {
       // Build journey-specific path
       const targetPath =
-        step === "get-self-test-kit-for-HIV"
+        step === RoutePath.GetSelfTestKitPage
           ? RoutePath.GetSelfTestKitPage
           : `${RoutePath.GetSelfTestKitPage}/${step}`;
 
@@ -134,9 +122,7 @@ export function JourneyNavigationProvider({
 export function useJourneyNavigationContext() {
   const context = useContext(JourneyNavigationContext);
   if (!context) {
-    throw new Error(
-      "useJourneyNavigationContext must be used within a JourneyNavigationProvider",
-    );
+    throw new Error("useJourneyNavigationContext must be used within a JourneyNavigationProvider");
   }
   return context;
 }

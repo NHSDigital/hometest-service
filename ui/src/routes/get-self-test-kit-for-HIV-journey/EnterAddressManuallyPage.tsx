@@ -2,11 +2,12 @@
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
-import type { ValidationMessages } from "@/content/schema";
 
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
+import type { ValidationMessages } from "@/content/schema";
+import laLookupService from "@/lib/services/la-lookup-service";
+import { useContent } from "@/hooks";
 import { useState } from "react";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
@@ -14,7 +15,10 @@ const MAX_POSTCODE_LENGTH = 8;
 const MAX_ADDRESS_LINE_LENGTH = 100;
 const MAX_TOWN_LENGTH = 100;
 
-const validateAddressLine1 = (value: string, validationMessages: ValidationMessages): string | null => {
+const validateAddressLine1 = (
+  value: string,
+  validationMessages: ValidationMessages,
+): string | null => {
   if (!value || value.trim() === "") {
     return validationMessages.addressLine1.required;
   }
@@ -31,7 +35,10 @@ const validateAddressLine1 = (value: string, validationMessages: ValidationMessa
   return null;
 };
 
-const validateAddressLine2 = (value: string, validationMessages: ValidationMessages): string | null => {
+const validateAddressLine2 = (
+  value: string,
+  validationMessages: ValidationMessages,
+): string | null => {
   if (!value || value.trim() === "") {
     return null;
   }
@@ -48,7 +55,10 @@ const validateAddressLine2 = (value: string, validationMessages: ValidationMessa
   return null;
 };
 
-const validateAddressLine3 = (value: string, validationMessages: ValidationMessages): string | null => {
+const validateAddressLine3 = (
+  value: string,
+  validationMessages: ValidationMessages,
+): string | null => {
   if (!value || value.trim() === "") {
     return null;
   }
@@ -65,7 +75,10 @@ const validateAddressLine3 = (value: string, validationMessages: ValidationMessa
   return null;
 };
 
-const validateTownOrCity = (value: string, validationMessages: ValidationMessages): string | null => {
+const validateTownOrCity = (
+  value: string,
+  validationMessages: ValidationMessages,
+): string | null => {
   if (!value || value.trim() === "") {
     return validationMessages.townOrCity.required;
   }
@@ -82,7 +95,10 @@ const validateTownOrCity = (value: string, validationMessages: ValidationMessage
   return null;
 };
 
-const validatePostcode = (postcode: string, validationMessages: ValidationMessages): { valid: true; value: string } | { valid: false; message: string } => {
+const validatePostcode = (
+  postcode: string,
+  validationMessages: ValidationMessages,
+): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
     return { valid: false, message: validationMessages.postcode.required };
   }
@@ -102,24 +118,25 @@ const validatePostcode = (postcode: string, validationMessages: ValidationMessag
 
 export default function EnterAddressManuallyPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
+    useJourneyNavigationContext();
   const { commonContent, "enter-address-manually": content } = useContent();
 
-  const [addressLine1, setAddressLine1] = useState(orderAnswers.deliveryAddress?.addressLine1 || "");
-  const [addressLine2, setAddressLine2] = useState(orderAnswers.deliveryAddress?.addressLine2 || "");
-  const [addressLine3, setAddressLine3] = useState(orderAnswers.deliveryAddress?.addressLine3 || "");
+  const [addressLine1, setAddressLine1] = useState(
+    orderAnswers.deliveryAddress?.addressLine1 || "",
+  );
+  const [addressLine2, setAddressLine2] = useState(
+    orderAnswers.deliveryAddress?.addressLine2 || "",
+  );
+  const [addressLine3, setAddressLine3] = useState(
+    orderAnswers.deliveryAddress?.addressLine3 || "",
+  );
   const [townOrCity, setTownOrCity] = useState(orderAnswers.deliveryAddress?.postTown || "");
   const [postcode, setPostcode] = useState(orderAnswers.deliveryAddress?.postcode || "");
 
-  const [addressLine1Error, setAddressLine1Error] = useState<string | null>(
-    null,
-  );
-  const [addressLine2Error, setAddressLine2Error] = useState<string | null>(
-    null,
-  );
-  const [addressLine3Error, setAddressLine3Error] = useState<string | null>(
-    null,
-  );
+  const [addressLine1Error, setAddressLine1Error] = useState<string | null>(null);
+  const [addressLine2Error, setAddressLine2Error] = useState<string | null>(null);
+  const [addressLine3Error, setAddressLine3Error] = useState<string | null>(null);
   const [townOrCityError, setTownOrCityError] = useState<string | null>(null);
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
@@ -143,12 +160,21 @@ export default function EnterAddressManuallyPage() {
     setPostcode(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    const addressLine1ValidationError = validateAddressLine1(addressLine1, commonContent.validation);
-    const addressLine2ValidationError = validateAddressLine2(addressLine2, commonContent.validation);
-    const addressLine3ValidationError = validateAddressLine3(addressLine3, commonContent.validation);
+    const addressLine1ValidationError = validateAddressLine1(
+      addressLine1,
+      commonContent.validation,
+    );
+    const addressLine2ValidationError = validateAddressLine2(
+      addressLine2,
+      commonContent.validation,
+    );
+    const addressLine3ValidationError = validateAddressLine3(
+      addressLine3,
+      commonContent.validation,
+    );
     const townOrCityValidationError = validateTownOrCity(townOrCity, commonContent.validation);
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
 
@@ -156,9 +182,7 @@ export default function EnterAddressManuallyPage() {
     setAddressLine2Error(addressLine2ValidationError);
     setAddressLine3Error(addressLine3ValidationError);
     setTownOrCityError(townOrCityValidationError);
-    setPostcodeError(
-      postcodeValidation.valid ? null : postcodeValidation.message,
-    );
+    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
 
     if (
       !addressLine1ValidationError &&
@@ -167,30 +191,53 @@ export default function EnterAddressManuallyPage() {
       !townOrCityValidationError &&
       postcodeValidation.valid
     ) {
-      const updatedData = {
-        deliveryAddress: {
-          addressLine1: addressLine1.trim(),
-          addressLine2: addressLine2.trim() || undefined,
-          addressLine3: addressLine3.trim() || undefined,
-          postTown: townOrCity.trim(),
-          postcode: postcodeValidation.value,
-        },
-        addressEntryMethod: 'manual' as const,
-      };
-      updateOrderAnswers(updatedData);
+      try {
+        const postcode = postcodeValidation.value;
+        const laResponse = await laLookupService.getByPostcode(postcode);
+        if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+          updateOrderAnswers({ postcodeSearch: postcode });
+          goToStep(JourneyStepNames.KitNotAvailableInArea);
+          return;
+        }
 
-      if (returnToStep) {
-        const step = returnToStep;
-        setReturnToStep(null);
-        goToStep(step);
-      } else {
-        goToStep("how-comfortable-pricking-finger");
+        const updatedData = {
+          deliveryAddress: {
+            addressLine1: addressLine1.trim(),
+            addressLine2: addressLine2.trim() || undefined,
+            addressLine3: addressLine3.trim() || undefined,
+            postTown: townOrCity.trim(),
+            postcode: postcode,
+          },
+          addressEntryMethod: "manual" as const,
+          localAuthority: {
+            code: laResponse.localAuthority.localAuthorityCode,
+            region: laResponse.localAuthority.region,
+          },
+          supplier: laResponse.suppliers.map((supplier) => ({
+            id: supplier.id,
+            name: supplier.name,
+            testCode: supplier.testCode,
+          })),
+        };
+
+        updateOrderAnswers(updatedData);
+
+        if (returnToStep) {
+          const step = returnToStep;
+          setReturnToStep(null);
+          goToStep(step);
+        } else {
+          goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+        }
+      } catch (err) {
+        // ALPHA: Remove the console log and use proper logging pattern
+        console.error("Failed to lookup local authority:", err);
       }
     }
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -200,9 +247,7 @@ export default function EnterAddressManuallyPage() {
         }
       }}
     >
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {content.title}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       {(addressLine1Error ||
         addressLine2Error ||
@@ -278,79 +323,79 @@ export default function EnterAddressManuallyPage() {
       <form onSubmit={handleSubmit}>
         <TextInput
           id="address-line-1"
-            name="address-line-1"
-            label={content.form.addressLine1Label}
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={addressLine1}
-            onChange={handleAddressLine1Change}
-            error={addressLine1Error || undefined}
-            autoComplete="address-line1"
-          />
+          name="address-line-1"
+          label={content.form.addressLine1Label}
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={addressLine1}
+          onChange={handleAddressLine1Change}
+          error={addressLine1Error || undefined}
+          autoComplete="address-line1"
+        />
 
-          <TextInput
-            id="address-line-2"
-            name="address-line-2"
-            label={content.form.addressLine2Label}
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={addressLine2}
-            onChange={handleAddressLine2Change}
-            error={addressLine2Error || undefined}
-            autoComplete="address-line2"
-          />
+        <TextInput
+          id="address-line-2"
+          name="address-line-2"
+          label={content.form.addressLine2Label}
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={addressLine2}
+          onChange={handleAddressLine2Change}
+          error={addressLine2Error || undefined}
+          autoComplete="address-line2"
+        />
 
-          <TextInput
-            id="address-line-3"
-            name="address-line-3"
-            label={content.form.addressLine3Label}
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={addressLine3}
-            onChange={handleAddressLine3Change}
-            error={addressLine3Error || undefined}
-            autoComplete="address-line3"
-          />
+        <TextInput
+          id="address-line-3"
+          name="address-line-3"
+          label={content.form.addressLine3Label}
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={addressLine3}
+          onChange={handleAddressLine3Change}
+          error={addressLine3Error || undefined}
+          autoComplete="address-line3"
+        />
 
-          <TextInput
-            id="address-town"
-            name="address-town"
-            label={content.form.townOrCityLabel}
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            value={townOrCity}
-            onChange={handleTownOrCityChange}
-            error={townOrCityError || undefined}
-            autoComplete="address-level2"
-          />
+        <TextInput
+          id="address-town"
+          name="address-town"
+          label={content.form.townOrCityLabel}
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          value={townOrCity}
+          onChange={handleTownOrCityChange}
+          error={townOrCityError || undefined}
+          autoComplete="address-level2"
+        />
 
-          <TextInput
-            id="postcode"
-            name="postcode"
-            label={content.form.postcodeLabel}
-            labelProps={{
-              isPageHeading: false,
-              size: "s",
-            }}
-            hint={content.form.postcodeHint}
-            value={postcode}
-            onChange={handlePostcodeChange}
-            error={postcodeError || undefined}
-            autoComplete="postal-code"
-            inputMode="text"
-            spellCheck={false}
-          />
+        <TextInput
+          id="postcode"
+          name="postcode"
+          label={content.form.postcodeLabel}
+          labelProps={{
+            isPageHeading: false,
+            size: "s",
+          }}
+          hint={content.form.postcodeHint}
+          value={postcode}
+          onChange={handlePostcodeChange}
+          error={postcodeError || undefined}
+          autoComplete="postal-code"
+          inputMode="text"
+          spellCheck={false}
+        />
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

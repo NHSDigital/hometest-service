@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
-import PageLayout from "@/layouts/PageLayout";
+import { useContent } from "@/hooks";
+import { useState } from "react";
 
 export default function EnterMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
+    useJourneyNavigationContext();
   const { commonContent, "enter-mobile-phone-number": content } = useContent();
 
   const [mobileNumber, setMobileNumber] = useState(orderAnswers.mobileNumber || "");
@@ -32,7 +34,7 @@ export default function EnterMobileNumberPage() {
       setMobileNumberError(null);
       const updatedData = {
         mobileNumber: result.data,
-        mobileNumberSource: 'manual' as const,
+        mobileNumberSource: "manual" as const,
       };
       updateOrderAnswers(updatedData);
 
@@ -41,13 +43,13 @@ export default function EnterMobileNumberPage() {
         setReturnToStep(null);
         goToStep(step);
       } else {
-        goToStep("check-your-answers");
+        goToStep(JourneyStepNames.CheckYourAnswers);
       }
     }
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -57,9 +59,7 @@ export default function EnterMobileNumberPage() {
         }
       }}
     >
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {content.title}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       <p className="nhsuk-body">{content.description}</p>
 
@@ -102,6 +102,6 @@ export default function EnterMobileNumberPage() {
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }
