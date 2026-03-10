@@ -25,13 +25,12 @@ test.describe("HIV Test Order journeys - User under 18", () => {
   });
 
   test("Order test journey with address search", async ({
-    findAddressPage,
+    enterDeliveryAddressPage,
     selectDeliveryAddressPage,
     cannotUseServiceUnder18Page,
   }) => {
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    await selectDeliveryAddressPage.clickEditAddressLink();
-
+    await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
+    await selectDeliveryAddressPage.clickEditPostcodeLink();
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
@@ -41,12 +40,13 @@ test.describe("HIV Test Order journeys - User under 18", () => {
   });
 
   test("Order test journey with manual address", async ({
-    findAddressPage,
+    enterDeliveryAddressPage,
     enterAddressManuallyPage,
     cannotUseServiceUnder18Page,
   }) => {
-    await findAddressPage.clickEnterAddressManuallyLink();
-    await enterAddressManuallyPage.fillAddressAndContinue(randomAddress);
+    await enterDeliveryAddressPage.clickEnterAddressManuallyLink();
+    await enterAddressManuallyPage.fillDeliveryAddressFields(randomAddress);
+    await enterAddressManuallyPage.clickContinue();
     await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
       "You cannot use this service as you are under 18",
     );
