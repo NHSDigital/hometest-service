@@ -1,35 +1,40 @@
-import { Locator, Page } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { Locator, Page } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 export class SelectDeliveryAddressPage extends BasePage {
-  readonly editAddressLink: Locator;
-  readonly address1: Locator;
+  readonly editPostcodeLink: Locator;
   readonly continueButton: Locator;
-  readonly postCodeInput: Locator;
+  readonly enterAddressManuallyLink: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.editAddressLink = page.getByRole('link', { name: 'Edit postcode' });
-    this.address1 = page.locator('input[type="radio"][name="collection-point"]');
-    this.continueButton = page.getByRole('button', { name: 'Continue' });
-    this.postCodeInput = page.locator("#postcode-search--strong");
-  }
-
-  async clickEditAddressLink(): Promise<void> {
-    await this.editAddressLink.click();
+    this.editPostcodeLink = page.getByRole("link", { name: "Edit postcode" });
+    this.continueButton = page.getByRole("button", { name: "Continue" });
+    this.enterAddressManuallyLink = page.getByRole("link", { name: "Enter address manually" });
   }
 
   async clickContinueButton(): Promise<void> {
     await this.continueButton.click();
   }
 
-  async selectAddressAndContinue(): Promise<void> {
-    await this.address1.first().check();
-    await this.continueButton.click();
+  async clickEditPostcodeLink(): Promise<void> {
+    await this.editPostcodeLink.click();
   }
 
-  async getPostcodeValues(): Promise<{ actualPostcode: string }> {
-    const postCodeValue = (await this.postCodeInput.innerText()).trim();
-    return { actualPostcode: postCodeValue };
+  async clickEnterAddressManuallyLink(): Promise<void> {
+    await this.enterAddressManuallyLink.click();
+  }
+
+  async getNumberOfFilteredAddresses(): Promise<number> {
+    const listOfAddresses = this.page.locator("#collection-point .nhsuk-radios__item");
+    return await listOfAddresses.count();
+  }
+
+  async selectAddressAndContinue(option?: string): Promise<void> {
+    const count = await this.getNumberOfFilteredAddresses();
+    const selectedOption = option ?? String(Math.floor(Math.random() * count) + 1);
+    const addressRadioButton = this.page.locator(`#collection-point-${selectedOption}`);
+    await addressRadioButton.click();
+    await this.continueButton.click();
   }
 }

@@ -2,17 +2,17 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 
 test(
-  "Blood sample guide page",
+  "Enter delivery address page",
   {
     tag: ["@accessibility"],
   },
-  async ({ homeTestStartPage, bloodSampleGuidePage, accessibility }) => {
+  async ({ homeTestStartPage, enterDeliveryAddressPage, accessibility }) => {
     await homeTestStartPage.navigate();
-    await homeTestStartPage.clickBloodSampleGuideLink();
-    await bloodSampleGuidePage.waitUntilPageLoad();
+    await homeTestStartPage.clickStartNowButton();
+    await enterDeliveryAddressPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(
-      bloodSampleGuidePage.page,
-      "Blood Sample Guide Page",
+      enterDeliveryAddressPage.page,
+      "Enter Delivery Address Page",
     );
     expect(accessErrors).toHaveLength(0);
   },
