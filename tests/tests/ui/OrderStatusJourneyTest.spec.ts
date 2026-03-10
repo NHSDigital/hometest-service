@@ -1,9 +1,9 @@
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
-import { randomUUID } from "crypto";
+import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
+import { localUser } from "../../users";
 
 let orderId: string;
 let patientId: string;
@@ -11,26 +11,24 @@ let orderId2: string;
 let patientId2: string;
 let orderReference: number;
 const dbClient = new TestOrderDbClient();
-const resultDbClient = new TestResultDbClient();
 const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
 
-test.describe("Results Page", () => {
+test.describe("Order Status Page", () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser }) => {
       await dbClient.connect();
-      await resultDbClient.connect();
 
       const result = await dbClient.createOrderWithPatientAndStatus(
-        new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),
+        new OrderBuilder().withUser(testedUser).build(),
       );
 
       const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus(
         new OrderBuilder()
           .withNhsNumber(nhsNumber2)
           .withBirthDate(birthDate2)
-          .withStatus("COMPLETE")
+          .withSupplier("SH:24")
           .build(),
       );
 
@@ -41,33 +39,38 @@ test.describe("Results Page", () => {
 
       orderId2 = resultSecondPatient.order_uid;
       patientId2 = resultSecondPatient.patient_uid;
-
-      const correlationId = randomUUID();
-      const correlationId2 = randomUUID();
-
-      await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
-      await resultDbClient.insertStatusResult(orderId2, "RESULT_AVAILABLE", correlationId2);
+      console.log(`Created second test order with ID: ${orderId2}`);
     },
   );
 
-  test("Authenticated user opens a deep link - negative result", async ({ negativeResultPage }) => {
-    await negativeResultPage.navigateToOrderResult(orderId);
-    await expect(negativeResultPage.result).toHaveText("Negative");
-    const orderReferenceOnPage = await negativeResultPage.getOrderReference();
+  interface OrderStatus {
+    status: OrderStatusCode;
+    tag: string;
+  }
+
+  const ORDER_STATUS: OrderStatus[] = [
+    { status: "DISPATCHED", tag: "Dispatched" },
+    { status: "RECEIVED", tag: "Test received" },
+  ];
+
+  test("Authenticated user opens a deep link - Order confirmed", async ({ orderStatusPage }) => {
+    await orderStatusPage.navigateToOrder(orderId);
+    await expect(orderStatusPage.statusTag).toHaveText("Confirmed");
+    const orderReferenceOnPage = await orderStatusPage.getOrderReference();
     expect(orderReferenceOnPage).toBe(orderReference);
   });
 
-  test("Authenticated user opens a deep link - positive result", async ({
-    negativeResultPage,
-    orderStatusPage,
-  }) => {
-    await dbClient.updateOrderStatus(orderId, "RECEIVED");
-    await resultDbClient.updateResultStatus(orderId, "RESULT_WITHHELD");
-    await negativeResultPage.navigateToOrderResult(orderId);
-    await expect(orderStatusPage.statusTag).toHaveText("Test received");
-    const url = await orderStatusPage.getCurrentUrl();
-    expect(url).toContain("/tracking");
-  });
+  for (const { status, tag } of ORDER_STATUS) {
+    test(`Authenticated user opens a deep link - Order status is ${status}`, async ({
+      orderStatusPage,
+    }) => {
+      await dbClient.updateOrderStatus(orderId, status);
+      await orderStatusPage.navigateToOrder(orderId);
+      await expect(orderStatusPage.statusTag).toHaveText(tag);
+      const orderReferenceOnPage = await orderStatusPage.getOrderReference();
+      expect(orderReferenceOnPage).toBe(orderReference);
+    });
+  }
 
   test.describe("Unauthorized access", () => {
     test.use({
@@ -77,38 +80,39 @@ test.describe("Results Page", () => {
       },
     });
 
-    test("Unauthorized user opens a deep link", async ({ negativeResultPage, errorPage }) => {
-      await negativeResultPage.navigateToOrderResult(orderId2);
+    test("Unauthorized user opens a deep link", async ({ orderStatusPage, errorPage }) => {
+      await orderStatusPage.navigateToOrder(orderId2);
       await expect(errorPage.orderNotFoundMessage).toBeVisible();
-      const url = await negativeResultPage.getCurrentUrl();
-      expect(url).toContain(orderId2);
     });
 
     test("Unauthenticated user opens a deep link", async ({
-      negativeResultPage,
+      orderStatusPage,
       nhsEmailAndPasswordPage,
+      codeSecurityPage,
     }) => {
-      const context = negativeResultPage.page.context();
+      const context = orderStatusPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
-      await negativeResultPage.navigateToOrderResult(orderId);
+      await orderStatusPage.navigateToOrder(orderId);
       await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(localUser);
+      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(localUser.otp!);
+      await expect(orderStatusPage.statusTag).toHaveText("Test received");
+      const url = await orderStatusPage.getCurrentUrl();
+      expect(url).toContain(orderId);
     });
   });
 
   test.afterAll(
     "Delete result status, order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
-      await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-      await resultDbClient.deleteResultStatusByUid(orderId2);
       await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId2);
       await dbClient.deletePatientMapping(nhsNumber2, birthDate2);
       await dbClient.disconnect();
-      await resultDbClient.disconnect();
     },
   );
 });
