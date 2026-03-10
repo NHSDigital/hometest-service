@@ -11,7 +11,7 @@ export interface NavigationState {
   stepHistory: Step[];
 }
 
-interface JourneyNavigationContextType {
+export interface JourneyNavigationContextType {
   currentStep: Step;
   stepHistory: Step[];
   returnToStep: Step | null;
@@ -22,7 +22,9 @@ interface JourneyNavigationContextType {
   setReturnToStep: (step: Step | null) => void;
 }
 
-const JourneyNavigationContext = createContext<JourneyNavigationContextType | undefined>(undefined);
+export const JourneyNavigationContext = createContext<JourneyNavigationContextType | undefined>(
+  undefined,
+);
 
 export function JourneyNavigationProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();

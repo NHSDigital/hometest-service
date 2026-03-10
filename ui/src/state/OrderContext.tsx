@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-} from "react";
-import { AuthUser } from "./AuthContext";
+import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
 // Address structure
 export interface Address {
@@ -27,7 +20,7 @@ export interface OrderAnswers {
 
   // Final delivery address
   deliveryAddress?: Address;
-  addressEntryMethod?: 'postcode-search' | 'manual';
+  addressEntryMethod?: "postcode-search" | "manual";
 
   comfortableDoingTest?: string;
 
@@ -45,7 +38,7 @@ export interface OrderAnswers {
 
   // Mobile number
   mobileNumber?: string;
-  mobileNumberSource?: 'nhs-login' | 'manual';
+  mobileNumberSource?: "nhs-login" | "manual";
 
   // Consent
   consentCheckboxChecked?: boolean;
@@ -56,7 +49,7 @@ export interface OrderAnswers {
   orderReferenceNumber?: number;
 }
 
-interface CreateOrderContextType {
+export interface CreateOrderContextType {
   orderAnswers: OrderAnswers;
   updateOrderAnswers: (updates: Partial<OrderAnswers>) => void;
   reset: () => void;

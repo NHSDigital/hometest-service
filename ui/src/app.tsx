@@ -31,6 +31,7 @@ import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage"
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
+import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -165,6 +166,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.SuppliersPrivacyPolicy,
             element: <FormSuppliersPrivacyPolicyPage />,
+          },
+          {
+            path: JourneyStepNames.CannotUseServiceUnder18,
+            element: <CannotUseServiceUnder18Page />,
           },
         ],
       },

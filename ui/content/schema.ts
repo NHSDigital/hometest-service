@@ -268,6 +268,19 @@ export interface HowComfortablePrickingFingerContent {
   };
 }
 
+export interface CannotUseServiceUnder18Content {
+  title: string;
+  intro: string;
+  phoneLabel: string;
+  directionsLinkText: string;
+  findAnotherClinicLinkText: string;
+  moreOptionsHeading: string;
+  youngPeopleServicesText: string;
+  youngPeopleServicesLinkText: string;
+  learnMoreLinkText: string;
+  learnMoreLinkHref: string;
+}
+
 export interface EnterMobilePhoneNumberContent {
   title: string;
   description: string;
@@ -461,6 +474,7 @@ export interface PagesContent {
   "no-address-found": NoAddressFoundContent;
   "select-delivery-address": SelectDeliveryAddressContent;
   "how-comfortable-pricking-finger": HowComfortablePrickingFingerContent;
+  "cannot-use-service-under-18": CannotUseServiceUnder18Content;
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
