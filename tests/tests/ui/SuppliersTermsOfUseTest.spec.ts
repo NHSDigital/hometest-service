@@ -1,6 +1,7 @@
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
+import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
 let patientId: string;
@@ -13,24 +14,20 @@ test.describe("Suppliers Terms of Use Page", () => {
     async ({ testedUser }) => {
       await dbClient.connect();
 
-      const result = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: testedUser.nhsNumber!,
-        birth_date: testedUser.dob!,
-        supplier_name: "Preventx",
-        test_code: "PCR",
-        initial_status: "DISPATCHED",
-      });
+      const result = await dbClient.createOrderWithPatientAndStatus(
+        new OrderBuilder().withUser(testedUser).withStatus("DISPATCHED").build(),
+      );
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
 
-      const order2 = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: testedUser.nhsNumber!,
-        birth_date: testedUser.dob!,
-        supplier_name: "SH:24",
-        test_code: "PCR",
-        initial_status: "RECEIVED",
-      });
+      const order2 = await dbClient.createOrderWithPatientAndStatus(
+        new OrderBuilder()
+          .withUser(testedUser)
+          .withStatus("RECEIVED")
+          .withSupplier("SH:24")
+          .build(),
+      );
 
       orderId2 = order2.order_uid;
     },

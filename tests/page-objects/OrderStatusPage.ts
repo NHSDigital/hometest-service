@@ -8,6 +8,7 @@ export class OrderStatusPage extends BasePage {
   readonly statusTag: Locator;
   readonly orderedDate: Locator;
   readonly referenceNumber: Locator;
+  readonly orderReference: Locator;
   readonly suppliersTermsOfUseLink: Locator;
 
   constructor(page: Page) {
@@ -17,6 +18,7 @@ export class OrderStatusPage extends BasePage {
     this.orderedDate = page.locator('span[aria-label*="Order date"]');
     this.referenceNumber = page.locator("#reference-number");
     this.config = ConfigFactory.getConfig();
+    this.orderReference = page.getByLabel(/^Reference number:/);
     this.suppliersTermsOfUseLink = page.locator('a[href*="suppliers-terms-conditions"]');
   }
 
@@ -26,6 +28,12 @@ export class OrderStatusPage extends BasePage {
 
   async waitForOrderToLoad(): Promise<void> {
     await this.orderedDate.waitFor({ state: "visible" });
+  }
+
+  async getOrderReference(): Promise<string> {
+    const labelText = await this.orderReference.innerText();
+    const displayedNumber = labelText.replace("Reference number", "").trim();
+    return displayedNumber;
   }
 
   async clickSuppliersTermsOfUseLink(): Promise<void> {
