@@ -39,7 +39,7 @@ test.describe(
 
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
-      await enterDeliveryAddressPage.fillPostCodeAndContinue({
+      await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue({
         addressLine1: "",
         addressLine2: "",
         townCity: "",
