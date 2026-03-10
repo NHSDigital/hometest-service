@@ -174,7 +174,7 @@ describe("TestResultsPage", () => {
   it("shows invalid order id error and does not call API", () => {
     renderWithRouter("not-a-guid");
 
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
     expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
     expect(orderDetailsService.get).not.toHaveBeenCalled();

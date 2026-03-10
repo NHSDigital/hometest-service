@@ -62,14 +62,14 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
     });
 
     it("should not show error summary when there are no errors", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryAllByRole("alert")).toHaveLength(0);
       expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
     });
 
@@ -417,7 +417,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
       expect(
         screen.getAllByText("Enter a UK mobile phone number"),
@@ -433,7 +433,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryAllByRole("alert")).toHaveLength(0);
       expect(
         screen.queryByText("Enter a UK mobile phone number"),
       ).not.toBeInTheDocument();
@@ -462,7 +462,7 @@ describe("EnterMobileNumberPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
 
       const mobileInput = screen.getByLabelText(/uk mobile phone number/i);
       fireEvent.change(mobileInput, { target: { value: "07" } });

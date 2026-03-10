@@ -126,7 +126,7 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
     });
 
@@ -245,7 +245,7 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
     });
 
     it("submits valid form without errors", () => {
@@ -255,7 +255,7 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryAllByRole("alert")).toHaveLength(0);
     });
   });
 

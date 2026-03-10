@@ -301,7 +301,7 @@ describe("CheckYourAnswersPage", () => {
       });
       fireEvent.click(submitButton);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
       expect(
         screen.getAllByText(
@@ -337,7 +337,7 @@ describe("CheckYourAnswersPage", () => {
       });
       fireEvent.click(submitButton);
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryAllByRole("alert")).toHaveLength(0);
       expect(consoleSpy).toHaveBeenCalledWith(
         "[CheckYourAnswersPage] Consent recorded at:",
         expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),

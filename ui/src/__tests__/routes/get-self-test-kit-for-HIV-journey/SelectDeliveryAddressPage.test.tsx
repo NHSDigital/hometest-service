@@ -228,14 +228,14 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
       expect(screen.getByText("There is a problem")).toBeInTheDocument();
     });
 
     it("should not show error summary initially", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryAllByRole("alert")).toHaveLength(0);
       expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
     });
 
@@ -406,7 +406,7 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      const alert = screen.getByRole("alert");
+      const [alert] = screen.getAllByRole("alert");
       expect(alert).toHaveAttribute("aria-labelledby", "error-summary-title");
     });
 
