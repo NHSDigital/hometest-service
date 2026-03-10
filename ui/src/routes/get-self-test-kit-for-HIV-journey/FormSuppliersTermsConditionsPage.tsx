@@ -2,7 +2,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import { SuppliersTermsConditionsContent } from "@/components/SuppliersTermsConditionsContent";
+import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
 
 export default function FormSuppliersTermsConditionsPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
@@ -20,7 +20,7 @@ export default function FormSuppliersTermsConditionsPage() {
         }
       }}
     >
-      <SuppliersTermsConditionsContent supplier={supplier} />
+      <SupplierLegalDocumentContent supplier={supplier} documentType="terms" />
     </FormPageLayout>
   );
 }

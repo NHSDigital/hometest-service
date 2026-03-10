@@ -2,6 +2,7 @@
 
 import {
   AddressResult,
+  useAuth,
   useCreateOrderContext,
   useJourneyNavigationContext,
   usePostcodeLookup,
@@ -13,6 +14,7 @@ import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent } from "@/hooks";
 import { useState } from "react";
+import { isUnder18 } from "@/lib/utils/is-under-18";
 
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
@@ -24,8 +26,11 @@ export default function SelectDeliveryAddressPage() {
     orderAnswers.selectedAddressId || "",
   );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
+
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
@@ -38,26 +43,17 @@ export default function SelectDeliveryAddressPage() {
     const selected: AddressResult | undefined = addresses.find(
       (addr) => addr.id === selectedAddress,
     );
+
     if (!selected) return;
 
     try {
-      const postcode = orderAnswers.postcodeSearch;
-
-      if (!postcode) {
-        console.error("[SelectDeliveryAddressPage] Missing postcode in journey context.");
-
-        // ALPHA: ToDo error screen thrown here:
-        return null;
-      }
-
+      const postcode = selected.postcode;
       const laResponse = await laLookupService.getByPostcode(postcode);
-
       if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
-        console.warn("LA lookup returned null or incomplete data", laResponse);
-        // ALPHA: ToDo error screen thrown here:
-        return null;
+        updateOrderAnswers({ postcodeSearch: postcode });
+        goToStep(JourneyStepNames.KitNotAvailableInArea);
+        return;
       }
-      console.log("Eligibility lookup response:", laResponse);
 
       updateOrderAnswers({
         deliveryAddress: {
@@ -65,7 +61,7 @@ export default function SelectDeliveryAddressPage() {
           addressLine2: selected.line2,
           addressLine3: selected.line3,
           postTown: selected.town,
-          postcode: selected.postcode,
+          postcode: postcode,
         },
         addressEntryMethod: "postcode-search",
         selectedAddressId: selected.id,
@@ -80,12 +76,18 @@ export default function SelectDeliveryAddressPage() {
         })),
       });
 
+      if (isUnder18User) {
+        goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+        return;
+      }
+
       if (returnToStep) {
         const step = returnToStep;
         setReturnToStep(null);
         goToStep(step);
       } else {
-        goToStep("how-comfortable-pricking-finger");
+        goToStep(JourneyStepNames.HowComfortablePrickingFinger);
       }
     } catch (err) {
       // ALPHA: Remove the console log and use proper logging pattern
@@ -108,7 +110,7 @@ export default function SelectDeliveryAddressPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("enter-delivery-address");
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
         }
       }}
     >
@@ -178,7 +180,7 @@ export default function SelectDeliveryAddressPage() {
 
       <p className="nhsuk-body">
         <a
-          href="enter-address-manually"
+          href={JourneyStepNames.EnterAddressManually}
           onClick={(e) => {
             e.preventDefault();
             goToStep(JourneyStepNames.EnterAddressManually);

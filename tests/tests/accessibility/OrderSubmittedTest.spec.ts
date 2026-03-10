@@ -11,22 +11,21 @@ test(
   },
   async ({
     homeTestStartPage,
-    findAddressPage,
+    enterDeliveryAddressPage,
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
-    confirmAndUpdateMobileNumberPage,
+    confirmMobileNumberPage,
     checkYourAnswersPage,
     orderSubmittedPage,
     accessibility,
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-    await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-    await confirmAndUpdateMobileNumberPage.clickContinue();
-    await checkYourAnswersPage.selectConsentCheckbox();
+    await confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
+    await checkYourAnswersPage.checkConsentCheckbox();
     await checkYourAnswersPage.clickSubmitOrder();
     await orderSubmittedPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(

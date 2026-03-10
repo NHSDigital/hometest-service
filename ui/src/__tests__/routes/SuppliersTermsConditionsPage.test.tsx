@@ -6,8 +6,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import SuppliersTermsConditionsPage from "@/routes/SuppliersTermsConditionsPage";
 
 const mockNavigate = jest.fn();
-const mockSuppliersTermsConditionsContent = jest.fn(
-  ({ supplier }: { supplier?: string | null }) => (
+const mockSupplierLegalDocumentContent = jest.fn(
+  ({ supplier }: { supplier?: string | null; documentType: "terms" | "privacy" }) => (
     <div data-testid="suppliers-terms-content">Supplier: {supplier ?? "missing"}</div>
   ),
 );
@@ -36,9 +36,11 @@ jest.mock("@/layouts/PageLayout", () => ({
   ),
 }));
 
-jest.mock("@/components/SuppliersTermsConditionsContent", () => ({
-  SuppliersTermsConditionsContent: (props: { supplier?: string | null }) =>
-    mockSuppliersTermsConditionsContent(props),
+jest.mock("@/components/SupplierLegalDocumentContent", () => ({
+  SupplierLegalDocumentContent: (props: {
+    supplier?: string | null;
+    documentType: "terms" | "privacy";
+  }) => mockSupplierLegalDocumentContent(props),
 }));
 
 const renderAt = (url: string) => {
@@ -60,14 +62,20 @@ describe("SuppliersTermsConditionsPage", () => {
     renderAt("/suppliers-terms-conditions?supplier=SH:24");
 
     expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: SH:24");
-    expect(mockSuppliersTermsConditionsContent).toHaveBeenCalledWith({ supplier: "SH:24" });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: "SH:24",
+      documentType: "terms",
+    });
   });
 
   it("passes null supplier when query param is missing", () => {
     renderAt("/suppliers-terms-conditions");
 
     expect(screen.getByTestId("suppliers-terms-content")).toHaveTextContent("Supplier: missing");
-    expect(mockSuppliersTermsConditionsContent).toHaveBeenCalledWith({ supplier: null });
+    expect(mockSupplierLegalDocumentContent).toHaveBeenCalledWith({
+      supplier: null,
+      documentType: "terms",
+    });
   });
 
   it("navigates back when back action is triggered", () => {

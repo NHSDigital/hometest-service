@@ -411,7 +411,7 @@ module "get_order_lambda" {
   api_gateway_id                = aws_api_gateway_rest_api.api.id
   api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
   api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "order"
+  api_path                      = "get-order"
   http_method                   = "GET"
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
@@ -506,6 +506,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.order_service_lambda,
     module.session_lambda,
     module.order_status_lambda,
+    module.postcode_lookup_lambda
   ]
 
   triggers = {
@@ -518,6 +519,7 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.order_service_lambda,
       module.session_lambda,
       module.order_status_lambda,
+      module.postcode_lookup_lambda
     ]))
   }
 

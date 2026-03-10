@@ -3,6 +3,7 @@ import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { randomUUID } from "crypto";
+import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
 let patientId: string;
@@ -14,28 +15,24 @@ const resultDbClient = new TestResultDbClient();
 const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
 
-test.describe("Results Page", () => {
+test.describe("Results Page", { tag: "@ui" }, () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser }) => {
       await dbClient.connect();
       await resultDbClient.connect();
 
-      const result = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: testedUser.nhsNumber!,
-        birth_date: testedUser.dob!,
-        supplier_name: "Preventx",
-        test_code: "PCR",
-        initial_status: "COMPLETE",
-      });
+      const result = await dbClient.createOrderWithPatientAndStatus(
+        new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),
+      );
 
-      const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus({
-        nhs_number: nhsNumber2,
-        birth_date: birthDate2,
-        supplier_name: "Preventx",
-        test_code: "PCR",
-        initial_status: "COMPLETE",
-      });
+      const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus(
+        new OrderBuilder()
+          .withNhsNumber(nhsNumber2)
+          .withBirthDate(birthDate2)
+          .withStatus("COMPLETE")
+          .build(),
+      );
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
