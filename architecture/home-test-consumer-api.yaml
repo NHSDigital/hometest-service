@@ -102,6 +102,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+  /get-order:
     get:
       summary: Retrieve Orders
       description: Retrieve orders for a patient by NHS number, optionally filtered by order ID
