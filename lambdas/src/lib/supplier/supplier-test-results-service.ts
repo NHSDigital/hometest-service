@@ -23,37 +23,29 @@ export class SupplierTestResultsService {
     supplierId: string,
     correlationId: string,
   ): Promise<Bundle<Observation>> {
-    const serviceConfig =
-      await this.supplierDb.getSupplierConfigBySupplierId(supplierId);
+    const serviceConfig = await this.supplierDb.getSupplierConfigBySupplierId(supplierId);
 
     if (!serviceConfig) {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const supplierAuthClient = new OAuthSupplierAuthClient(
+    const supplierAuthClient = OAuthSupplierAuthClient.fromSupplierConfig(
       this.httpClient,
       this.secretsClient,
-      serviceConfig.serviceUrl,
-      serviceConfig.oauthTokenPath,
-      serviceConfig.clientId,
-      serviceConfig.clientSecretName,
-      serviceConfig.oauthScope,
+      serviceConfig,
     );
 
     const accessToken = await supplierAuthClient.getAccessToken();
 
-    const resultsUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}/results`;
+    const resultsUrl = `${serviceConfig.serviceUrl}${serviceConfig.resultsPath}`;
     const url = new URL(resultsUrl);
     url.searchParams.append("order_uid", orderId);
 
-    const response = await this.httpClient.get<Bundle<Observation>>(
-      url.toString(),
-      {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/fhir+json",
-        "X-Correlation-ID": correlationId,
-      },
-    );
+    const response = await this.httpClient.get<Bundle<Observation>>(url.toString(), {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/fhir+json",
+      "X-Correlation-ID": correlationId,
+    });
 
     return response;
   }
