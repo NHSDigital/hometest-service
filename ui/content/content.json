@@ -170,6 +170,10 @@
       "description": "There are other options to get an HIV test.",
       "moreOptionsHeading": "More options and information"
     },
+    "go-to-clinic": {
+      "title": "Contact your nearest sexual health clinic",
+      "moreOptionsHeading": "More options and information"
+    },
     "enter-delivery-address": {
       "title": "Enter your delivery address and we'll check if the kit's available",
       "form": {
