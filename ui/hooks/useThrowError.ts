@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 export function useThrowError() {
   const [error, setError] = useState<unknown>(null);
@@ -7,7 +7,7 @@ export function useThrowError() {
     throw error;
   }
 
-  return (nextError: unknown) => {
+  return useCallback((nextError: unknown) => {
     setError(() => nextError);
-  };
+  }, []);
 }
