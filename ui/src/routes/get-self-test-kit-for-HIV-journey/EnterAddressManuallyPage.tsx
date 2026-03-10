@@ -196,12 +196,6 @@ export default function EnterAddressManuallyPage() {
       !townOrCityValidationError &&
       postcodeValidation.valid
     ) {
-      if (isUnder18User) {
-        goToStep(JourneyStepNames.CannotUseServiceUnder18);
-
-        return;
-      }
-
       try {
         const postcode = postcodeValidation.value;
         const laResponse = await laLookupService.getByPostcode(postcode);
@@ -233,6 +227,12 @@ export default function EnterAddressManuallyPage() {
 
         console.log("[EnterAddressManuallyPage] Saving to context:", updatedData);
         updateOrderAnswers(updatedData);
+
+        if (isUnder18User) {
+          goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+          return;
+        }
 
         if (returnToStep) {
           const step = returnToStep;

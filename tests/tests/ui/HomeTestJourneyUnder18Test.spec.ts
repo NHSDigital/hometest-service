@@ -37,6 +37,7 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
       "You cannot use this service as you are under 18",
     );
+    await cannotUseServiceUnder18Page.expectPostcodeInFindAnotherClinicLink(randomAddress.postCode);
   });
 
   test("Order test journey with manual address", async ({
@@ -49,5 +50,6 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
       "You cannot use this service as you are under 18",
     );
+    await cannotUseServiceUnder18Page.expectPostcodeInFindAnotherClinicLink(randomAddress.postCode);
   });
 });

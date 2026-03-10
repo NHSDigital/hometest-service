@@ -46,12 +46,6 @@ export default function SelectDeliveryAddressPage() {
 
     if (!selected) return;
 
-    if (isUnder18User) {
-      goToStep(JourneyStepNames.CannotUseServiceUnder18);
-
-      return;
-    }
-
     try {
       const postcode = selected.postcode;
       const laResponse = await laLookupService.getByPostcode(postcode);
@@ -81,6 +75,12 @@ export default function SelectDeliveryAddressPage() {
           testCode: supplier.testCode,
         })),
       });
+
+      if (isUnder18User) {
+        goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+        return;
+      }
 
       if (returnToStep) {
         const step = returnToStep;
