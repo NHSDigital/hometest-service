@@ -55,9 +55,10 @@ test.describe("Suppliers Privacy Policy Page", () => {
   }
 
   test.afterAll(
-    "Delete result status, order status, order, and patient records from the database and disconnect",
+    "Delete order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
       await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.disconnect();
