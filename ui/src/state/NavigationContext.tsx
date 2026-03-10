@@ -1,7 +1,5 @@
 "use client";
 
-// TODO: remove console.logs
-
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -13,7 +11,7 @@ export interface NavigationState {
   stepHistory: Step[];
 }
 
-interface JourneyNavigationContextType {
+export interface JourneyNavigationContextType {
   currentStep: Step;
   stepHistory: Step[];
   returnToStep: Step | null;
@@ -24,7 +22,9 @@ interface JourneyNavigationContextType {
   setReturnToStep: (step: Step | null) => void;
 }
 
-const JourneyNavigationContext = createContext<JourneyNavigationContextType | undefined>(undefined);
+export const JourneyNavigationContext = createContext<JourneyNavigationContextType | undefined>(
+  undefined,
+);
 
 export function JourneyNavigationProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -63,19 +63,11 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
       stepHistory: newHistory,
       lastStep: currentStep,
     });
-
-    console.log(
-      "[JourneyNavigationProvider] Step changed to:",
-      currentStep,
-      "History:",
-      newHistory,
-    );
   }
 
   const goToStep = useCallback(
-    (step: Step) => {
-      console.log("[JourneyNavigationProvider] Going to step:", step);
-
+    (step: string) => {
+      // Build journey-specific path
       const targetPath =
         step === RoutePath.GetSelfTestKitPage
           ? RoutePath.GetSelfTestKitPage
@@ -87,14 +79,9 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
   );
 
   const goBack = useCallback(() => {
-    console.log("[JourneyNavigationProvider] Going back from:", currentStep);
-    console.log("[JourneyNavigationProvider] Current history:", stepHistory);
-
     if (stepHistory.length > 1) {
       const newHistory = stepHistory.slice(0, -1);
       const previousStep = newHistory[newHistory.length - 1];
-
-      console.log("[JourneyNavigationProvider] Going back to:", previousStep);
 
       setNavigation({
         stepHistory: newHistory,
@@ -110,7 +97,6 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
   }, [stepHistory.length]);
 
   const clearHistory = useCallback(() => {
-    console.log("[JourneyNavigationProvider] Clearing history");
     setNavigation({
       stepHistory: [currentStep],
       lastStep: currentStep,

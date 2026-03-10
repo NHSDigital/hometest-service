@@ -1,18 +1,18 @@
-import { expect } from '@playwright/test';
-import { test } from '../../fixtures/CombinedTestFixture';
+import { expect } from "@playwright/test";
+import { test } from "../../fixtures/CombinedTestFixture";
 
 test(
-  'Home test start page',
+  "Home test start page",
   {
-    tag: ['@accessibility']
+    tag: ["@accessibility"],
   },
   async ({ homeTestStartPage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(
       homeTestStartPage,
-      'Home Test Start Page'
+      "Home Test Start Page",
     );
     expect(accessErrors).toHaveLength(0);
-  }
+  },
 );

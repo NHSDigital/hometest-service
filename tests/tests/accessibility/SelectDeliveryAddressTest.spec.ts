@@ -11,13 +11,13 @@ test(
   },
   async ({
     homeTestStartPage,
-    findAddressPage,
+    enterDeliveryAddressPage,
     selectDeliveryAddressPage,
     accessibility,
   }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+    await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(
       selectDeliveryAddressPage.page,

@@ -1,5 +1,6 @@
 import { HttpClient } from "../http/http-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
+import type { SupplierConfig } from "../db/supplier-db";
 
 interface OAuthTokenResponse {
   access_token: string;
@@ -17,16 +18,30 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
     private readonly httpClient: HttpClient,
     private readonly secretsClient: SecretsClient,
     private readonly baseUrl: string,
-    private readonly tokenPath: string = "/oauth/token",
+    private readonly tokenPath: string,
     private readonly clientId: string,
     private readonly secretName: string,
-    private readonly scope: string = "orders results",
+    private readonly scope: string,
   ) {}
 
-  async getAccessToken(): Promise<string> {
-    const clientSecret = await this.secretsClient.getSecretValue(
-      this.secretName,
+  static fromSupplierConfig(
+    httpClient: HttpClient,
+    secretsClient: SecretsClient,
+    supplierConfig: SupplierConfig,
+  ): OAuthSupplierAuthClient {
+    return new OAuthSupplierAuthClient(
+      httpClient,
+      secretsClient,
+      supplierConfig.serviceUrl,
+      supplierConfig.oauthTokenPath,
+      supplierConfig.clientId,
+      supplierConfig.clientSecretName,
+      supplierConfig.oauthScope,
     );
+  }
+
+  async getAccessToken(): Promise<string> {
+    const clientSecret = await this.secretsClient.getSecretValue(this.secretName);
 
     const tokenUrl = `${this.baseUrl.replace(/\/$/, "")}${this.tokenPath}`;
     const formBody = new URLSearchParams({

@@ -31,7 +31,7 @@ test.describe(
 
     test("should include postcode in Find another sexual health clinic link", async ({
       homeTestStartPage,
-      findAddressPage,
+      enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       kitNotAvailableInYourAreaPage,
     }) => {
@@ -39,7 +39,7 @@ test.describe(
 
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
-      await findAddressPage.fillPostCodeAndContinue({
+      await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue({
         addressLine1: "",
         addressLine2: "",
         townCity: "",

@@ -46,9 +46,6 @@ export default function CallbackPage() {
     const code = params.get("code");
     const stateParam = params.get("state");
 
-    console.log("Params:", params.toString());
-    console.log("Authorization code:", code);
-
     if (!code) return;
 
     let returnTo: string | null = null;

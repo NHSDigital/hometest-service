@@ -2,6 +2,7 @@
 
 import {
   AddressResult,
+  useAuth,
   useCreateOrderContext,
   useJourneyNavigationContext,
   usePostcodeLookup,
@@ -12,6 +13,7 @@ import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useState } from "react";
+import { isUnder18 } from "@/lib/utils/is-under-18";
 
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
@@ -23,6 +25,9 @@ export default function SelectDeliveryAddressPage() {
     orderAnswers.selectedAddressId || "",
   );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
   const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,26 +42,22 @@ export default function SelectDeliveryAddressPage() {
     const selected: AddressResult | undefined = addresses.find(
       (addr) => addr.id === selectedAddress,
     );
+
     if (!selected) return;
 
     const postcode = orderAnswers.postcodeSearch;
 
     if (!postcode) {
-      console.error("Missing postcode in journey context.");
-
       throw new Error("Postcode is required for address selection.");
     }
 
     const laResponse = await laLookupService.getByPostcode(postcode);
 
     if (!laResponse?.suppliers?.length) {
-      console.warn("LA lookup returned null or incomplete data", laResponse);
-
       updateOrderAnswers({ postcodeSearch: postcode });
       goToStep(JourneyStepNames.KitNotAvailableInArea);
       return;
     }
-    console.log("Eligibility lookup response:", laResponse);
 
     updateOrderAnswers({
       deliveryAddress: {
@@ -78,6 +79,12 @@ export default function SelectDeliveryAddressPage() {
         testCode: supplier.testCode,
       })),
     });
+
+    if (isUnder18User) {
+      goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+      return;
+    }
 
     if (returnToStep) {
       const step = returnToStep;

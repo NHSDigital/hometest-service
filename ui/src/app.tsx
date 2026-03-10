@@ -18,6 +18,7 @@ import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import JourneyLayout from "./layouts/JourneyLayout";
 import KitNotAvailableInAreaPage from "./routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
+import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
@@ -31,6 +32,7 @@ import { requireAuth } from "@/lib/auth/requireAuth";
 import { setBodyClassName } from "./js/setClassName";
 import ServiceErrorPage from "./routes/ServiceErrorPage";
 import ErrorRedirect from "./components/ErrorRedirect";
+import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -123,6 +125,10 @@ const router = createBrowserRouter([
             element: <KitNotAvailableInAreaPage />,
           },
           {
+            path: JourneyStepNames.GoToClinic,
+            element: <GoToClinicPage />,
+          },
+          {
             path: JourneyStepNames.SelectDeliveryAddress,
             element: <SelectDeliveryAddressPage />,
           },
@@ -157,6 +163,10 @@ const router = createBrowserRouter([
           {
             path: JourneyStepNames.SuppliersPrivacyPolicy,
             element: <FormSuppliersPrivacyPolicyPage />,
+          },
+          {
+            path: JourneyStepNames.CannotUseServiceUnder18,
+            element: <CannotUseServiceUnder18Page />,
           },
         ],
       },

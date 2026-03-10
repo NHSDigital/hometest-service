@@ -10,29 +10,24 @@ test.describe("Home test E2E tests", () => {
     { tag: ["@ui", "@e2e"] },
     async ({
       homeTestStartPage,
-      findAddressPage,
+      enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
-      confirmAndUpdateMobileNumberPage,
+      confirmMobileNumberPage,
       checkYourAnswersPage,
       orderSubmittedPage,
     }) => {
       await homeTestStartPage.navigate();
       await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
       await homeTestStartPage.clickStartNowButton();
-
-      await findAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
+      await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await expect(homeTestStartPage.headerText).toHaveText(
         "This is what you'll need to do to give a blood sample",
       );
-
       await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
-
-      await confirmAndUpdateMobileNumberPage.selectConfirmMobileNumber();
-      await confirmAndUpdateMobileNumberPage.clickContinue();
-
-      await checkYourAnswersPage.selectConsentCheckbox();
+      await confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
+      await checkYourAnswersPage.checkConsentCheckbox();
       await checkYourAnswersPage.clickSubmitOrder();
       await expect(orderSubmittedPage.headerText).toHaveText("Order submitted");
     },

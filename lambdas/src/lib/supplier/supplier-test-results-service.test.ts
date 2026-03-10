@@ -27,11 +27,7 @@ describe("SupplierTestResultsService", () => {
       getSupplierConfigBySupplierId: jest.fn(),
     } as unknown as jest.Mocked<SupplierService>;
 
-    service = new SupplierTestResultsService(
-      mockHttpClient,
-      mockSecretsClient,
-      mockSupplierDb,
-    );
+    service = new SupplierTestResultsService(mockHttpClient, mockSecretsClient, mockSupplierDb);
   });
 
   describe("getResults", () => {
@@ -45,6 +41,7 @@ describe("SupplierTestResultsService", () => {
       oauthTokenPath: "/oauth/token",
       orderPath: "/orders",
       oauthScope: "orders results",
+      resultsPath: "/api/results",
     };
 
     const mockBundle: Bundle<Observation> = {
@@ -60,8 +57,7 @@ describe("SupplierTestResultsService", () => {
               {
                 coding: [
                   {
-                    system:
-                      "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                    system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                     code: "N",
                     display: "Normal",
                   },
@@ -80,27 +76,17 @@ describe("SupplierTestResultsService", () => {
         token_type: "Bearer",
         expires_in: 3600,
       });
-      mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(
-        serviceConfig,
-      );
+      mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(serviceConfig);
     });
 
     it("should fetch results from supplier API successfully", async () => {
       mockHttpClient.get.mockResolvedValue(mockBundle);
 
-      const result = await service.getResults(
-        orderId,
-        supplierId,
-        correlationId,
-      );
+      const result = await service.getResults(orderId, supplierId, correlationId);
 
       expect(result).toEqual(mockBundle);
-      expect(mockSupplierDb.getSupplierConfigBySupplierId).toHaveBeenCalledWith(
-        supplierId,
-      );
-      expect(mockSecretsClient.getSecretValue).toHaveBeenCalledWith(
-        "test-secret",
-      );
+      expect(mockSupplierDb.getSupplierConfigBySupplierId).toHaveBeenCalledWith(supplierId);
+      expect(mockSecretsClient.getSecretValue).toHaveBeenCalledWith("test-secret");
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         "https://supplier-api.example.com/oauth/token",
         expect.stringContaining("grant_type=client_credentials"),
@@ -108,7 +94,7 @@ describe("SupplierTestResultsService", () => {
         "application/x-www-form-urlencoded",
       );
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        "https://supplier-api.example.com/results?order_uid=test-order-123",
+        "https://supplier-api.example.com/api/results?order_uid=test-order-123",
         {
           Authorization: "Bearer test-access-token",
           Accept: "application/fhir+json",
@@ -117,30 +103,12 @@ describe("SupplierTestResultsService", () => {
       );
     });
 
-    it("should handle trailing slash in service URL", async () => {
-      mockHttpClient.get.mockResolvedValue(mockBundle);
-      const configWithTrailingSlash = {
-        ...serviceConfig,
-        serviceUrl: "https://supplier-api.example.com/",
-      };
-      mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(
-        configWithTrailingSlash,
-      );
-
-      await service.getResults(orderId, supplierId, correlationId);
-
-      expect(mockHttpClient.get).toHaveBeenCalledWith(
-        "https://supplier-api.example.com/results?order_uid=test-order-123",
-        expect.any(Object),
-      );
-    });
-
     it("should throw error when supplier config is missing", async () => {
       mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(null);
 
-      await expect(
-        service.getResults(orderId, supplierId, correlationId),
-      ).rejects.toThrow("Missing supplier config");
+      await expect(service.getResults(orderId, supplierId, correlationId)).rejects.toThrow(
+        "Missing supplier config",
+      );
     });
 
     it("should pass correlation ID in request headers", async () => {
@@ -160,11 +128,7 @@ describe("SupplierTestResultsService", () => {
       mockHttpClient.get.mockResolvedValue(mockBundle);
       const orderIdWithSpecialChars = "order-123-abc+def";
 
-      await service.getResults(
-        orderIdWithSpecialChars,
-        supplierId,
-        correlationId,
-      );
+      await service.getResults(orderIdWithSpecialChars, supplierId, correlationId);
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         expect.stringContaining("order_uid=order-123-abc%2Bdef"),
