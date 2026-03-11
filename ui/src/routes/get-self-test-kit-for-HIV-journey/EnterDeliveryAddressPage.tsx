@@ -133,32 +133,30 @@ export default function EnterDeliveryAddressPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              {postcodeError && (
-                <ErrorSummary.Item
-                  href="#postcode"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("postcode")?.focus();
-                  }}
-                >
-                  {postcodeError}
-                </ErrorSummary.Item>
-              )}
-              {buildingNameError && (
-                <ErrorSummary.Item
-                  href="#building-number-or-name"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("building-number-or-name")?.focus();
-                  }}
-                >
-                  {buildingNameError}
-                </ErrorSummary.Item>
-              )}
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            {postcodeError && (
+              <ErrorSummary.ListItem
+                href="#postcode"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("postcode")?.focus();
+                }}
+              >
+                {postcodeError}
+              </ErrorSummary.ListItem>
+            )}
+            {buildingNameError && (
+              <ErrorSummary.ListItem
+                href="#building-number-or-name"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("building-number-or-name")?.focus();
+                }}
+              >
+                {buildingNameError}
+              </ErrorSummary.ListItem>
+            )}
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 

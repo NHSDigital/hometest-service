@@ -314,8 +314,11 @@ describe("CheckYourAnswersPage", () => {
       submitForm();
 
       await waitFor(() => {
-        expect(screen.getByRole("alert")).toBeInTheDocument();
-        expect(screen.getByText("There is a problem")).toBeInTheDocument();
+        const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+        const errorSummary = errorSummaryHeading.closest(
+          '[role="alert"][aria-labelledby="error-summary-title"]',
+        );
+        expect(errorSummary).toBeInTheDocument();
         expect(
           screen.getAllByText(
             "Select if you agree to our partner's terms and conditions and privacy policy",

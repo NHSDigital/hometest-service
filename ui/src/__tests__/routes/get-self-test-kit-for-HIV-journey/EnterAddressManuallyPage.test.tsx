@@ -122,8 +122,11 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("links to town field and focuses it", () => {
@@ -241,7 +244,11 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("submits valid form without errors", () => {
@@ -251,7 +258,9 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
     });
   });
 

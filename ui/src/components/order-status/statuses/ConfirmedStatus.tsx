@@ -7,21 +7,14 @@ interface ConfirmedStatusProps {
   supplier: string;
 }
 
-export function ConfirmedStatus({
-  maxDeliveryDays,
-  supplier,
-}: ConfirmedStatusProps) {
+export function ConfirmedStatus({ maxDeliveryDays, supplier }: ConfirmedStatusProps) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.statuses.confirmed;
   const maxDays = maxDeliveryDays || 5;
 
   return (
     <>
-      <Tag
-        id="order-status-tag"
-        color="purple"
-        aria-label={`Order status: ${content.tag}`}
-      >
+      <Tag id="order-status-tag" modifier="purple" aria-label={`Order status: ${content.tag}`}>
         {content.tag}
       </Tag>
       <h2 className="nhsuk-heading-m">{content.heading}</h2>

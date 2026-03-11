@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import CallbackPage from "./routes/CallbackPage";
+import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
 import EnterAddressManuallyPage from "./routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
@@ -13,12 +14,12 @@ import EnterMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/En
 import FormSuppliersPrivacyPolicyPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersPrivacyPolicyPage";
 import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
+import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import HomePage from "./routes/HomePage";
 import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import JourneyLayout from "./layouts/JourneyLayout";
 import KitNotAvailableInAreaPage from "./routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
-import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import LoginPage from "./routes/LoginPage";
 import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
@@ -29,10 +30,8 @@ import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
 import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import { requireAuth } from "@/lib/auth/requireAuth";
-import { setBodyClassName } from "./js/setClassName";
 import ServiceErrorPage from "./routes/ServiceErrorPage";
 import ErrorRedirect from "./components/ErrorRedirect";
-import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -173,8 +172,6 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-
-setBodyClassName();
 
 function App() {
   return (
