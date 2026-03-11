@@ -165,7 +165,8 @@ describe("OrderTrackingPage", () => {
         renderWithRouter(orderId);
       });
 
-      const errorAlert = await screen.findByRole("alert");
+      const errorHeading = await screen.findByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
       expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
@@ -178,7 +179,8 @@ describe("OrderTrackingPage", () => {
         renderWithRouter(orderId);
       });
 
-      const errorAlert = await screen.findByRole("alert");
+      const errorHeading = await screen.findByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
     });
@@ -190,7 +192,7 @@ describe("OrderTrackingPage", () => {
         renderWithRouter(orderId);
       });
 
-      await screen.findByRole("alert");
+      await screen.findAllByRole("alert");
 
       expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
       expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
@@ -234,7 +236,8 @@ describe("OrderTrackingPage", () => {
 
       renderWithRouter(invalidOrderId);
 
-      const errorAlert = screen.getByRole("alert");
+      const errorHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
       expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
@@ -248,7 +251,8 @@ describe("OrderTrackingPage", () => {
 
       renderWithRouter(malformedGuid);
 
-      const errorAlert = screen.getByRole("alert");
+      const errorHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorAlert = errorHeading.closest('[role="alert"]');
       expect(errorAlert).toBeInTheDocument();
       expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
       expect(orderDetailsService.get).not.toHaveBeenCalled();
