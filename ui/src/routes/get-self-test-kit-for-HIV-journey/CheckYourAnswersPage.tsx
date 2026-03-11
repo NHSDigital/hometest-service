@@ -15,6 +15,7 @@ function formatAddress(address: {
   addressLine1?: string;
   addressLine2?: string;
   addressLine3?: string;
+  addressLine4?: string;
   postTown?: string;
   postcode?: string;
 }): string[] {
@@ -22,6 +23,7 @@ function formatAddress(address: {
     address.addressLine1,
     address.addressLine2,
     address.addressLine3,
+    address.addressLine4,
     address.postTown,
     address.postcode,
   ].filter((line): line is string => Boolean(line));

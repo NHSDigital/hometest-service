@@ -45,27 +45,21 @@ export default function SelectDeliveryAddressPage() {
 
     if (!selected) return;
 
-    const postcode = orderAnswers.postcodeSearch;
-
-    if (!postcode) {
-      throw new Error("Postcode is required for address selection.");
-    }
-
+    const postcode = selected.postcode;
     const laResponse = await laLookupService.getByPostcode(postcode);
-
-    if (!laResponse?.suppliers?.length) {
+    if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
       updateOrderAnswers({ postcodeSearch: postcode });
       goToStep(JourneyStepNames.KitNotAvailableInArea);
       return;
     }
-
     updateOrderAnswers({
       deliveryAddress: {
         addressLine1: selected.line1,
         addressLine2: selected.line2,
         addressLine3: selected.line3,
+        addressLine4: selected.line4,
         postTown: selected.town,
-        postcode: selected.postcode,
+        postcode: postcode,
       },
       addressEntryMethod: "postcode-search",
       selectedAddressId: selected.id,
@@ -79,6 +73,10 @@ export default function SelectDeliveryAddressPage() {
         testCode: supplier.testCode,
       })),
     });
+
+    if (!postcode) {
+      throw new Error("Postcode is required for address selection.");
+    }
 
     if (isUnder18User) {
       goToStep(JourneyStepNames.CannotUseServiceUnder18);
