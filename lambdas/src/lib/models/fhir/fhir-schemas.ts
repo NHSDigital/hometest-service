@@ -54,7 +54,7 @@ export const FHIRContainedPatientSchema = z.object({
     .optional(),
 });
 
-const FHIRIdentifierSchema = z.object({
+export const FHIRIdentifierSchema = z.object({
   system: z.string().optional(),
   value: z.string(),
   use: z.enum(["usual", "official", "temp", "secondary", "old"]).optional(),

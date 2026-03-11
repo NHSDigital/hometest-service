@@ -1,14 +1,6 @@
 "use client";
 
-// TODO: remove console.logs
-
-import {
-  ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-} from "react";
+import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
 // Address structure
 export interface Address {
@@ -29,7 +21,7 @@ export interface OrderAnswers {
 
   // Final delivery address
   deliveryAddress?: Address;
-  addressEntryMethod?: 'postcode-search' | 'manual';
+  addressEntryMethod?: "postcode-search" | "manual";
 
   comfortableDoingTest?: string;
 
@@ -47,9 +39,10 @@ export interface OrderAnswers {
 
   // Mobile number
   mobileNumber?: string;
-  mobileNumberSource?: 'nhs-login' | 'manual';
+  mobileNumberSource?: "nhs-login" | "manual";
 
   // Consent
+  consentCheckboxChecked?: boolean;
   consentGiven?: boolean;
   consentTimestamp?: string;
 
@@ -57,7 +50,7 @@ export interface OrderAnswers {
   orderReferenceNumber?: number;
 }
 
-interface CreateOrderContextType {
+export interface CreateOrderContextType {
   orderAnswers: OrderAnswers;
   updateOrderAnswers: (updates: Partial<OrderAnswers>) => void;
   reset: () => void;
@@ -69,12 +62,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
-    console.log("[CreateOrderProvider] Updating with:", updates);
-    setOrderAnswers((prev) => {
-      const newState = { ...prev, ...updates };
-      console.log("[CreateOrderProvider] New state:", newState);
-      return newState;
-    });
+    setOrderAnswers((prev) => ({ ...prev, ...updates }));
   }, []);
 
   const reset = useCallback(() => {

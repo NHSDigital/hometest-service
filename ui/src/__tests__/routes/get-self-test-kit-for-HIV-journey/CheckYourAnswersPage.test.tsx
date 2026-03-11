@@ -1,6 +1,3 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
   AuthProvider,
   AuthUser,
@@ -8,8 +5,12 @@ import {
   useAuth,
   useCreateOrderContext,
 } from "@/state";
-import { useEffect } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+
+import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
+import { MemoryRouter } from "react-router-dom";
 import orderService from "@/lib/services/order-service";
+import { useEffect } from "react";
 
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
@@ -41,6 +42,17 @@ jest.mock("@/lib/services/order-service", () => ({
 
 const mockSubmitOrder = orderService.submitOrder as jest.Mock;
 
+const defaultAuthUser: AuthUser = {
+  sub: "test-sub",
+  nhsNumber: "1234567890",
+  birthdate: "1990-01-01",
+  identityProofingLevel: "P9",
+  phoneNumber: "07402123123",
+  givenName: "John",
+  familyName: "Smith",
+  email: "john.smith@example.com",
+};
+
 // Helper component to pre-populate order state
 function StateSeeder({
   children,
@@ -53,7 +65,7 @@ function StateSeeder({
 
   useEffect(() => {
     updateOrderAnswers(orderData);
-  }, []);
+  }, [orderData, updateOrderAnswers]);
 
   return <>{children}</>;
 }
@@ -61,16 +73,7 @@ function StateSeeder({
 // Helper component to set auth user
 function AuthSeeder({
   children,
-  user = {
-    sub: "test-sub",
-    nhsNumber: "1234567890",
-    birthdate: "1990-01-01",
-    identityProofingLevel: "P9",
-    phoneNumber: "07402123123",
-    givenName: "John",
-    familyName: "Smith",
-    email: "john.smith@example.com"
-  },
+  user = defaultAuthUser,
 }: {
   children: React.ReactNode;
   user?: AuthUser;
@@ -79,7 +82,7 @@ function AuthSeeder({
 
   useEffect(() => {
     setUser(user);
-  }, []);
+  }, [setUser, user]);
 
   return <>{children}</>;
 }
@@ -87,9 +90,7 @@ function AuthSeeder({
 function OrderReferenceObserver() {
   const { orderAnswers } = useCreateOrderContext();
 
-  return (
-    <span data-testid="order-reference">{orderAnswers.orderReferenceNumber || ""}</span>
-  );
+  return <span data-testid="order-reference">{orderAnswers.orderReferenceNumber || ""}</span>;
 }
 
 const defaultOrderData = {
@@ -109,9 +110,7 @@ const TestWrapper = ({
   children: React.ReactNode;
   orderData?: Record<string, unknown>;
 }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/check-your-answers"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/check-your-answers"]}>
     <AuthProvider>
       <CreateOrderProvider>
         <AuthSeeder>
@@ -150,17 +149,13 @@ describe("CheckYourAnswersPage", () => {
     it("renders the delivery message", () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByText(/the kit will arrive within 5 working days/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/the kit will arrive within 5 working days/i)).toBeInTheDocument();
     });
 
     it("renders the submit order button", () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByRole("button", { name: /submit order/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /submit order/i })).toBeInTheDocument();
     });
   });
 
@@ -182,9 +177,7 @@ describe("CheckYourAnswersPage", () => {
     it("displays the comfortable doing test answer", () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByText(/yes i'm comfortable, send me the kit/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/yes i'm comfortable, send me the kit/i)).toBeInTheDocument();
     });
 
     it("displays the mobile number", () => {
@@ -249,9 +242,7 @@ describe("CheckYourAnswersPage", () => {
       fireEvent.click(changeLinks[1]);
 
       expect(mockSetReturnToStep).toHaveBeenCalledWith("check-your-answers");
-      expect(mockGoToStep).toHaveBeenCalledWith(
-        "how-comfortable-pricking-finger",
-      );
+      expect(mockGoToStep).toHaveBeenCalledWith("how-comfortable-pricking-finger");
     });
 
     it("sets returnToStep and navigates when mobile number change is clicked", () => {
@@ -273,10 +264,9 @@ describe("CheckYourAnswersPage", () => {
         }),
       ).toBeInTheDocument();
       expect(
-        screen.getByText(
-          "Are you comfortable doing the HIV self-test?",
-          { selector: ".nhsuk-u-visually-hidden" },
-        ),
+        screen.getByText("Are you comfortable doing the HIV self-test?", {
+          selector: ".nhsuk-u-visually-hidden",
+        }),
       ).toBeInTheDocument();
       expect(
         screen.getByText("What's your mobile phone number?", {
@@ -334,48 +324,12 @@ describe("CheckYourAnswersPage", () => {
       expect(errorLink).toHaveAttribute("href", "#consent");
     });
 
-    it("submits successfully when consent is ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
-
-      const checkbox = screen.getByRole("checkbox");
-      fireEvent.click(checkbox);
-
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
-
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Consent recorded at:",
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
-    });
-
     it("does not submit when consent is not ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole("button", { name: /submit order/i }));
 
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
+      expect(mockSubmitOrder).not.toHaveBeenCalled();
     });
 
     it("updates order reference number after successful submit", async () => {

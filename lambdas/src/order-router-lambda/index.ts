@@ -1,11 +1,12 @@
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
+
+import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
+import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
+import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
+import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { SupplierConfig } from "../lib/db/supplier-db";
 import { init } from "./init";
 import { isUUID } from "../lib/utils/utils";
-import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
-import { SupplierConfig } from "../lib/db/supplier-db";
-import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
-import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
-import { OrderStatusCodes } from "../lib/db/order-status-db";
 import z from "zod";
 
 const name = "order-router-lambda";
@@ -87,9 +88,7 @@ const sendOrderToSupplier = async (
   accessToken: string,
   correlationId: string,
 ): Promise<{ status: number; body: string; contentType: string }> => {
-  // Use a hardcoded path or fetch from serviceConfig if available
-  const orderPath = serviceConfig.orderPath || "/order";
-  const orderUrl = `${serviceConfig.serviceUrl.replace(/\/$/, "")}${orderPath}`;
+  const orderUrl = `${serviceConfig.serviceUrl}${serviceConfig.orderPath}`;
 
   try {
     const orderResponse = await httpClient.postRaw(

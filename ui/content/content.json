@@ -51,9 +51,17 @@
         "text": "Find a sexual health clinic",
         "href": "https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/"
       },
+      "findAnotherSexualHealthClinic": {
+        "text": "Find another sexual health clinic",
+        "href": "https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic"
+      },
       "nearestAE": {
         "text": "your nearest A&E",
         "href": "https://www.nhs.uk/service-search/find-an-accident-and-emergency-service/"
+      },
+      "learnMoreAboutHivAndAids": {
+        "text": "Learn more about HIV and AIDS",
+        "href": "https://www.nhs.uk/conditions/hiv-and-aids/"
       },
       "bloodSampleGuide": {
         "text": "Blood sample step-by-step guide"
@@ -93,12 +101,10 @@
         "heading": "Still need help?",
         "contactSupplier": "Contact {supplier}, the kit supplier",
         "bloodSampleGuide": "Blood sample step-by-step guide",
-        "contactClinic": "Contact my nearest sexual health clinic",
-        "learnMoreHIV": "Learn more about HIV and AIDS"
+        "contactClinic": "Contact my nearest sexual health clinic"
       },
       "moreInformation": {
-        "heading": "More information",
-        "learnMoreHIV": "Learn more about HIV and AIDS"
+        "heading": "More information"
       },
       "aboutService": {
         "heading": "About this service",
@@ -107,6 +113,11 @@
         "and": "and",
         "privacyPolicy": "privacy policy"
       }
+    },
+    "feedback": {
+      "text": "This is a new service. Help us improve it and",
+      "linkText": "give your feedback",
+      "linkHref": ""
     },
     "footer": {
       "copyright": "© Crown Copyright"
@@ -151,12 +162,17 @@
         "sexualHealthLink": {
           "text": "find sexual health services near you",
           "href": "https://www.nhs.uk/nhs-services/sexual-health-services/"
-        },
-        "learnMoreLink": {
-          "text": "Learn more about HIV and AIDS",
-          "href": "https://www.nhs.uk/conditions/hiv-and-aids/"
         }
       }
+    },
+    "kit-not-available-in-area": {
+      "title": "Free HIV self-test kits are not available in your area using this service",
+      "description": "There are other options to get an HIV test.",
+      "moreOptionsHeading": "More options and information"
+    },
+    "go-to-clinic": {
+      "title": "Contact your nearest sexual health clinic",
+      "moreOptionsHeading": "More options and information"
     },
     "enter-delivery-address": {
       "title": "Enter your delivery address and we'll check if the kit's available",
@@ -210,6 +226,18 @@
           "hint": "They will take a blood sample for you"
         }
       }
+    },
+    "cannot-use-service-under-18": {
+      "title": "You cannot use this service as you are under 18",
+      "intro": "To get tested for HIV, go to your nearest sexual health clinic, which is:",
+      "phoneLabel": "Phone:",
+      "directionsLinkText": "Get directions (opens in Google Maps)",
+      "findAnotherClinicLinkText": "Find another sexual health clinic",
+      "moreOptionsHeading": "More options and information",
+      "youngPeopleServicesText": "You can also use the",
+      "youngPeopleServicesLinkText": "NHS find young people's sexual health services",
+      "learnMoreLinkText": "Learn more about HIV and AIDS",
+      "learnMoreLinkHref": "https://www.nhs.uk/conditions/hiv-and-aids/"
     },
     "enter-mobile-phone-number": {
       "title": "What's your mobile phone number?",
@@ -299,9 +327,7 @@
               ]
             },
             {
-              "paragraphs": [
-                "Further details are set out in the Hometest Terms of Use [LINK]."
-              ]
+              "paragraphs": ["Further details are set out in the Hometest Terms of Use [LINK]."]
             }
           ]
         },
@@ -381,9 +407,7 @@
             },
             {
               "heading": "Health Data",
-              "paragraphs": [
-                "Special category data may also be collected, including test results."
-              ]
+              "paragraphs": ["Special category data may also be collected, including test results."]
             },
             {
               "heading": "Technical Data",
@@ -393,9 +417,7 @@
             },
             {
               "heading": "Preference Data",
-              "paragraphs": [
-                "This includes your preferences on receiving communications from us."
-              ]
+              "paragraphs": ["This includes your preferences on receiving communications from us."]
             },
             {
               "heading": "Usage Data",
@@ -711,6 +733,88 @@
         }
       ]
     },
+    "suppliers-terms-conditions": {
+      "title": "Supplier terms of use",
+      "suppliers": {
+        "preventx": {
+          "title": "Preventx terms of use",
+          "introduction": ["This is introduction paragraph for Preventx. https://www.sh.uk/"],
+          "sections": [
+            {
+              "id": "preventx-first-section",
+              "heading": "It is first section for Preventx",
+              "paragraphs": ["It is example of content for Preventx."],
+              "subsections": [
+                {
+                  "heading": "It is the first subsection for Preventx",
+                  "paragraphs": ["It is example of content for Preventx."]
+                }
+              ]
+            }
+          ]
+        },
+        "sh:24": {
+          "title": "SH:24 terms of use",
+          "introduction": ["This is introduction paragraph for SH:24. https://sh24.org.uk/"],
+          "sections": [
+            {
+              "id": "sh24-first-section",
+              "heading": "It is first section for SH:24 ",
+              "paragraphs": ["It is example of content for SH:24."],
+              "subsections": [
+                {
+                  "heading": "It is the first subsection for SH:24",
+                  "paragraphs": ["It is example of content for SH:24."]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "suppliers-privacy-policy": {
+      "title": "Supplier privacy policy",
+      "suppliers": {
+        "preventx": {
+          "title": "Preventx privacy policy",
+          "introduction": [
+            "This is introduction paragraph for Preventx privacy policy. https://www.sh.uk/"
+          ],
+          "sections": [
+            {
+              "id": "preventx-first-section",
+              "heading": "It is first privacy section for Preventx",
+              "paragraphs": ["It is example of privacy policy content for Preventx."],
+              "subsections": [
+                {
+                  "heading": "It is the first privacy subsection for Preventx",
+                  "paragraphs": ["It is example of privacy policy content for Preventx."]
+                }
+              ]
+            }
+          ]
+        },
+        "sh:24": {
+          "title": "SH:24 privacy policy",
+          "introduction": [
+            "This is introduction paragraph for SH:24 privacy policy. https://sh24.org.uk/"
+          ],
+          "sections": [
+            {
+              "id": "sh24-first-section",
+              "heading": "It is first privacy section for SH:24",
+              "paragraphs": ["It is example of privacy policy content for SH:24."],
+              "subsections": [
+                {
+                  "heading": "It is the first privacy subsection for SH:24",
+                  "paragraphs": ["It is example of privacy policy content for SH:24."]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
     "check-your-answers": {
       "title": "Check your answers before submitting your order",
       "updateMessage": "We'll update you about your HIV test on the account you use for your NHS login.",
@@ -726,10 +830,8 @@
         "legend": "Your consent",
         "label": "I understand that {supplier}, a trusted partner of NHS, will provide the free self-test kit. I agree to their",
         "termsOfUseText": "terms of use",
-        "termsOfUseHref": "supplier-terms-and-conditions",
         "labelAnd": "and",
-        "privacyPolicyText": "privacy policy",
-        "privacyPolicyHref": "supplier-privacy-policy"
+        "privacyPolicyText": "privacy policy"
       },
       "submitButton": "Submit order"
     },

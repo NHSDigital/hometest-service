@@ -1,10 +1,10 @@
-import { expect } from '@playwright/test';
-import { test } from '../../fixtures/CombinedTestFixture';
+import { expect } from "@playwright/test";
+import { test } from "../../fixtures/CombinedTestFixture";
 
 test(
-  'Privacy policy page',
+  "Privacy policy page",
   {
-    tag: ['@accessibility'],
+    tag: ["@accessibility"],
   },
   async ({ homeTestStartPage, privacyPolicyPage, accessibility }) => {
     await homeTestStartPage.navigate();
@@ -12,7 +12,7 @@ test(
     await privacyPolicyPage.waitUntilPageLoad();
     const accessErrors = await accessibility.runAccessibilityCheck(
       privacyPolicyPage.page,
-      'Privacy Policy Page',
+      "Privacy Policy Page",
     );
     expect(accessErrors).toHaveLength(0);
   },
