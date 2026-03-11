@@ -13,7 +13,7 @@ export type {
   EnterAddressManuallyContent,
   CannotUseServiceUnder18Content,
   NoAddressFoundContent,
-  GlobalErrorContent,
+  ServiceErrorContent,
   OrderTrackingContent,
   TestResultsContent,
   NavigationContent,
