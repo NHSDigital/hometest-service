@@ -25,3 +25,10 @@ Gitflow
 nvm
 enum
 validator
+monorepo
+npm
+middleware
+Makefile
+hardcoded
+Zod
+Jira
