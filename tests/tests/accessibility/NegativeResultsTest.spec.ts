@@ -3,6 +3,7 @@ import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { expect } from "@playwright/test";
 import { randomUUID } from "crypto";
 import { test } from "../../fixtures/CombinedTestFixture";
+import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
 let patientId: string;
@@ -14,15 +15,10 @@ test.describe("Accessibility Testing @accessibility", () => {
   test.beforeAll(async ({ testedUser }) => {
     await dbClient.connect();
     await resultDbClient.connect();
-    console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
-    const result = await dbClient.createOrderWithPatientAndStatus({
-      nhs_number: testedUser.nhsNumber!,
-      birth_date: testedUser.dob!,
-      supplier_name: "Preventx",
-      test_code: "31676001",
-      initial_status: "COMPLETE",
-    });
+    const result = await dbClient.createOrderWithPatientAndStatus(
+      new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),
+    );
 
     orderId = result.order_uid;
     patientId = result.patient_uid;
@@ -51,7 +47,7 @@ test.describe("Accessibility Testing @accessibility", () => {
     await resultDbClient.deleteResultStatusByUid(orderId);
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientByNHSandDOB(testedUser.nhsNumber!, testedUser.dob!);
+    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     await dbClient.disconnect();
     await resultDbClient.disconnect();
   });

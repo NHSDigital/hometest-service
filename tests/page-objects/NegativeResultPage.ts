@@ -5,11 +5,13 @@ import { ConfigFactory, type ConfigInterface } from "../configuration/Environmen
 export class NegativeResultPage extends BasePage {
   readonly config: ConfigInterface;
   readonly result: Locator;
+  readonly orderReference: Locator;
 
   constructor(page: Page) {
     super(page);
     this.config = ConfigFactory.getConfig();
     this.result = page.locator("p", { hasText: /^Negative$/ });
+    this.orderReference = page.getByLabel(/^Reference number:/);
   }
 
   async navigateToOrderResult(orderId: string): Promise<void> {
@@ -18,5 +20,11 @@ export class NegativeResultPage extends BasePage {
 
   async waitForResultsToLoad(): Promise<void> {
     await this.result.waitFor();
+  }
+
+  async getOrderReference(): Promise<string> {
+    const labelText = await this.orderReference.innerText();
+    const displayedNumber = labelText.replace("Reference number", "").trim();
+    return displayedNumber;
   }
 }

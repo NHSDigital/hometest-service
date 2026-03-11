@@ -1,7 +1,10 @@
 import { type DBClient } from "./db-client";
 
 type OrderStatusCode =
-  | "ORDER_RECEIVED"
+  | "GENERATED"
+  | "QUEUED"
+  | "SUBMITTED"
+  | "CONFIRMED"
   | "DISPATCHED"
   | "RECEIVED"
   | "COMPLETE";
@@ -50,10 +53,11 @@ export class OrderDbClient {
       LIMIT 1;
     `;
 
-    const result = await this.dbClient.query<Order, [string, string, Date]>(
-      query,
-      [orderId, nhsNumber, dateOfBirth],
-    );
+    const result = await this.dbClient.query<Order, [string, string, Date]>(query, [
+      orderId,
+      nhsNumber,
+      dateOfBirth,
+    ]);
 
     return result?.rows[0] ?? null;
   }

@@ -27,9 +27,14 @@ export class AddressModel implements Address {
     return new AddressModel(data);
   }
 
+  private static pool: typeof addressData = [...addressData];
+
   static getRandomAddress(): AddressModel {
-    const randomIndex = Math.floor(Math.random() * addressData.length);
-    const raw = addressData[randomIndex];
+    if (AddressModel.pool.length === 0) {
+      AddressModel.pool = [...addressData];
+    }
+    const randomIndex = Math.floor(Math.random() * AddressModel.pool.length);
+    const [raw] = AddressModel.pool.splice(randomIndex, 1);
     const mapped: Address = {
       postCode: raw.postCode,
       addressLine1: raw.addressLine1,

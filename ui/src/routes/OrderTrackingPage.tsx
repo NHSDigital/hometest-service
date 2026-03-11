@@ -10,13 +10,7 @@ import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
 import { usePageContent } from "@/hooks";
 import { useParams } from "react-router-dom";
 
-function OrderContent({
-  orderId,
-  patient,
-}: {
-  orderId: string;
-  patient: Patient;
-}) {
+function OrderContent({ orderId, patient }: { orderId: string; patient: Patient }) {
   const { data: order } = useOrderStatusQuery(orderId, patient);
   const content = usePageContent("order-tracking");
 

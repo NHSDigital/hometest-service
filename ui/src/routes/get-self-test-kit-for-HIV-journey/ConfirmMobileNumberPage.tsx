@@ -1,30 +1,36 @@
 "use client";
 
-import { useState } from "react";
 import { Button, ErrorSummary, Radios, TextInput } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
+import { useContent } from "@/hooks";
+import { useState } from "react";
 
 export default function ConfirmMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { user } = useAuth();
   const { commonContent, "confirm-mobile-phone-number": content } = useContent();
 
-  const nhsPhone = orderAnswers.user?.phoneNumber;
+  const nhsPhone = user?.phoneNumber;
 
   // Pre-populate based on existing data
   const getInitialSelection = (): "nhs-mobile-number" | "other" | null => {
     if (!orderAnswers.mobileNumber) return null;
-    if (orderAnswers.mobileNumberSource === 'nhs-login') return "nhs-mobile-number";
-    if (orderAnswers.mobileNumberSource === 'manual') return "other";
+    if (orderAnswers.mobileNumberSource === "nhs-login") return "nhs-mobile-number";
+    if (orderAnswers.mobileNumberSource === "manual") return "other";
     return null;
   };
 
-  const [selectedOption, setSelectedOption] = useState<"nhs-mobile-number" | "other" | null>(getInitialSelection());
-  const [alternativeNumber, setAlternativeNumber] = useState(orderAnswers.mobileNumberSource === 'manual' ? orderAnswers.mobileNumber || "" : "");
+  const [selectedOption, setSelectedOption] = useState<"nhs-mobile-number" | "other" | null>(
+    getInitialSelection(),
+  );
+  const [alternativeNumber, setAlternativeNumber] = useState(
+    orderAnswers.mobileNumberSource === "manual" ? orderAnswers.mobileNumber || "" : "",
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +53,7 @@ export default function ConfirmMobileNumberPage() {
     if (selectedOption === "nhs-mobile-number") {
       updateOrderAnswers({
         mobileNumber: nhsPhone,
-        mobileNumberSource: 'nhs-login',
+        mobileNumberSource: "nhs-login",
       });
 
       goToStep(JourneyStepNames.CheckYourAnswers);
@@ -61,7 +67,7 @@ export default function ConfirmMobileNumberPage() {
         setError(null);
         updateOrderAnswers({
           mobileNumber: result.data,
-          mobileNumberSource: 'manual',
+          mobileNumberSource: "manual",
         });
 
         goToStep(JourneyStepNames.CheckYourAnswers);
@@ -70,7 +76,7 @@ export default function ConfirmMobileNumberPage() {
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -80,9 +86,7 @@ export default function ConfirmMobileNumberPage() {
         }
       }}
     >
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {content.title}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       <p className="nhsuk-body">{content.description}</p>
 
@@ -112,11 +116,7 @@ export default function ConfirmMobileNumberPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Radios
-          name="phone-confirmation"
-          id="phone-confirmation"
-          error={error || undefined}
-        >
+        <Radios name="phone-confirmation" id="phone-confirmation" error={error || undefined}>
           <Radios.Radio
             id="phone-confirmation-1"
             value="nhs-mobile-number"
@@ -156,6 +156,6 @@ export default function ConfirmMobileNumberPage() {
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

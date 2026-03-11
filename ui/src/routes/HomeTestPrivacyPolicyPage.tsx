@@ -1,9 +1,8 @@
 "use client";
 
-import { useNavigate } from "react-router-dom";
-import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
-import { BackLink } from "nhsuk-react-components";
+import { useContent } from "@/hooks";
+import { useNavigate } from "react-router-dom";
 
 export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
@@ -42,18 +41,12 @@ export default function HomeTestPrivacyPolicyPage() {
   };
 
   const renderListItems = (items: string[]) => {
-    return items.map((item, index) => (
-      <li key={index}>{renderTextWithLinks(item)}</li>
-    ));
+    return items.map((item, index) => <li key={index}>{renderTextWithLinks(item)}</li>);
   };
 
   return (
-    <PageLayout>
-      <BackLink onClick={() => navigate(-1)} href="#">
-        Back
-      </BackLink>
-
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-top-5">{content.title}</h1>
+    <PageLayout onBackButtonClick={() => navigate(-1)}>
+      <h1 className="nhsuk-heading-l">{content.title}</h1>
 
       {renderParagraphs(content.introduction)}
 
@@ -71,9 +64,7 @@ export default function HomeTestPrivacyPolicyPage() {
 
           {section.subsections?.map((subsection, subIndex) => (
             <div key={subIndex} className="nhsuk-u-margin-top-4">
-              {subsection.heading && (
-                <h3 className="nhsuk-heading-s">{subsection.heading}</h3>
-              )}
+              {subsection.heading && <h3 className="nhsuk-heading-s">{subsection.heading}</h3>}
 
               {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
 

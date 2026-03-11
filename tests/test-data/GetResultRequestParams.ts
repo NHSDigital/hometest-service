@@ -5,13 +5,13 @@ export interface GetResultParams extends Record<string, string | number | boolea
 }
 
 export interface GetResultHeaders extends Record<string, string> {
-  'X-Correlation-ID': string;
+  "X-Correlation-ID": string;
 }
 
 export const createGetResultParams = (
   nhsNumber: string,
   dateOfBirth: string,
-  orderId: string
+  orderId: string,
 ): GetResultParams => ({
   nhs_number: nhsNumber,
   date_of_birth: dateOfBirth,
@@ -19,5 +19,5 @@ export const createGetResultParams = (
 });
 
 export const createGetResultHeaders = (correlationId: string): GetResultHeaders => ({
-  'X-Correlation-ID': correlationId,
+  "X-Correlation-ID": correlationId,
 });

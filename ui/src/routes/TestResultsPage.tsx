@@ -136,7 +136,7 @@ export default function TestResultsPage() {
   };
 
   return (
-    <PageLayout>
+    <PageLayout onBackButtonClick={redirectToTracking}>
       <OrderDetailsContent
         orderId={orderId}
         patient={patient}

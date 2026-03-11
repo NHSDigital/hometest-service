@@ -1,37 +1,21 @@
 "use client";
 
 import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { Link } from "react-router-dom";
-import PageLayout from "@/layouts/PageLayout";
-import { useEffect } from "react";
+import { useContent } from "@/hooks";
 
 export default function GetSelfTestKitPage() {
-  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const { updateOrderAnswers } = useCreateOrderContext();
   const { goToStep } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
-  useEffect(() => {
-    // TODO: Replace with actual auth data from NHS Login redirect
-    // This mock data simulates what will come from the auth response
-    const authData = {
-      sub: "49f470a1-cc52-49b7-beba-0f9cec937c46",
-      nhsNumber: "9686368973",
-      birthdate: "1968-02-12",
-      identityProofingLevel: "P9",
-      phoneNumber: "+447887510886",
-      givenName: "John",
-      familyName: "Smith",
-    };
-
-    updateOrderAnswers({ user: authData });
-    console.log("[GetSelfTestKitPage] Auth data set:", authData);
-  }, [updateOrderAnswers]);
-
   return (
-    <PageLayout>
+    <FormPageLayout>
       <h1>{content.title}</h1>
 
       <p>{content.ageRequirement}</p>
@@ -52,10 +36,7 @@ export default function GetSelfTestKitPage() {
 
           <p>
             {content.urgentCard.aeAdvice}{" "}
-            <a href={commonContent.links.nearestAE.href}>
-              {commonContent.links.nearestAE.text}
-            </a>
-            .
+            <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>.
           </p>
         </Card.Content>
       </Card>
@@ -76,14 +57,16 @@ export default function GetSelfTestKitPage() {
         <Details.Text>{content.dataSharing.details}</Details.Text>
       </Details>
 
-      <Button onClick={() => {
-        updateOrderAnswers({
-          postcodeSearch: undefined,
-          buildingNumber: undefined,
-          deliveryAddress: undefined
-        });
-        goToStep(JourneyStepNames.EnterDeliveryAddress);
-      }}>
+      <Button
+        onClick={() => {
+          updateOrderAnswers({
+            postcodeSearch: undefined,
+            buildingNumber: undefined,
+            deliveryAddress: undefined,
+          });
+          goToStep(JourneyStepNames.EnterDeliveryAddress);
+        }}
+      >
         {content.startButton}
       </Button>
 
@@ -109,11 +92,8 @@ export default function GetSelfTestKitPage() {
         </a>
         .
       </p>
-      <p>
-        <a href={content.otherOptions.learnMoreLink.href}>
-          {content.otherOptions.learnMoreLink.text}
-        </a>
-      </p>
-    </PageLayout>
+
+      <LearnMoreAboutHivAndAidsLink />
+    </FormPageLayout>
   );
 }
