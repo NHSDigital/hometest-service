@@ -171,7 +171,7 @@ import { CreateOrderProvider } from "../../state";
 - **Layout components**: PascalCase `.tsx` in `layouts/`
 - **Hooks**: camelCase starting with `use` — e.g. `useJourneyNavigation.ts`
 - **Utilities / constants / services**: kebab-case — e.g. `page-title.ts`, `order-details-service.ts`
-- **Named exports only** for all non-component modules.
+- **Named exports only** for all non-component modules, **except** service singletons in `ui/src/lib/services/*`, which **default-export** their singleton instance (e.g. `export default orderDetailsService;`).
 
 ## Component Rules
 
