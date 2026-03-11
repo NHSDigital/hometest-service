@@ -1,5 +1,5 @@
 import "./globals.css";
-import "nhsuk-frontend/dist/nhsuk.css";
+import "nhsuk-frontend/dist/nhsuk/nhsuk-frontend.css";
 
 import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type { Metadata } from "next";
@@ -15,7 +15,12 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>{children}</body>
+      <body className={`antialiased`} suppressHydrationWarning>
+        <script>{`
+          document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' nhsuk-frontend-supported' : '');
+        `}</script>
+        {children}
+      </body>
     </html>
   );
 }

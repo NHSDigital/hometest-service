@@ -1,16 +1,16 @@
 import "@testing-library/jest-dom";
 
+import { AuthContext, AuthUser, useCreateOrderContext } from "@/state";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 import { MemoryRouter } from "react-router-dom";
 import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { AuthContext, AuthUser, useCreateOrderContext } from "@/state";
 import { useEffect } from "react";
-import { JourneyStepNames } from "@/lib/models/route-paths";
 
 const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
 
@@ -228,14 +228,21 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("should not show error summary initially", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("alert", {
+          name: "There is a problem",
+        }),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText("There is a problem")).not.toBeInTheDocument();
     });
 
@@ -406,8 +413,12 @@ describe("SelectDeliveryAddressPage", () => {
       const submitButton = screen.getByRole("button", { name: /continue/i });
       fireEvent.click(submitButton);
 
-      const alert = screen.getByRole("alert");
-      expect(alert).toHaveAttribute("aria-labelledby", "error-summary-title");
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
+      expect(errorSummary).toHaveAttribute("aria-labelledby", "error-summary-title");
     });
 
     it("should have unique ids for each radio button", () => {
