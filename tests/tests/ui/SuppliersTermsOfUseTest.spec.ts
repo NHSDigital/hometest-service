@@ -48,7 +48,6 @@ test.describe("Suppliers Terms of Use Page", () => {
       await suppliersTermsOfUsePage.waitUntilPageLoad();
 
       const header = await suppliersTermsOfUsePage.getHeaderText();
-      console.log("Page header:", header);
 
       expect(header).toBe(`${supplier.name} terms of use`);
     });

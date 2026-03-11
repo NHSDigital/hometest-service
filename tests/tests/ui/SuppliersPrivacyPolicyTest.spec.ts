@@ -48,7 +48,6 @@ test.describe("Suppliers Privacy Policy Page", () => {
       await suppliersPrivacyPolicyPage.waitUntilPageLoad();
 
       const header = await suppliersPrivacyPolicyPage.getHeaderText();
-      console.log("Page header:", header);
 
       expect(header).toBe(`${supplier.name} privacy policy`);
     });
