@@ -20,6 +20,7 @@ import { TermsOfUsePage } from "../page-objects/TermsOfUsePage";
 import { CodeSecurityPage } from "../page-objects/NHSLogin/CodeSecurityPage";
 import { SuppliersTermsOfUsePage } from "../page-objects/SuppliersTermsOfUsePage";
 import { CannotUseServiceUnder18Page } from "../page-objects/CannotUseServiceUnder18Page";
+import { SuppliersPrivacyPolicyPage } from "../page-objects/SuppliersPrivacyPolicyPage";
 
 export interface MyFixtures {
   homeTestStartPage: HomeTestStartPage;
@@ -41,6 +42,7 @@ export interface MyFixtures {
   codeSecurityPage: CodeSecurityPage;
   suppliersTermsOfUsePage: SuppliersTermsOfUsePage;
   cannotUseServiceUnder18Page: CannotUseServiceUnder18Page;
+  suppliersPrivacyPolicyPage: SuppliersPrivacyPolicyPage;
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
@@ -118,5 +120,9 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   cannotUseServiceUnder18Page: async ({ page }, use) => {
     await use(new CannotUseServiceUnder18Page(page));
+  },
+
+  suppliersPrivacyPolicyPage: async ({ page }, use) => {
+    await use(new SuppliersPrivacyPolicyPage(page));
   },
 });
