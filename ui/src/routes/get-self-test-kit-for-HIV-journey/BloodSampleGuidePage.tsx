@@ -34,9 +34,9 @@ export default function BloodSampleGuidePage() {
             ))}
           </ul>
           <Images
-            src="/images/self-sample-steps/self-sample-kit-contents.jpg"
+            src="/images/self-sample-steps/self-sample-kit-contents.svg"
             sizes="(max-width: 768px) 100vw, 66vw"
-            srcSet="/images/self-sample-steps/self-sample-kit-contents.jpg 600w, /images/self-sample-steps/self-sample-kit-contents.jpg 1000w"
+            srcSet="/images/self-sample-steps/self-sample-kit-contents.svg 600w, /images/self-sample-steps/self-sample-kit-contents.svg 1000w"
             alt={content.whatsInKit.image.alt}
             caption={content.whatsInKit.image.caption}
           />
