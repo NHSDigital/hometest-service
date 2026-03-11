@@ -18,10 +18,6 @@ export class GoToClinicPage extends BasePage {
     });
   }
 
-  async navigate(): Promise<void> {
-    await this.page.goto(`${this.config.uiBaseUrl}/get-self-test-kit-for-HIV/go-to-clinic`);
-  }
-
   async clickFindAnotherSexualHealthClinicLink(): Promise<void> {
     await this.findAnotherSexualHealthClinicLink.click();
   }
