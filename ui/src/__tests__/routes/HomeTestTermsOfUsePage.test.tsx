@@ -5,9 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import HomeTestTermsOfUsePage from "@/routes/HomeTestTermsOfUsePage";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter initialEntries={["/home-test-terms-of-use"]}>
-    {children}
-  </MemoryRouter>
+  <MemoryRouter initialEntries={["/home-test-terms-of-use"]}>{children}</MemoryRouter>
 );
 
 describe("HomeTestTermsOfUsePage", () => {
@@ -25,24 +23,20 @@ describe("HomeTestTermsOfUsePage", () => {
     it("renders the Back link", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
-      const backLink = screen.getByRole("link", { name: /back/i });
+      const backLink = screen.getByText(/^back$/i, { selector: ".nhsuk-back-link__link" });
       expect(backLink).toBeInTheDocument();
     });
 
     it("renders the introduction paragraph from content config", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByText(/\[Hometest\] is operated by NHS England/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/\[Hometest\] is operated by NHS England/i)).toBeInTheDocument();
     });
 
     it("renders all main section headings", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getByRole("heading", { name: /1\. Introduction/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /1\. Introduction/i })).toBeInTheDocument();
       expect(
         screen.getByRole("heading", { name: /2\. When these terms apply/i }),
       ).toBeInTheDocument();
@@ -62,9 +56,7 @@ describe("HomeTestTermsOfUsePage", () => {
       expect(
         screen.getByRole("heading", { name: /6\. Details about the Services/i }),
       ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: /7\. Using the services/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /7\. Using the services/i })).toBeInTheDocument();
       expect(
         screen.getByRole("heading", {
           name: /8\. Ending your use of the Hometest App/i,
@@ -75,15 +67,11 @@ describe("HomeTestTermsOfUsePage", () => {
           name: /9\. Your right to use the Hometest App/i,
         }),
       ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: /10\. Prohibited uses/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /10\. Prohibited uses/i })).toBeInTheDocument();
       expect(
         screen.getByRole("heading", { name: /11\. Our liability to you/i }),
       ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: /12\. General/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /12\. General/i })).toBeInTheDocument();
       expect(
         screen.getByRole("heading", { name: /13\. Changes to these Terms of Use/i }),
       ).toBeInTheDocument();
@@ -92,12 +80,8 @@ describe("HomeTestTermsOfUsePage", () => {
     it("renders Testing Services and Hometest App Services as list items in section 6", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
-      expect(
-        screen.getAllByText(/Testing Services/i).length,
-      ).toBeGreaterThan(0);
-      expect(
-        screen.getAllByText(/Hometest App Services/i).length,
-      ).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Testing Services/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Hometest App Services/i).length).toBeGreaterThan(0);
     });
   });
 
@@ -212,9 +196,7 @@ describe("HomeTestTermsOfUsePage", () => {
       ).toBeInTheDocument();
 
       // Testing Services is rendered as a bold list item, not an h3
-      expect(
-        screen.getAllByText(/Testing Services/i).length,
-      ).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Testing Services/i).length).toBeGreaterThan(0);
     });
   });
 

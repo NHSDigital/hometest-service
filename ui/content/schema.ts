@@ -354,7 +354,7 @@ export interface PrivacyPolicySubsection {
   list?: string[];
   indented?: boolean;
   ordered?: boolean;
-  listStyle?: string;
+  listStyle?: "bullet" | "dash";
   table?: {
     caption?: string;
     headers: string[];

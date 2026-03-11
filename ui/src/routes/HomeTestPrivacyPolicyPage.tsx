@@ -4,6 +4,7 @@ import PageLayout from "@/layouts/PageLayout";
 import { useContent } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import { renderTextWithLinks, cleanListItems, getListClass } from "@/utils/renderTextWithLinks";
+import "@/styles/lists.css";
 
 export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
@@ -30,10 +31,15 @@ export default function HomeTestPrivacyPolicyPage() {
     ));
   };
 
-  const renderList = (items: string[], ordered?: boolean, indented?: boolean) => {
+  const renderList = (
+    items: string[],
+    ordered?: boolean,
+    indented?: boolean,
+    listStyle?: "bullet" | "dash",
+  ) => {
     const cleanedItems = cleanListItems(items);
     const ListTag = ordered ? "ol" : "ul";
-    const listClass = getListClass(items);
+    const listClass = getListClass(ordered, listStyle);
     const list = (
       <ListTag className={listClass}>
         {cleanedItems.map((item, index) => (
@@ -78,8 +84,9 @@ export default function HomeTestPrivacyPolicyPage() {
               {subsection.list &&
                 renderList(
                   subsection.list,
-                  subsection.listStyle === "ordered",
+                  subsection.ordered,
                   subsection.indented,
+                  subsection.listStyle,
                 )}
             </div>
           ))}

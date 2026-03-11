@@ -79,14 +79,14 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
 };
 
 /**
- * Detects if list items are dash-styled (start with "- ")
- * and returns appropriate list class
+ * Returns the appropriate NHS list CSS class based on the explicit list metadata.
+ * ordered=true → plain nhsuk-list (no bullet/dash modifier, rendered as <ol>)
+ * listStyle="dash" → nhsuk-list nhsuk-list--dash
+ * default → nhsuk-list nhsuk-list--bullet
  */
-export const getListClass = (items: string[]): string => {
-  const isDashList = items.some((item) => item.trim().startsWith("- "));
-  if (isDashList) {
-    return "nhsuk-list nhsuk-list--dash";
-  }
+export const getListClass = (ordered?: boolean, listStyle?: "bullet" | "dash"): string => {
+  if (ordered) return "nhsuk-list";
+  if (listStyle === "dash") return "nhsuk-list nhsuk-list--dash";
   return "nhsuk-list nhsuk-list--bullet";
 };
 

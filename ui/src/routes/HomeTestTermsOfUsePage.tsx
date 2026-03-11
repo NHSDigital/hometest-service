@@ -3,7 +3,6 @@
 import { useNavigate } from "react-router-dom";
 import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
-import { BackLink } from "nhsuk-react-components";
 import { renderTextWithLinks, cleanListItems, getListClass } from "@/utils/renderTextWithLinks";
 import "@/styles/lists.css";
 
@@ -35,10 +34,15 @@ export default function HomeTestTermsOfUsePage() {
     });
   };
 
-  const renderList = (items: string[], ordered?: boolean, indented?: boolean) => {
+  const renderList = (
+    items: string[],
+    ordered?: boolean,
+    indented?: boolean,
+    listStyle?: "bullet" | "dash",
+  ) => {
     const cleanedItems = cleanListItems(items);
     const ListTag = ordered ? "ol" : "ul";
-    const listClass = getListClass(items);
+    const listClass = getListClass(ordered, listStyle);
     const list = (
       <ListTag className={listClass}>
         {cleanedItems.map((item, index) => (
@@ -82,11 +86,7 @@ export default function HomeTestTermsOfUsePage() {
   };
 
   return (
-    <PageLayout>
-      <BackLink onClick={() => navigate(-1)} href="#">
-        Back
-      </BackLink>
-
+    <PageLayout onBackButtonClick={() => navigate(-1)}>
       <h1 className="nhsuk-heading-l nhsuk-u-margin-top-5">{content.title}</h1>
 
       {renderParagraphs(content.introduction)}
@@ -110,7 +110,12 @@ export default function HomeTestTermsOfUsePage() {
               {subsection.paragraphs && renderParagraphs(subsection.paragraphs)}
 
               {subsection.list &&
-                renderList(subsection.list, subsection.ordered, subsection.indented)}
+                renderList(
+                  subsection.list,
+                  subsection.ordered,
+                  subsection.indented,
+                  subsection.listStyle,
+                )}
 
               {subsection.table && renderTable(subsection.table)}
             </div>
