@@ -300,7 +300,7 @@ export interface ConfirmMobilePhoneNumberContent {
   };
 }
 
-export interface GlobalErrorContent {
+export interface ServiceErrorContent {
   title: string;
   message: string;
 }
@@ -493,7 +493,7 @@ export interface PagesContent {
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
-  "global-error": GlobalErrorContent;
+  "service-error": ServiceErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;

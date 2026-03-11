@@ -23,22 +23,20 @@ export default function GetSelfTestKitPage() {
 
       <Card cardType="urgent">
         <Card.Heading>{content.urgentCard.heading}</Card.Heading>
-        <Card.Content>
-          <ul>
-            <li>{content.urgentCard.exposureWarning}</li>
-          </ul>
+        <ul>
+          <li>{content.urgentCard.exposureWarning}</li>
+        </ul>
 
-          <p>{content.urgentCard.clinicAdvice}</p>
+        <p>{content.urgentCard.clinicAdvice}</p>
 
-          <ActionLink href={commonContent.links.sexualHealthClinic.href}>
-            {commonContent.links.sexualHealthClinic.text}
-          </ActionLink>
+        <ActionLink href={commonContent.links.sexualHealthClinic.href}>
+          {commonContent.links.sexualHealthClinic.text}
+        </ActionLink>
 
-          <p>
-            {content.urgentCard.aeAdvice}{" "}
-            <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>.
-          </p>
-        </Card.Content>
+        <p>
+          {content.urgentCard.aeAdvice}{" "}
+          <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>.
+        </p>
       </Card>
 
       <div className="nhsuk-inset-text">

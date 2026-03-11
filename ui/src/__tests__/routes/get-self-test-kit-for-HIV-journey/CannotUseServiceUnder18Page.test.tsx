@@ -1,16 +1,18 @@
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen } from "@testing-library/react";
+
+import { CannotUseServiceUnder18Content, CommonContent } from "@/content/index";
 import CannotUseServiceUnder18Page, {
   HARD_CODED_CLINIC_DATA,
   NHS_LINKS,
 } from "@/routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
-import { CannotUseServiceUnder18Content, CommonContent } from "@/content/index";
-import { MemoryRouter } from "react-router-dom";
-import { JourneyNavigationContext } from "@/state/NavigationContext";
 import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
-import { OrderAnswers } from "@/state/OrderContext";
-import React, { ReactNode } from "react";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import React, { ReactNode } from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { JourneyNavigationContext } from "@/state/NavigationContext";
+import { MemoryRouter } from "react-router-dom";
+import { OrderAnswers } from "@/state/OrderContext";
 
 const mockedContent: CannotUseServiceUnder18Content = {
   title: "some-mocked-title",
@@ -192,11 +194,11 @@ describe("CannotUseServiceUnder18Page", () => {
     ).toHaveAttribute("href", mockedContent.learnMoreLinkHref);
 
     expect(
-      screen.getByText(mockedCommonContent.feedback.text, { exact: false }),
+      screen.getByText(mockedCommonContent.feedback!.text, { exact: false }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: new RegExp(`^${mockedCommonContent.feedback.linkText}`) }),
-    ).toHaveAttribute("href", mockedCommonContent.feedback.linkHref);
+      screen.getByRole("link", { name: new RegExp(`^${mockedCommonContent.feedback!.linkText}`) }),
+    ).toHaveAttribute("href", mockedCommonContent.feedback!.linkHref);
   });
 
   it("renders the follow-on support and feedback links when a postcode is NOT set", () => {
@@ -225,12 +227,12 @@ describe("CannotUseServiceUnder18Page", () => {
     ).toHaveAttribute("href", mockedContent.learnMoreLinkHref);
 
     expect(
-      screen.getByText(mockedCommonContent.feedback.text, { exact: false }),
+      screen.getByText(mockedCommonContent.feedback!.text, { exact: false }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("link", { name: new RegExp(`^${mockedCommonContent.feedback.linkText}`) }),
-    ).toHaveAttribute("href", mockedCommonContent.feedback.linkHref);
+      screen.getByRole("link", { name: new RegExp(`^${mockedCommonContent.feedback!.linkText}`) }),
+    ).toHaveAttribute("href", mockedCommonContent.feedback!.linkHref);
   });
 });
 

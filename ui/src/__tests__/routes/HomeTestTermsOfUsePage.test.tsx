@@ -23,7 +23,7 @@ describe("HomeTestTermsOfUsePage", () => {
     it("renders the Back link", () => {
       render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
 
-      const backLink = screen.getByText(/^back$/i, { selector: ".nhsuk-back-link__link" });
+      const backLink = screen.getByText(/^back$/i, { selector: ".nhsuk-back-link" });
       expect(backLink).toBeInTheDocument();
     });
 
