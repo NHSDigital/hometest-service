@@ -32,3 +32,6 @@ Makefile
 hardcoded
 Zod
 Jira
+Hardcoded
+Monorepo
+hardcode
