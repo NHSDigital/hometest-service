@@ -1,16 +1,12 @@
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
+import { AddressModel } from "../../models/Address";
 
-test.describe("Alternative Service Page", () => {
-  test.use({
-    errorCaptureOptions: {
-      failOnNetworkError: false,
-      failOnConsoleError: false,
-    },
-  });
+const randomAddress = AddressModel.getRandomAddress();
 
+test.describe("Go To Clinic Page", () => {
   test(
-    "Alternative Service Page - accessibility scan",
+    "Go To Clinic Page - accessibility scan",
     { tag: ["@accessibility"] },
     async ({
       homeTestStartPage,
@@ -20,16 +16,9 @@ test.describe("Alternative Service Page", () => {
       goToClinicPage,
       accessibility,
     }) => {
-      const unavailableAddress = {
-        addressLine1: "2 HOLMHURST ST. MARY",
-        addressLine2: "THE RIDGE, ST",
-        townCity: "LEONARDS-ON-SEA",
-        postCode: "TN37 7PT",
-      };
-
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
-      await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(unavailableAddress);
+      await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.waitUntilPageLoad();
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await howComfortablePrickingFingerPage.waitUntilPageLoad();
@@ -38,7 +27,7 @@ test.describe("Alternative Service Page", () => {
 
       const accessErrors = await accessibility.runAccessibilityCheck(
         goToClinicPage.page,
-        "Alternative Service Page",
+        "Go To Clinic Page",
       );
       expect(accessErrors).toHaveLength(0);
     },
