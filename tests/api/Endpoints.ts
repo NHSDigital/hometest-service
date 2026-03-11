@@ -5,7 +5,7 @@ export const API_ENDPOINTS = {
   },
   order: {
     create: "/order",
-    get: "/order",
+    get: "/get-order",
   },
   orderStatus: {
     update: "/test-order/status",

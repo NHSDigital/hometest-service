@@ -10,6 +10,7 @@ export class OrderStatusPage extends BasePage {
   readonly referenceNumber: Locator;
   readonly orderReference: Locator;
   readonly suppliersTermsOfUseLink: Locator;
+  readonly suppliersPrivacyPolicyLink: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -20,6 +21,7 @@ export class OrderStatusPage extends BasePage {
     this.config = ConfigFactory.getConfig();
     this.orderReference = page.getByLabel(/^Reference number:/);
     this.suppliersTermsOfUseLink = page.locator('a[href*="suppliers-terms-conditions"]');
+    this.suppliersPrivacyPolicyLink = page.locator('a[href*="suppliers-privacy-policy"]');
   }
 
   async navigateToOrder(orderId: string): Promise<void> {
@@ -39,5 +41,10 @@ export class OrderStatusPage extends BasePage {
   async clickSuppliersTermsOfUseLink(): Promise<void> {
     await this.suppliersTermsOfUseLink.click();
     await this.page.waitForURL(/suppliers-terms-conditions/);
+  }
+
+  async clickSuppliersPrivacyPolicyLink(): Promise<void> {
+    await this.suppliersPrivacyPolicyLink.click();
+    await this.page.waitForURL(/suppliers-privacy-policy/);
   }
 }

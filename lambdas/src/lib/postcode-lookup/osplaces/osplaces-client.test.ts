@@ -114,6 +114,7 @@ describe('OSPlacesClient', () => {
             line1: '10 DOWNING STREET',
             line2: '',
             line3: '',
+            line4: '',
             town: 'LONDON',
             postcode: 'SW1A 2AA',
           },
@@ -123,6 +124,7 @@ describe('OSPlacesClient', () => {
             line1: '11 DOWNING STREET',
             line2: '',
             line3: '',
+            line4: '',
             town: 'LONDON',
             postcode: 'SW1A 2AA',
           },
@@ -132,6 +134,7 @@ describe('OSPlacesClient', () => {
             line1: 'FLAT 1',
             line2: 'EXAMPLE BUILDING',
             line3: '12 DOWNING STREET',
+            line4: '',
             town: 'LONDON',
             postcode: 'SW1A 2AA',
           }
