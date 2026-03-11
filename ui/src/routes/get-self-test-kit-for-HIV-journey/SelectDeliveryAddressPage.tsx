@@ -136,19 +136,17 @@ export default function SelectDeliveryAddressPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#collection-point"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("collection-point-1")?.focus();
-                }}
-              >
-                {addressError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#collection-point"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("collection-point-1")?.focus();
+              }}
+            >
+              {addressError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
@@ -156,8 +154,8 @@ export default function SelectDeliveryAddressPage() {
         <Radios
           id="collection-point"
           name="collection-point"
-          label={content.formLabel}
-          labelProps={{
+          legend={content.formLabel}
+          legendProps={{
             isPageHeading: false,
             size: "s",
           }}
@@ -165,13 +163,13 @@ export default function SelectDeliveryAddressPage() {
           onChange={handleRadioChange}
         >
           {addresses.map((address) => (
-            <Radios.Radio
+            <Radios.Item
               key={address.id}
               value={address.id}
               checked={selectedAddress === address.id}
             >
               {address.fullAddress}
-            </Radios.Radio>
+            </Radios.Item>
           ))}
         </Radios>
 

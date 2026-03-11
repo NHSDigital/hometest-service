@@ -42,7 +42,7 @@ export default function ConfirmMobileNumberPage() {
     setAlternativeNumber(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!selectedOption) {
@@ -95,38 +95,36 @@ export default function ConfirmMobileNumberPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#phone-confirmation"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (selectedOption === "other") {
-                    document.getElementById("alternative-mobile-number")?.focus();
-                  } else {
-                    document.getElementById("phone-confirmation-1")?.focus();
-                  }
-                }}
-              >
-                {error}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#phone-confirmation"
+              onClick={(e) => {
+                e.preventDefault();
+                if (selectedOption === "other") {
+                  document.getElementById("alternative-mobile-number")?.focus();
+                } else {
+                  document.getElementById("phone-confirmation-1")?.focus();
+                }
+              }}
+            >
+              {error}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
       <form onSubmit={handleSubmit}>
         <Radios name="phone-confirmation" id="phone-confirmation" error={error || undefined}>
-          <Radios.Radio
+          <Radios.Item
             id="phone-confirmation-1"
             value="nhs-mobile-number"
             checked={selectedOption === "nhs-mobile-number"}
             onChange={handleRadioChange}
           >
             {nhsPhone}
-          </Radios.Radio>
+          </Radios.Item>
 
-          <Radios.Radio
+          <Radios.Item
             id="phone-confirmation-2"
             value="other"
             checked={selectedOption === "other"}
@@ -151,7 +149,7 @@ export default function ConfirmMobileNumberPage() {
             }
           >
             {content.form.alternativeLabel}
-          </Radios.Radio>
+          </Radios.Item>
         </Radios>
 
         <Button type="submit">{commonContent.navigation.continue}</Button>

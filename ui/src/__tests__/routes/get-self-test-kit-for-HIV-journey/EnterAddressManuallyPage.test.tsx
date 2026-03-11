@@ -1,14 +1,12 @@
 import "@testing-library/jest-dom";
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-
-import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
-
+import { AuthProvider, useAuth } from "@/state";
 import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
 import { JourneyNavigationProvider, useJourneyNavigationContext } from "@/state/NavigationContext";
-import { AuthProvider, useAuth } from "@/state";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
+import { MemoryRouter } from "react-router-dom";
 import laLookupService from "@/lib/services/la-lookup-service";
 
 const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
@@ -126,8 +124,11 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("links to town field and focuses it", () => {
@@ -245,7 +246,11 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+      const errorSummary = errorSummaryHeading.closest(
+        '[role="alert"][aria-labelledby="error-summary-title"]',
+      );
+      expect(errorSummary).toBeInTheDocument();
     });
 
     it("submits valid form without errors", () => {
@@ -255,7 +260,9 @@ describe("EnterAddressManuallyPage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
     });
   });
 
