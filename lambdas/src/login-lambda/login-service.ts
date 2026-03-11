@@ -40,12 +40,18 @@ export class LoginService {
       const nhsLoginIdToken = await this.tokenService.verifyToken(
         tokenResponse.id_token
       );
+      // The access_token is also verified against NHS Login's public key as a
+      // defensive check. Its return value is intentionally discarded here; only
+      // the id_token payload is used downstream.
       await this.tokenService.verifyToken(tokenResponse.access_token);
       const idTokenPayload = nhsLoginIdToken.payload as JwtPayload;
 
       const userInfoResponse: INhsUserInfoResponseModel =
         await this.nhsLoginClient.getUserInfo(tokenResponse.access_token);
 
+      // OIDC security requirement: the sub in the userinfo endpoint response
+      // must match the sub in the id_token to prevent token substitution attacks
+      // where a valid access_token for one user is used to fetch another user's info.
       if (idTokenPayload.sub !== userInfoResponse.sub) {
         const errorMessage =
           'The sub claim in the user info response does not match the sub claim in the id token';

@@ -99,6 +99,8 @@ export async function init(): Promise<LoginLambdaDependencies> {
   );
 
   const httpClient = new HttpClient();
+  // cache and rateLimit protect against hammering NHS Login's JWKS endpoint on
+  // every token verification — public keys rotate infrequently so caching is safe.
   const jwksClient = new JwksClient({
     cache: true,
     rateLimit: true,

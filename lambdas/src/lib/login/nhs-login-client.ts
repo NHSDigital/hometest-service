@@ -38,6 +38,8 @@ export class NhsLoginClient implements INhsLoginClient {
     try {
       const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
 
+      // grant_type and client_assertion_type implement the OIDC private_key_jwt
+      // client authentication method required by NHS Login.
       const formData = new URLSearchParams({
         code,
         client_id: this.nhsLoginConfig.clientId,
@@ -48,6 +50,8 @@ export class NhsLoginClient implements INhsLoginClient {
         client_assertion: signedToken
       });
 
+      // TODO: Remove before production — logs the auth code and client_assertion
+      // in plaintext, which would expose sensitive credentials in CloudWatch.
       console.log(formData.toString());
 
       const response: INhsTokenResponseModel =

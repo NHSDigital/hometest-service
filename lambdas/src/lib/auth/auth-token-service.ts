@@ -41,6 +41,8 @@ export class AuthTokenService implements IAuthTokenService {
     };
 
     let privateKey: string = this.authConfig.privateKeys['key'];
+    // cleanupKey strips trailing whitespace/newlines that AWS Secrets Manager
+    // may append when storing PEM keys, which would otherwise fail jwt.sign.
     privateKey = cleanupKey(privateKey) ?? '';
 
     return jwt.sign(jwtBody, privateKey, jwtOptions);
