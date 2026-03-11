@@ -35,4 +35,10 @@ test.describe("Backend API, order endpoint", () => {
       expect(statusRows?.[0].status_code).toBe("SUBMITTED");
     },
   );
+
+  test.afterEach(async ({ testOrderDb }) => {
+    await testOrderDb.deleteConsentByOrderUid(createdOrderUid);
+    await testOrderDb.deleteOrderByUid(createdOrderUid);
+    await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);
+  });
 });

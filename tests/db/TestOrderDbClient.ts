@@ -118,6 +118,19 @@ export class TestOrderDbClient extends BaseDbClient {
     );
   }
 
+  async deleteConsentByOrderUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM consent WHERE order_uid = $1::uuid`, [orderUid]);
+  }
+
+  async deleteConsentByPatientUid(patientUid: UUID): Promise<void> {
+    await this.query(
+      `DELETE FROM consent WHERE order_uid IN (
+         SELECT order_uid FROM test_order WHERE patient_uid = $1::uuid
+       )`,
+      [patientUid],
+    );
+  }
+
   async deleteOrderByUid(orderUid: UUID): Promise<void> {
     await this.query(`DELETE FROM test_order WHERE order_uid = $1::uuid`, [orderUid]);
   }

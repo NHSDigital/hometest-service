@@ -101,10 +101,12 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     async ({ testedUser }) => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await resultDbClient.deleteResultStatusByUid(orderId2);
       await dbClient.deleteOrderStatusByUid(orderId2);
+      await dbClient.deleteConsentByPatientUid(patientId2);
       await dbClient.deleteOrderByPatientUid(patientId2);
       await dbClient.deletePatientMapping(nhsNumber2, birthDate2);
       await dbClient.disconnect();

@@ -81,6 +81,7 @@ test.describe("Results Flow - Update Order Results Logic", () => {
       }
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     },

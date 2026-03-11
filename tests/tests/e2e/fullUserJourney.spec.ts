@@ -1,10 +1,31 @@
 import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
 import { AddressModel } from "../../models/Address";
+import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 
 const randomAddress = AddressModel.getRandomAddress();
+let orderId = "";
+const dbClient = new TestOrderDbClient();
 
 test.describe("Home test E2E tests", () => {
+  test.beforeEach(async () => {
+    orderId = "";
+    await dbClient.connect();
+  });
+
+  test.afterEach(async ({ testedUser }) => {
+    if (orderId) {
+      const order = await dbClient.getOrderByUid(orderId);
+      const patientId = order?.patient_uid;
+      if (patientId) {
+        await dbClient.deleteConsentByPatientUid(patientId);
+        await dbClient.deleteOrderByPatientUid(patientId);
+      }
+      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    }
+    await dbClient.disconnect();
+  });
+
   test(
     "E2E - Full HIV Test user journey",
     { tag: ["@ui", "@e2e"] },
