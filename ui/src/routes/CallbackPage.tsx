@@ -38,7 +38,7 @@ export default function CallbackPage() {
   const navigate = useNavigate();
   const didRun = useRef(false);
   const handleCallback = useAsyncErrorHandler(async () => {
-    if (!backendUrl) {
+    if (!backendUrl || backendUrl.trim() === "") {
       console.error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;
     }
