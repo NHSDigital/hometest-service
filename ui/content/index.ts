@@ -11,6 +11,7 @@ export type {
   StartPageContent,
   EnterDeliveryAddressContent,
   EnterAddressManuallyContent,
+  CannotUseServiceUnder18Content,
   NoAddressFoundContent,
   GlobalErrorContent,
   OrderTrackingContent,
@@ -29,5 +30,7 @@ export type {
   HelpLinksContent,
   MoreInformationContent,
   AboutServiceContent,
+  FeedbackContent,
   FooterContent,
+  KitNotAvailableInAreaContent,
 } from "./schema";

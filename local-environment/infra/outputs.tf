@@ -28,11 +28,6 @@ output "order_result_endpoint" {
   value       = module.order_result_lambda.localstack_endpoint_url
 }
 
-output "order_results_queue_url" {
-  description = "SQS Queue URL for order results"
-  value       = aws_sqs_queue.order_results.url
-}
-
 output "order_router_endpoint" {
   description = "Order Router Lambda endpoint"
   value       = module.order_router_lambda.localstack_endpoint_url
@@ -63,6 +58,11 @@ output "backend_base_url" {
   value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
+output "postcode_lookup_endpoint" {
+  description = "Postcode Lookup Lambda endpoint"
+  value       = module.postcode_lookup_lambda.localstack_endpoint_url
+}
+
 output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
   description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
@@ -81,4 +81,9 @@ output "ui_url" {
 output "order_service_endpoint" {
   description = "Order Service Lambda endpoint"
   value       = module.order_service_lambda.localstack_endpoint_url
+}
+
+output "order_status_endpoint" {
+  description = "Order Status Lambda endpoint"
+  value       = module.order_status_lambda.localstack_endpoint_url
 }

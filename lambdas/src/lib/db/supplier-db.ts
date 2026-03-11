@@ -1,4 +1,5 @@
-import { Organization, Location } from "fhir/r4";
+import { Location, Organization } from "fhir/r4";
+
 import { DBClient } from "./db-client";
 
 export interface SupplierOffering {
@@ -29,9 +30,22 @@ export interface SupplierConfig {
   clientSecretName: string;
   clientId: string;
   oauthTokenPath: string;
-  orderPath: string;
   oauthScope: string;
+  orderPath: string;
+  resultsPath: string;
 }
+
+const DEFAULT_CONFIG = {
+  oauthTokenPath: "/oauth/token",
+  oauthScope: "orders results",
+  orderPath: "/order",
+  resultsPath: "/results",
+} as const;
+
+const getOrDefault = (value: string | null | undefined, fallback: string): string => {
+  const normalizedValue = value?.trim();
+  return normalizedValue && normalizedValue.length > 0 ? normalizedValue : fallback;
+};
 
 export class SupplierConfigError extends Error {
   constructor(message: string) {
@@ -46,16 +60,15 @@ export class SupplierService {
     this.dbClient = dbClient;
   }
 
-  async getSupplierConfigBySupplierId(
-    supplierId: string,
-  ): Promise<SupplierConfig | null> {
+  async getSupplierConfigBySupplierId(supplierId: string): Promise<SupplierConfig | null> {
     const query = `
       SELECT service_url,
             client_secret_name,
             client_id,
             oauth_token_path,
+            oauth_scope,
             order_path,
-            oauth_scope
+            results_path
       FROM supplier
       WHERE supplier_id = $1::uuid
       LIMIT 1;
@@ -67,9 +80,10 @@ export class SupplierService {
           service_url: string;
           client_secret_name: string;
           client_id: string;
-          oauth_token_path: string;
-          order_path: string;
-          oauth_scope: string;
+          oauth_token_path: string | null;
+          oauth_scope: string | null;
+          order_path: string | null;
+          results_path: string | null;
         },
         [string]
       >(query, [supplierId]);
@@ -79,7 +93,9 @@ export class SupplierService {
       }
 
       const row = result.rows[0];
-      if (!row.service_url) {
+      const serviceUrl = row.service_url?.trim();
+
+      if (!serviceUrl) {
         throw new SupplierConfigError(
           `Supplier configuration missing service URL for supplierId ${supplierId}`,
         );
@@ -96,12 +112,13 @@ export class SupplierService {
       }
 
       return {
-        serviceUrl: row.service_url,
+        serviceUrl: serviceUrl.replace(/\/$/, ""),
         clientSecretName: row.client_secret_name,
         clientId: row.client_id,
-        oauthTokenPath: row.oauth_token_path,
-        orderPath: row.order_path,
-        oauthScope: row.oauth_scope,
+        oauthTokenPath: getOrDefault(row.oauth_token_path, DEFAULT_CONFIG.oauthTokenPath),
+        oauthScope: getOrDefault(row.oauth_scope, DEFAULT_CONFIG.oauthScope),
+        orderPath: getOrDefault(row.order_path, DEFAULT_CONFIG.orderPath),
+        resultsPath: getOrDefault(row.results_path, DEFAULT_CONFIG.resultsPath),
       };
     } catch (error: any) {
       if (error instanceof SupplierConfigError) {
@@ -114,9 +131,7 @@ export class SupplierService {
     }
   }
 
-  async getSuppliersByLaCode(laCode: LaCode): Promise<
-    { id: string; name: string }[]
-  > {
+  async getSuppliersByLaCode(laCode: LaCode): Promise<{ id: string; name: string }[]> {
     const query = `
       SELECT s.supplier_id,
              s.supplier_name
@@ -141,10 +156,7 @@ export class SupplierService {
         name: row.supplier_name,
       }));
     } catch (error) {
-      throw new Error(
-        `Failed to fetch suppliers for laCode ${laCode}`,
-        { cause: error }
-      );
+      throw new Error(`Failed to fetch suppliers for laCode ${laCode}`, { cause: error });
     }
   }
 
@@ -166,10 +178,10 @@ export class SupplierService {
     `;
 
     try {
-      const result = await this.dbClient.query<SupplierRow, GetSupplierParams>(
-        query,
-        [laCode, testCode ?? null],
-      );
+      const result = await this.dbClient.query<SupplierRow, GetSupplierParams>(query, [
+        laCode,
+        testCode ?? null,
+      ]);
 
       if (result.rowCount === 0) {
         return [];

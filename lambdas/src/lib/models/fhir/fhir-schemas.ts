@@ -28,9 +28,7 @@ export const FHIRHumanNameSchema = z.object({
 });
 
 export const FHIRContactPointSchema = z.object({
-  system: z
-    .enum(["phone", "fax", "email", "pager", "url", "sms", "other"])
-    .optional(),
+  system: z.enum(["phone", "fax", "email", "pager", "url", "sms", "other"]).optional(),
   value: z.string(),
   use: z.enum(["home", "work", "temp", "old", "mobile"]).optional(),
 });
@@ -54,6 +52,12 @@ export const FHIRContainedPatientSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
+});
+
+export const FHIRIdentifierSchema = z.object({
+  system: z.string().optional(),
+  value: z.string(),
+  use: z.enum(["usual", "official", "temp", "secondary", "old"]).optional(),
 });
 
 export const FHIRServiceRequestSchema = z.object({
@@ -84,4 +88,66 @@ export const FHIRServiceRequestSchema = z.object({
   subject: FHIRReferenceSchema,
   requester: FHIRReferenceSchema,
   performer: z.array(FHIRReferenceSchema).optional(),
+});
+
+export const FHIRTaskSchema = z.looseObject({
+  resourceType: z.literal("Task"),
+  identifier: z.array(FHIRIdentifierSchema).optional(),
+  basedOn: z.array(FHIRReferenceSchema).optional(),
+  status: z.enum([
+    "draft",
+    "requested",
+    "received",
+    "accepted",
+    "rejected",
+    "ready",
+    "cancelled",
+    "in-progress",
+    "on-hold",
+    "failed",
+    "completed",
+    "entered-in-error",
+  ]),
+  intent: z.enum([
+    "unknown",
+    "proposal",
+    "plan",
+    "order",
+    "original-order",
+    "reflex-order",
+    "filler-order",
+    "instance-order",
+    "option",
+  ]),
+  statusReason: FHIRCodeableConceptSchema.optional(),
+  businessStatus: FHIRCodeableConceptSchema.optional(),
+  for: FHIRReferenceSchema.optional(),
+  authoredOn: z.string().datetime().optional(),
+  lastModified: z.string().datetime().optional(),
+  requester: FHIRReferenceSchema.optional(),
+  owner: FHIRReferenceSchema.optional(),
+});
+
+// Not a complete FHIR Observation schema implementation,
+export const FHIRObservationSchema = z.looseObject({
+  resourceType: z.literal("Observation"),
+  id: z.string().optional(),
+  basedOn: z.array(FHIRReferenceSchema).optional(),
+  status: z.enum([
+    "registered",
+    "preliminary",
+    "final",
+    "amended",
+    "corrected",
+    "cancelled",
+    "entered-in-error",
+    "unknown",
+  ]),
+  code: FHIRCodeableConceptSchema,
+  subject: FHIRReferenceSchema.optional(),
+  effectiveDateTime: z.iso.datetime().optional(),
+  issued: z.iso.datetime().optional(),
+  performer: z.array(FHIRReferenceSchema).optional(),
+  valueCodeableConcept: FHIRCodeableConceptSchema.optional(),
+  interpretation: z.array(FHIRCodeableConceptSchema).optional(),
 });

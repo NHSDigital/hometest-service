@@ -54,7 +54,7 @@ describe("TestResultsPage", () => {
 
   const mockIncompleteOrder: OrderDetails = {
     ...mockOrder,
-    status: OrderStatus.ORDER_RECEIVED,
+    status: OrderStatus.CONFIRMED,
   };
   const mockResult = { id: "obs-1", isNormal: true };
 
@@ -66,6 +66,7 @@ describe("TestResultsPage", () => {
     phoneNumber: "07700900000",
     givenName: "Test",
     familyName: "Surname",
+    email: "john.smith@example.com",
   };
 
   const renderWithRouter = (currentOrderId: string) => {
@@ -75,10 +76,7 @@ describe("TestResultsPage", () => {
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[`/orders/${currentOrderId}/results`]}>
           <Routes>
-            <Route
-              path="/orders/:orderId/results"
-              element={<TestResultsPage />}
-            />
+            <Route path="/orders/:orderId/results" element={<TestResultsPage />} />
             <Route
               path="/orders/:orderId/tracking"
               element={<div data-testid="order-tracking-page" />}
@@ -114,9 +112,7 @@ describe("TestResultsPage", () => {
     expect(
       screen.getByRole("heading", { name: "More options and information" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "About this service" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "About this service" })).toBeInTheDocument();
     expect(orderDetailsService.get).toHaveBeenCalledWith(orderId, {
       nhsNumber: "2657119018",
       dateOfBirth: "1990-08-11",
@@ -135,9 +131,7 @@ describe("TestResultsPage", () => {
       renderWithRouter(orderId);
     });
 
-    expect(
-      await screen.findByTestId("order-tracking-page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByTestId("order-tracking-page")).toBeInTheDocument();
   });
 
   it("redirects to order tracking page when result is not normal", async () => {
@@ -151,24 +145,18 @@ describe("TestResultsPage", () => {
       renderWithRouter(orderId);
     });
 
-    expect(
-      await screen.findByTestId("order-tracking-page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByTestId("order-tracking-page")).toBeInTheDocument();
   });
 
   it("redirects to order tracking page when order is not complete", async () => {
-    (orderDetailsService.get as jest.Mock).mockResolvedValue(
-      mockIncompleteOrder,
-    );
+    (orderDetailsService.get as jest.Mock).mockResolvedValue(mockIncompleteOrder);
     (testResultsService.get as jest.Mock).mockResolvedValue(mockResult);
 
     await act(async () => {
       renderWithRouter(orderId);
     });
 
-    expect(
-      await screen.findByTestId("order-tracking-page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByTestId("order-tracking-page")).toBeInTheDocument();
     expect(testResultsService.get).not.toHaveBeenCalled();
   });
 
@@ -179,9 +167,7 @@ describe("TestResultsPage", () => {
       renderWithRouter(orderId);
     });
 
-    expect(
-      await screen.findByTestId("order-tracking-page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByTestId("order-tracking-page")).toBeInTheDocument();
     expect(testResultsService.get).not.toHaveBeenCalled();
   });
 
@@ -189,9 +175,7 @@ describe("TestResultsPage", () => {
     renderWithRouter("not-a-guid");
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "There is a problem" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
     expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
     expect(orderDetailsService.get).not.toHaveBeenCalled();
     expect(testResultsService.get).not.toHaveBeenCalled();
