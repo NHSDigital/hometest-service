@@ -87,6 +87,14 @@ export class TestOrderDbClient extends BaseDbClient {
     ]);
   }
 
+  async insertConsent(orderUid: UUID): Promise<void> {
+    await this.query(
+      `INSERT INTO consent (order_uid)
+       VALUES ($1::uuid)`,
+      [orderUid],
+    );
+  }
+
   async createOrderWithPatientAndStatus(
     input: CreateOrderInput,
   ): Promise<{ order_uid: UUID; patient_uid: UUID; order_reference: number }> {
@@ -99,6 +107,7 @@ export class TestOrderDbClient extends BaseDbClient {
       input.originator,
     );
     await this.insertOrderStatus(order.order_uid, input.initial_status);
+    await this.insertConsent(order.order_uid);
     return { order_uid: order.order_uid, patient_uid, order_reference: order.order_reference };
   }
 
