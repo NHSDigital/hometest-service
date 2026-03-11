@@ -40,6 +40,7 @@ export default function CallbackPage() {
   const handleCallback = useAsyncErrorHandler(async () => {
     if (!backendUrl || backendUrl.trim() === "") {
       console.error("Missing NEXT_PUBLIC_BACKEND_URL");
+      throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
       return;
     }
     const params = new URLSearchParams(globalThis.location.search);
