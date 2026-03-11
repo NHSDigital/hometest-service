@@ -2,7 +2,9 @@
 
 ## About the Project
 
+<!-- vale Vale.Terms = NO -->
 `hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `npm --prefix` — this is **not** an npm workspaces setup.
+<!-- vale Vale.Terms = YES -->
 
 | Package | Purpose |
 |---|---|
@@ -152,7 +154,9 @@ npm run local:service:localstack:start  # start LocalStack only
 - Unsafe code blocks without justification
 - Command injection risks (shell commands, user input)
 - Path traversal vulnerabilities
+<!-- vale Vale.Terms = NO -->
 - Credential exposure or hardcoded secrets
+<!-- vale Vale.Terms = YES -->
 - Missing input validation on external data
 - Improper error handling that could leak sensitive info
 
