@@ -78,6 +78,7 @@ export class OSPlacesClient implements PostcodeLookupClient {
       line1: addressLines[0],
       line2: addressLines[1] || '',
       line3: addressLines[2] || '',
+      line4: addressLines[3] || '',
       town: dpa.POST_TOWN || '',
       postcode: dpa.POSTCODE || '',
       fullAddress: addressLines.join(', ').concat(`, ${dpa.POST_TOWN || ''}, ${dpa.POSTCODE || ''}`).replace(/,\s*,/g, ',').replace(/,\s*$/, ''),

@@ -124,16 +124,20 @@ export default function EnterAddressManuallyPage() {
   const { user } = useAuth();
 
   const [addressLine1, setAddressLine1] = useState(
-    orderAnswers.deliveryAddress?.addressLine1 || "",
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine1 || "") : ""
   );
   const [addressLine2, setAddressLine2] = useState(
-    orderAnswers.deliveryAddress?.addressLine2 || "",
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine2 || "") : ""
   );
   const [addressLine3, setAddressLine3] = useState(
-    orderAnswers.deliveryAddress?.addressLine3 || "",
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine3 || "") : ""
   );
-  const [townOrCity, setTownOrCity] = useState(orderAnswers.deliveryAddress?.postTown || "");
-  const [postcode, setPostcode] = useState(orderAnswers.deliveryAddress?.postcode || "");
+  const [townOrCity, setTownOrCity] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.postTown || "") : ""
+  );
+  const [postcode, setPostcode] = useState(
+    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.postcode || "") : ""
+  );
 
   const [addressLine1Error, setAddressLine1Error] = useState<string | null>(null);
   const [addressLine2Error, setAddressLine2Error] = useState<string | null>(null);
