@@ -18,7 +18,7 @@ tests/
 ├── configuration/          # Environment configuration (EnvironmentConfiguration.ts)
 ├── db/                     # Database helpers for test setup/teardown
 ├── fixtures/               # Playwright fixture definitions
-│   └── CombinedTestFixture.ts  ← main fixture export for UI/E2E tests
+│   ├── CombinedTestFixture.ts  ← main fixture export for UI/E2E tests
 │   └── IntegrationFixture.ts   ← fixture export for API/integration tests
 ├── models/                 # TypeScript interfaces for request/response payloads
 ├── page-objects/           # Page Object Model classes
