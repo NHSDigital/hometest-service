@@ -178,7 +178,7 @@ export default function CheckYourAnswersPage() {
 
       <SummaryList>
         <SummaryList.Row>
-          <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>{" "}
+          <SummaryList.Key>{content.summaryLabels.name}</SummaryList.Key>
           <SummaryList.Value>{formatUserName(user)}</SummaryList.Value>
         </SummaryList.Row>
 
