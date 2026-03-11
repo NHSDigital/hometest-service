@@ -34,6 +34,29 @@ describe("login-lambda", () => {
     expect(res.body).toBe("Invalid request, missing body");
   });
 
+  it("returns 400 when body is not a string", async () => {
+    const performLogin = jest.fn();
+
+    mockInit.mockImplementation(async () => ({
+      authTokenService: {
+        generateAuthAccessToken: jest.fn(),
+        generateAuthRefreshToken: jest.fn(),
+      },
+      loginService: {
+        performLogin,
+      },
+    }));
+
+    const { lambdaHandler } = await import("./index");
+
+    const event = { body: { code: "abc" } } as unknown as APIGatewayProxyEvent;
+    const res = await lambdaHandler(event);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toBe("Invalid request, body must be a string");
+    expect(performLogin).not.toHaveBeenCalled();
+  });
+
   it("returns 200, user info, and Set-Cookie headers on success", async () => {
     const loginOutput = {
       nhsLoginAccessToken: "access-token",

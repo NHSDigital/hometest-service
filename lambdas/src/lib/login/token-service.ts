@@ -21,6 +21,9 @@ export class TokenService implements ITokenService {
 
   public async verifyToken(encodedToken: string): Promise<Jwt> {
     try {
+      // Decode without verification first to extract the key ID (kid) from the
+      // header. The kid is needed to fetch the matching public key before
+      // signature verification can take place.
       const decodedToken = this.decodeToken(encodedToken);
       const tokenKid = decodedToken.header.kid;
       if (tokenKid === undefined) {
@@ -33,6 +36,9 @@ export class TokenService implements ITokenService {
         throw new Error('public key not found');
       }
 
+      // RS512 and the baseUri issuer are mandated by NHS Login's token spec.
+      // complete: true returns the full { header, payload, signature } object
+      // rather than just the payload, which is needed by callers reading header claims.
       const verifiedToken = jwt.verify(encodedToken, publicSigningKey, {
         algorithms: ['RS512'],
         issuer: this.nhsLoginConfig.baseUri,
