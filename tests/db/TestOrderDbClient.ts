@@ -150,20 +150,4 @@ export class TestOrderDbClient extends BaseDbClient {
     );
     return rows[0].status_code as OrderStatusCode;
   }
-
-  async getConsentCountByOrderUid(orderUid: string): Promise<number> {
-    const rows = await this.query<{ consent_count: number }>(
-      `
-      SELECT count(*)::int AS consent_count
-      FROM consent
-      WHERE order_uid = $1::uuid
-    `,
-      [orderUid],
-    );
-    return rows[0]?.consent_count ?? 0;
-  }
-
-  async deleteConsentByOrderUid(orderUid: UUID): Promise<void> {
-    await this.query(`DELETE FROM consent WHERE order_uid = $1::uuid`, [orderUid]);
-  }
 }
