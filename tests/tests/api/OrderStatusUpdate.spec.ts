@@ -27,10 +27,12 @@ test.describe("Order Status Update API", () => {
     patientUid = await testOrderDb.upsertPatient(nhsNumber, birthDate);
     const orderResult = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
     orderUid = orderResult.order_uid;
+    await testOrderDb.insertConsent(orderUid);
   });
 
   test.afterEach(async ({ testOrderDb }) => {
     await testOrderDb.deleteOrderStatusByUid(orderUid);
+    await testOrderDb.deleteConsentByOrderUid(orderUid);
     await testOrderDb.deleteOrderByUid(orderUid);
     await testOrderDb.deletePatientMapping(nhsNumber, birthDate);
   });
