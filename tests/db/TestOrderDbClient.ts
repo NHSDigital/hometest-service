@@ -110,6 +110,23 @@ export class TestOrderDbClient extends BaseDbClient {
     await this.query(`DELETE FROM test_order WHERE patient_uid = $1::uuid`, [patientUid]);
   }
 
+  async getPatientUidByNhsNumber(nhsNumber: string): Promise<UUID | undefined> {
+    const rows = await this.query<{ patient_uid: UUID }>(
+      `SELECT patient_uid FROM patient_mapping WHERE nhs_number = $1 LIMIT 1`,
+      [nhsNumber],
+    );
+    return rows[0]?.patient_uid;
+  }
+
+  async deleteOrderStatusByPatientUid(patientUid: UUID): Promise<void> {
+    await this.query(
+      `DELETE FROM order_status WHERE order_uid IN (
+         SELECT order_uid FROM test_order WHERE patient_uid = $1::uuid
+       )`,
+      [patientUid],
+    );
+  }
+
   async deletePatientMapping(nhsNumber: string, birthDate: string): Promise<void> {
     await this.query(
       `DELETE FROM patient_mapping

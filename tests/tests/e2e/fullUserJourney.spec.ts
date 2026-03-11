@@ -4,25 +4,21 @@ import { AddressModel } from "../../models/Address";
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 
 const randomAddress = AddressModel.getRandomAddress();
-let orderId = "";
 const dbClient = new TestOrderDbClient();
 
 test.describe("Home test E2E tests", () => {
   test.beforeEach(async () => {
-    orderId = "";
     await dbClient.connect();
   });
 
   test.afterEach(async ({ testedUser }) => {
-    if (orderId) {
-      const order = await dbClient.getOrderByUid(orderId);
-      const patientId = order?.patient_uid;
-      if (patientId) {
-        await dbClient.deleteConsentByPatientUid(patientId);
-        await dbClient.deleteOrderByPatientUid(patientId);
-      }
-      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    const patientId = await dbClient.getPatientUidByNhsNumber(testedUser.nhsNumber!);
+    if (patientId) {
+      await dbClient.deleteConsentByPatientUid(patientId);
+      await dbClient.deleteOrderStatusByPatientUid(patientId);
+      await dbClient.deleteOrderByPatientUid(patientId);
     }
+    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     await dbClient.disconnect();
   });
 

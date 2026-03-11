@@ -53,6 +53,8 @@ test.describe("Suppliers Terms of Use Page", () => {
     "Delete result status, order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
       await dbClient.deleteConsentByPatientUid(patientId);
+      await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.disconnect();

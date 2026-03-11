@@ -72,13 +72,8 @@ test.describe("Results Flow - Update Order Results Logic", () => {
   });
 
   test.afterEach(
-    "Delete result status,order status, order, and patient records from the database and disconnect",
+    "Delete result status, order status, order, and patient records from the database",
     async ({ testedUser }) => {
-      if (!testedUser.nhsNumber || !testedUser.dob) {
-        throw new Error(
-          `Tested user is missing nhsNumber or dob. User: ${JSON.stringify(testedUser)}`,
-        );
-      }
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteConsentByPatientUid(patientId);
