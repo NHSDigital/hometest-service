@@ -2,9 +2,9 @@
 
 ## About the Project
 
-`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independently packaged workspaces:
+`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `npm --prefix` — this is **not** an npm workspaces setup.
 
-| Workspace | Purpose |
+| Package | Purpose |
 |---|---|
 | `ui/` | Next.js 16 static-export shell wrapping a React Router SPA |
 | `lambdas/` | AWS Lambda handlers (Node.js ESM, middy middleware) |
@@ -29,7 +29,7 @@ This service handles NHS patient data. These rules are non-negotiable:
 
 ## TypeScript Standards
 
-All four workspaces use TypeScript 5.9.3.
+All four packages use TypeScript 5.9.3.
 
 - Always write fully typed code. Never use `any` unless `DBClient.query` type parameters genuinely warrant it, and even then use the generic form (`query<T>(...)`).
 - Always define explicit interfaces or types for function parameters and return values — do not rely on inference for public API boundaries.
@@ -45,7 +45,7 @@ All four workspaces use TypeScript 5.9.3.
 All code must satisfy Prettier and ESLint before commit. Pre-commit hooks enforce this.
 
 - **Prettier**: 100-character line width, 2-space indent, double quotes, LF line endings, trailing commas everywhere.
-- **ESLint**: `typescript-eslint` strict rules. Each workspace has its own `eslint.config.mjs`.
+- **ESLint**: `typescript-eslint` strict rules. Each package has its own `eslint.config.mjs`.
 - **EditorConfig**: 2 spaces for TypeScript/JS/JSON/YAML; 4 spaces for Python/Dockerfile; tabs for Makefile.
 
 ---
@@ -86,7 +86,7 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 
 ## Anti-Patterns — Never Generate These
 
-- `console.log` in lambda or UI production code. Use `console.error` for genuine errors only.
+- `console.log` in lambda or UI production code. In lambdas, use `console.info` for operational log points and `console.error` for runtime errors. Never use `console.log`.
 - ORM usage (Prisma, TypeORM, Drizzle, etc.). The DB layer uses raw `pg` with the `DBClient` interface.
 - `next/link`, `next/navigation`, or `useRouter` from Next.js. The UI uses React Router for all navigation.
 - Next.js API routes (`app/api/` or `pages/api/`). All backend logic lives in Lambda functions.
@@ -158,7 +158,7 @@ npm run local:service:localstack:start  # start LocalStack only
 
 ### Correctness Issues
 
-- Logic errors that could cause panics or incorrect behavior
+- Logic errors that could cause uncaught exceptions or incorrect behavior
 - Race conditions in async code
 - Resource leaks (files, connections, memory)
 - Off-by-one errors or boundary conditions
@@ -174,7 +174,7 @@ npm run local:service:localstack:start  # start LocalStack only
 - Code that violates existing patterns in the codebase
 - Missing error handling
 - Async/await misuse or blocking operations in async contexts
-- Improper trait implementations
+- Incorrect interface or class implementations
 
 ## Response Format
 

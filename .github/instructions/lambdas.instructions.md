@@ -31,7 +31,7 @@ lambdas/src/
 
 ## Handler Pattern
 
-Every lambda must follow this structure exactly:
+Use this as the preferred structure for new lambdas:
 
 ```typescript
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
@@ -67,8 +67,9 @@ Key rules:
 - The Middy-wrapped export is always `handler` (the actual Lambda entrypoint).
 - Middy middleware order is always: `httpSecurityHeaders` → `cors` → `httpErrorHandler`.
 - Always pass the shared config objects: `httpSecurityHeaders(securityHeaders)` and `cors(defaultCorsOptions)` — never inline options.
-- Always extract the correlation ID and echo it in the response header.
-- Use `createJsonResponse(statusCode, body, extraHeaders?)` for all responses — never construct the response object manually.
+- Call `init()` at module scope (outside the handler) so dependencies are constructed once on cold start, not on every invocation. Exception: lambdas where this causes test-isolation problems may call `init()` inside the handler.
+- Echo `X-Correlation-ID` in the response header for all JSON responses. FHIR-response lambdas (using `createFhirResponse`) do not set this header — that is an accepted divergence.
+- Use `createJsonResponse(statusCode, body, extraHeaders?)` for all JSON responses — never construct the response object manually.
 - For lambdas that return FHIR resources, use `createFhirResponse` / `createFhirErrorResponse` from `../lib/fhir-response` instead of `createJsonResponse`.
 
 ## Dependency Injection via `init()`

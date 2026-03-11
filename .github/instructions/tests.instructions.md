@@ -54,7 +54,11 @@ import { test, expect } from "../../fixtures/IntegrationFixture";
 Access environment configuration via `ConfigFactory`:
 
 ```typescript
+// From page-objects/ or fixtures/ (one level deep)
 import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
+
+// From tests/tests/**/* (two levels deep)
+import { ConfigFactory, type ConfigInterface } from "../../configuration/EnvironmentConfiguration";
 
 const config: ConfigInterface = ConfigFactory.getConfig();
 const baseUrl = config.uiBaseUrl;
@@ -73,6 +77,7 @@ All page interactions go through Page Object classes. Every page has its own cla
 `page-objects/` extending `BasePage`.
 
 ```typescript
+// Page objects live in tests/page-objects/ — one level from tests/configuration/
 import { Locator, Page } from "@playwright/test";
 import { ConfigFactory } from "../configuration/EnvironmentConfiguration";
 import { BasePage } from "./BasePage";

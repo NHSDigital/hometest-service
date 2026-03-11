@@ -8,11 +8,11 @@ applyTo: "ui/**"
 
 The UI is **not** a standard Next.js application. Next.js is used only as a static-export
 build tool. The entire application is a **React Router SPA** mounted inside a Next.js
-catch-all route (`app/[[...slug]]/page.tsx`).
+catch-all route (`ui/src/app/[[...slug]]/page.tsx`).
 
 ```text
 Next.js (static shell)
-  └── app/[[...slug]]/page.tsx  → ClientOnly (dynamic import, ssr: false)
+  └── ui/src/app/[[...slug]]/page.tsx  → ClientOnly (dynamic import, ssr: false)
         └── ui/src/app.tsx       → <BrowserRouter> (React Router entry)
               └── ui/src/routes/ → all application routes/pages
 ```
