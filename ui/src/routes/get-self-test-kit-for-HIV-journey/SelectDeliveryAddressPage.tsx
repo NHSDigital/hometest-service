@@ -59,6 +59,7 @@ export default function SelectDeliveryAddressPage() {
           addressLine1: selected.line1,
           addressLine2: selected.line2,
           addressLine3: selected.line3,
+          addressLine4: selected.line4,
           postTown: selected.town,
           postcode: postcode,
         },

@@ -107,9 +107,11 @@ test.describe("Order Status Page", () => {
     "Delete result status, order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
       await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.deleteOrderStatusByUid(orderId2);
+      await dbClient.deleteConsentByPatientUid(patientId2);
       await dbClient.deleteOrderByPatientUid(patientId2);
       await dbClient.deletePatientMapping(nhsNumber2, birthDate2);
       await dbClient.disconnect();
