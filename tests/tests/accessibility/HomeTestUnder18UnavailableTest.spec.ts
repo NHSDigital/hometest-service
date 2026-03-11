@@ -34,6 +34,7 @@ test.describe("Home Test Under 18 Unavailable page", () => {
       accessibility,
     }) => {
       await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
+      await selectDeliveryAddressPage.waitUntilPageLoad();
       await selectDeliveryAddressPage.clickContinueButton();
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await cannotUseServiceUnder18Page.waitUntilPageLoad();
