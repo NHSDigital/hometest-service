@@ -6,13 +6,9 @@ export abstract class BasePage {
   constructor(page: Page) {
     this.headerText = page.locator('h1');
     this.page = page;
-    this.headerText = page.locator('h1');
-
   }
 
-  async waitUntilPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-  }
+abstract waitUntilPageLoaded(): Promise<void>;
 
   async getTitle(): Promise<string> {
     return await this.page.title();
@@ -20,10 +16,6 @@ export abstract class BasePage {
 
   async getCurrentUrl(): Promise<string> {
     return this.page.url();
-  }
-
-  async getHeaderText(): Promise<string> {
-    return await this.headerText.textContent() ?? "";
   }
 
   async clickBackLink(): Promise<void> {

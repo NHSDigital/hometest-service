@@ -5,12 +5,19 @@ export class SelectDeliveryAddressPage extends BasePage {
   readonly editPostcodeLink: Locator;
   readonly continueButton: Locator;
   readonly enterAddressManuallyLink: Locator;
+  readonly pageHeader: Locator;
 
   constructor(page: Page) {
     super(page);
     this.editPostcodeLink = page.getByRole("link", { name: "Edit postcode" });
+    this.pageHeader = page.locator("h1", { hasText: "found" });
     this.continueButton = page.getByRole("button", { name: "Continue" });
+
     this.enterAddressManuallyLink = page.getByRole("link", { name: "Enter address manually" });
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async clickContinueButton(): Promise<void> {

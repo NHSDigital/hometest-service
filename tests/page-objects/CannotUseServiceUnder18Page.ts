@@ -3,6 +3,7 @@ import { BasePage } from "./BasePage";
 
 export class CannotUseServiceUnder18Page extends BasePage {
   readonly findAnotherClinicLink: Locator;
+  readonly pageHeader: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -10,6 +11,11 @@ export class CannotUseServiceUnder18Page extends BasePage {
     this.findAnotherClinicLink = page.locator("a", {
       hasText: "Find another sexual health clinic",
     });
+    this.pageHeader = page.locator("h1", { hasText: "Get a self-test kit for HIV" });
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async expectPostcodeInFindAnotherClinicLink(postcode: string): Promise<void> {

@@ -45,10 +45,7 @@ test.describe("Suppliers Privacy Policy Page", () => {
     }) => {
       await orderStatusPage.navigateToOrder(supplier.orderId());
       await orderStatusPage.clickSuppliersPrivacyPolicyLink();
-      await suppliersPrivacyPolicyPage.waitUntilPageLoad();
-
       const header = await suppliersPrivacyPolicyPage.getHeaderText();
-
       expect(header).toBe(`${supplier.name} privacy policy`);
     });
   }
@@ -56,6 +53,7 @@ test.describe("Suppliers Privacy Policy Page", () => {
   test.afterAll(
     "Delete order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
+       await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId);

@@ -8,7 +8,7 @@ test(
   },
   async ({ suppliersTermsOfUsePage, accessibility }) => {
     await suppliersTermsOfUsePage.navigate("SH:24");
-    await suppliersTermsOfUsePage.waitUntilPageLoad();
+    await suppliersTermsOfUsePage.waitUntilPageLoaded();
 
     const accessErrors = await accessibility.runAccessibilityCheck(
       suppliersTermsOfUsePage.page,

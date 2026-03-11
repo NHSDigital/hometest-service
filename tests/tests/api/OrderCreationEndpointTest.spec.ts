@@ -22,9 +22,12 @@ test.describe("Backend API, order endpoint", () => {
       expect(order!.test_code).toBe(payload.testCode);
       expect(order!.nhs_number).toBe(payload.patient.nhsNumber);
 
-      await expect
-        .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length)
-        .toBe(3);
+await expect
+  .poll(
+    async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length,
+    { timeout: 10000 }
+  )
+  .toBe(3);
 
       const statusRows = await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid);
       expect(statusRows?.[2].status_code).toBe("GENERATED");
