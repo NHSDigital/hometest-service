@@ -14,7 +14,7 @@
     "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:start",
     "local:stop": "npm run local:terraform:destroy && COMPOSE_PROFILES=* npm run local:compose:down",
     "local:restart": "npm run local:stop && npm run local:start",
-    "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
+    "local:deploy": "NODE_ENV=development npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
     "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up && npm run local:service:db:migrate",
     "local:frontend:start": "npm run local:terraform:env && COMPOSE_PROFILES=frontend npm run local:compose:up",
     "local:service:ui:start": "npm run local:compose:up -- ui",
