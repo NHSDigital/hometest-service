@@ -32,6 +32,8 @@ function parseArgs(): BuildOptions {
   return { specificLambda };
 }
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 async function buildLambda(lambdaName: string): Promise<void> {
   console.log(`Building ${lambdaName} lambda...`);
 
@@ -55,8 +57,8 @@ async function buildLambda(lambdaName: string): Promise<void> {
     target: "node24",
     format: "cjs",
     packages: "bundle",
-    minify: true,
-    sourcemap: false,
+    minify: !isDevelopment,
+    sourcemap: isDevelopment,
     logLevel: "info",
     metafile: true,
   });
