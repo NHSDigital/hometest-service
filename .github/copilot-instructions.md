@@ -29,7 +29,7 @@ This service handles NHS patient data. These rules are non-negotiable:
 
 ## TypeScript Standards
 
-All four packages use TypeScript 5.9.3.
+All TypeScript packages (`ui/`, `lambdas/`, `tests/`) use TypeScript 5.9.3.
 
 - Always write fully typed code. Never use `any` unless `DBClient.query` type parameters genuinely warrant it, and even then use the generic form (`query<T>(...)`).
 - Always define explicit interfaces or types for function parameters and return values — do not rely on inference for public API boundaries.
