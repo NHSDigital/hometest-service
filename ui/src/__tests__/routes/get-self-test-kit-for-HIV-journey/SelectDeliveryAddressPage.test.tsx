@@ -4,7 +4,6 @@ import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
 import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
-import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { AuthContext, AuthUser, useCreateOrderContext } from "@/state";
@@ -149,24 +148,6 @@ const TestWrapper = ({ children, user }: { children: React.ReactNode; user?: Aut
           <StateSeeder>
             <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
           </StateSeeder>
-        </CreateOrderProvider>
-      </JourneyNavigationProvider>
-    </AuthContext.Provider>
-  </MemoryRouter>
-);
-
-const TestWrapperWithoutPostcode = ({
-  children,
-  user,
-}: {
-  children: React.ReactNode;
-  user?: AuthUser;
-}) => (
-  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
-    <AuthContext.Provider value={{ user: user || mockUser, setUser: jest.fn() }}>
-      <JourneyNavigationProvider>
-        <CreateOrderProvider>
-          <PostcodeLookupProvider>{children}</PostcodeLookupProvider>
         </CreateOrderProvider>
       </JourneyNavigationProvider>
     </AuthContext.Provider>

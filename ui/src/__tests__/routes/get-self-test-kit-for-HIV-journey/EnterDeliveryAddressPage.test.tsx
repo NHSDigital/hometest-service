@@ -15,15 +15,13 @@ const mockClearAddresses = jest.fn();
 
 // Exposed setters so tests can drive React state changes in the mock hook
 let setMockLookupResultsStatus: (value: string) => void;
-let setMockIsLoading: (value: boolean) => void;
 
 jest.mock("@/state", () => ({
   ...jest.requireActual("@/state"),
   usePostcodeLookup: () => {
     const [status, setStatus] = React.useState("idle");
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading] = React.useState(false);
     setMockLookupResultsStatus = setStatus;
-    setMockIsLoading = setIsLoading;
     return {
       lookupPostcode: mockLookupPostcode,
       lookupResultsStatus: status,
