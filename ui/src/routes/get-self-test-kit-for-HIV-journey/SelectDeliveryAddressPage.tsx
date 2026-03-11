@@ -7,12 +7,11 @@ import {
   useJourneyNavigationContext,
   usePostcodeLookup,
 } from "@/state";
-import { Button, ErrorSummary, Radios } from "nhsuk-react-components";
-
 import FormPageLayout from "@/layouts/FormPageLayout";
+import { useContent, useAsyncErrorHandler } from "@/hooks";
+import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useContent } from "@/hooks";
 import { useState } from "react";
 import { isUnder18 } from "@/lib/utils/is-under-18";
 
@@ -30,7 +29,7 @@ export default function SelectDeliveryAddressPage() {
 
   const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
@@ -46,54 +45,53 @@ export default function SelectDeliveryAddressPage() {
 
     if (!selected) return;
 
-    try {
-      const postcode = selected.postcode;
-      const laResponse = await laLookupService.getByPostcode(postcode);
-      if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
-        updateOrderAnswers({ postcodeSearch: postcode });
-        goToStep(JourneyStepNames.KitNotAvailableInArea);
-        return;
-      }
-      updateOrderAnswers({
-        deliveryAddress: {
-          addressLine1: selected.line1,
-          addressLine2: selected.line2,
-          addressLine3: selected.line3,
-          addressLine4: selected.line4,
-          postTown: selected.town,
-          postcode: postcode,
-        },
-        addressEntryMethod: "postcode-search",
-        selectedAddressId: selected.id,
-        localAuthority: {
-          code: laResponse.localAuthority.localAuthorityCode,
-          region: laResponse.localAuthority.region,
-        },
-        supplier: laResponse.suppliers.map((supplier) => ({
-          id: supplier.id,
-          name: supplier.name,
-          testCode: supplier.testCode,
-        })),
-      });
-
-      if (isUnder18User) {
-        goToStep(JourneyStepNames.CannotUseServiceUnder18);
-
-        return;
-      }
-
-      if (returnToStep) {
-        const step = returnToStep;
-        setReturnToStep(null);
-        goToStep(step);
-      } else {
-        goToStep(JourneyStepNames.HowComfortablePrickingFinger);
-      }
-    } catch (err) {
-      // ALPHA: Remove the console log and use proper logging pattern
-      console.error("Failed to lookup local authority:", err);
+    const postcode = selected.postcode;
+    const laResponse = await laLookupService.getByPostcode(postcode);
+    if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+      updateOrderAnswers({ postcodeSearch: postcode });
+      goToStep(JourneyStepNames.KitNotAvailableInArea);
+      return;
     }
-  };
+    updateOrderAnswers({
+      deliveryAddress: {
+        addressLine1: selected.line1,
+        addressLine2: selected.line2,
+        addressLine3: selected.line3,
+        addressLine4: selected.line4,
+        postTown: selected.town,
+        postcode: postcode,
+      },
+      addressEntryMethod: "postcode-search",
+      selectedAddressId: selected.id,
+      localAuthority: {
+        code: laResponse.localAuthority.localAuthorityCode,
+        region: laResponse.localAuthority.region,
+      },
+      supplier: laResponse.suppliers.map((supplier) => ({
+        id: supplier.id,
+        name: supplier.name,
+        testCode: supplier.testCode,
+      })),
+    });
+
+    if (!postcode) {
+      throw new Error("Postcode is required for address selection.");
+    }
+
+    if (isUnder18User) {
+      goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+      return;
+    }
+
+    if (returnToStep) {
+      const step = returnToStep;
+      setReturnToStep(null);
+      goToStep(step);
+    } else {
+      goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+    }
+  });
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedAddress(e.target.value);
