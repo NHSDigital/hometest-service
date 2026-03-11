@@ -1,6 +1,6 @@
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
+import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
@@ -8,14 +8,14 @@ let patientId: string;
 let orderId2: string;
 const dbClient = new TestOrderDbClient();
 
-test.describe("Suppliers Terms of Use Page", () => {
+test.describe("Suppliers Privacy Policy Page", () => {
   test.beforeAll(
     "Connect to the database and create a patient and orders with different suppliers",
     async ({ testedUser }) => {
       await dbClient.connect();
 
       const result = await dbClient.createOrderWithPatientAndStatus(
-        new OrderBuilder().withUser(testedUser).withStatus("DISPATCHED").build(),
+        new OrderBuilder().withUser(testedUser).build(),
       );
 
       orderId = result.order_uid;
@@ -39,20 +39,23 @@ test.describe("Suppliers Terms of Use Page", () => {
   ];
 
   for (const supplier of suppliers) {
-    test(`Open Supplier Terms and Conditions Page where the supplier is ${supplier.name}`, async ({
-      suppliersTermsOfUsePage,
+    test(`Open Supplier Privacy Policy Page where the supplier is ${supplier.name}`, async ({
+      suppliersPrivacyPolicyPage,
       orderStatusPage,
     }) => {
       await orderStatusPage.navigateToOrder(supplier.orderId());
-      await orderStatusPage.clickSuppliersTermsOfUseLink();
-      await expect(suppliersTermsOfUsePage.headerText).toHaveText(`${supplier.name} terms of use`);
+      await orderStatusPage.clickSuppliersPrivacyPolicyLink();
+      await suppliersPrivacyPolicyPage.waitUntilPageLoad();
+
+      const header = await suppliersPrivacyPolicyPage.getHeaderText();
+
+      expect(header).toBe(`${supplier.name} privacy policy`);
     });
   }
 
   test.afterAll(
     "Delete order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
-      await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId);
