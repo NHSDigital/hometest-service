@@ -6,7 +6,6 @@ import { headersOrder } from "../../utils/ApiRequestHelper";
 test.describe("Backend API, order endpoint", () => {
   const payload = OrderTestData.getDefaultOrder();
   let createdOrderUid: string;
-  let patientUid: string | undefined;
 
   test(
     "POST request, should create an order and verify its presence in the database",
@@ -23,11 +22,10 @@ test.describe("Backend API, order endpoint", () => {
       expect(order!.test_code).toBe(payload.testCode);
       expect(order!.nhs_number).toBe(payload.patient.nhsNumber);
 
-      patientUid = order?.patient_uid;
-
       await expect
         .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length)
         .toBe(3);
+
       const statusRows = await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid);
       expect(statusRows?.[2].status_code).toBe("GENERATED");
       expect(statusRows?.[1].status_code).toBe("QUEUED");
@@ -36,8 +34,9 @@ test.describe("Backend API, order endpoint", () => {
   );
 
   test.afterEach(async ({ testOrderDb }) => {
+    await testOrderDb.deleteConsentByOrderUid(createdOrderUid);
+    await testOrderDb.deleteOrderStatusByUid(createdOrderUid);
     await testOrderDb.deleteOrderByUid(createdOrderUid);
-    await testOrderDb.deleteOrderByPatientUid(patientUid!);
     await testOrderDb.deletePatientMapping(payload.patient.nhsNumber, payload.patient.birthDate);
   });
 });

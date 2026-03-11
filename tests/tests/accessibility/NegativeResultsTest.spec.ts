@@ -46,6 +46,7 @@ test.describe("Accessibility Testing @accessibility", () => {
   test.afterAll(async ({ testedUser }) => {
     await resultDbClient.deleteResultStatusByUid(orderId);
     await dbClient.deleteOrderStatusByUid(orderId);
+    await dbClient.deleteConsentByPatientUid(patientId);
     await dbClient.deleteOrderByPatientUid(patientId);
     await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     await dbClient.disconnect();
