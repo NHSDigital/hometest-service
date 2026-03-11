@@ -94,9 +94,6 @@ export default function CheckYourAnswersPage() {
       consentTimestamp,
     });
 
-    console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
-    console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
-
     try {
       // Build orderRequest from OrderAnswers and User in state
       const addressLines = orderAnswers.deliveryAddress
