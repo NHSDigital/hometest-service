@@ -27,9 +27,9 @@ export class CheckYourAnswersPage extends BasePage {
     await this.submitOrderButton.click();
   }
 
-  async getAddressValue(): Promise<string | null> {
-    const currentAddressValue = await this.currentAddress.textContent();
-    return currentAddressValue;
+  async getAddressValue(): Promise<string[] | null> {
+    const currentAddressValue = await this.currentAddress.allInnerTexts();
+    return currentAddressValue[0].split("\n");
   }
 
   async getMobileNumberValue(): Promise<string | null> {

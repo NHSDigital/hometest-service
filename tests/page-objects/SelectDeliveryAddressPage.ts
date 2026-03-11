@@ -30,11 +30,15 @@ export class SelectDeliveryAddressPage extends BasePage {
     return await listOfAddresses.count();
   }
 
-  async selectAddressAndContinue(option?: string): Promise<void> {
+  async selectAddressAndContinue(option?: string): Promise<string[]> {
     const count = await this.getNumberOfFilteredAddresses();
     const selectedOption = option ?? String(Math.floor(Math.random() * count) + 1);
     const addressRadioButton = this.page.locator(`#collection-point-${selectedOption}`);
     await addressRadioButton.click();
+    const addressLabel = this.page.locator(`#collection-point-${selectedOption}--label`);
+    const addressText = await addressLabel.innerText();
+    const addressArray = addressText.split(',').map(line => line.trim());
     await this.continueButton.click();
+    return addressArray;
   }
 }
