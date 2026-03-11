@@ -17,7 +17,7 @@ export default function OrderSubmittedPage() {
     <FormPageLayout showBackButton={false}>
       <div className="nhsuk-panel nhsuk-panel--confirmation">
         <h1 className="nhsuk-panel__title">{content.panel.title}</h1>
-        <div className="nhsuk-panel__body">
+        <div className="nhsuk-panel__body" id="reference-number">
           {content.panel.referenceNumberPrefix} {referenceNumber}
         </div>
       </div>
