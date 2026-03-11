@@ -16,7 +16,7 @@ lambdas/src/
 ├── <name>-lambda/        # One directory per lambda
 │   ├── index.ts          # Handler entrypoint — always named index.ts
 │   ├── init.ts           # Dependency injection factory
-│   └── *.schema.ts       # Zod request/response schemas
+│   └── schemas.ts / *-schema.ts  # Zod request/response schemas
 └── lib/
     ├── auth/             # JWT verification, NHS Login OIDC
     ├── db/               # DBClient, typed DB repository classes
