@@ -36,8 +36,6 @@ export default function HowComfortablePrickingFingerPage() {
       comfortableDoingTest: selectedOption,
     });
 
-    console.log("[HowComfortablePrickingFingerPage] comfortableDoingTest:", orderAnswers);
-
     if (selectedOption === "Yes") {
       if (returnToStep) {
         const step = returnToStep;
