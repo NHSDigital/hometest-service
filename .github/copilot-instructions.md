@@ -97,7 +97,7 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 - Non-parameterised SQL (string interpolation or concatenation in queries).
 - `eval()`, `new Function()`, or dynamic code execution.
 - React class components. Use functional components with hooks.
-- Default exports for non-component modules (utility files, service classes, constants).
+- Default exports for non-component modules (utility files, service classes, constants), **except** UI service singletons in `ui/src/lib/services/*`, which are intentionally default-exported.
 
 ---
 
