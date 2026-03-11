@@ -42,7 +42,7 @@ export default function ConfirmMobileNumberPage() {
     setAlternativeNumber(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!selectedOption) {

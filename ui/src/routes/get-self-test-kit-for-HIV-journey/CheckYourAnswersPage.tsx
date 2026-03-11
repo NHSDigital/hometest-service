@@ -78,7 +78,7 @@ export default function CheckYourAnswersPage() {
     updateOrderAnswers({ consentCheckboxChecked: e.target.checked });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!consentChecked) {

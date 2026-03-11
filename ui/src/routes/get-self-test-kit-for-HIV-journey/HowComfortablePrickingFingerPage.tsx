@@ -22,7 +22,7 @@ export default function HowComfortablePrickingFingerPage() {
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!selectedOption || selectedOption.trim() === "") {

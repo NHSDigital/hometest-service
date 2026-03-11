@@ -22,7 +22,7 @@ export default function EnterMobileNumberPage() {
     setMobileNumber(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const mobileNumberSchema = createMobileNumberSchema(commonContent.validation);
