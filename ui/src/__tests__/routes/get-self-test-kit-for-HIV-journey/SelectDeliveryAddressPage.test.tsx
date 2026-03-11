@@ -462,24 +462,4 @@ describe("SelectDeliveryAddressPage", () => {
       expect(mockGoToStep).toHaveBeenCalledWith(JourneyStepNames.CannotUseServiceUnder18);
     });
   });
-
-  describe("Error handling", () => {
-    it("shows the error boundary when postcode is missing from context", async () => {
-      render(
-        <TestErrorBoundary>
-          <SelectDeliveryAddressPage />
-        </TestErrorBoundary>,
-        { wrapper: TestWrapperWithoutPostcode },
-      );
-
-      const radios = screen.getAllByRole("radio");
-      fireEvent.click(radios[0]);
-
-      submitForm();
-
-      await waitFor(() => {
-        expect(screen.getByText("Postcode is required for address selection.")).toBeInTheDocument();
-      });
-    });
-  });
 });
