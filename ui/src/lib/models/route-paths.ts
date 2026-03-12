@@ -1,4 +1,5 @@
 export enum RoutePath {
+  ServiceErrorPage = "/service-error",
   HomePage = "/",
   LoginPage = "/login",
   CallbackPage = "/callback",

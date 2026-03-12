@@ -9,7 +9,7 @@ test(
   async ({ homeTestStartPage, enterDeliveryAddressPage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
-    await enterDeliveryAddressPage.waitUntilPageLoad();
+    await enterDeliveryAddressPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       enterDeliveryAddressPage.page,
       "Enter Delivery Address Page",
