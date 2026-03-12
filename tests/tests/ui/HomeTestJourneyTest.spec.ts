@@ -164,7 +164,7 @@ test("Verify Terms of Use page", async ({
   actualHeaderText = await termsOfUsePage.getHeaderText();
   expect(actualHeaderText).toBe(
     "Hometest Terms of Use - Draft V1 January 2026");
-  //
+  // Back to Home Test Start
   await termsOfUsePage.clickBackLink();
   await expect(homeTestStartPage.headerText).toHaveText(
     "Get a self-test kit for HIV",
