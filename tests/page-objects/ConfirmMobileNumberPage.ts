@@ -7,6 +7,7 @@ export class ConfirmMobileNumberPage extends BasePage {
   readonly useAnotherMobileNumber: Locator;
   readonly confirmMobileNumber: Locator;
   readonly continueButton: Locator;
+  readonly pageHeader: Locator;
   readonly confirmationMobileNumberLabel: Locator;
 
   constructor(page: Page) {
@@ -16,6 +17,11 @@ export class ConfirmMobileNumberPage extends BasePage {
     this.mobileNumberInput = page.locator("#alternative-mobile-number");
     this.continueButton = page.getByRole("button", { name: "Continue" });
     this.confirmationMobileNumberLabel = page.locator("#phone-confirmation-1--label");
+    this.pageHeader = page.locator("h1", { hasText: "What's your mobile phone number?" });
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async clickContinue(): Promise<void> {

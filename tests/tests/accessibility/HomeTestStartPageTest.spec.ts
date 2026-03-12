@@ -8,7 +8,7 @@ test(
   },
   async ({ homeTestStartPage, accessibility }) => {
     await homeTestStartPage.navigate();
-    await homeTestStartPage.waitUntilPageLoad();
+    await homeTestStartPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       homeTestStartPage,
       "Home Test Start Page",

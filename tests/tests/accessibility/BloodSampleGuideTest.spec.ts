@@ -9,7 +9,7 @@ test(
   async ({ homeTestStartPage, bloodSampleGuidePage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickBloodSampleGuideLink();
-    await bloodSampleGuidePage.waitUntilPageLoad();
+    await bloodSampleGuidePage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       bloodSampleGuidePage.page,
       "Blood Sample Guide Page",

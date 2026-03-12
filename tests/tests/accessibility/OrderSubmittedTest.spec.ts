@@ -45,7 +45,7 @@ test.describe("Accessibility Testing @accessibility", () => {
       await confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
       await checkYourAnswersPage.checkConsentCheckbox();
       await checkYourAnswersPage.clickSubmitOrder();
-      await orderSubmittedPage.waitUntilPageLoad();
+      await orderSubmittedPage.waitUntilPageLoaded();
       const accessErrors = await accessibility.runAccessibilityCheck(
         orderSubmittedPage.page,
         "Order Submitted Page",
