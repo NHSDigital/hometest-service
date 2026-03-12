@@ -1,14 +1,14 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator, Page } from "@playwright/test";
 export abstract class BasePage {
   readonly page: Page;
   readonly headerText: Locator;
 
   constructor(page: Page) {
-    this.headerText = page.locator('h1');
+    this.headerText = page.locator("h1");
     this.page = page;
   }
 
-abstract waitUntilPageLoaded(): Promise<void>;
+  abstract waitUntilPageLoaded(): Promise<void>;
 
   async getTitle(): Promise<string> {
     return await this.page.title();
@@ -19,6 +19,6 @@ abstract waitUntilPageLoaded(): Promise<void>;
   }
 
   async clickBackLink(): Promise<void> {
-    await this.page.getByRole('link', { name: 'Back' }).click();
+    await this.page.getByRole("link", { name: "Back" }).click();
   }
 }
