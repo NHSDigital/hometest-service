@@ -1,6 +1,6 @@
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
+import { expect } from "@playwright/test";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
@@ -45,19 +45,16 @@ test.describe("Suppliers Terms of Use Page", () => {
     }) => {
       await orderStatusPage.navigateToOrder(supplier.orderId());
       await orderStatusPage.clickSuppliersTermsOfUseLink();
-      await suppliersTermsOfUsePage.waitUntilPageLoad();
-
-      const header = await suppliersTermsOfUsePage.getHeaderText();
-      console.log("Page header:", header);
-
-      expect(header).toBe(`${supplier.name} terms of use`);
+      await expect(suppliersTermsOfUsePage.headerText).toHaveText(`${supplier.name} terms of use`);
     });
   }
 
   test.afterAll(
-    "Delete result status, order status, order, and patient records from the database and disconnect",
+    "Delete order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
+      await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.disconnect();

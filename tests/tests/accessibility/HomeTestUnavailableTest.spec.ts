@@ -29,9 +29,9 @@ test.describe("Home Test Unavailable page", () => {
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(unavailableAddress);
-      await selectDeliveryAddressPage.waitUntilPageLoad();
+      await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      await kitNotAvailableInYourAreaPage.waitUntilPageLoad();
+      await kitNotAvailableInYourAreaPage.waitUntilPageLoaded();
 
       const accessErrors = await accessibility.runAccessibilityCheck(
         kitNotAvailableInYourAreaPage.page,

@@ -22,7 +22,7 @@ export default function HowComfortablePrickingFingerPage() {
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!selectedOption || selectedOption.trim() === "") {
@@ -73,26 +73,24 @@ export default function HowComfortablePrickingFingerPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#comfortable"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("comfortable-1")?.focus();
-                }}
-              >
-                {optionError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#comfortable"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("comfortable-1")?.focus();
+              }}
+            >
+              {optionError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
       <Images
-        src="/images/self-sample-steps/self-sample-step4.jpg"
+        src="/images/self-sample-steps/self-sample-step4.svg"
         sizes="(max-width: 768px) 100vw, 66vw"
-        srcSet="/images/self-sample-steps/self-sample-step4.png 600w, /images/self-sample-steps/self-sample-step4.png 1000w"
+        srcSet="/images/self-sample-steps/self-sample-step4.svg 600w, /images/self-sample-steps/self-sample-step4.svg 1000w"
         alt={content.image.alt}
       />
 
@@ -119,24 +117,24 @@ export default function HowComfortablePrickingFingerPage() {
         <Radios
           id="comfortable"
           name="comfortable"
-          label={content.formLabel}
-          labelProps={{
+          legend={content.formLabel}
+          legendProps={{
             isPageHeading: false,
             size: "m",
           }}
           error={optionError || undefined}
           onChange={handleRadioChange}
         >
-          <Radios.Radio
+          <Radios.Item
             value="Yes"
             hint={content.options.yes.hint.replace("{supplier}", supplierName)}
             checked={selectedOption === "Yes"}
           >
             {content.options.yes.text}
-          </Radios.Radio>
-          <Radios.Radio value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>
+          </Radios.Item>
+          <Radios.Item value="No" hint={content.options.no.hint} checked={selectedOption === "No"}>
             {content.options.no.text}
-          </Radios.Radio>
+          </Radios.Item>
         </Radios>
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
