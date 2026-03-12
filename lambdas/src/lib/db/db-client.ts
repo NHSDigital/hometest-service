@@ -9,10 +9,7 @@ export interface DbResult<T> {
 }
 
 export interface DBClient {
-  query<T = any, I extends any[] = any[]>(
-    text: string,
-    values?: I,
-  ): Promise<DbResult<T>>;
+  query<T = any, I extends any[] = any[]>(text: string, values?: I): Promise<DbResult<T>>;
   withTransaction<T>(fn: (client: DBClient) => Promise<T>): Promise<T>;
   close(): Promise<void>;
 }
@@ -27,6 +24,11 @@ export class PostgresDbClient implements DBClient {
     this.pool = this.createPool(config);
   }
 
+  // expose pool for PgTyped
+  get pgPool(): Pool {
+    return this.pool;
+  }
+
   private createPool(config: ClientConfig): Pool {
     return new Pool({
       ...config,
@@ -36,10 +38,7 @@ export class PostgresDbClient implements DBClient {
     });
   }
 
-  async query<T = any, I extends any[] = any[]>(
-    text: string,
-    values?: I,
-  ): Promise<DbResult<T>> {
+  async query<T = any, I extends any[] = any[]>(text: string, values?: I): Promise<DbResult<T>> {
     const result = await this.pool.query(text, values as any[]);
     return {
       rows: result.rows as T[],
@@ -60,8 +59,7 @@ export class PostgresDbClient implements DBClient {
           rowCount: result.rowCount,
         };
       },
-      withTransaction: async <U>(nestedFn: (client: DBClient) => Promise<U>) =>
-        nestedFn(txClient),
+      withTransaction: async <U>(nestedFn: (client: DBClient) => Promise<U>) => nestedFn(txClient),
       close: async () => undefined,
     };
 
