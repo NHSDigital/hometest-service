@@ -8,7 +8,6 @@ import {
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
-import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
 import httpErrorHandler from "@middy/http-error-handler";
 import middy from "@middy/core";
@@ -19,6 +18,7 @@ import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import z from "zod";
 import { IncomingBusinessStatus } from "./types";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
+import { OrderStatusMutator } from "src/lib/db/types/__generated__/hometest/OrderStatus";
 
 const commons = new ConsoleCommons();
 const { orderStatusDb } = init();
@@ -149,11 +149,11 @@ export const lambdaHandler = async (
     }
 
     // Process the update
-    const statusOrderUpdateParams: OrderStatusUpdateParams = {
-      orderId,
-      statusCode: businessStatusMapping[validatedTask.businessStatus.text],
-      createdAt: validatedTask.lastModified,
-      correlationId,
+    const statusOrderUpdateParams: OrderStatusMutator = {
+      order_uid: orderId,
+      status_code: businessStatusMapping[validatedTask.businessStatus.text],
+      created_at: new Date(validatedTask.lastModified),
+      correlation_id: correlationId,
     };
 
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);

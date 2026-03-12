@@ -109,10 +109,10 @@ export const lambdaHandler = async (
 
     try {
       await orderStatusService.addOrderStatusUpdate({
-        orderId: orderResult.orderUid,
-        statusCode: OrderStatusCodes.QUEUED,
-        createdAt: new Date().toISOString(),
-        correlationId: correlationId,
+        order_uid: orderResult.orderUid,
+        status_code: OrderStatusCodes.QUEUED,
+        created_at: new Date(),
+        correlation_id: correlationId,
       });
     } catch (error) {
       console.error(name, "Failed to update order status", {

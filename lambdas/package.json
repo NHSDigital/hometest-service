@@ -16,7 +16,9 @@
     "package": "npx tsx scripts/package.ts",
     "local:deploy": "npm --prefix ../ run local:deploy",
     "local:terraform:apply": "npm --prefix ../ run local:terraform:apply",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "kanel:generate": "kanel --config kanel.config.cjs",
+    "kanel:watch": "kanel --config kanel.config.cjs --watch"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.1004.0",
@@ -54,6 +56,7 @@
     "globals": "^17.4.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
+    "kanel": "^3.16.1",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "tsx": "4.21.0",

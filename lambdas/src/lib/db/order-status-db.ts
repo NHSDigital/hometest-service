@@ -1,4 +1,6 @@
 import { DBClient } from "./db-client";
+import OrderStatus, { OrderStatusMutator } from "./types/__generated__/hometest/OrderStatus";
+import TestOrder from "./types/__generated__/hometest/TestOrder";
 
 export const OrderStatusCodes = {
   GENERATED: "GENERATED",
@@ -11,32 +13,6 @@ export const OrderStatusCodes = {
 } as const;
 
 export type OrderStatusCode = (typeof OrderStatusCodes)[keyof typeof OrderStatusCodes];
-
-export interface OrderStatusRow {
-  status_id: string;
-  order_uid: string;
-  order_reference: number;
-  status_code: OrderStatusCode;
-  created_at: string;
-  correlation_id: string;
-}
-
-export interface OrderRow {
-  order_uid: string;
-  patient_uid: string;
-  order_reference: number;
-  supplier_id: string;
-  test_code: string;
-  created_at: string;
-  originator?: string;
-}
-
-export interface OrderStatusUpdateParams {
-  orderId: string;
-  statusCode: OrderStatusCode;
-  createdAt: string;
-  correlationId: string;
-}
 
 export interface IdempotencyCheckResult {
   isDuplicate: boolean;
@@ -52,7 +28,9 @@ export class OrderStatusService {
   /**
    * Retrieve patient ID associated with an order from the database. Returns null if order is not found.
    */
-  async getPatientIdFromOrder(orderId: string): Promise<string | null> {
+  async getPatientIdFromOrder(
+    orderId: TestOrder["order_uid"],
+  ): Promise<TestOrder["patient_uid"] | null> {
     const query = `
       SELECT patient_uid
       FROM test_order
@@ -61,7 +39,10 @@ export class OrderStatusService {
     `;
 
     try {
-      const result = await this.dbClient.query<{ patient_uid: string }, [string]>(query, [orderId]);
+      const result = await this.dbClient.query<
+        { patient_uid: TestOrder["patient_uid"] },
+        [TestOrder["order_uid"]]
+      >(query, [orderId]);
 
       return result.rowCount === 0 ? null : result.rows[0].patient_uid;
     } catch (error) {
@@ -74,7 +55,10 @@ export class OrderStatusService {
   /**
    * Check for idempotency - verify if an update with the same correlation ID was already processed
    */
-  async checkIdempotency(orderId: string, correlationId: string): Promise<IdempotencyCheckResult> {
+  async checkIdempotency(
+    orderId: OrderStatus["order_uid"],
+    correlationId: OrderStatus["correlation_id"],
+  ): Promise<IdempotencyCheckResult> {
     const query = `
       SELECT 1
       FROM order_status
@@ -99,8 +83,8 @@ export class OrderStatusService {
   /**
    * Add a new order status update to the database
    */
-  async addOrderStatusUpdate(params: OrderStatusUpdateParams): Promise<void> {
-    const { orderId, statusCode, createdAt, correlationId } = params;
+  async addOrderStatusUpdate(params: OrderStatusMutator): Promise<void> {
+    const { order_uid, status_code, created_at, correlation_id } = params;
 
     const query = `
       INSERT INTO order_status (order_uid, status_code, created_at, correlation_id)
@@ -109,17 +93,17 @@ export class OrderStatusService {
 
     try {
       const result = await this.dbClient.query(query, [
-        orderId,
-        statusCode,
-        createdAt,
-        correlationId,
+        order_uid,
+        status_code,
+        created_at,
+        correlation_id,
       ]);
 
       if (result.rowCount === 0) {
         throw new Error("Failed to insert order status");
       }
     } catch (error) {
-      throw new Error(`Failed to update order status for orderId ${orderId}`, {
+      throw new Error(`Failed to update order status for orderId ${order_uid}`, {
         cause: error,
       });
     }

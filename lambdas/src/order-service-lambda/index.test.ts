@@ -261,10 +261,10 @@ describe("order-service-lambda handler", () => {
 
       const orderStatusCallArg = mockAddOrderStatusUpdate.mock.calls[0][0];
       expect(orderStatusCallArg).toEqual({
-        orderId: "order-123",
-        statusCode: OrderStatusCodes.QUEUED,
-        createdAt: expect.any(String),
-        correlationId: "123e4567-e89b-12d3-a456-426614174123",
+        order_uid: "order-123",
+        status_code: OrderStatusCodes.QUEUED,
+        created_at: expect.any(Date),
+        correlation_id: "123e4567-e89b-12d3-a456-426614174123",
       });
     });
   });

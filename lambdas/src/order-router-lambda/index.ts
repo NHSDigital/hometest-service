@@ -149,10 +149,10 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
     // Instead, we accept the status update failure and avoid duplicate supplier orders.
     try {
       await orderStatusService.addOrderStatusUpdate({
-        orderId: parsedBody.order_body.id!,
-        statusCode: OrderStatusCodes.SUBMITTED,
-        createdAt: new Date().toISOString(),
-        correlationId: correlationId,
+        order_uid: parsedBody.order_body.id!,
+        status_code: OrderStatusCodes.SUBMITTED,
+        created_at: new Date(),
+        correlation_id: correlationId,
       });
     } catch (error) {
       console.error(

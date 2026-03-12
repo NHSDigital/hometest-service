@@ -3,6 +3,7 @@ import { OrderStatusFHIRTask } from "./index";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
+import { OrderStatusMutator } from "src/lib/db/types/__generated__/hometest/OrderStatus";
 
 const mockInit = jest.fn();
 
@@ -297,8 +298,8 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          correlationId: newCorrelationId,
-        }),
+          correlation_id: newCorrelationId,
+        } satisfies Partial<OrderStatusMutator>),
       );
     });
 
@@ -335,8 +336,8 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          createdAt: mockedLastModifiedTimestamp,
-        }),
+          created_at: new Date(mockedLastModifiedTimestamp),
+        } satisfies Partial<OrderStatusMutator>),
       );
     });
 
@@ -354,8 +355,8 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          createdAt: mockedLastModifiedTimestamp,
-        }),
+          created_at: new Date(mockedLastModifiedTimestamp),
+        } satisfies Partial<OrderStatusMutator>),
       );
     });
 
@@ -399,11 +400,11 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderId: MOCK_ORDER_UID,
-          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
-          createdAt: validTaskBody.lastModified,
-          correlationId: MOCK_CORRELATION_ID,
-        }),
+          order_uid: MOCK_ORDER_UID,
+          status_code: businessStatusMapping[MOCK_BUSINESS_STATUS],
+          created_at: new Date(validTaskBody.lastModified),
+          correlation_id: MOCK_CORRELATION_ID,
+        } satisfies Partial<OrderStatusMutator>),
       );
     });
   });
