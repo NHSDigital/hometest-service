@@ -19,11 +19,11 @@ test.describe("Go To Clinic Page", () => {
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-      await selectDeliveryAddressPage.waitUntilPageLoad();
+      await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      await howComfortablePrickingFingerPage.waitUntilPageLoad();
+      await howComfortablePrickingFingerPage.waitUntilPageLoaded();
       await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
-      await goToClinicPage.waitUntilPageLoad();
+      await goToClinicPage.waitUntilPageLoaded();
 
       const accessErrors = await accessibility.runAccessibilityCheck(
         goToClinicPage.page,

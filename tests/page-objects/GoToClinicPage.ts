@@ -2,17 +2,26 @@ import { Locator, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class GoToClinicPage extends BasePage {
+  readonly pageHeader: Locator;
   readonly findAnotherSexualHealthClinicLink: Locator;
   readonly learnMoreHIVAidsLink: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.pageHeader = page.getByRole("heading", {
+      name: "Go to a sexual health clinic",
+      level: 1,
+    });
     this.findAnotherSexualHealthClinicLink = page.getByRole("link", {
       name: "Find another sexual health clinic",
     });
     this.learnMoreHIVAidsLink = page.getByRole("link", {
       name: "Learn more about HIV and AIDS",
     });
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async clickFindAnotherSexualHealthClinicLink(): Promise<void> {
