@@ -101,7 +101,7 @@ jobs:
         run: |
           UI_URL="${{ steps.urls.outputs.ui_url }}"
           echo "Waiting for UI to be reachable at $UI_URL..."
-          timeout=120
+          timeout=900
           elapsed=0
           until curl -sf "$UI_URL" > /dev/null 2>&1; do
             if [ $elapsed -ge $timeout ]; then
@@ -116,12 +116,6 @@ jobs:
             elapsed=$((elapsed + 5))
           done
           echo "UI is reachable!"
-
-      - name: "Wait 15 minutes before running tests"
-        run: |
-          echo "Waiting 15 minutes before starting Playwright tests..."
-          sleep 900
-          echo "Wait complete, starting tests now"
 
       - name: "Run Playwright tests"
         working-directory: tests
