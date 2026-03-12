@@ -2,11 +2,10 @@ import { Locator, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
 import { type Supplier } from "../models/TestOrder";
-import { L } from "@faker-js/faker/dist/airline-Dz1uGqgJ";
 
 export class SuppliersPrivacyPolicyPage extends BasePage {
   readonly config: ConfigInterface;
-    readonly pageHeader: Locator;
+  readonly pageHeader: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -14,7 +13,7 @@ export class SuppliersPrivacyPolicyPage extends BasePage {
     this.config = ConfigFactory.getConfig();
   }
 
-async waitUntilPageLoaded(): Promise<void> {
+  async waitUntilPageLoaded(): Promise<void> {
     await this.pageHeader.waitFor({ state: "visible" });
   }
 
@@ -24,7 +23,6 @@ async waitUntilPageLoaded(): Promise<void> {
   }
 
   async getHeaderText(): Promise<string> {
-    return await this.pageHeader.textContent() ?? "";
+    return (await this.pageHeader.textContent()) ?? "";
   }
-
 }
