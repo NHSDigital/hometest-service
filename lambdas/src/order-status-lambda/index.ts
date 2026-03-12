@@ -8,7 +8,6 @@ import {
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
-import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
 import httpErrorHandler from "@middy/http-error-handler";
 import middy from "@middy/core";
@@ -19,6 +18,7 @@ import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import z from "zod";
 import { IncomingBusinessStatus } from "./types";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
+import { IAddOrderStatusUpdateParams } from "src/lib/db/queries/addOrderStatusUpdate";
 
 const commons = new ConsoleCommons();
 const { orderStatusDb } = init();
@@ -97,7 +97,9 @@ export const lambdaHandler = async (
     }
 
     // Verify order exists and retrieve associated patient ID
-    const orderPatientId = await orderStatusDb.getPatientIdFromOrder(orderId);
+    const orderPatientId = await orderStatusDb
+      .getPatientIdFromOrder({ order_uid: orderId })
+      .then((result) => result?.patient_uid);
 
     if (!orderPatientId) {
       commons.logError(name, "Order not found", { orderId });
@@ -137,7 +139,10 @@ export const lambdaHandler = async (
     }
 
     // Check for idempotency via Correlation ID
-    const idempotencyCheck = await orderStatusDb.checkIdempotency(orderId, correlationId);
+    const idempotencyCheck = await orderStatusDb.checkIdempotency({
+      correlation_id: correlationId,
+      order_uid: orderId,
+    });
 
     if (idempotencyCheck.isDuplicate) {
       commons.logInfo(name, "Duplicate update detected via correlation ID", {
@@ -149,11 +154,11 @@ export const lambdaHandler = async (
     }
 
     // Process the update
-    const statusOrderUpdateParams: OrderStatusUpdateParams = {
-      orderId,
-      statusCode: businessStatusMapping[validatedTask.businessStatus.text],
-      createdAt: validatedTask.lastModified,
-      correlationId,
+    const statusOrderUpdateParams: IAddOrderStatusUpdateParams = {
+      order_uid: orderId,
+      status_code: businessStatusMapping[validatedTask.businessStatus.text],
+      created_at: validatedTask.lastModified,
+      correlation_id: correlationId,
     };
 
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);

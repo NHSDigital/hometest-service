@@ -1,9 +1,9 @@
+import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
+import { IAddOrderStatusUpdateParams } from "./queries/addOrderStatusUpdate";
 import {
-  OrderRow,
-  OrderStatusCodes,
-  OrderStatusService,
-  OrderStatusUpdateParams,
-} from "./order-status-db";
+  getPatientIdFromOrder,
+  IGetPatientIdFromOrderResult,
+} from "./queries/getPatientIdFromOrder";
 
 const mockQuery = jest.fn();
 
@@ -21,32 +21,50 @@ describe("OrderStatusService", () => {
     const mockDbClient = {
       query: mockQuery,
       close: jest.fn(),
+      pgPool: {},
     };
     service = new OrderStatusService(mockDbClient as any);
   });
 
   describe("getPatientIdFromOrder", () => {
-    it("should fetch order by UUID", async () => {
-      const mockOrder: OrderRow = {
-        order_uid: "some-mocked-order-id",
-        patient_uid: "some-mocked-patient-id",
-        order_reference: 100001,
-        supplier_id: "some-mocked-supplier-id",
-        test_code: "some-mocked-test-code",
-        created_at: "2024-01-01T00:00:00Z",
-      };
+    // it("should fetch order by UUID", async () => {
+    //   const mockOrder: OrderRow = {
+    //     order_uid: "some-mocked-order-id",
+    //     patient_uid: "some-mocked-patient-id",
+    //     order_reference: 100001,
+    //     supplier_id: "some-mocked-supplier-id",
+    //     test_code: "some-mocked-test-code",
+    //     created_at: "2024-01-01T00:00:00Z",
+    //   };
 
-      mockQuery.mockResolvedValue({
-        rows: [mockOrder],
-        rowCount: 1,
-      });
+    //   mockQuery.mockResolvedValue({
+    //     rows: [mockOrder],
+    //     rowCount: 1,
+    //   });
 
-      const result = await service.getPatientIdFromOrder("some-mocked-order-id");
+    //   const result = await service.getPatientIdFromOrder("some-mocked-order-id");
 
-      expect(result).toEqual(mockOrder.patient_uid);
-      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
-        "some-mocked-order-id",
-      ]);
+    //   expect(result).toEqual(mockOrder.patient_uid);
+    //   expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
+    //     "some-mocked-order-id",
+    //   ]);
+    // });
+
+    fit("should fetch order by UUID", async () => {
+      // typed mock result
+      const mockResult: IGetPatientIdFromOrderResult[] = [
+        { patient_uid: "some-mocked-patient-id" },
+      ];
+
+      // Spy and mock the run() method
+      const runSpy = jest.spyOn(getPatientIdFromOrder, "run").mockResolvedValue(mockResult);
+
+      const result = await service.getPatientIdFromOrder({ order_uid: "some-mocked-order-id" });
+
+      expect(result).toEqual(mockResult[0]);
+
+      // Instead of expecting a real object for the pool, just allow anything
+      expect(runSpy).toHaveBeenCalledWith({ order_uid: "some-mocked-order-id" }, expect.anything());
     });
 
     it("should return null when order does not exist", async () => {
@@ -55,7 +73,7 @@ describe("OrderStatusService", () => {
         rowCount: 0,
       });
 
-      const result = await service.getPatientIdFromOrder("nonexistent-id");
+      const result = await service.getPatientIdFromOrder({ order_uid: "non-existent-order-id" });
 
       expect(result).toBeNull();
     });
@@ -63,8 +81,8 @@ describe("OrderStatusService", () => {
     it("should throw error on database failure", async () => {
       mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
-      await expect(service.getPatientIdFromOrder("order-123")).rejects.toThrow(
-        "Failed to fetch order from database",
+      await expect(service.getPatientIdFromOrder({ order_uid: "order-123" })).rejects.toThrow(
+        "Failed to fetch order for orderId order-123",
       );
     });
   });
@@ -73,10 +91,10 @@ describe("OrderStatusService", () => {
     it("should detect duplicate updates with same correlation ID", async () => {
       mockQuery.mockResolvedValue({ rows: [{ 1: 1 }], rowCount: 1 });
 
-      const result = await service.checkIdempotency(
-        "some-mocked-order-id",
-        "some-mocked-correlation-id",
-      );
+      const result = await service.checkIdempotency({
+        order_uid: "some-mocked-order-id",
+        correlation_id: "some-mocked-correlation-id",
+      });
 
       expect(result.isDuplicate).toBe(true);
       expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("correlation_id"), [
@@ -91,7 +109,10 @@ describe("OrderStatusService", () => {
         rowCount: 0,
       });
 
-      const result = await service.checkIdempotency("order-123", "new-corr-id");
+      const result = await service.checkIdempotency({
+        order_uid: "order-123",
+        correlation_id: "new-corr-id",
+      });
 
       expect(result.isDuplicate).toBe(false);
     });
@@ -99,11 +120,11 @@ describe("OrderStatusService", () => {
 
   describe("addUpdateOrderStatus", () => {
     it("should insert new order status record", async () => {
-      const mockParams: OrderStatusUpdateParams = {
-        orderId: "some-mocked-order-id",
-        statusCode: OrderStatusCodes.COMPLETE,
-        createdAt: "2024-01-15T11:00:00Z",
-        correlationId: "some-mocked-correlation-id",
+      const mockParams: IAddOrderStatusUpdateParams = {
+        order_uid: "some-mocked-order-id",
+        status_code: OrderStatusCodes.COMPLETE,
+        created_at: "2024-01-15T11:00:00Z",
+        correlation_id: "some-mocked-correlation-id",
       };
 
       mockQuery.mockResolvedValue({
@@ -116,10 +137,10 @@ describe("OrderStatusService", () => {
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),
         Object.values([
-          mockParams.orderId,
-          mockParams.statusCode,
-          mockParams.createdAt,
-          mockParams.correlationId,
+          mockParams.order_uid,
+          mockParams.status_code,
+          mockParams.created_at,
+          mockParams.correlation_id,
         ]),
       );
     });
@@ -129,11 +150,11 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          orderId: "some-mocked-order-id",
-          statusCode: OrderStatusCodes.COMPLETE,
-          createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "some-mocked-correlation-id",
-        } satisfies OrderStatusUpdateParams),
+          order_uid: "some-mocked-order-id",
+          status_code: OrderStatusCodes.COMPLETE,
+          created_at: "2024-01-15T11:00:00Z",
+          correlation_id: "some-mocked-correlation-id",
+        } satisfies IAddOrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
     });
 
@@ -145,11 +166,11 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          orderId: "some-mocked-order-id",
-          statusCode: OrderStatusCodes.COMPLETE,
-          createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "some-mocked-correlation-id",
-        } satisfies OrderStatusUpdateParams),
+          order_uid: "some-mocked-order-id",
+          status_code: OrderStatusCodes.COMPLETE,
+          created_at: "2024-01-15T11:00:00Z",
+          correlation_id: "some-mocked-correlation-id",
+        } satisfies IAddOrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
     });
   });

@@ -1,4 +1,11 @@
-import { DBClient } from "./db-client";
+import { PostgresDbClient } from "./db-client";
+import {
+  getPatientIdFromOrder,
+  IGetPatientIdFromOrderParams,
+  IGetPatientIdFromOrderResult,
+} from "../db/queries/getPatientIdFromOrder";
+import { checkIdempotency, ICheckIdempotencyParams } from "./queries/checkIdompotency";
+import { addOrderStatusUpdate, IAddOrderStatusUpdateParams } from "./queries/addOrderStatusUpdate";
 
 export const OrderStatusCodes = {
   GENERATED: "GENERATED",
@@ -12,84 +19,40 @@ export const OrderStatusCodes = {
 
 export type OrderStatusCode = (typeof OrderStatusCodes)[keyof typeof OrderStatusCodes];
 
-export interface OrderStatusRow {
-  status_id: string;
-  order_uid: string;
-  order_reference: number;
-  status_code: OrderStatusCode;
-  created_at: string;
-  correlation_id: string;
-}
-
-export interface OrderRow {
-  order_uid: string;
-  patient_uid: string;
-  order_reference: number;
-  supplier_id: string;
-  test_code: string;
-  created_at: string;
-  originator?: string;
-}
-
-export interface OrderStatusUpdateParams {
-  orderId: string;
-  statusCode: OrderStatusCode;
-  createdAt: string;
-  correlationId: string;
-}
-
 export interface IdempotencyCheckResult {
   isDuplicate: boolean;
 }
 
 export class OrderStatusService {
-  private readonly dbClient: DBClient;
-
-  constructor(dbClient: DBClient) {
-    this.dbClient = dbClient;
-  }
+  constructor(private readonly dbClient: PostgresDbClient) {}
 
   /**
    * Retrieve patient ID associated with an order from the database. Returns null if order is not found.
    */
-  async getPatientIdFromOrder(orderId: string): Promise<string | null> {
-    const query = `
-      SELECT patient_uid
-      FROM test_order
-      WHERE order_uid = $1::uuid
-      LIMIT 1;
-    `;
-
+  async getPatientIdFromOrder(
+    params: IGetPatientIdFromOrderParams,
+  ): Promise<IGetPatientIdFromOrderResult | null> {
     try {
-      const result = await this.dbClient.query<{ patient_uid: string }, [string]>(query, [orderId]);
+      const result = await getPatientIdFromOrder.run(params, this.dbClient.pgPool);
 
-      return result.rowCount === 0 ? null : result.rows[0].patient_uid;
+      return result[0] ?? null;
     } catch (error) {
-      throw new Error(`Failed to fetch order from database for orderId ${orderId}`, {
-        cause: error,
-      });
+      throw new Error(`Failed to fetch order for orderId ${params.order_uid}`, { cause: error });
     }
   }
 
   /**
    * Check for idempotency - verify if an update with the same correlation ID was already processed
    */
-  async checkIdempotency(orderId: string, correlationId: string): Promise<IdempotencyCheckResult> {
-    const query = `
-      SELECT 1
-      FROM order_status
-      WHERE order_uid = $1::uuid AND correlation_id = $2::uuid
-      LIMIT 1;
-    `;
-
+  async checkIdempotency(params: ICheckIdempotencyParams): Promise<IdempotencyCheckResult> {
     try {
-      const result = await this.dbClient.query(query, [orderId, correlationId]);
+      const result = await checkIdempotency.run(params, this.dbClient.pgPool);
 
       return {
-        isDuplicate: (result.rowCount ?? 0) > 0,
+        isDuplicate: result.length > 0,
       };
     } catch (error) {
-      throw new Error(`Failed to check idempotency for correlationId ${correlationId}`, {
+      throw new Error(`Failed to check idempotency for correlationId ${params.correlation_id}`, {
         cause: error,
       });
     }
@@ -99,27 +62,14 @@ export class OrderStatusService {
   /**
    * Add a new order status update to the database
    */
-  async addOrderStatusUpdate(params: OrderStatusUpdateParams): Promise<void> {
-    const { orderId, statusCode, createdAt, correlationId } = params;
-
-    const query = `
-      INSERT INTO order_status (order_uid, status_code, created_at, correlation_id)
-      VALUES ($1, $2, $3, $4)
-    `;
-
+  async addOrderStatusUpdate(params: IAddOrderStatusUpdateParams): Promise<void> {
     try {
-      const result = await this.dbClient.query(query, [
-        orderId,
-        statusCode,
-        createdAt,
-        correlationId,
-      ]);
+      // call PgTyped query
+      await addOrderStatusUpdate.run(params, this.dbClient.pgPool);
 
-      if (result.rowCount === 0) {
-        throw new Error("Failed to insert order status");
-      }
+      // no need to check rowCount
     } catch (error) {
-      throw new Error(`Failed to update order status for orderId ${orderId}`, {
+      throw new Error(`Failed to update order status for orderId ${params.order_uid}`, {
         cause: error,
       });
     }
