@@ -88,9 +88,9 @@ export default function HowComfortablePrickingFingerPage() {
       )}
 
       <Images
-        src="/images/self-sample-steps/self-sample-step4.jpg"
+        src="/images/self-sample-steps/self-sample-step4.svg"
         sizes="(max-width: 768px) 100vw, 66vw"
-        srcSet="/images/self-sample-steps/self-sample-step4.png 600w, /images/self-sample-steps/self-sample-step4.png 1000w"
+        srcSet="/images/self-sample-steps/self-sample-step4.svg 600w, /images/self-sample-steps/self-sample-step4.svg 1000w"
         alt={content.image.alt}
       />
 

@@ -15,6 +15,7 @@ export class HomeTestStartPage extends BasePage {
   readonly privacyPolicyLink: Locator;
   readonly bloodSampleGuideLink: Locator;
   readonly termsOfUseLink: Locator;
+  readonly pageHeader: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -35,6 +36,11 @@ export class HomeTestStartPage extends BasePage {
     this.config = ConfigFactory.getConfig();
     this.privacyPolicyLink = page.getByRole('link', { name: 'privacy policy' });
     this.termsOfUseLink = page.getByRole('link', { name: 'terms of use' });
+    this.pageHeader = page.locator("h1", { hasText: "Get a self-test kit for HIV" });
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async navigate(): Promise<void> {
