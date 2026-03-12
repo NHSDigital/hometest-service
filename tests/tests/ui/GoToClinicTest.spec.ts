@@ -20,15 +20,15 @@ test.describe(
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-      await selectDeliveryAddressPage.waitUntilPageLoad();
+      await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();
 
       if (!goToClinicPage.page.url().includes("/get-self-test-kit-for-HIV/go-to-clinic")) {
-        await howComfortablePrickingFingerPage.waitUntilPageLoad();
+        await howComfortablePrickingFingerPage.waitUntilPageLoaded();
         await howComfortablePrickingFingerPage.selectNoOptionAndContinue();
       }
 
-      await goToClinicPage.waitUntilPageLoad();
+      await goToClinicPage.waitUntilPageLoaded();
 
       await expect(
         goToClinicPage.page.getByText(
