@@ -1,7 +1,7 @@
 import { Observation } from "fhir/r4";
 
 const OBSERVATION_INTERPRETATION_SYSTEM =
-  "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation";
+  "https://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation";
 const NORMAL_CODE = "N";
 
 export class ObservationValidation {
