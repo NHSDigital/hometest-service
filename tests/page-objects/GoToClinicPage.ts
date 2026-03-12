@@ -1,15 +1,12 @@
 import { Locator, Page } from "@playwright/test";
-import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
 import { BasePage } from "./BasePage";
 
 export class GoToClinicPage extends BasePage {
-  readonly config: ConfigInterface;
   readonly findAnotherSexualHealthClinicLink: Locator;
   readonly learnMoreHIVAidsLink: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.config = ConfigFactory.getConfig();
     this.findAnotherSexualHealthClinicLink = page.getByRole("link", {
       name: "Find another sexual health clinic",
     });

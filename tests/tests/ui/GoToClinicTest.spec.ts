@@ -5,7 +5,7 @@ import { AddressModel } from "../../models/Address";
 const randomAddress = AddressModel.getRandomAddress();
 
 test.describe(
-  "Go To Clinic Page - Find another sexual health clinic link should include postcode in the URL",
+  "Go To Clinic Page - User selects 'No' to 'How comfortable are you pricking your finger?' question, and is directed to Go To Clinic Page",
   {
     tag: ["@ui"],
   },
