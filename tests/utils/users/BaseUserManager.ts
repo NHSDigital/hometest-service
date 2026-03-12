@@ -14,7 +14,9 @@ interface NetworkError {
   statusText: string;
   method: string;
   timestamp: string;
+    responseText: Promise<string>;
 }
+
 
 export abstract class BaseUserManager<TUser extends BaseTestUser> {
   protected readonly workerUsers: TUser[];
@@ -86,6 +88,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
           statusText: response.statusText(),
           method: response.request().method(),
           timestamp: new Date().toISOString(),
+          responseText: response.text().catch(() => "Unable to retrieve response body"),
         });
         console.error(
           `❌ HTTP ${status} ${response.statusText()}: ${response.request().method()} ${response.url()}`,
@@ -200,17 +203,19 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
           console.error(`\n🌐 Network errors detected during setup:`);
           networkErrors.forEach((err, idx) => {
             console.error(
-              `   ${idx + 1}. ${err.method} ${err.url} => ${err.status} ${err.statusText}`,
+              `   ${idx + 1}. ${err.method}, ${err.url} => ${err.status} ${err.statusText}`,
             );
           });
         }
 
         await this.captureFailureArtifacts(page, context, user, error as Error, networkErrors);
         await browser.close();
+        console.log(`✅ Successfully logged in worker user ${user.nhsNumber} and saved session state. CATCH`);
         throw error;
       }
 
       await browser.close();
+      console.log(`✅ Successfully logged in worker user ${user.nhsNumber} and saved session state.`);
     }
   }
   getSpecialUser(key: SpecialUserKey): TUser {
