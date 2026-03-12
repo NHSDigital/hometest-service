@@ -1,6 +1,6 @@
 ---
 name: "Playwright E2E Tests"
-run-name: "E2E Tests: env: ${{ inputs.environment || 'dev' }}, browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
+run-name: "E2E Tests: env: ${{ inputs.environment || 'local' }}, browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 on:
   schedule:
@@ -10,7 +10,7 @@ on:
       environment:
         description: "Target environment"
         required: false
-        default: "dev"
+        default: "local"
         type: choice
         options:
           - local
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      TARGET_ENV: ${{ inputs.environment || 'dev' }}
+      TARGET_ENV: ${{ inputs.environment || 'local' }}
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
@@ -124,8 +124,8 @@ jobs:
           BROWSER="${BROWSER:-chromium}"
           FILTER="${{ inputs.test_filter }}"
 
-          # Build the command - use TARGET_ENV to match the environment being tested
-          CMD="HEADLESS=true ENV=$TARGET_ENV npx playwright test"
+          # Build the command
+          CMD="HEADLESS=true ENV=dev npx playwright test"
 
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
