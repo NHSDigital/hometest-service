@@ -17,7 +17,7 @@
     "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:start",
     "local:stop": "npm run local:terraform:destroy && COMPOSE_PROFILES=* npm run local:compose:down",
     "local:restart": "npm run local:stop && npm run local:start",
-    "local:deploy": "npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
+    "local:deploy": "NODE_ENV=development npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
     "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up && npm run local:service:db:migrate",
     "local:frontend:start": "npm run local:terraform:env && COMPOSE_PROFILES=frontend npm run local:compose:up",
     "local:service:ui:start": "npm run local:compose:up -- ui",
@@ -35,7 +35,9 @@
     "local:terraform:env": "bash scripts/terraform/post-apply-env-update.sh",
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
     "local:compose:up": "npm run local:compose -- up -d",
-    "local:compose:down": "npm run local:compose -- down"
+    "local:compose:down": "npm run local:compose -- down",
+    "local:service:lambda:disable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda put-function-concurrency --function-name hometest-service-$LAMBDA --reserved-concurrent-executions 0 --endpoint-url http://localhost:4566 --region eu-west-2",
+    "local:service:lambda:enable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda delete-function-concurrency --function-name hometest-service-$LAMBDA --endpoint-url http://localhost:4566 --region eu-west-2"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",

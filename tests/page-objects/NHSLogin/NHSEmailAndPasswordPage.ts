@@ -25,7 +25,7 @@ export class NHSEmailAndPasswordPage extends BasePage {
     await this.continueBtn.click();
   }
 
-  async waitUntilLoaded(): Promise<void> {
+  async waitUntilPageLoaded(): Promise<void> {
     await this.emailInput.waitFor();
   }
 }
