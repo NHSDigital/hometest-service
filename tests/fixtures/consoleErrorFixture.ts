@@ -50,7 +50,7 @@ const defaultOptions: ErrorCaptureOptions = {
     /assets\.nhs\.uk.*font/i,
     // React Router v7 warning: root route has a loader but no HydrateFallback defined
     // This is a known issue to be fixed in the UI app (add HydrateFallback to root route)
-    /No `HydrateFallback` element provided to render during initial hydration/,,
+    /No `HydrateFallback` element provided to render during initial hydration/,
   ],
   ignoreStatusCodes: [],
 };
