@@ -9,7 +9,6 @@ on:
       - "main"
   pull_request:
     types: [opened, reopened, edited, synchronize]
-    types: [opened, reopened, edited, synchronize]
 
 jobs:
   pr-title-check:
