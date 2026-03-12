@@ -1,0 +1,24 @@
+/**
+ * Semantic list with dash markers
+ * Provides better accessibility than paragraph-based dash lists
+ */
+.nhsuk-list--dash {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.nhsuk-list--dash li {
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.nhsuk-list--dash li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: 1.4em;
+}

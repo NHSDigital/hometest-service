@@ -27,6 +27,15 @@ export class AddressModel implements Address {
     return new AddressModel(data);
   }
 
+  toStringArray(): string[] {
+    const lines: string[] = [this.addressLine1];
+    if (this.addressLine2) lines.push(this.addressLine2);
+    if (this.addressLine3) lines.push(this.addressLine3);
+    lines.push(this.townCity);
+    lines.push(this.postCode);
+    return lines;
+  }
+
   private static pool: typeof addressData = [...addressData];
 
   static getRandomAddress(): AddressModel {
