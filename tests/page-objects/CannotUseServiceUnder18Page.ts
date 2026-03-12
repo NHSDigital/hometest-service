@@ -11,7 +11,7 @@ export class CannotUseServiceUnder18Page extends BasePage {
     this.findAnotherClinicLink = page.locator("a", {
       hasText: "Find another sexual health clinic",
     });
-    this.pageHeader = page.locator("h1", { hasText: "Get a self-test kit for HIV" });
+    this.pageHeader = page.locator("h1", { hasText: "You cannot use this service as you are under 18" });
   }
 
   async waitUntilPageLoaded(): Promise<void> {
