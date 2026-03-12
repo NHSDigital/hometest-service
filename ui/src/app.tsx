@@ -101,7 +101,7 @@ const router = createBrowserRouter([
         element: <HomeTestPrivacyPolicyPage />,
       },
       {
-        path: RoutePath.TermsOfUsePage,
+        path: RoutePath.HomeTestTermsOfUsePage,
         element: <HomeTestTermsOfUsePage />,
       },
       {
