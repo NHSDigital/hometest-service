@@ -20,7 +20,7 @@ test(
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await howComfortablePrickingFingerPage.waitUntilPageLoad();
+    await howComfortablePrickingFingerPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       howComfortablePrickingFingerPage.page,
       "How Comfortable Pricking Finger Page",

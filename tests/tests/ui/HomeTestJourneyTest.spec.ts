@@ -24,11 +24,15 @@ test.describe("Editing during the order flow", { tag: "@ui" }, () => {
     await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickEditPostcodeLink();
     await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(newRandomAddress);
-    await selectDeliveryAddressPage.selectAddressAndContinue();
+    const selectedAddress = await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
     await confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
     const actualAddress = await checkYourAnswersPage.getAddressValue();
-    expect(actualAddress).toContain(newRandomAddress.postCode);
+
+    // Verify all actual address records are present in selected address - selected address can contain additional information like building name which is not present in actual address
+    actualAddress?.forEach(addressLine => {
+      expect(selectedAddress).toContainEqual(addressLine);
+    });
   });
 
   test("Updated mobile number reflected after changing it during the flow", async ({
@@ -87,7 +91,7 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
     await confirmMobileNumberPage.fillAlternativeMobileNumberAndContinue(newPersonalDetails);
 
     const actualAddress = await checkYourAnswersPage.getAddressValue();
-    expect(actualAddress).toContain(newAddress.postCode);
+    expect(actualAddress).toEqual(newAddress.toStringArray());
     const actualMobileNumber = await checkYourAnswersPage.getMobileNumberValue();
     expect(actualMobileNumber?.replace(/[^\d+]/g, "")).toContain(
       newPersonalDetails.mobileNumber.replace(/[^\d+]/g, ""),

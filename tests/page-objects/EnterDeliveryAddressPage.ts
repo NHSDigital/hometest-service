@@ -7,6 +7,7 @@ export class EnterDeliveryAddressPage extends BasePage {
   readonly buildingDetailsInput: Locator;
   readonly continueButton: Locator;
   readonly enterAddressManuallyLink: Locator;
+  readonly pageHeader: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -14,6 +15,11 @@ export class EnterDeliveryAddressPage extends BasePage {
     this.buildingDetailsInput = page.locator("#building-number-or-name");
     this.continueButton = page.getByRole("button", { name: "Continue" });
     this.enterAddressManuallyLink = page.getByText("Enter address manually");
+    this.pageHeader = page.locator("h1", { hasText: "Enter your delivery address" });
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async clickContinueButton(): Promise<void> {
