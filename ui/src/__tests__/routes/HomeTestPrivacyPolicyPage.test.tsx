@@ -24,7 +24,13 @@ describe("HomeTestPrivacyPolicyPage", () => {
     it("renders introduction paragraphs from content config", () => {
       render(<HomeTestPrivacyPolicyPage />, { wrapper: TestWrapper });
 
-      expect(screen.getByText(/\[Hometest\] is operated by NHS England/i)).toBeInTheDocument();
+      expect(
+        screen.getAllByText(
+          (_content, element) =>
+            (element?.textContent ?? "").match(/\[Hometest\] is operated by NHS England/i) !== null,
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(screen.getAllByText(/is operated by NHS England/i).length).toBeGreaterThan(0);
       expect(
         screen.getByText(/This privacy policy provides an explanation as to what happens/i),
       ).toBeInTheDocument();
@@ -114,7 +120,7 @@ describe("HomeTestPrivacyPolicyPage", () => {
       // h2 for section headings
       expect(screen.getByRole("heading", { name: /Introduction/i, level: 2 })).toBeInTheDocument();
 
-      // h3 for subsection headings
+      // inline subsection headings render as bold text in paragraphs
       expect(
         screen.getByRole("heading", {
           name: /Hometest App Services/i,
