@@ -210,10 +210,12 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
 
         await this.captureFailureArtifacts(page, context, user, error as Error, networkErrors);
         await browser.close();
+        console.log(`✅ Successfully logged in worker user ${user.nhsNumber} and saved session state. CATCH`);
         throw error;
       }
 
       await browser.close();
+      console.log(`✅ Successfully logged in worker user ${user.nhsNumber} and saved session state.`);
     }
   }
   getSpecialUser(key: SpecialUserKey): TUser {
