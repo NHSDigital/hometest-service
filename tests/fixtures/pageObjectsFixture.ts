@@ -21,7 +21,6 @@ import { CodeSecurityPage } from "../page-objects/NHSLogin/CodeSecurityPage";
 import { SuppliersTermsOfUsePage } from "../page-objects/SuppliersTermsOfUsePage";
 import { CannotUseServiceUnder18Page } from "../page-objects/CannotUseServiceUnder18Page";
 import { GoToClinicPage } from "../page-objects/GoToClinicPage";
-import { GoToClinicPage } from "../page-objects/GoToClinicPage";
 import { SuppliersPrivacyPolicyPage } from "../page-objects/SuppliersPrivacyPolicyPage";
 
 export interface MyFixtures {
