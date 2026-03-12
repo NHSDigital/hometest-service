@@ -16,6 +16,7 @@ import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPas
 import { ErrorPage } from "../page-objects/ErrorPage";
 import { KitNotAvailableInYourAreaPage } from "../page-objects/KitNotAvailableInYourAreaPage";
 import { OrderSubmittedPage } from "../page-objects/OrderSubmittedPage";
+import { TermsOfUsePage } from "../page-objects/TermsOfUsePage";
 import { CodeSecurityPage } from "../page-objects/NHSLogin/CodeSecurityPage";
 import { SuppliersTermsOfUsePage } from "../page-objects/SuppliersTermsOfUsePage";
 import { CannotUseServiceUnder18Page } from "../page-objects/CannotUseServiceUnder18Page";
@@ -38,6 +39,7 @@ export interface MyFixtures {
   errorPage: ErrorPage;
   checkYourAnswersPage: CheckYourAnswersPage;
   orderSubmittedPage: OrderSubmittedPage;
+  termsOfUsePage: TermsOfUsePage;
   codeSecurityPage: CodeSecurityPage;
   suppliersTermsOfUsePage: SuppliersTermsOfUsePage;
   cannotUseServiceUnder18Page: CannotUseServiceUnder18Page;
@@ -104,6 +106,10 @@ export const pageObjectFixture = base.extend<MyFixtures>({
 
   orderSubmittedPage: async ({ page }, use) => {
     await use(new OrderSubmittedPage(page));
+  },
+
+  termsOfUsePage: async ({ page }, use) => {
+    await use(new TermsOfUsePage(page));
   },
 
   codeSecurityPage: async ({ page }, use) => {

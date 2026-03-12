@@ -71,7 +71,7 @@ export default function GetSelfTestKitPage() {
       <h2>{content.aboutService.heading}</h2>
       <p>
         {content.aboutService.text}{" "}
-        <Link to="terms-and-conditions">{content.aboutService.termsLink}</Link> and{" "}
+        <Link to={RoutePath.HomeTestTermsOfUsePage}>{content.aboutService.termsLink}</Link> and{" "}
         <Link to={RoutePath.HomeTestPrivacyPolicyPage}>{content.aboutService.privacyLink}</Link>.
       </p>
 
