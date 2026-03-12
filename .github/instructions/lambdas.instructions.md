@@ -123,6 +123,42 @@ if (!parsed.success) {
 }
 ```
 
+## HTTP Client
+
+For any outbound HTTP calls from a lambda, always use `FetchHttpClient` (which implements the
+`HttpClient` interface) from `../lib/http/http-client`. Never use `axios`, `undici` directly,
+or bare `fetch` in handler or service code.
+
+```typescript
+import { FetchHttpClient, type HttpClient } from "../lib/http/http-client";
+
+// In init.ts — construct once and inject
+const httpClient: HttpClient = new FetchHttpClient();
+
+// Usage — typed response, error handling built in
+const result = await httpClient.get<MyResponseType>(url, { "X-Correlation-ID": correlationId });
+const result = await httpClient.post<MyResponseType>(url, requestBody, { "X-Correlation-ID": correlationId });
+```
+
+`FetchHttpClient` throws `HttpError` (with `status` and `body` properties) on non-2xx
+responses — catch it explicitly where you need to handle specific status codes.
+
+```typescript
+import { HttpError } from "../lib/http/http-client";
+
+try {
+  return await httpClient.get<MyResponse>(url);
+} catch (error) {
+  if (error instanceof HttpError && error.status === 404) {
+    return null;
+  }
+  throw error;
+}
+```
+
+Use `postRaw()` only when you need access to the raw `Response` object (e.g. to inspect
+headers or stream the body). Prefer the typed `post<T>()` in all other cases.
+
 ## Database Layer
 
 - Always use the `DBClient` interface — never import `pg` `Pool` or `Client` directly in
