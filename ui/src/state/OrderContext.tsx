@@ -1,7 +1,5 @@
 "use client";
 
-// TODO: remove console.logs
-
 import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
 // Address structure
@@ -9,6 +7,7 @@ export interface Address {
   addressLine1?: string;
   addressLine2?: string;
   addressLine3?: string;
+  addressLine4?: string;
   postTown?: string;
   postcode?: string;
 }
@@ -63,12 +62,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
-    console.log("[CreateOrderProvider] Updating with:", updates);
-    setOrderAnswers((prev) => {
-      const newState = { ...prev, ...updates };
-      console.log("[CreateOrderProvider] New state:", newState);
-      return newState;
-    });
+    setOrderAnswers((prev) => ({ ...prev, ...updates }));
   }, []);
 
   const reset = useCallback(() => {

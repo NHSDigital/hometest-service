@@ -45,9 +45,9 @@ test.describe(
         townCity: "",
         postCode: unavailablePostcode,
       });
-      await selectDeliveryAddressPage.waitUntilPageLoad();
+      await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      await kitNotAvailableInYourAreaPage.waitUntilPageLoad();
+      await kitNotAvailableInYourAreaPage.waitUntilPageLoaded();
 
       const href = await kitNotAvailableInYourAreaPage.getFindAnotherSexualHealthClinicLinkUrl();
       expect(

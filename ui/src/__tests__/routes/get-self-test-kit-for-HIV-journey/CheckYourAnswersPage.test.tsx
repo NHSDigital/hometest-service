@@ -1,3 +1,4 @@
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import {
   AuthProvider,
   AuthUser,
@@ -36,7 +37,11 @@ jest.mock("@/state", () => {
 jest.mock("@/lib/services/order-service", () => ({
   __esModule: true,
   default: {
-    submitOrder: jest.fn(),
+    submitOrder: jest.fn().mockResolvedValue({
+      orderReference: 0,
+      orderUid: "",
+      message: "",
+    }),
   },
 }));
 
@@ -57,10 +62,10 @@ const defaultAuthUser: AuthUser = {
 function StateSeeder({
   children,
   orderData,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   orderData: Record<string, unknown>;
-}) {
+}>) {
   const { updateOrderAnswers } = useCreateOrderContext();
 
   useEffect(() => {
@@ -122,6 +127,16 @@ const TestWrapper = ({
 );
 
 describe("CheckYourAnswersPage", () => {
+  const submitForm = () => {
+    const form = screen.getByRole("button", { name: /submit order/i }).closest("form");
+
+    if (!form) {
+      throw new Error("Submit form not found");
+    }
+
+    fireEvent.submit(form);
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -293,83 +308,50 @@ describe("CheckYourAnswersPage", () => {
   });
 
   describe("Submit Order", () => {
-    it("shows error when submitting without consent", () => {
+    it("shows error when submitting without consent", async () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
+      submitForm();
 
-      expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText("There is a problem")).toBeInTheDocument();
-      expect(
-        screen.getAllByText(
-          "Select if you agree to our partner's terms and conditions and privacy policy",
-        ).length,
-      ).toBeGreaterThanOrEqual(1);
+      await waitFor(() => {
+        const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+        const errorSummary = errorSummaryHeading.closest(
+          '[role="alert"][aria-labelledby="error-summary-title"]',
+        );
+        expect(errorSummary).toBeInTheDocument();
+        expect(
+          screen.getAllByText(
+            "Select if you agree to our partner's terms and conditions and privacy policy",
+          ).length,
+        ).toBeGreaterThanOrEqual(1);
+      });
     });
 
-    it("error summary links to consent checkbox", () => {
+    it("error summary links to consent checkbox", async () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
+      submitForm();
 
-      const errorLink = screen.getByRole("link", {
+      const errorLink = await screen.findByRole("link", {
         name: "Select if you agree to our partner's terms and conditions and privacy policy",
       });
       expect(errorLink).toHaveAttribute("href", "#consent");
     });
 
-    it("submits successfully when consent is ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
-
-      const checkbox = screen.getByRole("checkbox");
-      fireEvent.click(checkbox);
-
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
-
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Consent recorded at:",
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
-    });
-
     it("does not submit when consent is not ticked", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", {
-        name: /submit order/i,
-      });
-      fireEvent.click(submitButton);
+      submitForm();
 
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        "[CheckYourAnswersPage] Submitting order:",
-        expect.any(Object),
-      );
-
-      consoleSpy.mockRestore();
+      expect(mockSubmitOrder).not.toHaveBeenCalled();
     });
 
     it("updates order reference number after successful submit", async () => {
-      mockSubmitOrder.mockResolvedValueOnce({ orderReference: 123 });
+      mockSubmitOrder.mockResolvedValueOnce({
+        orderReference: 123,
+        orderUid: "test-uid",
+        message: "Order submitted successfully",
+      });
 
       render(
         <>
@@ -380,11 +362,29 @@ describe("CheckYourAnswersPage", () => {
       );
 
       fireEvent.click(screen.getByRole("checkbox"));
-      fireEvent.click(screen.getByRole("button", { name: /submit order/i }));
+      submitForm();
 
       await waitFor(() => {
         expect(mockSubmitOrder).toHaveBeenCalled();
         expect(screen.getByTestId("order-reference")).toHaveTextContent("123");
+      });
+    });
+
+    it("shows the error boundary when submitOrder rejects", async () => {
+      mockSubmitOrder.mockRejectedValueOnce(new Error("Network error"));
+
+      render(
+        <TestErrorBoundary>
+          <CheckYourAnswersPage />
+        </TestErrorBoundary>,
+        { wrapper: TestWrapper },
+      );
+
+      fireEvent.click(screen.getByRole("checkbox"));
+      submitForm();
+
+      await waitFor(() => {
+        expect(screen.getByText("Network error")).toBeInTheDocument();
       });
     });
   });

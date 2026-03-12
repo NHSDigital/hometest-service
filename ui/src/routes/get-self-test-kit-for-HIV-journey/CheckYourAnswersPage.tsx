@@ -3,11 +3,10 @@
 import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import { useContent } from "@/hooks";
 import { useState } from "react";
+import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
@@ -16,6 +15,7 @@ function formatAddress(address: {
   addressLine1?: string;
   addressLine2?: string;
   addressLine3?: string;
+  addressLine4?: string;
   postTown?: string;
   postcode?: string;
 }): string[] {
@@ -23,6 +23,7 @@ function formatAddress(address: {
     address.addressLine1,
     address.addressLine2,
     address.addressLine3,
+    address.addressLine4,
     address.postTown,
     address.postcode,
   ].filter((line): line is string => Boolean(line));
@@ -78,7 +79,7 @@ export default function CheckYourAnswersPage() {
     updateOrderAnswers({ consentCheckboxChecked: e.target.checked });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!consentChecked) {
@@ -94,53 +95,45 @@ export default function CheckYourAnswersPage() {
       consentTimestamp,
     });
 
-    console.log("[CheckYourAnswersPage] Consent recorded at:", consentTimestamp);
-    console.log("[CheckYourAnswersPage] Submitting order:", orderAnswers);
+    // Build orderRequest from OrderAnswers and User in state
+    const addressLines = orderAnswers.deliveryAddress
+      ? formatAddress(orderAnswers.deliveryAddress)
+      : [];
 
-    try {
-      // Build orderRequest from OrderAnswers and User in state
-      const addressLines = orderAnswers.deliveryAddress
-        ? formatAddress(orderAnswers.deliveryAddress)
-        : [];
-
-      const orderRequest: OrderServiceRequest = {
-        testCode: orderAnswers.supplier?.[0]?.testCode || "",
-        testDescription: "HIV antigen test",
-        supplierId: orderAnswers.supplier?.[0]?.id || "",
-        patient: {
-          family: user?.familyName || "",
-          given: [user?.givenName || ""],
-          text: `${user?.givenName || ""} ${user?.familyName || ""}`,
-          telecom: [
-            { phone: orderAnswers.mobileNumber || "" },
-            { sms: orderAnswers.mobileNumber || "" },
-            { email: user?.email || "" },
-          ],
-          address: {
-            line: addressLines,
-            city: orderAnswers.deliveryAddress?.postTown || "",
-            postalCode: orderAnswers.deliveryAddress?.postcode || "",
-            country: "United Kingdom",
-          },
-          birthDate: user?.birthdate || "",
-          nhsNumber: user?.nhsNumber || "",
+    const orderRequest: OrderServiceRequest = {
+      testCode: orderAnswers.supplier?.[0]?.testCode || "",
+      testDescription: "HIV antigen test",
+      supplierId: orderAnswers.supplier?.[0]?.id || "",
+      patient: {
+        family: user?.familyName || "",
+        given: [user?.givenName || ""],
+        text: `${user?.givenName || ""} ${user?.familyName || ""}`,
+        telecom: [
+          { phone: orderAnswers.mobileNumber || "" },
+          { sms: orderAnswers.mobileNumber || "" },
+          { email: user?.email || "" },
+        ],
+        address: {
+          line: addressLines,
+          city: orderAnswers.deliveryAddress?.postTown || "",
+          postalCode: orderAnswers.deliveryAddress?.postcode || "",
+          country: "United Kingdom",
         },
-        consent: true,
-      };
+        birthDate: user?.birthdate || "",
+        nhsNumber: user?.nhsNumber || "",
+      },
+      consent: true,
+    };
 
-      const orderResponse = await orderService.submitOrder(orderRequest);
-      console.log("Order router response:", orderResponse);
+    const orderResponse = await orderService.submitOrder(orderRequest);
+    console.log("Order router response:", orderResponse);
 
-      updateOrderAnswers({
-        orderReferenceNumber: orderResponse.orderReference,
-      });
+    updateOrderAnswers({
+      orderReferenceNumber: orderResponse.orderReference,
+    });
 
-      goToStep(JourneyStepNames.OrderSubmitted);
-    } catch (err) {
-      console.error("Failed to submit order:", err);
-      // ALPHA TODO: Show error to user
-    }
-  };
+    goToStep(JourneyStepNames.OrderSubmitted);
+  });
 
   const addressLines = orderAnswers.deliveryAddress
     ? formatAddress(orderAnswers.deliveryAddress)
@@ -164,19 +157,17 @@ export default function CheckYourAnswersPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#consent"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("consent-1")?.focus();
-                }}
-              >
-                {consentError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#consent"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("consent-1")?.focus();
+              }}
+            >
+              {consentError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
@@ -199,22 +190,17 @@ export default function CheckYourAnswersPage() {
               </span>
             ))}
           </SummaryList.Value>
-          <SummaryList.Actions>
-            <a
-              href="#"
-              id="address-change"
-              onClick={(e) => {
-                e.preventDefault();
-                handleChangeClick("address");
-              }}
-            >
-              {content.changeLink}
-              <span className="nhsuk-u-visually-hidden">
-                {" "}
-                {content.summaryLabels.deliveryAddress}
-              </span>
-            </a>
-          </SummaryList.Actions>
+          <SummaryList.Action
+            id="address-change"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleChangeClick("address");
+            }}
+            visuallyHiddenText={content.summaryLabels.deliveryAddress}
+          >
+            {content.changeLink}
+          </SummaryList.Action>
         </SummaryList.Row>
 
         <SummaryList.Row>
@@ -224,28 +210,25 @@ export default function CheckYourAnswersPage() {
               ? "Yes I'm comfortable, send me the kit"
               : orderAnswers.comfortableDoingTest}
           </SummaryList.Value>
-          <SummaryList.Actions>
-            <a
-              href="#"
-              id="comfortable-change"
-              onClick={(e) => {
-                e.preventDefault();
-                handleChangeClick("comfort");
-              }}
-            >
-              {content.changeLink}
-              <span className="nhsuk-u-visually-hidden">
-                {" "}
-                {content.summaryLabels.comfortableDoingTest}
-              </span>
-            </a>
-          </SummaryList.Actions>
+          <SummaryList.Action
+            id="comfortable-change"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleChangeClick("comfort");
+            }}
+            visuallyHiddenText={content.summaryLabels.comfortableDoingTest}
+          >
+            {content.changeLink}
+          </SummaryList.Action>
         </SummaryList.Row>
 
         <SummaryList.Row>
           <SummaryList.Key>{content.summaryLabels.mobileNumber}</SummaryList.Key>
-          <SummaryList.Value id="mobile-number-value">{orderAnswers.mobileNumber}</SummaryList.Value>
-          <SummaryList.Actions>
+          <SummaryList.Value id="mobile-number-value">
+            {orderAnswers.mobileNumber}
+          </SummaryList.Value>
+          <SummaryList.Action>
             <a
               href="#"
               id="mobile-change"
@@ -257,40 +240,42 @@ export default function CheckYourAnswersPage() {
               {content.changeLink}
               <span className="nhsuk-u-visually-hidden"> {content.summaryLabels.mobileNumber}</span>
             </a>
-          </SummaryList.Actions>
+          </SummaryList.Action>
         </SummaryList.Row>
       </SummaryList>
 
       <form onSubmit={handleSubmit}>
-        <Fieldset>
-          <Fieldset.Legend size="m">{content.consent.legend}</Fieldset.Legend>
-          <Checkboxes id="consent" name="consent" error={consentError || undefined}>
-            <Checkboxes.Box value="consent" checked={consentChecked} onChange={handleConsentChange}>
-              {content.consent.label.replace("{supplier}", supplierName)}{" "}
-              <a
-                href={JourneyStepNames.SuppliersTermsConditions}
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToStep(JourneyStepNames.SuppliersTermsConditions);
-                }}
-              >
-                {content.consent.termsOfUseText}
-              </a>{" "}
-              {content.consent.labelAnd}{" "}
-              <a
-                href={JourneyStepNames.SuppliersPrivacyPolicy}
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToStep(JourneyStepNames.SuppliersPrivacyPolicy);
-                }}
-              >
-                {content.consent.privacyPolicyText}
-              </a>
-              .
-            </Checkboxes.Box>
-          </Checkboxes>
-        </Fieldset>
-
+        <Checkboxes
+          legend={content.consent.legend}
+          legendProps={{ size: "m" }}
+          id="consent"
+          name="consent"
+          error={consentError || undefined}
+        >
+          <Checkboxes.Item value="consent" checked={consentChecked} onChange={handleConsentChange}>
+            {content.consent.label.replace("{supplier}", supplierName)}{" "}
+            <a
+              href={JourneyStepNames.SuppliersTermsConditions}
+              onClick={(e) => {
+                e.preventDefault();
+                goToStep(JourneyStepNames.SuppliersTermsConditions);
+              }}
+            >
+              {content.consent.termsOfUseText}
+            </a>{" "}
+            {content.consent.labelAnd}{" "}
+            <a
+              href={JourneyStepNames.SuppliersPrivacyPolicy}
+              onClick={(e) => {
+                e.preventDefault();
+                goToStep(JourneyStepNames.SuppliersPrivacyPolicy);
+              }}
+            >
+              {content.consent.privacyPolicyText}
+            </a>
+            .
+          </Checkboxes.Item>
+        </Checkboxes>
         <Button type="submit">{content.submitButton}</Button>
       </form>
     </FormPageLayout>

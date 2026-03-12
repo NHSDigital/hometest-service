@@ -22,7 +22,7 @@ export default function EnterMobileNumberPage() {
     setMobileNumber(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const mobileNumberSchema = createMobileNumberSchema(commonContent.validation);
@@ -36,7 +36,6 @@ export default function EnterMobileNumberPage() {
         mobileNumber: result.data,
         mobileNumberSource: "manual" as const,
       };
-      console.log("[EnterMobileNumberPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
       if (returnToStep) {
@@ -69,19 +68,17 @@ export default function EnterMobileNumberPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#mobile-number"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("mobile-number")?.focus();
-                }}
-              >
-                {mobileNumberError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#mobile-number"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("mobile-number")?.focus();
+              }}
+            >
+              {mobileNumberError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 

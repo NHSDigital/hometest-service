@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../login-lambda/cors-configuration";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { init } from "./init";
