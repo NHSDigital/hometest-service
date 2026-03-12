@@ -65,18 +65,18 @@ jobs:
           EOF
 
       - name: "Start the application"
-        if: env.TARGET_ENV == 'local'
+        if: env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev'
         run: |
           npm run start
 
       - name: "Show application status"
-        if: env.TARGET_ENV == 'local'
+        if: env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev'
         run: |
           docker compose -f local-environment/docker-compose.yml ps
           docker logs ui
 
       - name: "Get terraform outputs"
-        if: env.TARGET_ENV == 'local'
+        if: env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev'
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
@@ -106,7 +106,7 @@ jobs:
           until curl -sf "$UI_URL" > /dev/null 2>&1; do
             if [ $elapsed -ge $timeout ]; then
               echo "Timeout: UI not reachable after ${timeout}s"
-              if [ "$TARGET_ENV" == "local" ]; then
+              if [ "$TARGET_ENV" == "local" ] || [ "$TARGET_ENV" == "dev" ]; then
                 docker logs ui
               fi
               exit 1
@@ -146,7 +146,7 @@ jobs:
           API_BASE_URL: ${{ steps.urls.outputs.api_url }}
 
       - name: "Grab docker compose logs"
-        if: always() && env.TARGET_ENV == 'local'
+        if: always() && (env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev')
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
