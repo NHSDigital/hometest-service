@@ -39,6 +39,7 @@ jest.mock("../lib/supplier/supplier-auth-client", () => {
 
 // Import handler after mocking
 import { handler } from "./index";
+import { OrderStatusMutator } from "src/lib/db/types/__generated__/hometest/OrderStatus";
 
 describe("order-router-lambda", () => {
   let mockContext: Partial<Context>;
@@ -211,11 +212,11 @@ describe("order-router-lambda", () => {
 
       expect(result.batchItemFailures).toEqual([]);
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith({
-        orderId: supplierOrderBody.id,
-        statusCode: "SUBMITTED",
-        createdAt: expect.any(String),
-        correlationId: validCorrelationId,
-      });
+        order_uid: supplierOrderBody.id as OrderStatusMutator["order_uid"],
+        status_code: "SUBMITTED",
+        created_at: expect.any(Date),
+        correlation_id: validCorrelationId,
+      } satisfies OrderStatusMutator);
     });
 
     it("should succeed even if order status update fails (best-effort)", async () => {

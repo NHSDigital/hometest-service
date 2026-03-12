@@ -77,7 +77,7 @@ describe("TransactionService", () => {
       expect(mockQuery).toHaveBeenNthCalledWith(3, expect.any(String), [
         "order-1",
         OrderStatusCodes.GENERATED,
-        expect.any(String),
+        expect.any(Date),
         correlationId,
       ]);
       expect(mockQuery).toHaveBeenNthCalledWith(4, expect.any(String), ["order-1"]);

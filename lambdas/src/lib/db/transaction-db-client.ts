@@ -82,10 +82,10 @@ export class TransactionService {
 
         const orderStatusService = new OrderStatusService(tx);
         await orderStatusService.addOrderStatusUpdate({
-          orderId: order_uid,
-          statusCode: OrderStatusCodes.GENERATED,
-          createdAt: new Date().toISOString(),
-          correlationId,
+          order_uid: order_uid,
+          status_code: OrderStatusCodes.GENERATED,
+          created_at: new Date(),
+          correlation_id: correlationId,
         });
 
         const consentService = new ConsentService(tx);

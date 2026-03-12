@@ -1,9 +1,6 @@
-import {
-  OrderRow,
-  OrderStatusCodes,
-  OrderStatusService,
-  OrderStatusUpdateParams,
-} from "./order-status-db";
+import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
+import { OrderStatusMutator } from "./types/__generated__/hometest/OrderStatus";
+import { TestOrderInitializer } from "./types/__generated__/hometest/TestOrder";
 
 const mockQuery = jest.fn();
 
@@ -27,13 +24,12 @@ describe("OrderStatusService", () => {
 
   describe("getPatientIdFromOrder", () => {
     it("should fetch order by UUID", async () => {
-      const mockOrder: OrderRow = {
+      const mockOrder: TestOrderInitializer = {
         order_uid: "some-mocked-order-id",
         patient_uid: "some-mocked-patient-id",
-        order_reference: 100001,
         supplier_id: "some-mocked-supplier-id",
         test_code: "some-mocked-test-code",
-        created_at: "2024-01-01T00:00:00Z",
+        created_at: new Date("2024-01-01T00:00:00Z"),
       };
 
       mockQuery.mockResolvedValue({
@@ -99,11 +95,11 @@ describe("OrderStatusService", () => {
 
   describe("addUpdateOrderStatus", () => {
     it("should insert new order status record", async () => {
-      const mockParams: OrderStatusUpdateParams = {
-        orderId: "some-mocked-order-id",
-        statusCode: OrderStatusCodes.COMPLETE,
-        createdAt: "2024-01-15T11:00:00Z",
-        correlationId: "some-mocked-correlation-id",
+      const mockParams: OrderStatusMutator = {
+        order_uid: "some-mocked-order-id",
+        status_code: OrderStatusCodes.COMPLETE,
+        created_at: new Date("2024-01-15T11:00:00Z"),
+        correlation_id: "some-mocked-correlation-id",
       };
 
       mockQuery.mockResolvedValue({
@@ -116,10 +112,10 @@ describe("OrderStatusService", () => {
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),
         Object.values([
-          mockParams.orderId,
-          mockParams.statusCode,
-          mockParams.createdAt,
-          mockParams.correlationId,
+          mockParams.order_uid,
+          mockParams.status_code,
+          mockParams.created_at,
+          mockParams.correlation_id,
         ]),
       );
     });
@@ -129,11 +125,11 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          orderId: "some-mocked-order-id",
-          statusCode: OrderStatusCodes.COMPLETE,
-          createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "some-mocked-correlation-id",
-        } satisfies OrderStatusUpdateParams),
+          order_uid: "some-mocked-order-id",
+          status_code: OrderStatusCodes.COMPLETE,
+          created_at: new Date("2024-01-15T11:00:00Z"),
+          correlation_id: "some-mocked-correlation-id",
+        } satisfies OrderStatusMutator),
       ).rejects.toThrow("Failed to update order status");
     });
 
@@ -145,11 +141,11 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          orderId: "some-mocked-order-id",
-          statusCode: OrderStatusCodes.COMPLETE,
-          createdAt: "2024-01-15T11:00:00Z",
-          correlationId: "some-mocked-correlation-id",
-        } satisfies OrderStatusUpdateParams),
+          order_uid: "some-mocked-order-id",
+          status_code: OrderStatusCodes.COMPLETE,
+          created_at: new Date("2024-01-15T11:00:00Z"),
+          correlation_id: "some-mocked-correlation-id",
+        } satisfies OrderStatusMutator),
       ).rejects.toThrow("Failed to update order status");
     });
   });
