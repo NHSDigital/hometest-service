@@ -1,8 +1,9 @@
 import { Container, Footer, Header } from "nhsuk-react-components";
-import { Link, Outlet, ScrollRestoration } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { AuthLoader } from "@/lib/auth/AuthLoader";
+import { AppDevtools } from "@/lib/utils/AppDevtools";
 import { AuthProvider } from "@/state/AuthContext";
 import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type React from "react";
@@ -34,17 +35,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
       }
       <ScrollRestoration />
       {!isNhsApp && (
-        <Header transactional>
-          <Header.Container>
-            <Header.Logo to={"https://www.nhs.uk/"} asElement={Link} />
-            <Header.ServiceName href={RoutePath.HomePage}>
-              {DEFAULT_PAGE_TITLE}
-            </Header.ServiceName>
-          </Header.Container>
-        </Header>
+        <Header
+          service={{ text: DEFAULT_PAGE_TITLE, href: RoutePath.HomePage }}
+          logo={{ href: "https://www.nhs.uk/" }}
+        />
       )}
       <Container>
         <AuthProvider>
+          <AppDevtools />
           <QueryClientProvider client={queryClient}>
             <AuthLoader>{children ?? <Outlet />}</AuthLoader>
           </QueryClientProvider>

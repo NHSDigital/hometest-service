@@ -8,6 +8,7 @@ export class EnterAddressManuallyPage extends BasePage {
   readonly addressLine3Input: Locator;
   readonly addressTownInput: Locator;
   readonly postCodeInput: Locator;
+  readonly pageHeader: Locator;
   readonly continueButton: Locator;
 
   constructor(page: Page) {
@@ -17,6 +18,7 @@ export class EnterAddressManuallyPage extends BasePage {
     this.addressLine3Input = page.locator("#address-line-3");
     this.addressTownInput = page.locator("#address-town");
     this.postCodeInput = page.locator("#postcode");
+    this.pageHeader = page.locator("h1", { hasText: "Enter your delivery address manually" });
     this.continueButton = page.getByRole("button", { name: "Continue" });
   }
 
@@ -26,6 +28,10 @@ export class EnterAddressManuallyPage extends BasePage {
 
   async fillAddressLine1Field(addressLine1: string): Promise<void> {
     await this.addressLine1Input.fill(addressLine1);
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 
   async fillAddressLine2Field(addressLine2: string): Promise<void> {

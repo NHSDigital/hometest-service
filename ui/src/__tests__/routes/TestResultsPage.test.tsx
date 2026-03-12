@@ -4,7 +4,8 @@ import { AuthUser, useAuth } from "@/state/AuthContext";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 
 import TestResultsPage from "@/routes/TestResultsPage";
 import { act } from "react";
@@ -76,7 +77,41 @@ describe("TestResultsPage", () => {
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[`/orders/${currentOrderId}/results`]}>
           <Routes>
-            <Route path="/orders/:orderId/results" element={<TestResultsPage />} />
+            <Route
+              path="/orders/:orderId/results"
+              element={
+                <TestErrorBoundary>
+                  <TestResultsPage />
+                </TestErrorBoundary>
+              }
+            />
+            <Route
+              path="/orders/:orderId/tracking"
+              element={<div data-testid="order-tracking-page" />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  };
+
+  const renderWithNoRetry = (currentOrderId: string) => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[`/orders/${currentOrderId}/results`]}>
+          <Routes>
+            <Route
+              path="/orders/:orderId/results"
+              element={
+                <TestErrorBoundary>
+                  <TestResultsPage />
+                </TestErrorBoundary>
+              }
+            />
             <Route
               path="/orders/:orderId/tracking"
               element={<div data-testid="order-tracking-page" />}
@@ -174,10 +209,38 @@ describe("TestResultsPage", () => {
   it("shows invalid order id error and does not call API", () => {
     renderWithRouter("not-a-guid");
 
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "There is a problem" })).toBeInTheDocument();
+    const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
+    const errorSummary = errorSummaryHeading.closest('[role="alert"]');
+    expect(errorSummary).toBeInTheDocument();
     expect(screen.getByText("Order ID is required.")).toBeInTheDocument();
     expect(orderDetailsService.get).not.toHaveBeenCalled();
     expect(testResultsService.get).not.toHaveBeenCalled();
+  });
+
+  it("shows the error boundary when the order query errors", async () => {
+    const orderError = new Error("Failed to fetch order");
+    (orderDetailsService.get as jest.Mock).mockRejectedValue(orderError);
+
+    await act(async () => {
+      renderWithNoRetry(orderId);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to fetch order")).toBeInTheDocument();
+    });
+  });
+
+  it("shows the error boundary when the test results query errors", async () => {
+    const resultError = new Error("Failed to fetch results");
+    (orderDetailsService.get as jest.Mock).mockResolvedValue(mockOrder);
+    (testResultsService.get as jest.Mock).mockRejectedValue(resultError);
+
+    await act(async () => {
+      renderWithNoRetry(orderId);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to fetch results")).toBeInTheDocument();
+    });
   });
 });

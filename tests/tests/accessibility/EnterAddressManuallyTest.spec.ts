@@ -15,7 +15,7 @@ test(
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.clickEnterAddressManuallyLink();
-    await enterAddressManuallyPage.waitUntilPageLoad();
+    await enterAddressManuallyPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       enterAddressManuallyPage.page,
       "Enter Address Manually Page",
