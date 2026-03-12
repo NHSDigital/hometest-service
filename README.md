@@ -147,6 +147,13 @@ After running `npm start`, use targeted commands instead of restarting everythin
   npm run local:frontend:stop
   ```
 
+- **Start/stop specified lambda**
+
+  ```shell
+  LAMBDA={lambda_name} npm run local:service:lambda:enable
+  LAMBDA={lambda_name} npm run local:service:lambda:disable
+  ```
+
 ### Frontend
 
 The frontend is a Next.js application located in the `/ui` directory.

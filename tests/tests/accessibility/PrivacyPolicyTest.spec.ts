@@ -9,7 +9,7 @@ test(
   async ({ homeTestStartPage, privacyPolicyPage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickPrivacyPolicyLink();
-    await privacyPolicyPage.waitUntilPageLoad();
+    await privacyPolicyPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       privacyPolicyPage.page,
       "Privacy Policy Page",

@@ -3,7 +3,7 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
-import { localUser } from "../../users";
+import { NHSLoginUser } from "../../utils/users/BaseUser";
 
 let orderId: string;
 let patientId: string;
@@ -89,14 +89,15 @@ test.describe("Order Status Page", () => {
       orderStatusPage,
       nhsEmailAndPasswordPage,
       codeSecurityPage,
+      testedUser,
     }) => {
       const context = orderStatusPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
       await orderStatusPage.navigateToOrder(orderId);
       await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(localUser);
-      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(localUser.otp!);
+      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(testedUser as NHSLoginUser);
+      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue((testedUser as NHSLoginUser).otp!);
       await expect(orderStatusPage.statusTag).toHaveText("Test received");
       const url = await orderStatusPage.getCurrentUrl();
       expect(url).toContain(orderId);
@@ -107,9 +108,11 @@ test.describe("Order Status Page", () => {
     "Delete result status, order status, order, and patient records from the database and disconnect",
     async ({ testedUser }) => {
       await dbClient.deleteOrderStatusByUid(orderId);
+      await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
       await dbClient.deleteOrderStatusByUid(orderId2);
+      await dbClient.deleteConsentByPatientUid(patientId2);
       await dbClient.deleteOrderByPatientUid(patientId2);
       await dbClient.deletePatientMapping(nhsNumber2, birthDate2);
       await dbClient.disconnect();

@@ -87,6 +87,14 @@ export class TestOrderDbClient extends BaseDbClient {
     ]);
   }
 
+  async insertConsent(orderUid: UUID): Promise<void> {
+    await this.query(
+      `INSERT INTO consent (order_uid)
+       VALUES ($1::uuid)`,
+      [orderUid],
+    );
+  }
+
   async createOrderWithPatientAndStatus(
     input: CreateOrderInput,
   ): Promise<{ order_uid: UUID; patient_uid: UUID; order_reference: number }> {
@@ -99,6 +107,7 @@ export class TestOrderDbClient extends BaseDbClient {
       input.originator,
     );
     await this.insertOrderStatus(order.order_uid, input.initial_status);
+    await this.insertConsent(order.order_uid);
     return { order_uid: order.order_uid, patient_uid, order_reference: order.order_reference };
   }
 
@@ -110,11 +119,41 @@ export class TestOrderDbClient extends BaseDbClient {
     await this.query(`DELETE FROM test_order WHERE patient_uid = $1::uuid`, [patientUid]);
   }
 
+  async getPatientUidByNhsNumber(nhsNumber: string): Promise<UUID | undefined> {
+    const rows = await this.query<{ patient_uid: UUID }>(
+      `SELECT patient_uid FROM patient_mapping WHERE nhs_number = $1 LIMIT 1`,
+      [nhsNumber],
+    );
+    return rows[0]?.patient_uid;
+  }
+
+  async deleteOrderStatusByPatientUid(patientUid: UUID): Promise<void> {
+    await this.query(
+      `DELETE FROM order_status WHERE order_uid IN (
+         SELECT order_uid FROM test_order WHERE patient_uid = $1::uuid
+       )`,
+      [patientUid],
+    );
+  }
+
   async deletePatientMapping(nhsNumber: string, birthDate: string): Promise<void> {
     await this.query(
       `DELETE FROM patient_mapping
        WHERE nhs_number = $1 AND birth_date = $2::date`,
       [nhsNumber, birthDate],
+    );
+  }
+
+  async deleteConsentByOrderUid(orderUid: UUID): Promise<void> {
+    await this.query(`DELETE FROM consent WHERE order_uid = $1::uuid`, [orderUid]);
+  }
+
+  async deleteConsentByPatientUid(patientUid: UUID): Promise<void> {
+    await this.query(
+      `DELETE FROM consent WHERE order_uid IN (
+         SELECT order_uid FROM test_order WHERE patient_uid = $1::uuid
+       )`,
+      [patientUid],
     );
   }
 
@@ -128,8 +167,8 @@ export class TestOrderDbClient extends BaseDbClient {
     const rows = await this.query<{ status_code: string }>(
       `
       SELECT status_code
-      FROM hometest.order_status
-      WHERE order_uid = $1
+      FROM order_status
+      WHERE order_uid = $1::uuid
       ORDER BY created_at DESC
       LIMIT 5
     `,
@@ -142,8 +181,8 @@ export class TestOrderDbClient extends BaseDbClient {
   async getLatestOrderStatusByOrderUid(orderUid: string): Promise<OrderStatusCode> {
     const rows = await this.query<TestOrderModel>(
       `SELECT status_code
-       FROM hometest.order_status
-       WHERE order_uid = $1
+       FROM order_status
+       WHERE order_uid = $1::uuid
        ORDER BY created_at DESC
        LIMIT 1`,
       [orderUid],
