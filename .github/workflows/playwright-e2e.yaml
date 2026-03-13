@@ -36,6 +36,9 @@ jobs:
     name: "Playwright E2E tests"
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: read
     env:
       TARGET_ENV: ${{ inputs.environment || 'local' }}
     steps:
@@ -49,12 +52,14 @@ jobs:
         working-directory: tests
         run: npx playwright install --with-deps
 
-      - name: "Create nhs login private key file"
-        run: |
-          mkdir -p local-environment/infra/resources/secrets
-          cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
-          ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
-          EOF
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: "Pull secrets from AWS Secrets Manager"
+        run: bash scripts/pull-secrets.sh dev
 
       - name: "Create credentials file"
         working-directory: tests
