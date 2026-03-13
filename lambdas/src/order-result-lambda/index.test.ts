@@ -1,33 +1,42 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
-import { OrderStatus, ResultStatus } from '../lib/types/status';
-import { createFhirErrorResponse, createFhirResponse } from '../lib/fhir-response';
+import { OrderStatus, ResultStatus } from "../lib/types/status";
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 
-const initMock = {
-  commons: {
-    logInfo: jest.fn(),
-    logError: jest.fn(),
-  },
-  orderService: {
-    retrieveOrderDetails: jest.fn(),
-    updateOrderStatusAndResultStatus: jest.fn(),
-  },
-}
+import { APIGatewayProxyEvent } from "aws-lambda";
+import { InterpretationCode } from "./models";
+import { handler } from "./index";
 
-const extractAndValidateObservationFieldsMock = jest.fn();
-const extractInterpretationCodeFromFHIRObservationMock = jest.fn();
-const validateDBDataMock = jest.fn();
+jest.mock("./init", () => {
+  const initMock = {
+    commons: {
+      logInfo: jest.fn(),
+      logError: jest.fn(),
+    },
+    orderService: {
+      retrieveOrderDetails: jest.fn(),
+      updateOrderStatusAndResultStatus: jest.fn(),
+    },
+  };
+  return {
+    init: () => initMock,
+    initMock,
+  };
+});
 
-jest.mock('./init', () => ({
-  init: () => initMock,
-}));
+jest.mock("./validation", () => {
+  const extractAndValidateObservationFieldsMock = jest.fn();
+  const extractInterpretationCodeFromFHIRObservationMock = jest.fn();
+  const validateDBDataMock = jest.fn();
+  return {
+    extractAndValidateObservationFields: extractAndValidateObservationFieldsMock,
+    extractInterpretationCodeFromFHIRObservation: extractInterpretationCodeFromFHIRObservationMock,
+    validateDBData: validateDBDataMock,
+    extractAndValidateObservationFieldsMock,
+    extractInterpretationCodeFromFHIRObservationMock,
+    validateDBDataMock,
+  };
+});
 
-jest.mock('./validation', () => ({
-  extractAndValidateObservationFields: extractAndValidateObservationFieldsMock,
-  extractInterpretationCodeFromFHIRObservation: extractInterpretationCodeFromFHIRObservationMock,
-  validateDBData: validateDBDataMock,
-}));
-
-jest.mock('../lib/fhir-response', () => ({
+jest.mock("../lib/fhir-response", () => ({
   createFhirErrorResponse: jest.fn((code, type, message, severity) => ({
     statusCode: code,
     body: JSON.stringify({
@@ -51,20 +60,40 @@ jest.mock('../lib/fhir-response', () => ({
   },
 }));
 
-import { handler } from './index';
-import { InterpretationCode } from './models';
-
-describe('order-result-lambda handler', () => {
-  const identifiers = {
-    orderUid: 'order-uid-1',
-    patientId: 'patient-1',
-    supplierId: 'supplier-1',
-    correlationId: 'corr-1',
+const { initMock } = jest.requireMock("./init") as {
+  initMock: {
+    commons: {
+      logInfo: jest.Mock;
+      logError: jest.Mock;
+    };
+    orderService: {
+      retrieveOrderDetails: jest.Mock;
+      updateOrderStatusAndResultStatus: jest.Mock;
+    };
   };
-  const observation = { resourceType: 'Observation', status: 'final' };
+};
+
+const {
+  extractAndValidateObservationFieldsMock,
+  extractInterpretationCodeFromFHIRObservationMock,
+  validateDBDataMock,
+} = jest.requireMock("./validation") as {
+  extractAndValidateObservationFieldsMock: jest.Mock;
+  extractInterpretationCodeFromFHIRObservationMock: jest.Mock;
+  validateDBDataMock: jest.Mock;
+};
+
+describe("order-result-lambda handler", () => {
+  const identifiers = {
+    orderUid: "order-uid-1",
+    patientId: "patient-1",
+    supplierId: "supplier-1",
+    correlationId: "corr-1",
+  };
+  const observation = { resourceType: "Observation", status: "final" };
   const event: APIGatewayProxyEvent = {
-    path: '/result',
-    httpMethod: 'POST',
+    path: "/result",
+    httpMethod: "POST",
     body: JSON.stringify(observation),
     headers: {},
     isBase64Encoded: false,
@@ -74,9 +103,9 @@ describe('order-result-lambda handler', () => {
     pathParameters: null,
     stageVariables: null,
     requestContext: {} as any,
-    resource: '',
+    resource: "",
   };
-  const testOrderResult = { order_reference: 'order-ref-1' };
+  const testOrderResult = { order_reference: "order-ref-1" };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -91,70 +120,92 @@ describe('order-result-lambda handler', () => {
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
   });
 
-  it('returns 201 and resource on success', async () => {
+  it("returns 201 and resource on success", async () => {
     const res = await handler(event);
     expect(res.statusCode).toBe(201);
     expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
   });
 
-  it('returns error if validation fails', async () => {
+  it("returns error if validation fails", async () => {
     extractAndValidateObservationFieldsMock.mockReturnValueOnce({
-      validationResult: { isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'fail', severity: 'error' },
+      validationResult: {
+        isValid: false,
+        errorCode: 400,
+        errorType: "invalid",
+        errorMessage: "fail",
+        severity: "error",
+      },
     });
     const res = await handler(event);
     expect(res.statusCode).toBe(400);
-    expect(createFhirErrorResponse).toHaveBeenCalledWith(400, 'invalid', 'fail', 'error');
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(400, "invalid", "fail", "error");
   });
 
-  it('returns 404 if order not found', async () => {
+  it("returns 404 if order not found", async () => {
     initMock.orderService.retrieveOrderDetails.mockResolvedValueOnce(null);
     const res = await handler(event);
     expect(res.statusCode).toBe(404);
-    expect(createFhirErrorResponse).toHaveBeenCalledWith(404, 'not-found', expect.stringContaining('No order found'), 'error');
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(
+      404,
+      "not-found",
+      expect.stringContaining("No order found"),
+      "error",
+    );
   });
 
-  it('returns error if db validation fails', async () => {
-    validateDBDataMock.mockResolvedValueOnce({ isValid: false, errorCode: 400, errorType: 'invalid', errorMessage: 'db fail', severity: 'error' });
+  it("returns error if db validation fails", async () => {
+    validateDBDataMock.mockResolvedValueOnce({
+      isValid: false,
+      errorCode: 400,
+      errorType: "invalid",
+      errorMessage: "db fail",
+      severity: "error",
+    });
     const res = await handler(event);
     expect(res.statusCode).toBe(400);
-    expect(createFhirErrorResponse).toHaveBeenCalledWith(400, 'invalid', 'db fail', 'error');
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(400, "invalid", "db fail", "error");
   });
 
-  it('returns 201 if idempotent', async () => {
+  it("returns 201 if idempotent", async () => {
     validateDBDataMock.mockResolvedValueOnce({ isValid: true, isIdempotent: true });
     const res = await handler(event);
     expect(res.statusCode).toBe(201);
     expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
   });
 
-  it('calls updateOrderStatusAndResultStatus for interpretation code normal with order status complete and result available', async () => {
+  it("calls updateOrderStatusAndResultStatus for interpretation code normal with order status complete and result available", async () => {
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Normal);
     await handler(event);
     expect(initMock.orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
       identifiers.orderUid,
-      testOrderResult.order_reference,
       OrderStatus.Complete,
       ResultStatus.Result_Available,
-      identifiers.correlationId
+      identifiers.correlationId,
     );
   });
 
-  it('calls updateOrderStatusAndResultStatus for interpretation code abnormal with result withheld', async () => {
-    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Abnormal);
+  it("calls updateOrderStatusAndResultStatus for interpretation code abnormal with result withheld", async () => {
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(
+      InterpretationCode.Abnormal,
+    );
     await handler(event);
     expect(initMock.orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
       identifiers.orderUid,
-      testOrderResult.order_reference,
       OrderStatus.Received,
       ResultStatus.Result_Withheld,
-      identifiers.correlationId
+      identifiers.correlationId,
     );
   });
 
-  it('returns 500 if updateDatabase throws', async () => {
-    initMock.orderService.updateOrderStatusAndResultStatus.mockRejectedValueOnce(new Error('fail'));
+  it("returns 500 if updateDatabase throws", async () => {
+    initMock.orderService.updateOrderStatusAndResultStatus.mockRejectedValueOnce(new Error("fail"));
     const res = await handler(event);
     expect(res.statusCode).toBe(500);
-    expect(createFhirErrorResponse).toHaveBeenCalledWith(500, 'exception', 'An internal error occurred', 'fatal');
+    expect(createFhirErrorResponse).toHaveBeenCalledWith(
+      500,
+      "exception",
+      "An internal error occurred",
+      "fatal",
+    );
   });
 });
