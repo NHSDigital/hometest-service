@@ -38,7 +38,6 @@ test.describe("Home Test Under 18 Unavailable page", () => {
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await cannotUseServiceUnder18Page.waitUntilPageLoaded();
 
-
       const accessErrors = await accessibility.runAccessibilityCheck(
         cannotUseServiceUnder18Page.page,
         "Cannot Use Service Under 18 Page",
