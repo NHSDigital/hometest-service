@@ -28,11 +28,13 @@ describe("OrderService", () => {
               o.supplier_id,
               o.patient_uid,
               r.status AS result_status,
-              r.correlation_id
+              r.correlation_id,
+              os.status_code AS order_status_code
             FROM test_order o
             LEFT JOIN result_status r ON o.order_uid = r.order_uid
+            LEFT JOIN order_status os ON o.order_uid = os.order_uid
             WHERE o.order_uid = $1::uuid
-            ORDER BY r.created_at DESC
+            ORDER BY os.created_at DESC
             LIMIT 1;
         `;
 
@@ -43,6 +45,7 @@ describe("OrderService", () => {
         patient_uid: "patient-abc",
         result_status: ResultStatus.Result_Available,
         correlation_id: "corr-xyz",
+        order_status_code: OrderStatus.Complete,
       };
       dbClient.query.mockResolvedValue({ rows: [mockSummary] });
 
