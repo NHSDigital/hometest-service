@@ -54,6 +54,7 @@ test.describe("Order Status Page", () => {
   ];
 
   test("Authenticated user opens a deep link - Order confirmed", async ({ orderStatusPage }) => {
+    expect(await dbClient.getOrderStatusCountByOrderUid(orderId)).toBe(1);
     await orderStatusPage.navigateToOrder(orderId);
     await expect(orderStatusPage.statusTag).toHaveText("Confirmed");
     const orderReferenceOnPage = await orderStatusPage.getOrderReference();
@@ -65,6 +66,7 @@ test.describe("Order Status Page", () => {
       orderStatusPage,
     }) => {
       await dbClient.updateOrderStatus(orderId, status);
+      expect(await dbClient.getOrderStatusCountByOrderUid(orderId)).toBe(1);
       await orderStatusPage.navigateToOrder(orderId);
       await expect(orderStatusPage.statusTag).toHaveText(tag);
       const orderReferenceOnPage = await orderStatusPage.getOrderReference();
@@ -96,8 +98,12 @@ test.describe("Order Status Page", () => {
       await context.clearPermissions();
       await orderStatusPage.navigateToOrder(orderId);
       await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(testedUser as NHSLoginUser);
-      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue((testedUser as NHSLoginUser).otp!);
+      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
+        testedUser as NHSLoginUser,
+      );
+      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
+        (testedUser as NHSLoginUser).otp!,
+      );
       await expect(orderStatusPage.statusTag).toHaveText("Test received");
       const url = await orderStatusPage.getCurrentUrl();
       expect(url).toContain(orderId);

@@ -17,20 +17,20 @@ const birthDate2 = "1990-01-01";
 
 test.describe("Results Page", { tag: "@ui" }, () => {
   test.beforeAll(
-    "Connect to the database and create a patient, order, initial order status and result status",
+    "Connect to the database and create a patient, order, and initial order status",
     async ({ testedUser }) => {
       await dbClient.connect();
       await resultDbClient.connect();
 
       const result = await dbClient.createOrderWithPatientAndStatus(
-        new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),
+        new OrderBuilder().withUser(testedUser).withStatus("SUBMITTED").build(),
       );
 
       const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus(
         new OrderBuilder()
           .withNhsNumber(nhsNumber2)
           .withBirthDate(birthDate2)
-          .withStatus("COMPLETE")
+          .withStatus("SUBMITTED")
           .build(),
       );
 
@@ -41,16 +41,13 @@ test.describe("Results Page", { tag: "@ui" }, () => {
 
       orderId2 = resultSecondPatient.order_uid;
       patientId2 = resultSecondPatient.patient_uid;
-
-      const correlationId = randomUUID();
-      const correlationId2 = randomUUID();
-
-      await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
-      await resultDbClient.insertStatusResult(orderId2, "RESULT_AVAILABLE", correlationId2);
     },
   );
 
   test("Authenticated user opens a deep link - negative result", async ({ negativeResultPage }) => {
+    await dbClient.updateOrderStatus(orderId, "COMPLETE");
+    await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
+    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     await negativeResultPage.navigateToOrderResult(orderId);
     await expect(negativeResultPage.result).toHaveText("Negative");
     const orderReferenceOnPage = await negativeResultPage.getOrderReference();
@@ -63,6 +60,7 @@ test.describe("Results Page", { tag: "@ui" }, () => {
   }) => {
     await dbClient.updateOrderStatus(orderId, "RECEIVED");
     await resultDbClient.updateResultStatus(orderId, "RESULT_WITHHELD");
+    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     await negativeResultPage.navigateToOrderResult(orderId);
     await expect(orderStatusPage.statusTag).toHaveText("Test received");
     const url = await orderStatusPage.getCurrentUrl();

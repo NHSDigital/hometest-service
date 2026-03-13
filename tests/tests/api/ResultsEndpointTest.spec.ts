@@ -46,6 +46,7 @@ test.describe("GET Result API @api", () => {
     const response = await hivResultsApi.getResult(params, headers);
 
     hivResultsApi.validateStatus(response, 200);
+    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     const responseBody = await response.json();
     console.log("The response received: " + JSON.stringify(responseBody, null, 2));
     const resultStatus = responseBody.interpretation[0].coding[0].display;
