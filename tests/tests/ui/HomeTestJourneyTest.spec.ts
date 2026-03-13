@@ -5,6 +5,9 @@ import { PersonalDetailsModel } from "../../models/PersonalDetails";
 
 const randomAddress = AddressModel.getRandomAddress();
 const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();
+const makeAComplaintUrl = "https://ico.org.uk/make-a-complaint/";
+const cyberAwareUrl = "https://www.ncsc.gov.uk/cyberaware/home";
+const helpAndSupportUrl = "https://www.nhs.uk/nhs-app/help/";
 
 test.describe("Editing during the order flow", { tag: "@ui" }, () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
@@ -100,4 +103,70 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
     const isChecked = await checkYourAnswersPage.isConsentCheckboxChecked();
     expect(isChecked).toBe(true);
   });
+});
+
+test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage, context }) => {
+  await homeTestStartPage.navigate();
+  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await homeTestStartPage.clickPrivacyPolicyLink();
+  const actualHeaderText = await privacyPolicyPage.getHeaderText();
+  expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
+  const [newTab] = await Promise.all([
+    context.waitForEvent("page"),
+    privacyPolicyPage.clickMakeAComplaintLink(),
+  ]);
+  await newTab.waitForLoadState();
+  expect(newTab.url()).toBe(makeAComplaintUrl);
+});
+
+test("Verify Terms of Use page", async ({
+  homeTestStartPage,
+  termsOfUsePage,
+  privacyPolicyPage,
+  context,
+  page,
+}) => {
+  await homeTestStartPage.navigate();
+  await expect(homeTestStartPage.headerText).toHaveText(
+    "Get a self-test kit for HIV",
+  );
+  await homeTestStartPage.clickTermsOfUseLink();
+  let actualHeaderText = await termsOfUsePage.getHeaderText();
+  expect(actualHeaderText).toBe(
+    "Hometest Terms of Use - Draft V1 January 2026",
+  );
+
+  // Cyber Aware Link
+  const [cyberAwareTab] = await Promise.all([
+    context.waitForEvent("page"),
+    termsOfUsePage.clickCyberAwareLink(),
+  ]);
+  await cyberAwareTab.waitForLoadState();
+  expect(cyberAwareTab.url()).toBe(cyberAwareUrl);
+  await cyberAwareTab.close();
+  await page.bringToFront();
+
+  // Help and Support Link
+  const [helpAndSupportTab] = await Promise.all([
+    context.waitForEvent("page"),
+    termsOfUsePage.clickHelpAndSupportLink(),
+  ]);
+  await helpAndSupportTab.waitForLoadState();
+  expect(helpAndSupportTab.url()).toBe(helpAndSupportUrl);
+  await helpAndSupportTab.close();
+  await page.bringToFront();
+
+  // Home Test Privacy Policy Link
+  await termsOfUsePage.clickHomeTestPrivacyPolicyLink();
+  const privacyPolicyHeaderText = await privacyPolicyPage.getHeaderText();
+  expect(privacyPolicyHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
+  await privacyPolicyPage.clickBackLink();
+  actualHeaderText = await termsOfUsePage.getHeaderText();
+  expect(actualHeaderText).toBe(
+    "Hometest Terms of Use - Draft V1 January 2026");
+  // Back to Home Test Start
+  await termsOfUsePage.clickBackLink();
+  await expect(homeTestStartPage.headerText).toHaveText(
+    "Get a self-test kit for HIV",
+  );
 });
