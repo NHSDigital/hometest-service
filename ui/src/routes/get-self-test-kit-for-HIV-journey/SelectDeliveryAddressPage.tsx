@@ -1,39 +1,35 @@
-
 "use client";
 
-import { useState } from "react";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
+import {
+  AddressResult,
+  useAuth,
+  useCreateOrderContext,
+  useJourneyNavigationContext,
+  usePostcodeLookup,
+} from "@/state";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { useContent, useAsyncErrorHandler } from "@/hooks";
 import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
-import mockAddressResponse from "@/mocks/addressLookupResponse.json";
-import PageLayout from "@/layouts/PageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
-
-interface AddressResult {
-  DPA: {
-    UPRN: string;
-    ADDRESS: string;
-    BUILDING_NAME?: string;
-    BUILDING_NUMBER?: string;
-    THOROUGHFARE_NAME?: string;
-    DEPENDENT_LOCALITY?: string;
-    POST_TOWN: string;
-    POSTCODE: string;
-  };
-}
+import { useState } from "react";
+import { isUnder18 } from "@/lib/utils/is-under-18";
 
 export default function SelectDeliveryAddressPage() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
+    useJourneyNavigationContext();
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
-
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const { addresses } = usePostcodeLookup();
+  const [selectedAddress, setSelectedAddress] = useState<string>(
+    orderAnswers.selectedAddressId || "",
+  );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  const addresses = mockAddressResponse.results as AddressResult[];
+  const isUnder18User = user ? isUnder18(user.birthdate) : false;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedAddress || selectedAddress.trim() === "") {
@@ -43,75 +39,92 @@ export default function SelectDeliveryAddressPage() {
 
     setAddressError(null);
 
-    const selected = addresses.find((addr) => addr.DPA.UPRN === selectedAddress);
+    const selected: AddressResult | undefined = addresses.find(
+      (addr) => addr.id === selectedAddress,
+    );
+
     if (!selected) return;
 
-    try {
-      const postcode = orderAnswers.postcodeSearch;
-
-      if (!postcode) {
-        console.error(
-          "[SelectDeliveryAddressPage] Missing postcode in journey context."
-        );
-
-        // ALPHA: ToDo error screen thrown here:
-        return null;
-      }
-
-
-      const la = await laLookupService.getByPostcode(postcode);
-
-      console.log("LA lookup response:", la);
-
-      updateOrderAnswers({
-        deliveryAddress: {
-          addressLine1: selected.DPA.BUILDING_NAME || selected.DPA.BUILDING_NUMBER,
-          addressLine2: selected.DPA.THOROUGHFARE_NAME,
-          addressLine3: selected.DPA.DEPENDENT_LOCALITY,
-          postTown: selected.DPA.POST_TOWN,
-          postcode: selected.DPA.POSTCODE,
-        },
-        localAuthority: {
-          code: la.localAuthorityCode,
-          region: la.region,
-        },
-      });
-
-      goToStep("how-comfortable-pricking-finger");
-
-    } catch (err) {
-      // ALPHA: Remove the console log and use proper logging pattern
-      console.error("Failed to lookup local authority:", err);
-      setAddressError("Unable to determine local authority. Please try again.");
+    const postcode = selected.postcode;
+    const laResponse = await laLookupService.getByPostcode(postcode);
+    if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+      updateOrderAnswers({ postcodeSearch: postcode });
+      goToStep(JourneyStepNames.KitNotAvailableInArea);
+      return;
     }
-  };
+    updateOrderAnswers({
+      deliveryAddress: {
+        addressLine1: selected.line1,
+        addressLine2: selected.line2,
+        addressLine3: selected.line3,
+        addressLine4: selected.line4,
+        postTown: selected.town,
+        postcode: postcode,
+      },
+      addressEntryMethod: "postcode-search",
+      selectedAddressId: selected.id,
+      localAuthority: {
+        code: laResponse.localAuthority.localAuthorityCode,
+        region: laResponse.localAuthority.region,
+      },
+      supplier: laResponse.suppliers.map((supplier) => ({
+        id: supplier.id,
+        name: supplier.name,
+        testCode: supplier.testCode,
+      })),
+    });
+
+    if (!postcode) {
+      throw new Error("Postcode is required for address selection.");
+    }
+
+    if (isUnder18User) {
+      goToStep(JourneyStepNames.CannotUseServiceUnder18);
+
+      return;
+    }
+
+    if (returnToStep) {
+      const step = returnToStep;
+      setReturnToStep(null);
+      goToStep(step);
+    } else {
+      goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+    }
+  });
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedAddress(e.target.value);
   };
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         updateOrderAnswers({
           postcodeSearch: undefined,
-          buildingNumber: undefined
+          buildingNumber: undefined,
         });
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("enter-delivery-address");
-        }
-      }}>
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {addresses.length} {addresses.length === 1 ? 'address' : 'addresses'} {content.title}
-      </h1>
-      <p>{content.postcodeLabel} <strong>{orderAnswers.postcodeSearch} </strong>
-        <a href="enter-delivery-address" onClick={(e) => {
-          e.preventDefault();
           goToStep(JourneyStepNames.EnterDeliveryAddress);
-        }}>
+        }
+      }}
+    >
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
+        {addresses.length} {addresses.length === 1 ? "address" : "addresses"} {content.title}
+      </h1>
+      <p id="postcode-search--paragraph">
+        {content.postcodeLabel}{" "}
+        <strong id="postcode-search--strong">{orderAnswers.postcodeSearch} </strong>
+        <a
+          href="enter-delivery-address"
+          onClick={(e) => {
+            e.preventDefault();
+            goToStep(JourneyStepNames.EnterDeliveryAddress);
+          }}
+        >
           {content.editPostcodeLink}
         </a>
       </p>
@@ -121,19 +134,17 @@ export default function SelectDeliveryAddressPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              <ErrorSummary.Item
-                href="#collection-point"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('collection-point-1')?.focus();
-                }}
-              >
-                {addressError}
-              </ErrorSummary.Item>
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            <ErrorSummary.ListItem
+              href="#collection-point"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("collection-point-1")?.focus();
+              }}
+            >
+              {addressError}
+            </ErrorSummary.ListItem>
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
@@ -141,8 +152,8 @@ export default function SelectDeliveryAddressPage() {
         <Radios
           id="collection-point"
           name="collection-point"
-          label={content.formLabel}
-          labelProps={{
+          legend={content.formLabel}
+          legendProps={{
             isPageHeading: false,
             size: "s",
           }}
@@ -150,9 +161,13 @@ export default function SelectDeliveryAddressPage() {
           onChange={handleRadioChange}
         >
           {addresses.map((address) => (
-            <Radios.Radio key={address.DPA.UPRN} value={address.DPA.UPRN}>
-              {address.DPA.ADDRESS}
-            </Radios.Radio>
+            <Radios.Item
+              key={address.id}
+              value={address.id}
+              checked={selectedAddress === address.id}
+            >
+              {address.fullAddress}
+            </Radios.Item>
           ))}
         </Radios>
 
@@ -161,19 +176,15 @@ export default function SelectDeliveryAddressPage() {
 
       <p className="nhsuk-body">
         <a
-          href="enter-address-manually"
+          href={JourneyStepNames.EnterAddressManually}
           onClick={(e) => {
             e.preventDefault();
-            updateOrderAnswers({
-              postcodeSearch: undefined,
-              buildingNumber: undefined
-            });
-            goToStep("enter-address-manually");
+            goToStep(JourneyStepNames.EnterAddressManually);
           }}
         >
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

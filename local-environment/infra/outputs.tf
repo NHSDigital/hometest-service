@@ -28,9 +28,19 @@ output "order_result_endpoint" {
   value       = module.order_result_lambda.localstack_endpoint_url
 }
 
-output "order_results_queue_url" {
-  description = "SQS Queue URL for order results"
-  value       = aws_sqs_queue.order_results.url
+output "order_router_endpoint" {
+  description = "Order Router Lambda endpoint"
+  value       = module.order_router_lambda.localstack_endpoint_url
+}
+
+output "get_order_endpoint" {
+  description = "Get Order Lambda endpoint"
+  value       = module.get_order_lambda.localstack_endpoint_url
+}
+
+output "get_results_endpoint" {
+  description = "Get Results Lambda endpoint"
+  value       = module.get_results_lambda.localstack_endpoint_url
 }
 
 output "login_endpoint" {
@@ -46,6 +56,11 @@ output "session_endpoint" {
 output "backend_base_url" {
   description = "Base URL for calling backend routes in LocalStack (append /login, /session, etc.)"
   value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
+}
+
+output "postcode_lookup_endpoint" {
+  description = "Postcode Lookup Lambda endpoint"
+  value       = module.postcode_lookup_lambda.localstack_endpoint_url
 }
 
 output "seed_supplier_id" {
@@ -66,4 +81,9 @@ output "ui_url" {
 output "order_service_endpoint" {
   description = "Order Service Lambda endpoint"
   value       = module.order_service_lambda.localstack_endpoint_url
+}
+
+output "order_status_endpoint" {
+  description = "Order Status Lambda endpoint"
+  value       = module.order_status_lambda.localstack_endpoint_url
 }

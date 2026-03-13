@@ -1,22 +1,22 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
+import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
+import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { useEffect, useRef, useState } from "react";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import type { ValidationMessages } from "@/content/schema";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
-import { useState } from "react";
-
-// TODO: update redirect logic if user has selected manual address entry (use goToStep)
-// TODO: add postcode lookup integration
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
 const MAX_BUILDING_NAME_LENGTH = 100;
 
 // Validation functions
-const validatePostcode = (postcode: string, validationMessages: ValidationMessages): { valid: true; value: string } | { valid: false; message: string } => {
+const validatePostcode = (
+  postcode: string,
+  validationMessages: ValidationMessages,
+): { valid: true; value: string } | { valid: false; message: string } => {
   if (!postcode || postcode.trim() === "") {
     return { valid: false, message: validationMessages.postcode.required };
   }
@@ -34,7 +34,10 @@ const validatePostcode = (postcode: string, validationMessages: ValidationMessag
   return { valid: true, value: normalizedPostcode };
 };
 
-const validateBuildingName = (buildingName: string, validationMessages: ValidationMessages): string | null => {
+const validateBuildingName = (
+  buildingName: string,
+  validationMessages: ValidationMessages,
+): string | null => {
   if (!buildingName || buildingName.trim() === "") {
     return null;
   }
@@ -49,16 +52,36 @@ const validateBuildingName = (buildingName: string, validationMessages: Validati
 export default function EnterDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { lookupPostcode, lookupResultsStatus, isLoading, clearAddresses } = usePostcodeLookup();
   const { commonContent, "enter-delivery-address": content } = useContent();
 
   const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
   const [buildingName, setBuildingName] = useState(orderAnswers.buildingNumber || "");
   const [postcodeError, setPostcodeError] = useState<string | null>(null);
-  const [buildingNameError, setBuildingNameError] = useState<string | null>(
-    null,
-  );
+  const [buildingNameError, setBuildingNameError] = useState<string | null>(null);
 
-  console.log("[EnterDeliveryAddressPage] Current order state:", orderAnswers);
+  const hasSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    clearAddresses();
+  }, [clearAddresses]);
+
+  useEffect(() => {
+    if (hasSubmittedRef.current && !isLoading && lookupResultsStatus !== "idle") {
+      hasSubmittedRef.current = false;
+      switch (lookupResultsStatus) {
+        case "not_found":
+          goToStep(JourneyStepNames.NoAddressFound);
+          break;
+        case "found":
+          goToStep(JourneyStepNames.SelectDeliveryAddress);
+          break;
+        case "error":
+          console.error("Postcode lookup failed");
+          throw new Error("Postcode lookup failed");
+      }
+    }
+  }, [lookupResultsStatus, isLoading, goToStep]);
 
   const handlePostcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPostcode(e.target.value);
@@ -68,15 +91,16 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
-    const buildingNameValidationError = validateBuildingName(buildingName, commonContent.validation);
-
-    setPostcodeError(
-      postcodeValidation.valid ? null : postcodeValidation.message,
+    const buildingNameValidationError = validateBuildingName(
+      buildingName,
+      commonContent.validation,
     );
+
+    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
     setBuildingNameError(buildingNameValidationError);
 
     if (postcodeValidation.valid && !buildingNameValidationError) {
@@ -84,65 +108,55 @@ export default function EnterDeliveryAddressPage() {
         postcodeSearch: postcodeValidation.value,
         buildingNumber: buildingName.trim() || undefined,
       };
-      console.log("[EnterDeliveryAddressPage] Saving to context:", updatedData);
       updateOrderAnswers(updatedData);
 
-      // Navigate to next step using NavigationContext
-      // for now use hard coded value to simulate no address found
-      if (updatedData.postcodeSearch == "BT655EU") {
-        goToStep("no-address-found");
-      } else {
-        goToStep("select-delivery-address");
-      }
+      hasSubmittedRef.current = true;
+      await lookupPostcode(updatedData.postcodeSearch);
     }
-  };
+  });
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep("get-self-test-kit-for-HIV");
+          goToStep(RoutePath.GetSelfTestKitPage);
         }
       }}
     >
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {content.title}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
       {(postcodeError || buildingNameError) && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              {postcodeError && (
-                <ErrorSummary.Item
-                  href="#postcode"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("postcode")?.focus();
-                  }}
-                >
-                  {postcodeError}
-                </ErrorSummary.Item>
-              )}
-              {buildingNameError && (
-                <ErrorSummary.Item
-                  href="#building-number-or-name"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("building-number-or-name")?.focus();
-                  }}
-                >
-                  {buildingNameError}
-                </ErrorSummary.Item>
-              )}
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            {postcodeError && (
+              <ErrorSummary.ListItem
+                href="#postcode"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("postcode")?.focus();
+                }}
+              >
+                {postcodeError}
+              </ErrorSummary.ListItem>
+            )}
+            {buildingNameError && (
+              <ErrorSummary.ListItem
+                href="#building-number-or-name"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("building-number-or-name")?.focus();
+                }}
+              >
+                {buildingNameError}
+              </ErrorSummary.ListItem>
+            )}
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 
@@ -179,17 +193,20 @@ export default function EnterDeliveryAddressPage() {
       </form>
 
       <p className="nhsuk-body">
-        <a href="enter-address-manually" onClick={(e) => {
+        <a
+          href={JourneyStepNames.EnterAddressManually}
+          onClick={(e) => {
             e.preventDefault();
             updateOrderAnswers({
               postcodeSearch: undefined,
-              buildingNumber: undefined
+              buildingNumber: undefined,
             });
             goToStep(JourneyStepNames.EnterAddressManually);
-          }}>
+          }}
+        >
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }

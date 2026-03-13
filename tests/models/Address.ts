@@ -1,37 +1,56 @@
-import addressData from '../test-data/address.json';
+import addressData from "../test-data/Address.json";
 
 export interface Address {
-  postcode: string;
-  addressline1: string;
-  addressline2: string;
-  addressline3: string;
-  towncity: string;
-  mobileNumber: string;
+  postCode: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressLine3?: string;
+  townCity: string;
 }
 
 export class AddressModel implements Address {
-  postcode: string;
-  addressline1: string;
-  addressline2: string;
-  addressline3: string;
-  towncity: string;
-  mobileNumber: string;
+  postCode: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressLine3?: string;
+  townCity: string;
 
   constructor(data: Address) {
-    this.postcode = data.postcode;
-    this.addressline1 = data.addressline1;
-    this.addressline2 = data.addressline2;
-    this.addressline3 = data.addressline3;
-    this.towncity = data.towncity;
-    this.mobileNumber = data.mobileNumber;
+    this.postCode = data.postCode;
+    this.addressLine1 = data.addressLine1;
+    this.addressLine2 = data.addressLine2;
+    this.addressLine3 = data.addressLine3;
+    this.townCity = data.townCity;
   }
 
   static fromJson(data: Address): AddressModel {
     return new AddressModel(data);
   }
 
+  toStringArray(): string[] {
+    const lines: string[] = [this.addressLine1];
+    if (this.addressLine2) lines.push(this.addressLine2);
+    if (this.addressLine3) lines.push(this.addressLine3);
+    lines.push(this.townCity);
+    lines.push(this.postCode);
+    return lines;
+  }
+
+  private static pool: typeof addressData = [...addressData];
+
   static getRandomAddress(): AddressModel {
-    const randomIndex = Math.floor(Math.random() * addressData.length);
-    return new AddressModel(addressData[randomIndex]);
+    if (AddressModel.pool.length === 0) {
+      AddressModel.pool = [...addressData];
+    }
+    const randomIndex = Math.floor(Math.random() * AddressModel.pool.length);
+    const [raw] = AddressModel.pool.splice(randomIndex, 1);
+    const mapped: Address = {
+      postCode: raw.postCode,
+      addressLine1: raw.addressLine1,
+      addressLine2: raw.addressLine2,
+      addressLine3: raw.addressLine3,
+      townCity: raw.townCity,
+    };
+    return new AddressModel(mapped);
   }
 }

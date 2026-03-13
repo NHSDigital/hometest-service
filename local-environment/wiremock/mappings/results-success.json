@@ -2,7 +2,7 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "urlPathPattern": "/results",
+    "urlPathPattern": "/(results|api/results|nhs_home_test/results)",
     "headers": {
       "X-Correlation-ID": {
         "matches": ".*"

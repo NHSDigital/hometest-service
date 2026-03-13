@@ -1,0 +1,8 @@
+export type ResultStatus = 'RESULT_AVAILABLE' | 'RESULT_WITHHELD';
+
+export interface TestResult {
+  order_uid: string;
+  status: ResultStatus;
+  correlation_id: string;
+  created_at: Date;
+}

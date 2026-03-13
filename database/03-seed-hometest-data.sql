@@ -17,7 +17,8 @@ INSERT INTO supplier (
   client_id,
   oauth_token_path,
   order_path,
-  oauth_scope
+  oauth_scope,
+  results_path
 )
 VALUES (
   'c1a2b3c4-1234-4def-8abc-123456789abc',
@@ -28,7 +29,8 @@ VALUES (
   'preventx-client-id',
   '/oauth/token',
   '/order',
-  'orders results'
+  'orders results',
+  '/results'
 )
 ON CONFLICT (supplier_id) DO NOTHING;
 
@@ -41,7 +43,8 @@ INSERT INTO supplier (
   client_id,
   oauth_token_path,
   order_path,
-  oauth_scope
+  oauth_scope,
+  results_path
 )
 VALUES (
   'd2b3c4d5-2345-4abc-8def-23456789abcd',
@@ -52,7 +55,8 @@ VALUES (
   'sh24-client-id',
   '/oauth/token',
   '/order',
-  'order results'
+  'order results',
+  '/results'
 )
 ON CONFLICT (supplier_id) DO NOTHING;
 
@@ -78,32 +82,12 @@ VALUES (
 )
 ON CONFLICT (nhs_number) DO NOTHING;
 
-INSERT INTO la_supplier_offering (offering_id, supplier_id, test_code, la_code)
+INSERT INTO la_supplier_offering (offering_id, supplier_id, test_code, la_code, effective_from)
 VALUES
-(
-  'a5e6f7a8-5678-4def-8abc-56789abcdefa',
-  'c1a2b3c4-1234-4def-8abc-123456789abc',
-  '31676001',
-  'E09000001'
-),
-(
-  'b6f7a8b9-6789-4efa-8bcd-6789abcdefab',
-  'c1a2b3c4-1234-4def-8abc-123456789abc',
-  'PCR',
-  'E09000001'
-),
-(
-  'c7a8b9c0-7890-4fab-8cde-789abcdefabc',
-  'd2b3c4d5-2345-4abc-8def-23456789abcd',
-  '31676001',
-  'E09000001'
-),
-(
-  'd8b9c0d1-8901-4abc-8def-89abcdefabcd',
-  'd2b3c4d5-2345-4abc-8def-23456789abcd',
-  'PCR',
-  'E09000001'
-)
+('a5e6f7a8-5678-4def-8abc-56789abcdefa', 'c1a2b3c4-1234-4def-8abc-123456789abc', '31676001', '1440', DATE '2026-02-09'),
+('b6f7a8b9-6789-4efa-8bcd-6789abcdefab', 'c1a2b3c4-1234-4def-8abc-123456789abc', 'PCR', '1440', DATE '2026-02-09'),
+('c7a8b9c0-7890-4fab-8cde-789abcdefabc', 'd2b3c4d5-2345-4abc-8def-23456789abcd', '31676001', '4230', DATE '2026-02-09'),
+('d8b9c0d1-8901-4abc-8def-89abcdefabcd', 'd2b3c4d5-2345-4abc-8def-23456789abcd', 'PCR', '4230', DATE '2026-02-09')
 ON CONFLICT (la_code, supplier_id, test_code) DO NOTHING;
 
 INSERT INTO test_order (order_uid, supplier_id, patient_uid, test_code, originator)
@@ -131,7 +115,7 @@ VALUES (
   'abc2d3e4-1234-4def-8abc-12abcdefabcd',
   'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
   NULL,
-  'ORDER_RECEIVED'
+  'CONFIRMED'
 )
 ON CONFLICT (status_id) DO NOTHING;
 
@@ -140,7 +124,7 @@ VALUES (
   'bcd3e4f5-2345-4abc-8def-23abcdefabcd',
   'fab1c2d3-0123-4cde-8fab-01abcdefabcd',
   NULL,
-  'ORDER_RECEIVED'
+  'CONFIRMED'
 )
 ON CONFLICT (status_id) DO NOTHING;
 

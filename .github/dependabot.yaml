@@ -3,7 +3,9 @@ version: 2
 
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "daily"
 
@@ -26,8 +28,6 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "nhsuk-frontend"
-        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/lambdas"
@@ -48,3 +48,8 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "daily"
