@@ -347,6 +347,8 @@ export interface TestResultsContent {
   };
 }
 
+export type ListStyle = "bullet" | "dash";
+
 export interface PrivacyPolicySubsection {
   heading?: string;
   inlineHeading?: boolean;
@@ -354,7 +356,7 @@ export interface PrivacyPolicySubsection {
   list?: string[];
   indented?: boolean;
   ordered?: boolean;
-  listStyle?: "bullet" | "dash";
+  listStyle?: ListStyle;
   table?: {
     caption?: string;
     headers: string[];

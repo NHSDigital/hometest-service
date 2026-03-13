@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+import type { ListStyle } from "@/content";
 
 const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
 const MARKDOWN_LINK = /\[([^\]]+)]\(([^)]+)\)/; // [label](url)
@@ -67,7 +68,7 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
  * listStyle="dash" → nhsuk-list nhsuk-list--dash
  * default → nhsuk-list nhsuk-list--bullet
  */
-export const getListClass = (ordered?: boolean, listStyle?: "bullet" | "dash"): string => {
+export const getListClass = (ordered?: boolean, listStyle?: ListStyle): string => {
   if (ordered) return "nhsuk-list";
   if (listStyle === "dash") return "nhsuk-list nhsuk-list--dash";
   return "nhsuk-list nhsuk-list--bullet";

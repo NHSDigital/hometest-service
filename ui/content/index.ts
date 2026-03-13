@@ -33,4 +33,5 @@ export type {
   FeedbackContent,
   FooterContent,
   KitNotAvailableInAreaContent,
+  ListStyle
 } from "./schema";

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useContent } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { renderTextWithLinks, cleanListItems, getListClass } from "@/utils/renderTextWithLinks";
+import type { ListStyle } from "@/content";
 import "@/styles/lists.css";
 
 export default function HomeTestTermsOfUsePage() {
@@ -38,7 +39,7 @@ export default function HomeTestTermsOfUsePage() {
     items: string[],
     ordered?: boolean,
     indented?: boolean,
-    listStyle?: "bullet" | "dash",
+    listStyle?: ListStyle,
   ) => {
     const cleanedItems = cleanListItems(items);
     const ListTag = ordered ? "ol" : "ul";
