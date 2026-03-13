@@ -45,15 +45,10 @@ const defaultOptions: ErrorCaptureOptions = {
     /NHSCookieConsent is not defined/,
     /nhsapp is not defined/,
     /"undefined" is not valid JSON/,
-<<<<<<< HEAD
     // CSP font violations from external NHS assets
     /Content Security Policy directive.*font-src/,
     /assets\.nhs\.uk.*font/i,
-    // React Router v7 warning: root route has a loader but no HydrateFallback defined
-    // This is a known issue to be fixed in the UI app (add HydrateFallback to root route)
-=======
-    // Next.js hydration warning - not an application issue
->>>>>>> cc7bdd872021c9d09084c684364748ba076eceb8
+    // React Router hydration warning - not an application issue
     /No `HydrateFallback` element provided to render during initial hydration/,
   ],
   ignoreStatusCodes: [],
