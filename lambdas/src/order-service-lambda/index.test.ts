@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { OrderStatusMutator } from "src/lib/db/types/__generated__/hometest/OrderStatus";
 
 const mockInit = jest.fn();
 const mockCreatePatientOrderAndConsent = jest.fn();
@@ -261,11 +262,11 @@ describe("order-service-lambda handler", () => {
 
       const orderStatusCallArg = mockAddOrderStatusUpdate.mock.calls[0][0];
       expect(orderStatusCallArg).toEqual({
-        order_uid: "order-123",
-        status_code: OrderStatusCodes.QUEUED,
-        created_at: expect.any(Date),
-        correlation_id: "123e4567-e89b-12d3-a456-426614174123",
-      });
+        orderUid: "order-123",
+        statusCode: OrderStatusCodes.QUEUED,
+        createdAt: expect.any(Date),
+        correlationId: "123e4567-e89b-12d3-a456-426614174123",
+      } satisfies Partial<OrderStatusMutator>);
     });
   });
 

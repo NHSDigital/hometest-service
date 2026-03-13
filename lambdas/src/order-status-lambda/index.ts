@@ -150,10 +150,10 @@ export const lambdaHandler = async (
 
     // Process the update
     const statusOrderUpdateParams: OrderStatusMutator = {
-      order_uid: orderId,
-      status_code: businessStatusMapping[validatedTask.businessStatus.text],
-      created_at: new Date(validatedTask.lastModified),
-      correlation_id: correlationId,
+      orderUid: orderId,
+      statusCode: businessStatusMapping[validatedTask.businessStatus.text],
+      createdAt: new Date(validatedTask.lastModified),
+      correlationId: correlationId,
     };
 
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);

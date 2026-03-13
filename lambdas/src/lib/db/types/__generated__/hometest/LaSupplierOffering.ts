@@ -9,41 +9,39 @@ export type offering_id = string;
 
 /** Represents the table hometest.la_supplier_offering */
 export default interface LaSupplierOffering {
-  offering_id: offering_id;
+  offeringId: offering_id;
 
-  supplier_id: supplier_id | null;
+  supplierId: supplier_id | null;
 
-  test_code: test_code | null;
+  testCode: test_code | null;
 
-  la_code: string;
+  laCode: string;
 
-  effective_from: Date | null;
+  effectiveFrom: Date | null;
 }
 
 /** Represents the initializer for the table hometest.la_supplier_offering */
 export interface LaSupplierOfferingInitializer {
-  /** Default value: gen_random_uuid() */
-  offering_id?: offering_id;
+  offeringId?: offering_id;
 
-  supplier_id?: supplier_id | null;
+  supplierId?: supplier_id | null;
 
-  test_code?: test_code | null;
+  testCode?: test_code | null;
 
-  la_code: string;
+  laCode: string;
 
-  /** Default value: CURRENT_TIMESTAMP */
-  effective_from?: Date | null;
+  effectiveFrom?: Date | null;
 }
 
 /** Represents the mutator for the table hometest.la_supplier_offering */
 export interface LaSupplierOfferingMutator {
-  offering_id?: offering_id;
+  offeringId?: offering_id;
 
-  supplier_id?: supplier_id | null;
+  supplierId?: supplier_id | null;
 
-  test_code?: test_code | null;
+  testCode?: test_code | null;
 
-  la_code?: string;
+  laCode?: string;
 
-  effective_from?: Date | null;
+  effectiveFrom?: Date | null;
 }

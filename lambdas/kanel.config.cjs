@@ -1,6 +1,10 @@
 // kanel.config.cjs
 const path = require("path");
 
+function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+}
+
 /** @type {import('kanel').Config} */
 module.exports = {
   connection: {
@@ -15,11 +19,12 @@ module.exports = {
   type: "ts",
   namespace: "DB",
   module: "esm",
-  keepCamelCase: true,
-  customTypeMap: {
-    "hometest.order_status.order_uid": "string",
-  },
   disableNominalTyping: true,
+  // Convert DB column names → camelCase
+  getPropertyMetadata: (property) => ({
+    name: snakeToCamel(property.name),
+    comment: [],
+  }),
   generateIdentifierType: (c, d) => {
     return {
       declarationType: "typeDeclaration",

@@ -9,48 +9,45 @@ export type status_id = string;
 
 /** Represents the table hometest.order_status */
 export default interface OrderStatus {
-  status_id: status_id;
+  statusId: status_id;
 
-  order_uid: order_uid;
+  orderUid: order_uid;
 
-  order_reference: string | null;
+  orderReference: string | null;
 
-  status_code: status_code;
+  statusCode: status_code;
 
-  created_at: Date | null;
+  createdAt: Date | null;
 
-  correlation_id: string;
+  correlationId: string;
 }
 
 /** Represents the initializer for the table hometest.order_status */
 export interface OrderStatusInitializer {
-  /** Default value: gen_random_uuid() */
-  status_id?: status_id;
+  statusId?: status_id;
 
-  order_uid: order_uid;
+  orderUid: order_uid;
 
-  order_reference?: string | null;
+  orderReference?: string | null;
 
-  status_code: status_code;
+  statusCode: status_code;
 
-  /** Default value: CURRENT_TIMESTAMP */
-  created_at?: Date | null;
+  createdAt?: Date | null;
 
-  /** Default value: gen_random_uuid() */
-  correlation_id?: string;
+  correlationId?: string;
 }
 
 /** Represents the mutator for the table hometest.order_status */
 export interface OrderStatusMutator {
-  status_id?: status_id;
+  statusId?: status_id;
 
-  order_uid?: order_uid;
+  orderUid?: order_uid;
 
-  order_reference?: string | null;
+  orderReference?: string | null;
 
-  status_code?: status_code;
+  statusCode?: status_code;
 
-  created_at?: Date | null;
+  createdAt?: Date | null;
 
-  correlation_id?: string;
+  correlationId?: string;
 }

@@ -298,7 +298,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          correlation_id: newCorrelationId,
+          correlationId: newCorrelationId,
         } satisfies Partial<OrderStatusMutator>),
       );
     });
@@ -336,7 +336,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          created_at: new Date(mockedLastModifiedTimestamp),
+          createdAt: new Date(mockedLastModifiedTimestamp),
         } satisfies Partial<OrderStatusMutator>),
       );
     });
@@ -355,7 +355,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          created_at: new Date(mockedLastModifiedTimestamp),
+          createdAt: new Date(mockedLastModifiedTimestamp),
         } satisfies Partial<OrderStatusMutator>),
       );
     });
@@ -400,10 +400,10 @@ describe("Order Status Lambda Handler", () => {
 
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          order_uid: MOCK_ORDER_UID,
-          status_code: businessStatusMapping[MOCK_BUSINESS_STATUS],
-          created_at: new Date(validTaskBody.lastModified),
-          correlation_id: MOCK_CORRELATION_ID,
+          orderUid: MOCK_ORDER_UID,
+          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
+          createdAt: new Date(validTaskBody.lastModified),
+          correlationId: MOCK_CORRELATION_ID,
         } satisfies Partial<OrderStatusMutator>),
       );
     });

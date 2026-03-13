@@ -29,8 +29,8 @@ export class OrderStatusService {
    * Retrieve patient ID associated with an order from the database. Returns null if order is not found.
    */
   async getPatientIdFromOrder(
-    orderId: TestOrder["order_uid"],
-  ): Promise<TestOrder["patient_uid"] | null> {
+    orderId: TestOrder["orderUid"],
+  ): Promise<TestOrder["patientUid"] | null> {
     const query = `
       SELECT patient_uid
       FROM test_order
@@ -40,8 +40,8 @@ export class OrderStatusService {
 
     try {
       const result = await this.dbClient.query<
-        { patient_uid: TestOrder["patient_uid"] },
-        [TestOrder["order_uid"]]
+        { patient_uid: TestOrder["patientUid"] },
+        [TestOrder["orderUid"]]
       >(query, [orderId]);
 
       return result.rowCount === 0 ? null : result.rows[0].patient_uid;
@@ -56,8 +56,8 @@ export class OrderStatusService {
    * Check for idempotency - verify if an update with the same correlation ID was already processed
    */
   async checkIdempotency(
-    orderId: OrderStatus["order_uid"],
-    correlationId: OrderStatus["correlation_id"],
+    orderId: OrderStatus["orderUid"],
+    correlationId: OrderStatus["correlationId"],
   ): Promise<IdempotencyCheckResult> {
     const query = `
       SELECT 1
@@ -84,7 +84,7 @@ export class OrderStatusService {
    * Add a new order status update to the database
    */
   async addOrderStatusUpdate(params: OrderStatusMutator): Promise<void> {
-    const { order_uid, status_code, created_at, correlation_id } = params;
+    const { orderUid, statusCode, createdAt, correlationId } = params;
 
     const query = `
       INSERT INTO order_status (order_uid, status_code, created_at, correlation_id)
@@ -93,17 +93,17 @@ export class OrderStatusService {
 
     try {
       const result = await this.dbClient.query(query, [
-        order_uid,
-        status_code,
-        created_at,
-        correlation_id,
+        orderUid,
+        statusCode,
+        createdAt,
+        correlationId,
       ]);
 
       if (result.rowCount === 0) {
         throw new Error("Failed to insert order status");
       }
     } catch (error) {
-      throw new Error(`Failed to update order status for orderId ${order_uid}`, {
+      throw new Error(`Failed to update order status for orderId ${orderUid}`, {
         cause: error,
       });
     }
