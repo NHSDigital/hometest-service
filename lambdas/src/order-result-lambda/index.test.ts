@@ -105,7 +105,6 @@ describe("order-result-lambda handler", () => {
     requestContext: {} as any,
     resource: "",
   };
-  const testOrderResult = { order_reference: "order-ref-1" };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -114,7 +113,7 @@ describe("order-result-lambda handler", () => {
       observation,
       identifiers,
     });
-    initMock.orderService.retrieveOrderDetails.mockResolvedValue(testOrderResult);
+    initMock.orderService.retrieveOrderDetails.mockResolvedValue({});
     validateDBDataMock.mockResolvedValue({ isValid: true, isIdempotent: false });
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
