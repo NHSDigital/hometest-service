@@ -12,6 +12,7 @@
     "package:lambdas": "npm --prefix lambdas run package",
 
     "clean:all": "npm run stop && rm -rf ./node_modules */node_modules */dist */build && docker system prune -f --volumes",
+    "pull-secrets": "bash scripts/pull-secrets.sh",
     "start": "npm ci && npm run local:start",
     "stop": "npm run local:stop",
     "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:start",
@@ -33,7 +34,7 @@
     "local:terraform:apply": "npm run local:terraform -- apply -auto-approve",
     "local:terraform:destroy": "npm run local:terraform -- destroy -auto-approve",
     "local:terraform:env": "bash scripts/terraform/post-apply-env-update.sh",
-    "local:compose": "docker compose -f local-environment/docker-compose.yml",
+    "local:compose": "DOCKER_SOCK=$(docker context inspect --format '{{ .Endpoints.docker.Host }}' $(docker context show) | sed 's|unix://||') HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f local-environment/docker-compose.yml",
     "local:compose:up": "npm run local:compose -- up -d",
     "local:compose:down": "npm run local:compose -- down",
     "local:service:lambda:disable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda put-function-concurrency --function-name hometest-service-$LAMBDA --reserved-concurrent-executions 0 --endpoint-url http://localhost:4566 --region eu-west-2",
