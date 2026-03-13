@@ -1,14 +1,17 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+
+const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
+const MARKDOWN_LINK = /\[([^\]]+)]\(([^)]+)\)/; // [label](url)
 
 /**
  * Renders a text string, converting:
  * - **text** → <strong>text</strong> (supports nested bold)
- * - [display text](url) → internal React Router <Link> (for /paths) or external <a> (for https://)
- * - bare https://... URLs → external <a target="_blank">
+ * - [display text](url) → internal React Router <Link> (for /paths) or external <OpensInNewTabLink> (for https://)
  */
 export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] => {
-  const combinedRegex = /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+(?<![.,;)]))/g;
+  const combinedRegex = new RegExp(`${BOLD.source}|${MARKDOWN_LINK.source}`, "g");
   const parts: ReactNode[] = [];
   let lastIndex = 0;
   let match;
@@ -25,21 +28,6 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
       const boldContent = match[1];
       const innerParts = renderTextWithLinks(boldContent, `${keyPrefix}b${match.index}-`);
       parts.push(<strong key={`${keyPrefix}bold-${match.index}`}>{innerParts}</strong>);
-    } else if (match[4]) {
-      // Bare https:// URL
-      const url = match[4];
-      parts.push(
-        <a
-          key={`${keyPrefix}ext-${match.index}`}
-          href={url}
-          className="nhsuk-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`${url} (opens in new tab)`}
-        >
-          {url}
-        </a>,
-      );
     } else {
       // Markdown-style link [display text](href)
       const linkText = match[2];
@@ -48,16 +36,11 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
 
       if (isExternal) {
         parts.push(
-          <a
+          <OpensInNewTabLink
             key={`${keyPrefix}ext-${match.index}`}
-            href={href}
-            className="nhsuk-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${linkText} (opens in new tab)`}
-          >
-            {linkText}
-          </a>,
+            linkText={linkText}
+            linkHref={href}
+          />,
         );
       } else {
         parts.push(
