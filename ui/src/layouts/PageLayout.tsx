@@ -1,23 +1,14 @@
-import { FormBackLink } from "../components/FormBackLink";
+import { BackLink } from "nhsuk-react-components";
 
 interface PageLayoutProps {
   children: React.ReactNode;
-  showBackButton?: boolean;
-  backButtonText?: string;
   onBackButtonClick?: () => void;
 }
 
-export  default function PageLayout({
-  children,
-  showBackButton = false,
-  backButtonText,
-  onBackButtonClick,
-}: PageLayoutProps) {
+export default function PageLayout({ children, onBackButtonClick }: Readonly<PageLayoutProps>) {
   return (
     <div className="nhsuk-width-container">
-      {showBackButton && (
-        <FormBackLink text={backButtonText} onClick={onBackButtonClick} />
-      )}
+      {onBackButtonClick && <BackLink onClick={onBackButtonClick}>Back</BackLink>}
       <main className="nhsuk-main-wrapper" id="maincontent" role="main">
         <div className="nhsuk-grid-row">
           <div className="nhsuk-grid-column-two-thirds">{children}</div>

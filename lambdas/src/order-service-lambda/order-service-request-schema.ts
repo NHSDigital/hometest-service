@@ -1,9 +1,6 @@
 import { z } from "zod";
-import { isUUID } from "../lib/utils";
-import {
-  FHIRAddressSchema,
-  FHIRHumanNameSchema,
-} from "../lib/models/fhir/fhir-schemas";
+import { isUUID } from "../lib/utils/utils";
+import { FHIRAddressSchema, FHIRHumanNameSchema } from "../lib/models/fhir/fhir-schemas";
 
 const TelecomItemSchema = z
   .object({
@@ -39,13 +36,9 @@ export const OrderServicePatientSchema = z.object({
 export const OrderServiceRequestSchema = z.object({
   testCode: z.string(),
   testDescription: z.string(),
-  supplierId: z
-    .string()
-    .refine(isUUID, { message: "supplierId must be a valid UUID" }),
+  supplierId: z.string().refine(isUUID, { message: "supplierId must be a valid UUID" }),
   patient: OrderServicePatientSchema,
-  consent: z
-    .boolean()
-    .refine((value) => value === true, {
-      message: "consent must be true",
-    }),
+  consent: z.boolean().refine((value) => value === true, {
+    message: "consent must be true",
+  }),
 });

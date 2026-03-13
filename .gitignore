@@ -17,6 +17,8 @@
 .env
 .env.local
 .env.*.local
+.env.*
+.env*
 
 # Local stuff
 db-data
@@ -42,6 +44,9 @@ cdk.context.json
 *.pem
 private_key.pem
 public_key.pem
+
+# Secrets
+os-places-creds.json
 
 # https://github.com/github/gitignore/blob/main/Terraform.gitignore
 
@@ -161,6 +166,8 @@ mcp.json
 
 **/frontend/
 **/test-results/
+!ui/src/components/test-results/
+!ui/src/components/test-results/**
 .next
 WorkerUser*
 junit.xml

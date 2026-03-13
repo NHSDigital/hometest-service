@@ -1,37 +1,28 @@
 "use client";
 
-// TODO: remove console.logs
-
-import {
-  ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-} from "react";
-
-import { AuthUser } from "./AuthContext";
+import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
 // Address structure
 export interface Address {
   addressLine1?: string;
   addressLine2?: string;
   addressLine3?: string;
+  addressLine4?: string;
   postTown?: string;
   postcode?: string;
 }
 
 // Order state
 export interface OrderAnswers {
-  // From auth
-  user?: AuthUser;
-
-  // From enter-delivery-address
+  // Address and LA lookup info
   postcodeSearch?: string;
   buildingNumber?: string;
+  selectedAddressId?: string;
 
   // Final delivery address
   deliveryAddress?: Address;
+  addressEntryMethod?: "postcode-search" | "manual";
+
   comfortableDoingTest?: string;
 
   // From LA Lookup
@@ -40,11 +31,26 @@ export interface OrderAnswers {
     region: string;
   };
 
+  supplier?: {
+    id: string;
+    name: string;
+    testCode: string;
+  }[];
+
   // Mobile number
   mobileNumber?: string;
+  mobileNumberSource?: "nhs-login" | "manual";
+
+  // Consent
+  consentCheckboxChecked?: boolean;
+  consentGiven?: boolean;
+  consentTimestamp?: string;
+
+  // Order confirmation
+  orderReferenceNumber?: number;
 }
 
-interface CreateOrderContextType {
+export interface CreateOrderContextType {
   orderAnswers: OrderAnswers;
   updateOrderAnswers: (updates: Partial<OrderAnswers>) => void;
   reset: () => void;
@@ -56,12 +62,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
-    console.log("[CreateOrderProvider] Updating with:", updates);
-    setOrderAnswers((prev) => {
-      const newState = { ...prev, ...updates };
-      console.log("[CreateOrderProvider] New state:", newState);
-      return newState;
-    });
+    setOrderAnswers((prev) => ({ ...prev, ...updates }));
   }, []);
 
   const reset = useCallback(() => {

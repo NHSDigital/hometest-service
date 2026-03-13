@@ -1,26 +1,23 @@
-import { APIRequestContext, APIResponse } from '@playwright/test';
-import { BaseApiClient } from './BaseApiClient';
-import { API_ENDPOINTS } from '../endpoints';
-import { HIVTestResult, HIVTestResultData } from '../../test-data/HIVTestResultData';
-import { headersTestResults } from '../../test-data/HeadersTestResults';
+import { APIResponse } from "@playwright/test";
+import { BaseApiClient } from "./BaseApiClient";
+import { API_ENDPOINTS } from "../Endpoints";
+import { HIVObservation } from "../../test-data/ResultsObservationData";
+import { ApiHeaders } from "../../utils/ApiRequestHelper";
+import { GetResultParams, GetResultHeaders } from "../../test-data/GetResultRequestParams";
 
 export class HIVResultsApiResource extends BaseApiClient {
-  constructor(request: APIRequestContext) {
-    super(request);
-  }
-
-  async submitTestResults(testData: HIVTestResult, headers: typeof headersTestResults): Promise<APIResponse> {
-    const endpoint = API_ENDPOINTS.results.base;
-    const response = await this.post(endpoint, {
-      headers: headers,
+  async submitTestResults(testData: HIVObservation, headers: ApiHeaders): Promise<APIResponse> {
+    return this.post(API_ENDPOINTS.results.base, {
+      headers,
       data: testData,
     });
+  }
 
+  async getResult(params: GetResultParams, headers: GetResultHeaders): Promise<APIResponse> {
+    const response = await this.get(API_ENDPOINTS.results.get, {
+      params,
+      headers,
+    });
     return response;
   }
-
-  validateResponse(response: APIResponse, expectedStatus: number = 200): void {
-    this.validateStatus(response, expectedStatus);
-  }
-
 }

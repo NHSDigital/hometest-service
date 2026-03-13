@@ -1,16 +1,27 @@
 import { backendUrl } from "@/settings";
 
 export interface LaLookupResponse {
-  localAuthorityCode: string;
-  region: string;
+  localAuthority: {
+    localAuthorityCode: string;
+    region: string;
+  };
+  suppliers: {
+    id: string;
+    name: string;
+    testCode: string;
+  }[];
 }
 
 class LaLookupService {
-  async getByPostcode(postcode: string): Promise<LaLookupResponse> {
+  async getByPostcode(postcode: string): Promise<LaLookupResponse | null> {
     const response = await this.getFromApi(postcode);
 
     if (!response.ok) {
-      throw new Error("Failed to fetch local authority");
+      if (response.status === 404) {
+        return null;
+      } else {
+        throw new Error("Failed to fetch local authority");
+      }
     }
 
     return response.json();

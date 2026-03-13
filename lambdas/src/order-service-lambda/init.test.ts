@@ -1,92 +1,234 @@
-const mockPostgresDbClient = jest.fn();
-const mockOrderStatusService = jest.fn();
-const mockTransactionService = jest.fn();
-const mockAwssqsClient = jest.fn();
-
-jest.mock("../lib/db/db-client", () => ({
-  PostgresDbClient: mockPostgresDbClient,
-}));
-
-jest.mock("../lib/db/order-status-db", () => ({
-  OrderStatusService: mockOrderStatusService,
-}));
-
-jest.mock("../lib/db/transaction-db-client", () => ({
-  TransactionService: mockTransactionService,
-}));
-
-jest.mock("../lib/sqs/sqs-client", () => ({
-  AWSSQSClient: mockAwssqsClient,
-}));
-
 import { init } from "./init";
+import { PostgresDbClient } from "../lib/db/db-client";
+import { OrderStatusService } from "../lib/db/order-status-db";
+import { TransactionService } from "../lib/db/transaction-db-client";
+import { AWSSQSClient } from "../lib/sqs/sqs-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 
-describe("order-service-lambda init", () => {
+// Mock all external dependencies
+jest.mock("../lib/db/db-client");
+jest.mock("../lib/db/order-status-db");
+jest.mock("../lib/db/transaction-db-client");
+jest.mock("../lib/sqs/sqs-client");
+jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("../lib/db/db-config");
+
+describe("init", () => {
+  const originalEnv = process.env;
+
+  const mockEnvVariables = {
+    DB_USERNAME: "test-username",
+    DB_ADDRESS: "test-address",
+    DB_PORT: "5432",
+    DB_NAME: "test-database",
+    DB_SCHEMA: "test-schema",
+    DB_SECRET_NAME: "test-secret-name",
+    ORDER_PLACEMENT_QUEUE_URL:
+      "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
+  };
+
+  // This represents the return value of postgresConfigFromEnv(secretsClient)
+  const mockPostgresConfig = {
+    user: "test-user",
+    host: "test-host",
+    port: 5432,
+    database: "test-db",
+    password: jest.fn().mockResolvedValue("test-password"),
+  };
+
   beforeEach(() => {
-    mockPostgresDbClient.mockReset();
-    mockOrderStatusService.mockReset();
-    mockTransactionService.mockReset();
-    mockAwssqsClient.mockReset();
-    delete process.env.DATABASE_URL;
-    delete process.env.ORDER_PLACEMENT_QUEUE_URL;
+    jest.clearAllMocks();
+    // Reset process.env to a clean state
+    process.env = { ...originalEnv };
+    // Set default mock environment variables
+    Object.assign(process.env, mockEnvVariables);
+
+    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockPostgresConfig);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    // Restore original env
+    process.env = originalEnv;
   });
 
-  it("should construct dependencies with mandatory env vars", () => {
-    const dbClientInstance = {
-      query: jest.fn(),
-      withTransaction: jest.fn(),
-      close: jest.fn(),
-    };
-    const orderStatusServiceInstance = {};
-    const transactionServiceInstance = {};
-    const sqsClientInstance = {};
+  describe("successful initialization", () => {
+    it("should initialize all components with correct configuration", () => {
+      process.env.AWS_REGION = "eu-west-2";
 
-    process.env.DATABASE_URL = "postgres://user:pass@host:5432/db";
-    process.env.ORDER_PLACEMENT_QUEUE_URL =
-      "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
+      const result = init();
 
-    mockPostgresDbClient.mockImplementation(() => dbClientInstance);
-    mockOrderStatusService.mockImplementation(() => orderStatusServiceInstance);
-    mockTransactionService.mockImplementation(() => transactionServiceInstance);
-    mockAwssqsClient.mockImplementation(() => sqsClientInstance);
-
-    const result = init();
-
-    expect(mockPostgresDbClient).toHaveBeenCalledWith(
-      "postgres://user:pass@host:5432/db",
-    );
-    expect(mockOrderStatusService).toHaveBeenCalledWith(dbClientInstance);
-    expect(mockTransactionService).toHaveBeenCalledWith({
-      dbClient: dbClientInstance,
-    });
-    expect(mockAwssqsClient).toHaveBeenCalledWith();
-    expect(result).toEqual({
-      orderStatusService: orderStatusServiceInstance,
-      transactionService: transactionServiceInstance,
-      sqsClient: sqsClientInstance,
-      orderPlacementQueueUrl:
+      expect(result).toHaveProperty("orderStatusService");
+      expect(result).toHaveProperty("transactionService");
+      expect(result).toHaveProperty("sqsClient");
+      expect(result).toHaveProperty("orderPlacementQueueUrl");
+      expect(result.orderStatusService).toBeInstanceOf(OrderStatusService);
+      expect(result.transactionService).toBeInstanceOf(TransactionService);
+      expect(result.sqsClient).toBeInstanceOf(AWSSQSClient);
+      expect(result.orderPlacementQueueUrl).toBe(
         "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
+      );
+    });
+
+    it("should create AwsSecretsClient with AWS_REGION when set", () => {
+      process.env.AWS_REGION = "us-east-1";
+
+      init();
+
+      expect(AwsSecretsClient).toHaveBeenCalledWith("us-east-1");
+    });
+
+    it("should create AwsSecretsClient with AWS_DEFAULT_REGION when AWS_REGION is not set", () => {
+      delete process.env.AWS_REGION;
+      process.env.AWS_DEFAULT_REGION = "us-west-2";
+
+      init();
+
+      expect(AwsSecretsClient).toHaveBeenCalledWith("us-west-2");
+    });
+
+    it("should default to eu-west-2 when neither AWS_REGION nor AWS_DEFAULT_REGION is set", () => {
+      delete process.env.AWS_REGION;
+      delete process.env.AWS_DEFAULT_REGION;
+
+      init();
+
+      expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+    });
+
+    it("should create PostgresDbClient with correct configuration", () => {
+      process.env.AWS_REGION = "eu-west-2";
+
+      init();
+
+      expect(PostgresDbClient).toHaveBeenCalledWith(
+        mockPostgresConfig
+      );
+    });
+
+    it("should create OrderStatusService with PostgresDbClient instance", () => {
+      init();
+
+      expect(OrderStatusService).toHaveBeenCalledWith(
+        expect.any(PostgresDbClient),
+      );
+    });
+
+    it("should create TransactionService with PostgresDbClient instance", () => {
+      init();
+
+      expect(TransactionService).toHaveBeenCalledWith({
+        dbClient: expect.any(PostgresDbClient),
+      });
+    });
+
+    it("should create AWSSQSClient", () => {
+      init();
+
+      expect(AWSSQSClient).toHaveBeenCalledWith();
+    });
+
+    it("should return an Environment object with all required properties", () => {
+      const result = init();
+
+      expect(result).toEqual({
+        orderStatusService: expect.any(OrderStatusService),
+        transactionService: expect.any(TransactionService),
+        sqsClient: expect.any(AWSSQSClient),
+        orderPlacementQueueUrl:
+          "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
+      });
     });
   });
 
-  it("should throw when order placement queue URL is missing", () => {
-    process.env.DATABASE_URL = "postgres://user:pass@host:5432/db";
+  describe("missing environment variables", () => {
+    it.each([
+      ["ORDER_PLACEMENT_QUEUE_URL"],
+    ])("should throw error when %s is missing", (envVar) => {
+      delete process.env[envVar];
 
-    expect(() => init()).toThrow(
-      "Missing value for an environment variable ORDER_PLACEMENT_QUEUE_URL",
-    );
+      expect(() => init()).toThrow(
+        `Missing value for an environment variable ${envVar}`,
+      );
+    });
   });
 
-  it("should throw when DATABASE_URL is missing", () => {
-    process.env.ORDER_PLACEMENT_QUEUE_URL =
-      "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement";
+  describe("empty environment variables", () => {
+    it.each([
+      ["ORDER_PLACEMENT_QUEUE_URL"],
+    ])("should throw error when %s is empty string", (envVar) => {
+      process.env[envVar] = "";
 
-    expect(() => init()).toThrow(
-      "Missing value for an environment variable DATABASE_URL",
-    );
+      expect(() => init()).toThrow(
+        `Missing value for an environment variable ${envVar}`,
+      );
+    });
+  });
+
+  describe("integration of components", () => {
+    it("should pass a PostgresDbClient instance to OrderStatusService", () => {
+      init();
+
+      const orderStatusServiceCalls = (OrderStatusService as jest.Mock).mock
+        .calls;
+      expect(orderStatusServiceCalls[0][0]).toBeInstanceOf(PostgresDbClient);
+    });
+
+    it("should pass a PostgresDbClient instance to TransactionService", () => {
+      init();
+
+      const transactionServiceCalls = (TransactionService as jest.Mock).mock
+        .calls;
+      expect(transactionServiceCalls[0][0].dbClient).toBeInstanceOf(
+        PostgresDbClient,
+      );
+    });
+
+    it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
+      init();
+
+      expect(postgresConfigFromEnv).toHaveBeenCalledWith(
+        expect.any(AwsSecretsClient),
+      );
+    });
+
+    it("should create components in the correct order", () => {
+      // 1. AwsSecretsClient should be created first
+      // 2. PostgresDbClient should be created with postgresConfigFromEnv(secretsClient)
+      // 3. OrderStatusService should be created with a PostgresDbClient
+      // 4. TransactionService should be created with a PostgresDbClient
+      // 5. AWSSQSClient should be created
+      testComponentCreationOrder({
+        initFn: init,
+        components: [
+          {
+            mock: AwsSecretsClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: PostgresDbClient as jest.Mock,
+            times: 1,
+            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+          },
+          {
+            mock: OrderStatusService as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: TransactionService as jest.Mock,
+            times: 1,
+            calledWith: {
+              dbClient: expect.any(PostgresDbClient),
+            },
+          },
+          {
+            mock: AWSSQSClient as jest.Mock,
+            times: 1,
+          },
+        ],
+      });
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { test as base, TestInfo, expect } from '@playwright/test';
+import { test as base, TestInfo, expect } from "@playwright/test";
 
 interface ConsoleError {
   type: string;
@@ -45,19 +45,23 @@ const defaultOptions: ErrorCaptureOptions = {
     /NHSCookieConsent is not defined/,
     /nhsapp is not defined/,
     /"undefined" is not valid JSON/,
+<<<<<<< HEAD
     // CSP font violations from external NHS assets
     /Content Security Policy directive.*font-src/,
     /assets\.nhs\.uk.*font/i,
     // React Router v7 warning: root route has a loader but no HydrateFallback defined
     // This is a known issue to be fixed in the UI app (add HydrateFallback to root route)
+=======
+    // Next.js hydration warning - not an application issue
+>>>>>>> cc7bdd872021c9d09084c684364748ba076eceb8
     /No `HydrateFallback` element provided to render during initial hydration/,
   ],
   ignoreStatusCodes: [],
 };
 
 function shouldIgnoreError(text: string, patterns: (string | RegExp)[]): boolean {
-  return patterns.some(pattern => {
-    if (typeof pattern === 'string') {
+  return patterns.some((pattern) => {
+    if (typeof pattern === "string") {
       return text.includes(pattern);
     }
     return pattern.test(text);
@@ -69,14 +73,18 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
   networkErrors: [[], { option: true }],
   errorCaptureOptions: [defaultOptions, { option: true }],
 
-  page: async ({ page, consoleErrors, networkErrors, errorCaptureOptions }, use, testInfo: TestInfo) => {
+  page: async (
+    { page, consoleErrors, networkErrors, errorCaptureOptions },
+    use,
+    testInfo: TestInfo,
+  ) => {
     const options = { ...defaultOptions, ...errorCaptureOptions };
     const errors: ConsoleError[] = [];
     const netErrors: NetworkError[] = [];
 
     // Capture console errors and warnings
-    page.on('console', (msg) => {
-      if (msg.type() === 'error' || msg.type() === 'warning') {
+    page.on("console", (msg) => {
+      if (msg.type() === "error" || msg.type() === "warning") {
         const text = msg.text();
         if (!shouldIgnoreError(text, options.ignorePatterns || [])) {
           errors.push({
@@ -90,10 +98,10 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
     });
 
     // Capture uncaught exceptions
-    page.on('pageerror', (error) => {
+    page.on("pageerror", (error) => {
       if (!shouldIgnoreError(error.message, options.ignorePatterns || [])) {
         errors.push({
-          type: 'pageerror',
+          type: "pageerror",
           text: error.message,
           location: error.stack,
           timestamp: new Date().toISOString(),
@@ -102,7 +110,7 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
     });
 
     // Capture failed network requests (4xx, 5xx)
-    page.on('response', (response) => {
+    page.on("response", (response) => {
       const status = response.status();
       if (status >= 400 && !options.ignoreStatusCodes?.includes(status)) {
         const url = response.url();
@@ -130,16 +138,16 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
 
     // Attach errors to test report
     if (hasConsoleErrors) {
-      await testInfo.attach('console-errors', {
+      await testInfo.attach("console-errors", {
         body: JSON.stringify(errors, null, 2),
-        contentType: 'application/json',
+        contentType: "application/json",
       });
     }
 
     if (hasNetworkErrors) {
-      await testInfo.attach('network-errors', {
+      await testInfo.attach("network-errors", {
         body: JSON.stringify(netErrors, null, 2),
-        contentType: 'application/json',
+        contentType: "application/json",
       });
     }
 
@@ -148,19 +156,19 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
 
     if (hasConsoleErrors && options.failOnConsoleError) {
       failureMessages.push(
-        `Console errors detected:\n${errors.map((e, i) => `  ${i + 1}. [${e.type}] ${e.text}`).join('\n')}`
+        `Console errors detected:\n${errors.map((e, i) => `  ${i + 1}. [${e.type}] ${e.text}`).join("\n")}`,
       );
     }
 
     if (hasNetworkErrors && options.failOnNetworkError) {
       failureMessages.push(
-        `Network errors detected:\n${netErrors.map((e, i) => `  ${i + 1}. ${e.method} ${e.url} => ${e.status} ${e.statusText}`).join('\n')}`
+        `Network errors detected:\n${netErrors.map((e, i) => `  ${i + 1}. ${e.method} ${e.url} => ${e.status} ${e.statusText}`).join("\n")}`,
       );
     }
 
     // Fail the test if errors were captured
     if (failureMessages.length > 0) {
-      expect.soft(false, failureMessages.join('\n\n')).toBeTruthy();
+      expect.soft(false, failureMessages.join("\n\n")).toBeTruthy();
     }
   },
 });

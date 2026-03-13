@@ -1,75 +1,63 @@
-import {
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-  Context,
-} from "aws-lambda";
-import middy from "@middy/core";
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+
 import cors from "@middy/http-cors";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
-import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../login-lambda/cors-configuration";
 import { init } from "./init";
+import middy from "@middy/core";
+import { securityHeaders } from "../lib/http/security-headers";
 import { validatePostcodeFormat } from "./postcode-validator";
-const name = "eligibility-lookup-lambda";
-const { laLookupService, commons } = init();
 
+const name = "eligibility-lookup-lambda";
+const { laLookupService, supplierDb, commons } = init();
 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
-  context: Context
+  context: Context,
 ): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   const postcode = event.queryStringParameters?.postcode;
-
-  if (!postcode) {
-    commons.logError(name, "Postcode parameter is required");
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Postcode parameter is required" }),
-    };
-  }
+  if (!postcode) return errorResponse(400, "Postcode parameter is required");
 
   const formatResult = validatePostcodeFormat(postcode);
-
-  if (!formatResult.valid) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Invalid postcode format" }),
-    };
-  }
-
-  const formattedPostcode = formatResult.cleaned;
+  if (!formatResult.valid) return errorResponse(400, "Invalid postcode format");
 
   try {
-    const la = await laLookupService.lookupByPostcode(formattedPostcode);
-
+    const la = await laLookupService.lookupByPostcode(formatResult.cleaned);
     if (!la) {
-      commons.logError(
-        name,
-        `No local authority found for ${formattedPostcode}`
-      );
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          error: `No local authority found for ${formattedPostcode}`,
-        }),
-      };
+      return errorResponse(404, `No local authority found for ${formatResult.cleaned}`);
+    }
+
+    const laCode = la.localAuthorityCode;
+    // ALPHA: we are not checking if suppliers are for the specific test
+    const testCode = undefined;
+    const suppliers = await supplierDb.getSuppliersByLocalAuthorityAndTest(laCode, testCode);
+    if (!suppliers || suppliers.length === 0) {
+      return errorResponse(404, `No supplier found for LA code ${laCode}`);
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(la),
+      body: JSON.stringify({
+        localAuthority: la,
+        suppliers: suppliers.map((s) => ({
+          id: s.organization.id,
+          name: s.organization.name,
+          testCode: s.testCode,
+        })),
+      }),
     };
-  } catch (error) {
-    commons.logError(name, "Internal error", error as Record<string, any>);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "An internal error occurred" }),
-    };
+  } catch (err: any) {
+    commons.logError(name, "Internal error", err);
+    return errorResponse(500, err.message || "An internal error occurred");
   }
 };
+
+function errorResponse(statusCode: number, message: string): APIGatewayProxyResult {
+  return { statusCode, body: JSON.stringify({ error: message }) };
+}
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))

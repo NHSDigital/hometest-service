@@ -1,4 +1,4 @@
-import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { useCommonContent } from "@/hooks";
 
 export function MoreInformationLinks() {
@@ -10,12 +10,7 @@ export function MoreInformationLinks() {
       <h2 id="more-info-heading" className="nhsuk-heading-m">
         {content.heading}
       </h2>
-      <p className="nhsuk-body">
-        <OpensInNewTabLink
-          linkHref="https://www.nhs.uk/conditions/hiv-and-aids/"
-          linkText={content.learnMoreHIV}
-        />
-      </p>
+      <LearnMoreAboutHivAndAidsLink />
     </section>
   );
 }

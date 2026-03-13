@@ -1,9 +1,10 @@
 "use client";
 
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import { useContent } from "@/hooks";
+
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import PageLayout from "@/layouts/PageLayout";
+import { useContent } from "@/hooks";
 
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
@@ -11,7 +12,7 @@ export default function NoAddressFoundPage() {
   const { commonContent, "no-address-found": content } = useContent();
 
   return (
-    <PageLayout
+    <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
@@ -21,12 +22,9 @@ export default function NoAddressFoundPage() {
         }
       }}
     >
-      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">
-        {content.title}
-      </h1>
+      <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
       <p>
-        {content.notFoundMessage}{" "}
-        <strong>{orderAnswers.postcodeSearch}</strong>
+        {content.notFoundMessage} <strong>{orderAnswers.postcodeSearch}</strong>
         {orderAnswers.buildingNumber && (
           <>
             {" "}
@@ -37,16 +35,28 @@ export default function NoAddressFoundPage() {
       </p>
 
       <p className="nhsuk-body">
-        <a href="enter-delivery-address" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterDeliveryAddress);}}>
+        <a
+          href="enter-delivery-address"
+          onClick={(e) => {
+            e.preventDefault();
+            goToStep(JourneyStepNames.EnterDeliveryAddress);
+          }}
+        >
           {content.tryNewSearchLink}
         </a>
       </p>
 
       <p className="nhsuk-body">
-        <a href="enter-address-manually" onClick={(e) => {e.preventDefault(); goToStep(JourneyStepNames.EnterAddressManually);}}>
+        <a
+          href="enter-address-manually"
+          onClick={(e) => {
+            e.preventDefault();
+            goToStep(JourneyStepNames.EnterAddressManually);
+          }}
+        >
           {commonContent.navigation.manualEntryLink}
         </a>
       </p>
-    </PageLayout>
+    </FormPageLayout>
   );
 }
