@@ -9,7 +9,7 @@ const MARKDOWN_LINK = /\[([^\]]+)]\(([^)]+)\)/; // [label](url)
 /**
  * Renders a text string, converting:
  * - **text** → <strong>text</strong> (supports nested bold)
- * - [display text](url) → internal React Router <Link> (for /paths) or external <OpensInNewTabLink> (for https://)
+ * - [display text](url) → internal React Router <Link> (for /paths) or external <OpensInNewTabLink> (for http(s) URLs)
  */
 export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] => {
   const combinedRegex = new RegExp(`${BOLD.source}|${MARKDOWN_LINK.source}`, "g");
