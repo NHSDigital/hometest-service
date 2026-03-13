@@ -4,8 +4,8 @@ import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 
 const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
 const MARKDOWN_LINK = /\[([^\][\n]+)]\(([^()\n]+)\)/; // [display text](url)
-// label: any char except ], [, newline
-// display text: any char except (, ), newline
+// display text: any char except ], [, newline
+// url: any char except (, ), newline
 
 /**
  * Renders a text string, converting:
