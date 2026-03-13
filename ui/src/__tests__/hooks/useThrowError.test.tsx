@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
-import { useThrowError } from "@/hooks/useThrowError";
+import { useThrowError } from "@/hooks";
 
 function AsyncSubmitter({ error }: Readonly<{ error: Error }>) {
   const throwError = useThrowError();

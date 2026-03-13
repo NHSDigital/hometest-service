@@ -1,7 +1,7 @@
 import { test, expect } from "../../fixtures/IntegrationFixture";
 import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
 import { OrderTestData } from "../../test-data/OrderTestData";
-import { headersOrder } from "../../utils/ApiRequestHelper";
+import { headersOrder } from "../../utils";
 
 test.describe("Backend API, order endpoint", () => {
   const payload = OrderTestData.getDefaultOrder();
@@ -22,12 +22,12 @@ test.describe("Backend API, order endpoint", () => {
       expect(order!.test_code).toBe(payload.testCode);
       expect(order!.nhs_number).toBe(payload.patient.nhsNumber);
 
-await expect
-  .poll(
-    async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length,
-    { timeout: 10000 }
-  )
-  .toBe(3);
+      await expect
+        .poll(
+          async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length,
+          { timeout: 10000 }
+        )
+        .toBe(3);
 
       const statusRows = await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid);
       expect(statusRows?.[2].status_code).toBe("GENERATED");

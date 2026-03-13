@@ -2,7 +2,7 @@
 
 import { Outlet } from "react-router-dom";
 import type { SessionData } from "./requireAuth";
-import { useAuth } from "@/state/AuthContext";
+import { useAuth } from "@/state";
 import { useEffect } from "react";
 import { useLoaderData } from "react-router-dom";
 

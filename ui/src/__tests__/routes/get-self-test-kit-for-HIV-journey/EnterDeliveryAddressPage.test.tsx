@@ -4,11 +4,9 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 
 import React from "react";
 import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
-import { CreateOrderProvider } from "@/state/OrderContext";
+import { CreateOrderProvider, JourneyNavigationProvider, PostcodeLookupProvider } from "@/state";
 import EnterDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
-import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
-import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 
 const mockLookupPostcode = jest.fn();
 const mockClearAddresses = jest.fn();

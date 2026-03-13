@@ -1,4 +1,4 @@
-import { AuthUser } from "@/state/AuthContext";
+import { AuthUser } from "@/state";
 import { mapAuthUser } from "@/lib/auth/mapAuthUser";
 import { backendUrl } from "@/settings";
 import { redirect } from "react-router-dom";

@@ -20,9 +20,9 @@ import type {
   StartPageContent,
   SuppliersLegalDocumentsContent,
   TestResultsContent,
-} from "@/content/schema";
+} from "@/content";
 
-import { content } from "@/content/ContentService";
+import { content } from "@/content";
 
 export const PageKeys = {
   GetSelfTest: "get-self-test-kit-for-HIV",
