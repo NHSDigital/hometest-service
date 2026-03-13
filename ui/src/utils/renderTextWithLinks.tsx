@@ -4,7 +4,9 @@ import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import type { ListStyle } from "@/content";
 
 const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
-const MARKDOWN_LINK = /\[([^\]]+)]\(([^)]+)\)/; // [label](url)
+const MARKDOWN_LINK = /\[([^\][\n]+)]\(([^()\n]+)\)/; // [display text](url)
+// label: any char except ], [, newline
+// display text: any char except (, ), newline
 
 /**
  * Renders a text string, converting:
