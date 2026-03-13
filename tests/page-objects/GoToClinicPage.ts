@@ -9,7 +9,7 @@ export class GoToClinicPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.pageHeader = page.getByRole("heading", {
-      name: "Go to a sexual health clinic",
+      name: "Contact your nearest sexual health clinic",
       level: 1,
     });
     this.findAnotherSexualHealthClinicLink = page.getByRole("link", {
