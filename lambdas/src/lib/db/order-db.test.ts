@@ -3,6 +3,8 @@ import { OrderStatus, ResultStatus } from "../types/status";
 
 import { Commons } from "../commons";
 
+const normalizeWhitespace = (sql: string): string => sql.replace(/\s+/g, " ").trim();
+
 describe("OrderService", () => {
   let dbClient: any;
   let commons: Pick<Commons, "logError">;
@@ -50,7 +52,10 @@ describe("OrderService", () => {
       const result = await orderService.retrieveOrderDetails("order-123");
 
       expect(dbClient.query).toHaveBeenCalledTimes(1);
-      expect(dbClient.query).toHaveBeenCalledWith(expectedRetrieveOrderDetailsQuery, ["order-123"]);
+      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedRetrieveOrderDetailsQuery),
+      );
+      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-123"]);
       expect(result).toEqual(mockSummary);
     });
 
@@ -60,7 +65,10 @@ describe("OrderService", () => {
       const result = await orderService.retrieveOrderDetails("order-404");
 
       expect(dbClient.query).toHaveBeenCalledTimes(1);
-      expect(dbClient.query).toHaveBeenCalledWith(expectedRetrieveOrderDetailsQuery, ["order-404"]);
+      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedRetrieveOrderDetailsQuery),
+      );
+      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-404"]);
       expect(result).toBeNull();
     });
 
@@ -71,7 +79,10 @@ describe("OrderService", () => {
       await expect(orderService.retrieveOrderDetails("order-500")).rejects.toThrow(error);
 
       expect(dbClient.query).toHaveBeenCalledTimes(1);
-      expect(dbClient.query).toHaveBeenCalledWith(expectedRetrieveOrderDetailsQuery, ["order-500"]);
+      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedRetrieveOrderDetailsQuery),
+      );
+      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-500"]);
       expect(commons.logError).toHaveBeenCalledWith(
         "order-db",
         "Failed to retrieve order details",
@@ -117,12 +128,14 @@ describe("OrderService", () => {
       expect(dbClient.withTransaction).toHaveBeenCalledTimes(1);
       expect(dbClient.withTransaction).toHaveBeenCalledWith(expect.any(Function));
       expect(tx.query).toHaveBeenCalledTimes(2);
-      expect(tx.query).toHaveBeenNthCalledWith(1, expectedOrderStatusQuery, [
-        "order-1",
-        OrderStatus.Complete,
-        "corr-1",
-      ]);
-      expect(tx.query).toHaveBeenNthCalledWith(2, expectedResultStatusQuery, [
+      expect(normalizeWhitespace(tx.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedOrderStatusQuery),
+      );
+      expect(tx.query.mock.calls[0][1]).toEqual(["order-1", OrderStatus.Complete, "corr-1"]);
+      expect(normalizeWhitespace(tx.query.mock.calls[1][0])).toBe(
+        normalizeWhitespace(expectedResultStatusQuery),
+      );
+      expect(tx.query.mock.calls[1][1]).toEqual([
         "order-1",
         ResultStatus.Result_Available,
         "corr-1",
