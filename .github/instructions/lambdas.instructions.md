@@ -204,7 +204,7 @@ Every lambda must have:
 1. **Unit tests** — `src/<name>-lambda/<name>.test.ts` (Jest + ts-jest). Mock all AWS SDK
    calls and DB clients.
 2. **Integration tests** — `src/<name>-lambda/<name>.integration.test.ts` (Jest +
-   `@testcontainers/postgresql`). Spin up a real Postgres container; do not mock the DB layer.
+   `@testcontainers/postgresql`). Spin up a real Postgres container; do not mock the DB layer. (optional, confirm with developer)
 
 Every `lib/` module must have a co-located unit test (`*.test.ts`).
 

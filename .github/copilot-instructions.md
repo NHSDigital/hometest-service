@@ -78,7 +78,7 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 
 | Layer | Required tests |
 |---|---|
-| Lambda handler | Jest unit test (`*.test.ts`) + integration test (`*.integration.test.ts`) using `@testcontainers/postgresql` |
+| Lambda handler | Jest unit test (`*.test.ts`) + integration test (`*.integration.test.ts`) using `@testcontainers/postgresql` (optional, confirm with developer) |
 | Lambda lib module | Jest unit test |
 | UI React component | Jest + React Testing Library unit test |
 | UI page/route | Jest + React Testing Library unit test |

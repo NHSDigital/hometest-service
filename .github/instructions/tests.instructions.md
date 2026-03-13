@@ -32,24 +32,23 @@ tests/
 └── utils/                  # Shared test utilities
 ```
 
-## Importing Test and Expect
+## Shared Conventions
+
+### Importing Test and Expect
 
 Always import `test` from the correct fixture file — **never** from `@playwright/test` directly
 in test specs.
 
 ```typescript
-// UI and journey tests
+// Frontend (UI) tests
 import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
 
-// API / integration tests
+// API and integration tests
 import { test, expect } from "../../fixtures/IntegrationFixture";
 ```
 
-`CombinedTestFixture` merges: `pageObjectFixture`, `configurationFixture`, `apiFixture`,
-`accessibilityFixture`, `storageStateFixture`, `consoleErrorFixture`.
-
-## Configuration
+### Configuration
 
 Access environment configuration via `ConfigFactory`:
 
@@ -71,13 +70,80 @@ Do **not** use `config.get(EnvironmentVariables.X)` — that pattern is not in u
 
 The `ENV` environment variable selects the configuration layer. Valid values: `local`, `dev`.
 
-## Page Object Model
+### Test File Conventions
 
-All page interactions go through Page Object classes. Every page has its own class in
-`page-objects/` extending `BasePage`.
+- All spec files use the `.spec.ts` extension.
+- Use `test.describe()` to group related scenarios.
+- Tag tests using the `{ tag: "@<scope>" }` option: `@ui`, `@api`, `@integration`,
+  `@accessibility`, `@e2e`.
+- Test names describe the expected outcome, not the implementation.
+
+---
+
+## API Automation
+
+API tests live in `tests/tests/api/`. They use `IntegrationFixture` and make real HTTP calls
+to the backend. Always clean up any data created during a test in `afterEach`.
+
+### Fixture
+
+`IntegrationFixture` merges: `configurationFixture`, `apiFixture`, `dbFixture`.
+
+API resource classes live in `tests/api/clients/` and extend `BaseApiClient`. Each resource
+class wraps one backend endpoint group (e.g. `OrderApiResource`, `HIVResultsApiResource`,
+`OrderStatusApiResource`). Access them via fixture properties: `orderApi`, `hivResultsApi`,
+`orderStatusApi`.
+
+### Writing API Tests
 
 ```typescript
-// Page objects live in tests/page-objects/ — one level from tests/configuration/
+import { test, expect } from "../../fixtures/IntegrationFixture";
+import { OrderTestData } from "../../test-data/OrderTestData";
+import { headersOrder } from "../../utils/ApiRequestHelper";
+
+test.describe("Order creation endpoint", { tag: "@api" }, () => {
+  const payload = OrderTestData.getDefaultOrder();
+  let createdOrderUid: string;
+
+  test("POST /order — creates an order and returns 201", async ({ orderApi, testOrderDb }) => {
+    const response = await orderApi.createOrder(payload, headersOrder);
+    expect(response.status()).toBe(201);
+    createdOrderUid = (await response.json()).orderUid;
+
+    const order = await testOrderDb.getOrderByUid(createdOrderUid);
+    expect(order).toBeDefined();
+  });
+
+  test.afterEach(async ({ testOrderDb }) => {
+    await testOrderDb.deleteOrderByUid(createdOrderUid);
+  });
+});
+```
+
+### Adding a New API Resource
+
+1. Create a class in `tests/api/clients/` extending `BaseApiClient`.
+2. Reference the endpoint from `tests/api/Endpoints.ts`.
+3. Expose the new resource in `apiFixture.ts`.
+
+---
+
+## Frontend Automation
+
+Frontend (UI) tests live in `tests/tests/ui/`. They use `CombinedTestFixture` and drive the
+browser through Page Object classes.
+
+### Fixture
+
+`CombinedTestFixture` merges: `pageObjectFixture`, `configurationFixture`, `apiFixture`,
+`accessibilityFixture`, `storageStateFixture`, `consoleErrorFixture`.
+
+### Page Object Model
+
+All page interactions go through Page Object classes in `page-objects/`, each extending
+`BasePage`.
+
+```typescript
 import { Locator, Page } from "@playwright/test";
 import { ConfigFactory } from "../configuration/EnvironmentConfiguration";
 import { BasePage } from "./BasePage";
@@ -106,11 +172,11 @@ export class ExamplePage extends BasePage {
 Rules:
 
 - All locators are `readonly` class properties, defined in the constructor.
-- All interaction methods are `async` and return `Promise<void>` (or typed return when needed).
+- All interaction methods are `async` and return `Promise<void>` (or a typed value when needed).
 - Use `BasePage.waitUntilPageLoad()`, `getHeaderText()`, `clickBackLink()` as provided.
-- Add the new page object to `pageObjectsFixture.ts` so it is available in all tests.
+- Register the new page object in `pageObjectsFixture.ts` so it is available in all tests.
 
-## Locator Strategy
+### Locator Strategy
 
 Prefer locators in this order:
 
@@ -131,13 +197,7 @@ page.locator("#start-button");
 page.locator(".nhsuk-button");
 ```
 
-## Test File Conventions
-
-- All spec files use the `.spec.ts` extension.
-- Use `test.describe()` to group related scenarios.
-- Tag tests using the `{ tag: "@<scope>" }` option: `@ui`, `@api`, `@integration`,
-  `@accessibility`, `@e2e`.
-- Test names describe the expected outcome, not the implementation.
+### Writing Frontend Tests
 
 ```typescript
 import { test } from "../../fixtures/CombinedTestFixture";
@@ -155,32 +215,74 @@ test.describe("Order journey — delivery address", { tag: "@ui" }, () => {
 });
 ```
 
-## API Tests
+### Accessibility & E2E Tests
 
-API tests use `IntegrationFixture` and make real HTTP calls to the backend. Always clean up
-any data created during a test in `afterEach`.
+Accessibility and E2E specs are owned by the test engineering team. Do not generate
+`tests/tests/accessibility/` or `tests/tests/e2e/` files unless explicitly asked.
+
+---
+
+## Integration Automation
+
+Integration tests live in `tests/tests/integration/`. They test multi-system flows — typically
+combining direct database setup with real HTTP calls to verify end-to-end behaviour within the
+backend (e.g. result ingestion triggering order status updates).
+
+### Fixture
+
+Integration tests use `CombinedTestFixture` (for `testedUser` and DB state) alongside API
+resource fixtures. DB clients (`TestOrderDbClient`, `TestResultDbClient`) are instantiated
+directly in the test file and connected via `beforeAll`.
+
+### Writing Integration Tests
 
 ```typescript
-import { test, expect } from "../../fixtures/IntegrationFixture";
+import { expect } from "@playwright/test";
+import { test } from "../../fixtures/CombinedTestFixture";
+import { TestOrderDbClient } from "../../db/TestOrderDbClient";
+import { OrderBuilder } from "../../test-data/OrderBuilder";
+import { headersTestResults } from "../../utils/ApiRequestHelper";
+import { randomUUID } from "crypto";
 
-test.describe("Order creation endpoint", { tag: "@api" }, () => {
-  let createdOrderUid: string;
+const dbClient = new TestOrderDbClient();
 
-  test("POST /order — creates an order and returns 201", async ({ orderApi }) => {
-    const response = await orderApi.createOrder(payload, headers);
-    expect(response.status()).toBe(201);
-    createdOrderUid = (await response.json()).orderUid;
+test.describe("Results flow — order status update", { tag: "@integration" }, () => {
+  let orderId: string;
+
+  test.beforeAll(async () => {
+    await dbClient.connect();
   });
 
-  test.afterEach(async ({ testOrderDb }) => {
-    if (createdOrderUid) {
-      await testOrderDb.deleteOrderByUid(createdOrderUid);
-    }
+  test.beforeEach(async ({ testedUser }) => {
+    const result = await dbClient.createOrderWithPatientAndStatus(
+      new OrderBuilder().withUser(testedUser).withSupplier("Preventx").build(),
+    );
+    orderId = result.order_uid;
+  });
+
+  test("order status becomes COMPLETE when a normal result is submitted", async ({
+    hivResultsApi,
+  }) => {
+    const correlationId = randomUUID();
+    const response = await hivResultsApi.submitTestResults(testData, headersTestResults(correlationId));
+    expect(response.status()).toBe(201);
+    expect(await dbClient.getLatestOrderStatusByOrderUid(orderId)).toEqual("COMPLETE");
+  });
+
+  test.afterEach(async () => {
+    await dbClient.deleteOrderByUid(orderId);
+  });
+
+  test.afterAll(async () => {
+    await dbClient.disconnect();
   });
 });
 ```
 
-## Accessibility & E2E Tests
+### Rules
 
-Accessibility and E2E specs are owned by the test engineering team. Do not generate
-`tests/tests/accessibility/` or `tests/tests/e2e/` files unless explicitly asked.
+- Use `beforeAll` to open the DB connection and `afterAll` to close it.
+- Use `beforeEach` to seed required data and `afterEach` to clean it up.
+- Never leave test data in the database after a test run.
+- Do not use `console.log` for test output — use the `Logger` utility from `utils/Logger.ts`
+  if logging is needed.
