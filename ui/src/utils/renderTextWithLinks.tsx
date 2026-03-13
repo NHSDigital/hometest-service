@@ -1,6 +1,6 @@
-import {Link} from "react-router-dom";
-import type {ReactNode} from "react";
-import {OpensInNewTabLink} from "@/components/OpensInNewTabLink";
+import { Link } from "react-router-dom";
+import type { ReactNode } from "react";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 
 const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
 const MARKDOWN_LINK = /\[([^\][\n]+)]\(([^()\n]+)\)/; // [display text](href)
