@@ -62,12 +62,14 @@ export class OrderService {
             ORDER BY created_at DESC
             LIMIT 1)
           INSERT INTO order_status (order_uid, status_code, correlation_id)
-          SELECT $1::uuid, $2, $3
+          SELECT $1::uuid, $2, $3::uuid
           WHERE NOT EXISTS (SELECT 1 FROM latest WHERE latest.status_code = $2);
           `;
         await dbClient.query(orderStatusQuery, [orderUid, statusCode, correlationId]);
 
-        const resultStatusQuery = `INSERT INTO result_status (order_uid, status, correlation_id) VALUES ($1, $2, $3)`;
+        const resultStatusQuery = `
+          INSERT INTO result_status (order_uid, status, correlation_id)
+          VALUES ($1::uuid, $2, $3::uuid);`;
         await dbClient.query(resultStatusQuery, [orderUid, resultStatus, correlationId]);
       });
     } catch (error) {

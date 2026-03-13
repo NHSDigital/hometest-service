@@ -100,11 +100,12 @@ describe("OrderService", () => {
             ORDER BY created_at DESC
             LIMIT 1)
           INSERT INTO order_status (order_uid, status_code, correlation_id)
-          SELECT $1::uuid, $2, $3
+          SELECT $1::uuid, $2, $3::uuid
           WHERE NOT EXISTS (SELECT 1 FROM latest WHERE latest.status_code = $2);
           `;
-      const expectedResultStatusQuery =
-        "INSERT INTO result_status (order_uid, status, correlation_id) VALUES ($1, $2, $3)";
+      const expectedResultStatusQuery = `
+          INSERT INTO result_status (order_uid, status, correlation_id)
+          VALUES ($1::uuid, $2, $3::uuid);`;
 
       await orderService.updateOrderStatusAndResultStatus(
         "order-1",
