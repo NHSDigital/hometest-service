@@ -1,12 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { ErrorStatusCode, createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { Identifiers, InterpretationCode } from "./models";
 import { OrderStatus, ResultStatus } from "../lib/types/status";
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import {
   extractAndValidateObservationFields,
   extractInterpretationCodeFromFHIRObservation,
   validateDBData,
-} from "./validation";
+} from "./validation-service";
 
 import { OrderResultSummary } from "../lib/db/order-db";
 import { init } from "./init";
@@ -47,68 +47,68 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     method: event.httpMethod,
   });
 
-  const { validationResult, observation, identifiers } = extractAndValidateObservationFields(
-    event,
-    commons,
-  );
-
-  if (!validationResult.isValid) {
+  const validationResult = extractAndValidateObservationFields(event, commons);
+  if (!validationResult.success) {
+    const error = validationResult.error;
     return createFhirErrorResponse(
-      validationResult.errorCode as ErrorStatusCode,
-      validationResult.errorType!,
-      validationResult.errorMessage!,
-      validationResult.severity,
+      error.errorCode,
+      error.errorType,
+      error.errorMessage,
+      error.severity,
     );
   }
+
+  const { identifiers, observation } = validationResult.data;
 
   let testOrderResult: OrderResultSummary | null;
 
   try {
-    testOrderResult = await orderService.retrieveOrderDetails(identifiers!.orderUid);
+    testOrderResult = await orderService.retrieveOrderDetails(identifiers.orderUid);
   } catch (error) {
     commons.logError("order-result-lambda", "Failed to retrieve order details", {
       error,
-      orderUid: identifiers!.orderUid,
+      orderUid: identifiers.orderUid,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
   if (!testOrderResult) {
     commons.logError("order-result-lambda", "Test order not found for orderUid", {
-      orderUid: identifiers!.orderUid,
+      orderUid: identifiers.orderUid,
     });
     return createFhirErrorResponse(
       404,
       "not-found",
-      `No order found for orderUid ${identifiers!.orderUid}`,
+      `No order found for orderUid ${identifiers.orderUid}`,
       "error",
     );
   }
 
   const dbValidationResult = await validateDBData(
-    identifiers!,
-    observation!,
+    identifiers,
+    observation,
     testOrderResult,
     commons,
   );
 
-  if (!dbValidationResult.isValid) {
+  if (!dbValidationResult.success) {
+    const error = dbValidationResult.error;
     return createFhirErrorResponse(
-      dbValidationResult.errorCode!,
-      dbValidationResult.errorType!,
-      dbValidationResult.errorMessage!,
-      dbValidationResult.severity,
+      error.errorCode,
+      error.errorType,
+      error.errorMessage,
+      error.severity,
     );
   }
 
-  if (dbValidationResult.isIdempotent) {
-    return createFhirResponse(201, observation!);
+  if (dbValidationResult.data.isIdempotent) {
+    return createFhirResponse(201, observation);
   }
 
-  const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation!);
+  const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation);
 
   try {
-    await updateDatabase(identifiers!, interpretationCode);
+    await updateDatabase(identifiers, interpretationCode);
   } catch (error) {
     commons.logError("order-result-lambda", "Database update failed", { error });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");

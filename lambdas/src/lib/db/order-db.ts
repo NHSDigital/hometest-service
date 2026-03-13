@@ -9,16 +9,13 @@ export interface OrderResultSummary {
   patient_uid: string;
   result_status: ResultStatus | null;
   correlation_id: string | null;
-  order_status_code: OrderStatus | null;
 }
 
 export class OrderService {
-  private readonly dbClient: DBClient;
-  private readonly commons: Commons;
-  constructor(dbClient: DBClient, commons: Commons) {
-    this.dbClient = dbClient;
-    this.commons = commons;
-  }
+  constructor(
+    private readonly dbClient: DBClient,
+    private readonly commons: Commons,
+  ) {}
 
   async retrieveOrderDetails(orderUid: string): Promise<OrderResultSummary | null> {
     const query = `
@@ -27,13 +24,11 @@ export class OrderService {
               o.supplier_id,
               o.patient_uid,
               r.status AS result_status,
-              r.correlation_id,
-              os.status_code AS order_status_code
+              r.correlation_id
             FROM test_order o
             LEFT JOIN result_status r ON o.order_uid = r.order_uid
-            LEFT JOIN order_status os ON o.order_uid = os.order_uid
             WHERE o.order_uid = $1::uuid
-            ORDER BY os.created_at DESC
+            ORDER BY r.created_at DESC
             LIMIT 1;
         `;
 
