@@ -9,36 +9,35 @@ export type result_id = string;
 
 /** Represents the table hometest.result_status */
 export default interface ResultStatus {
-  result_id: result_id;
+  resultId: result_id;
 
-  order_uid: order_uid;
+  orderUid: order_uid;
 
   status: result_code;
 
-  created_at: Date | null;
+  createdAt: Date | null;
 
-  correlation_id: string;
+  correlationId: string;
 }
 
 /** Represents the initializer for the table hometest.result_status */
 export interface ResultStatusInitializer {
-  order_uid: order_uid;
+  orderUid: order_uid;
 
   status: result_code;
 
-  /** Default value: CURRENT_TIMESTAMP */
-  created_at?: Date | null;
+  createdAt?: Date | null;
 
-  correlation_id: string;
+  correlationId: string;
 }
 
 /** Represents the mutator for the table hometest.result_status */
 export interface ResultStatusMutator {
-  order_uid?: order_uid;
+  orderUid?: order_uid;
 
   status?: result_code;
 
-  created_at?: Date | null;
+  createdAt?: Date | null;
 
-  correlation_id?: string;
+  correlationId?: string;
 }

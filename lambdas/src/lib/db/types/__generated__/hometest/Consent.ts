@@ -8,29 +8,27 @@ export type consent_uid = string;
 
 /** Represents the table hometest.consent */
 export default interface Consent {
-  consent_uid: consent_uid;
+  consentUid: consent_uid;
 
-  order_uid: order_uid;
+  orderUid: order_uid;
 
-  created_at: Date;
+  createdAt: Date;
 }
 
 /** Represents the initializer for the table hometest.consent */
 export interface ConsentInitializer {
-  /** Default value: gen_random_uuid() */
-  consent_uid?: consent_uid;
+  consentUid?: consent_uid;
 
-  order_uid: order_uid;
+  orderUid: order_uid;
 
-  /** Default value: CURRENT_TIMESTAMP */
-  created_at?: Date;
+  createdAt?: Date;
 }
 
 /** Represents the mutator for the table hometest.consent */
 export interface ConsentMutator {
-  consent_uid?: consent_uid;
+  consentUid?: consent_uid;
 
-  order_uid?: order_uid;
+  orderUid?: order_uid;
 
-  created_at?: Date;
+  createdAt?: Date;
 }

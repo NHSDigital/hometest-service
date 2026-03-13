@@ -6,21 +6,21 @@ export type test_code = string;
 
 /** Represents the table hometest.test_type */
 export default interface TestType {
-  test_code: test_code;
+  testCode: test_code;
 
   description: string;
 }
 
 /** Represents the initializer for the table hometest.test_type */
 export interface TestTypeInitializer {
-  test_code: test_code;
+  testCode: test_code;
 
   description: string;
 }
 
 /** Represents the mutator for the table hometest.test_type */
 export interface TestTypeMutator {
-  test_code?: test_code;
+  testCode?: test_code;
 
   description?: string;
 }

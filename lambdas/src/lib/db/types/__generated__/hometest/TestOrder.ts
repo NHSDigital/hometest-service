@@ -10,49 +10,47 @@ export type order_uid = string;
 
 /** Represents the table hometest.test_order */
 export default interface TestOrder {
-  order_uid: order_uid;
+  orderUid: order_uid;
 
-  order_reference: string;
+  orderReference: string;
 
-  supplier_id: supplier_id;
+  supplierId: supplier_id;
 
-  patient_uid: patient_uid;
+  patientUid: patient_uid;
 
-  test_code: test_code;
+  testCode: test_code;
 
   originator: string | null;
 
-  created_at: Date | null;
+  createdAt: Date | null;
 }
 
 /** Represents the initializer for the table hometest.test_order */
 export interface TestOrderInitializer {
-  /** Default value: gen_random_uuid() */
-  order_uid?: order_uid;
+  orderUid?: order_uid;
 
-  supplier_id: supplier_id;
+  supplierId: supplier_id;
 
-  patient_uid: patient_uid;
+  patientUid: patient_uid;
 
-  test_code: test_code;
+  testCode: test_code;
 
   originator?: string | null;
 
-  /** Default value: CURRENT_TIMESTAMP */
-  created_at?: Date | null;
+  createdAt?: Date | null;
 }
 
 /** Represents the mutator for the table hometest.test_order */
 export interface TestOrderMutator {
-  order_uid?: order_uid;
+  orderUid?: order_uid;
 
-  supplier_id?: supplier_id;
+  supplierId?: supplier_id;
 
-  patient_uid?: patient_uid;
+  patientUid?: patient_uid;
 
-  test_code?: test_code;
+  testCode?: test_code;
 
   originator?: string | null;
 
-  created_at?: Date | null;
+  createdAt?: Date | null;
 }

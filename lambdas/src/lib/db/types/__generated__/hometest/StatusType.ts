@@ -6,21 +6,21 @@ export type status_code = string;
 
 /** Represents the table hometest.status_type */
 export default interface StatusType {
-  status_code: status_code;
+  statusCode: status_code;
 
   description: string;
 }
 
 /** Represents the initializer for the table hometest.status_type */
 export interface StatusTypeInitializer {
-  status_code: status_code;
+  statusCode: status_code;
 
   description: string;
 }
 
 /** Represents the mutator for the table hometest.status_type */
 export interface StatusTypeMutator {
-  status_code?: status_code;
+  statusCode?: status_code;
 
   description?: string;
 }

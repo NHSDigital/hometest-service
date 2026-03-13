@@ -212,10 +212,10 @@ describe("order-router-lambda", () => {
 
       expect(result.batchItemFailures).toEqual([]);
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith({
-        order_uid: supplierOrderBody.id as OrderStatusMutator["order_uid"],
-        status_code: "SUBMITTED",
-        created_at: expect.any(Date),
-        correlation_id: validCorrelationId,
+        orderUid: supplierOrderBody.id as OrderStatusMutator["orderUid"],
+        statusCode: "SUBMITTED",
+        createdAt: expect.any(Date),
+        correlationId: validCorrelationId,
       } satisfies OrderStatusMutator);
     });
 

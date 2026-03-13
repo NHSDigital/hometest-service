@@ -1,6 +1,7 @@
+import { DbResult } from "./db-client";
 import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
 import { OrderStatusMutator } from "./types/__generated__/hometest/OrderStatus";
-import { TestOrderInitializer } from "./types/__generated__/hometest/TestOrder";
+import TestOrder from "./types/__generated__/hometest/TestOrder";
 
 const mockQuery = jest.fn();
 
@@ -24,22 +25,18 @@ describe("OrderStatusService", () => {
 
   describe("getPatientIdFromOrder", () => {
     it("should fetch order by UUID", async () => {
-      const mockOrder: TestOrderInitializer = {
-        order_uid: "some-mocked-order-id",
-        patient_uid: "some-mocked-patient-id",
-        supplier_id: "some-mocked-supplier-id",
-        test_code: "some-mocked-test-code",
-        created_at: new Date("2024-01-01T00:00:00Z"),
+      const expectedQueryResponse: DbResult<{
+        patient_uid: TestOrder["patientUid"];
+      }> = {
+        rows: [{ patient_uid: "mocked-patient-uid" }],
+        rowCount: 1,
       };
 
-      mockQuery.mockResolvedValue({
-        rows: [mockOrder],
-        rowCount: 1,
-      });
+      mockQuery.mockResolvedValue(expectedQueryResponse);
 
       const result = await service.getPatientIdFromOrder("some-mocked-order-id");
 
-      expect(result).toEqual(mockOrder.patient_uid);
+      expect(result).toEqual(expectedQueryResponse.rows[0].patient_uid);
       expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
         "some-mocked-order-id",
       ]);
@@ -96,10 +93,10 @@ describe("OrderStatusService", () => {
   describe("addUpdateOrderStatus", () => {
     it("should insert new order status record", async () => {
       const mockParams: OrderStatusMutator = {
-        order_uid: "some-mocked-order-id",
-        status_code: OrderStatusCodes.COMPLETE,
-        created_at: new Date("2024-01-15T11:00:00Z"),
-        correlation_id: "some-mocked-correlation-id",
+        orderUid: "some-mocked-order-id",
+        statusCode: OrderStatusCodes.COMPLETE,
+        createdAt: new Date("2024-01-15T11:00:00Z"),
+        correlationId: "some-mocked-correlation-id",
       };
 
       mockQuery.mockResolvedValue({
@@ -112,10 +109,10 @@ describe("OrderStatusService", () => {
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO"),
         Object.values([
-          mockParams.order_uid,
-          mockParams.status_code,
-          mockParams.created_at,
-          mockParams.correlation_id,
+          mockParams.orderUid,
+          mockParams.statusCode,
+          mockParams.createdAt,
+          mockParams.correlationId,
         ]),
       );
     });
@@ -125,10 +122,10 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          order_uid: "some-mocked-order-id",
-          status_code: OrderStatusCodes.COMPLETE,
-          created_at: new Date("2024-01-15T11:00:00Z"),
-          correlation_id: "some-mocked-correlation-id",
+          orderUid: "some-mocked-order-id",
+          statusCode: OrderStatusCodes.COMPLETE,
+          createdAt: new Date("2024-01-15T11:00:00Z"),
+          correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusMutator),
       ).rejects.toThrow("Failed to update order status");
     });
@@ -141,10 +138,10 @@ describe("OrderStatusService", () => {
 
       await expect(
         service.addOrderStatusUpdate({
-          order_uid: "some-mocked-order-id",
-          status_code: OrderStatusCodes.COMPLETE,
-          created_at: new Date("2024-01-15T11:00:00Z"),
-          correlation_id: "some-mocked-correlation-id",
+          orderUid: "some-mocked-order-id",
+          statusCode: OrderStatusCodes.COMPLETE,
+          createdAt: new Date("2024-01-15T11:00:00Z"),
+          correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusMutator),
       ).rejects.toThrow("Failed to update order status");
     });

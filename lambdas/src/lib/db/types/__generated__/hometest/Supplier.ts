@@ -6,70 +6,69 @@ export type supplier_id = string;
 
 /** Represents the table hometest.supplier */
 export default interface Supplier {
-  supplier_id: supplier_id;
+  supplierId: supplier_id;
 
-  supplier_name: string;
+  supplierName: string;
 
-  service_url: string;
+  serviceUrl: string;
 
-  website_url: string | null;
+  websiteUrl: string | null;
 
-  client_secret_name: string;
+  clientSecretName: string;
 
-  client_id: string;
+  clientId: string;
 
-  oauth_token_path: string | null;
+  oauthTokenPath: string | null;
 
-  order_path: string | null;
+  orderPath: string | null;
 
-  oauth_scope: string | null;
+  oauthScope: string | null;
 
-  results_path: string | null;
+  resultsPath: string | null;
 }
 
 /** Represents the initializer for the table hometest.supplier */
 export interface SupplierInitializer {
-  /** Default value: gen_random_uuid() */
-  supplier_id?: supplier_id;
+  supplierId?: supplier_id;
 
-  supplier_name: string;
+  supplierName: string;
 
-  service_url: string;
+  serviceUrl: string;
 
-  website_url?: string | null;
+  websiteUrl?: string | null;
 
-  client_secret_name: string;
+  clientSecretName: string;
 
-  client_id: string;
+  clientId: string;
 
-  oauth_token_path?: string | null;
+  oauthTokenPath?: string | null;
 
-  order_path?: string | null;
+  orderPath?: string | null;
 
-  oauth_scope?: string | null;
+  oauthScope?: string | null;
 
-  results_path?: string | null;
+  resultsPath?: string | null;
 }
 
 /** Represents the mutator for the table hometest.supplier */
 export interface SupplierMutator {
-  supplier_id?: supplier_id;
+  supplierId?: supplier_id;
 
-  supplier_name?: string;
+  supplierName?: string;
 
-  service_url?: string;
+  serviceUrl?: string;
 
-  website_url?: string | null;
+  websiteUrl?: string | null;
 
-  client_secret_name?: string;
+  clientSecretName?: string;
 
-  client_id?: string;
+  clientId?: string;
 
-  oauth_token_path?: string | null;
+  oauthTokenPath?: string | null;
 
-  order_path?: string | null;
+  orderPath?: string | null;
 
-  oauth_scope?: string | null;
+  oauthScope?: string | null;
 
-  results_path?: string | null;
+  resultsPath?: string | null;
 }

@@ -6,28 +6,27 @@ export type patient_uid = string;
 
 /** Represents the table hometest.patient_mapping */
 export default interface PatientMapping {
-  patient_uid: patient_uid;
+  patientUid: patient_uid;
 
-  nhs_number: string | null;
+  nhsNumber: string | null;
 
-  birth_date: Date;
+  birthDate: Date;
 }
 
 /** Represents the initializer for the table hometest.patient_mapping */
 export interface PatientMappingInitializer {
-  /** Default value: gen_random_uuid() */
-  patient_uid?: patient_uid;
+  patientUid?: patient_uid;
 
-  nhs_number?: string | null;
+  nhsNumber?: string | null;
 
-  birth_date: Date;
+  birthDate: Date;
 }
 
 /** Represents the mutator for the table hometest.patient_mapping */
 export interface PatientMappingMutator {
-  patient_uid?: patient_uid;
+  patientUid?: patient_uid;
 
-  nhs_number?: string | null;
+  nhsNumber?: string | null;
 
-  birth_date?: Date;
+  birthDate?: Date;
 }

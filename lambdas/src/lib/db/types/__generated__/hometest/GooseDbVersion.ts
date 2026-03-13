@@ -8,9 +8,9 @@ export type id = string;
 export default interface GooseDbVersion {
   id: id;
 
-  version_id: string;
+  versionId: string;
 
-  is_applied: boolean;
+  isApplied: boolean;
 
   tstamp: Date;
 }
@@ -19,11 +19,10 @@ export default interface GooseDbVersion {
 export interface GooseDbVersionInitializer {
   id?: id;
 
-  version_id: string;
+  versionId: string;
 
-  is_applied: boolean;
+  isApplied: boolean;
 
-  /** Default value: now() */
   tstamp?: Date;
 }
 
@@ -31,9 +30,9 @@ export interface GooseDbVersionInitializer {
 export interface GooseDbVersionMutator {
   id?: id;
 
-  version_id?: string;
+  versionId?: string;
 
-  is_applied?: boolean;
+  isApplied?: boolean;
 
   tstamp?: Date;
 }

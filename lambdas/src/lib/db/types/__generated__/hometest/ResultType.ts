@@ -6,21 +6,21 @@ export type result_code = string;
 
 /** Represents the table hometest.result_type */
 export default interface ResultType {
-  result_code: result_code;
+  resultCode: result_code;
 
   description: string;
 }
 
 /** Represents the initializer for the table hometest.result_type */
 export interface ResultTypeInitializer {
-  result_code: result_code;
+  resultCode: result_code;
 
   description: string;
 }
 
 /** Represents the mutator for the table hometest.result_type */
 export interface ResultTypeMutator {
-  result_code?: result_code;
+  resultCode?: result_code;
 
   description?: string;
 }
