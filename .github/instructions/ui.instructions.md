@@ -77,9 +77,11 @@ components.
 
 ## Data Fetching
 
-All API calls go through **service classes** in `ui/src/lib/services/`. Each service is a
+New API calls should go through **service classes** in `ui/src/lib/services/`. Each service is a
 singleton instance (default-exported) that wraps `fetch` directly. The base URL is read from
-`@/settings`, which exposes `NEXT_PUBLIC_BACKEND_URL`.
+`@/settings`, which exposes `NEXT_PUBLIC_BACKEND_URL`. Avoid calling `fetch` directly from
+components or hooks; if you find existing direct `fetch` usages (e.g. in legacy or auth flows),
+prefer to route new work through a service module instead of adding more direct calls.
 
 ```text
 ui/src/lib/services/
