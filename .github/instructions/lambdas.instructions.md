@@ -183,8 +183,9 @@ const result = await this.dbClient.query(`SELECT * FROM test_order WHERE id = '$
 - Use `console.info` for operational log points (request received, key steps completed).
 - Use `console.error` for genuine runtime errors only.
 - Never use `console.log` anywhere in production lambda code.
-- Always include the lambda `name` constant and `correlationId` in log calls for traceability.
+- Always include the lambda `name` constant and `correlationId` in log calls for traceability in all new and migrated code.
 - Never include NHS numbers, dates of birth, full names, or test results in log messages.
+- Any existing production lambdas or shared modules that still use `console.log` are considered **legacy** and MUST be migrated to use `console.info` / `console.error` when touched. Do not copy or extend those patterns.
 
 ```typescript
 const name = "order-service-lambda";
