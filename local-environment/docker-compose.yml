@@ -14,17 +14,17 @@ services:
       - LAMBDA_EXECUTOR=docker
       - AWS_DEFAULT_REGION=eu-west-2
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
 
   ui:
     image: node:24
     container_name: ui
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     profiles:
       - frontend
     working_dir: /app
     volumes:
       - ../ui:/app
-      - ui_node_modules:/app/node_modules
     env_file:
       - ../ui/.env.local
     command: sh -c "npm install && npm run dev"
@@ -45,7 +45,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db-data:/var/lib/postgresql
+      - db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d local_hometest_db"]
       interval: 2s
@@ -79,4 +79,11 @@ services:
       - ../database:/docker-entrypoint-initdb.d:ro
 
 volumes:
-  ui_node_modules:
+  db-data:
+
+# ❯ docker context inspect --format '{{ .Endpoints.docker.Host }}' "$(docker context show)"
+# DOCKER_SOCK="$(docker context inspect --format '{{ .Endpoints.docker.Host }}' "$(docker context show)")"
+# echo "$DOCKER_SOCK"
+
+# volumes:
+#   ui_node_modules:
