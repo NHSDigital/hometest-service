@@ -8,7 +8,7 @@ test(
   async ({ homeTestStartPage, termsOfUsePage, accessibility }) => {
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickTermsOfUseLink();
-    await termsOfUsePage.waitUntilPageLoad();
+    await termsOfUsePage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       termsOfUsePage.page,
       'Terms Of Use Page',
