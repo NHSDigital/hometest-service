@@ -228,18 +228,16 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Value id="mobile-number-value">
             {orderAnswers.mobileNumber}
           </SummaryList.Value>
-          <SummaryList.Action>
-            <a
-              href="#"
-              id="mobile-change"
-              onClick={(e) => {
-                e.preventDefault();
-                handleChangeClick("mobile");
-              }}
-            >
-              {content.changeLink}
-              <span className="nhsuk-u-visually-hidden"> {content.summaryLabels.mobileNumber}</span>
-            </a>
+          <SummaryList.Action
+            id="mobile-change"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleChangeClick("mobile");
+            }}
+            visuallyHiddenText={content.summaryLabels.mobileNumber}
+          >
+            {content.changeLink}
           </SummaryList.Action>
         </SummaryList.Row>
       </SummaryList>
