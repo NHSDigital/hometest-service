@@ -553,15 +553,15 @@ resource "aws_lambda_function" "mock_service" {
   filename         = "${path.module}/../../mock-service/dist/mock-service-lambda.zip"
   function_name    = "${var.project_name}-mock-service"
   role             = aws_iam_role.lambda_role.arn
-  handler          = "index.handler"
-  runtime          = "nodejs24.x"
+  handler          = "bootstrap"
+  runtime          = "provided.al2023"
+  architectures    = ["arm64"]
   source_code_hash = filebase64sha256("${path.module}/../../mock-service/dist/mock-service-lambda.zip")
   timeout          = 30
 
   environment {
     variables = {
-      NODE_OPTIONS = "--enable-source-maps"
-      ENVIRONMENT  = var.environment
+      ENVIRONMENT = var.environment
     }
   }
 

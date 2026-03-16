@@ -1,34 +1,11 @@
 {
   "name": "@hometest-service/mock-service",
   "version": "1.0.0",
-  "description": "WireMock-compatible stub runner for AWS Lambda — reads JSON mapping files from local-environment/wiremock/mappings/",
+  "description": "WireMock-compatible stub runner for AWS Lambda using stubr (Rust)",
   "private": true,
-  "type": "module",
   "scripts": {
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "build": "npx tsx scripts/build.ts",
-    "package": "npx tsx scripts/package.ts",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@middy/core": "^7.1.3",
-    "@middy/http-error-handler": "^7.1.3"
-  },
-  "devDependencies": {
-    "@jest/globals": "^30.2.0",
-    "@types/aws-lambda": "^8.10.161",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^24.12.0",
-    "archiver": "7.0.1",
-    "@types/archiver": "7.0.0",
-    "esbuild": "^0.27.3",
-    "jest": "^30.2.0",
-    "ts-jest": "^29.4.6",
-    "tsx": "4.21.0",
-    "typescript": "^5.9.3"
+    "build": "bash scripts/build.sh",
+    "package": "bash scripts/package.sh",
+    "clean": "cargo clean && rm -rf dist"
   }
 }
