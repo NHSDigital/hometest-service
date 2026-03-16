@@ -72,7 +72,6 @@ export async function init(): Promise<LoginLambdaDependencies> {
     refreshTokenExpiryDurationMinutes: envVars.authRefreshTokenExpiryDurationMinutes,
     privateKeys: authCookiePrivateKeySecret,
     publicKeys: {},
-    keyId: undefined,
   });
 
   const nhsLoginConfig: INhsLoginConfig = {

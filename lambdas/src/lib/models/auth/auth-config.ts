@@ -1,5 +1,5 @@
 export interface IAuthConfig {
-  keyId: string | undefined;
+  keyId?: string;
   sessionMaxDurationMinutes: number;
   accessTokenExpiryDurationMinutes: number;
   refreshTokenExpiryDurationMinutes: number;
