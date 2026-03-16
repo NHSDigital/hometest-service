@@ -53,6 +53,6 @@ export class TestResultDbClient extends BaseDbClient {
       `SELECT COUNT(*) as count FROM result_status WHERE order_uid = $1`,
       [orderUid],
     );
-    return parseInt(rows[0].count);
+    return Number(rows[0].count);
   }
 }

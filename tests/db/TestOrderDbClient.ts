@@ -195,6 +195,6 @@ export class TestOrderDbClient extends BaseDbClient {
       `SELECT COUNT(*) as count FROM order_status WHERE order_uid = $1::uuid`,
       [orderUid],
     );
-    return parseInt(rows[0].count);
+    return Number(rows[0].count);
   }
 }
