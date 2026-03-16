@@ -17,14 +17,10 @@ const birthDate2 = "1990-01-01";
 
 test.describe("Results Page", { tag: "@ui" }, () => {
   test.beforeAll(
-    "Connect to the database and create a patient, order, and initial order status",
-    async ({ testedUser }) => {
+    "Connect to the database and create second patient order",
+    async () => {
       await dbClient.connect();
       await resultDbClient.connect();
-
-      const result = await dbClient.createOrderWithPatientAndStatus(
-        new OrderBuilder().withUser(testedUser).withStatus("SUBMITTED").build(),
-      );
 
       const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus(
         new OrderBuilder()
@@ -34,13 +30,22 @@ test.describe("Results Page", { tag: "@ui" }, () => {
           .build(),
       );
 
+      orderId2 = resultSecondPatient.order_uid;
+      patientId2 = resultSecondPatient.patient_uid;
+    },
+  );
+
+  test.beforeEach(
+    "Create an order with SUBMITTED status for the tested user",
+    async ({ testedUser }) => {
+      const result = await dbClient.createOrderWithPatientAndStatus(
+        new OrderBuilder().withUser(testedUser).withStatus("SUBMITTED").build(),
+      );
+
       orderId = result.order_uid;
       patientId = result.patient_uid;
       orderReference = result.order_reference;
       console.log(`Created test order with ID: ${orderId} and reference: ${orderReference}`);
-
-      orderId2 = resultSecondPatient.order_uid;
-      patientId2 = resultSecondPatient.patient_uid;
     },
   );
 
@@ -95,14 +100,20 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     });
   });
 
-  test.afterAll(
-    "Delete result status, order status, order, and patient records from the database and disconnect",
+  test.afterEach(
+    "Delete result status, order status, order, and patient records from the database",
     async ({ testedUser }) => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    },
+  );
+
+  test.afterAll(
+    "Delete second patient records and disconnect from the database",
+    async () => {
       await resultDbClient.deleteResultStatusByUid(orderId2);
       await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteConsentByPatientUid(patientId2);

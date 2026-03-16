@@ -54,7 +54,7 @@ test.describe("Order Status Page", () => {
   ];
 
   test("Authenticated user opens a deep link - Order confirmed", async ({ orderStatusPage }) => {
-    expect((await dbClient.getOrderStatusByOrderUid(orderId)).count).toBe(1);
+    expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
     await orderStatusPage.navigateToOrder(orderId);
     await expect(orderStatusPage.statusTag).toHaveText("Confirmed");
     const orderReferenceOnPage = await orderStatusPage.getOrderReference();
@@ -66,7 +66,7 @@ test.describe("Order Status Page", () => {
       orderStatusPage,
     }) => {
       await dbClient.updateOrderStatus(orderId, status);
-      expect((await dbClient.getOrderStatusByOrderUid(orderId)).count).toBe(1);
+      expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
       await orderStatusPage.navigateToOrder(orderId);
       await expect(orderStatusPage.statusTag).toHaveText(tag);
       const orderReferenceOnPage = await orderStatusPage.getOrderReference();

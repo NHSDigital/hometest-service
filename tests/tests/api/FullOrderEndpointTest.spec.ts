@@ -74,10 +74,14 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     orderStatusApi.validateResponse(dispatchedResponse, 201);
 
-    const { statusCode: dispatchedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    const { statusCode: dispatchedStatusCode } =
+      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
     expect(
-      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED),
+      await dbClient.getOrderStatusCountByCode(
+        orderId,
+        OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED,
+      ),
     ).toBe(1);
 
     const receivedResponse = await orderStatusApi.updateOrderStatus(
@@ -94,10 +98,14 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     orderStatusApi.validateResponse(receivedResponse, 201);
 
-    const { statusCode: receivedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    const { statusCode: receivedStatusCode } =
+      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
     expect(
-      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED),
+      await dbClient.getOrderStatusCountByCode(
+        orderId,
+        OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED,
+      ),
     ).toBe(1);
 
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
@@ -146,10 +154,14 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     orderStatusApi.validateResponse(dispatchedResponse, 201);
 
-    const { statusCode: dispatchedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    const { statusCode: dispatchedStatusCode } =
+      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
     expect(
-      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED),
+      await dbClient.getOrderStatusCountByCode(
+        orderId,
+        OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED,
+      ),
     ).toBe(1);
 
     const receivedResponse = await orderStatusApi.updateOrderStatus(
@@ -166,10 +178,14 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     orderStatusApi.validateResponse(receivedResponse, 201);
 
-    const { statusCode: receivedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    const { statusCode: receivedStatusCode } =
+      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
     expect(
-      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED),
+      await dbClient.getOrderStatusCountByCode(
+        orderId,
+        OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED,
+      ),
     ).toBe(1);
 
     const testData = ResultsObservationData.buildAbnormalObservation(

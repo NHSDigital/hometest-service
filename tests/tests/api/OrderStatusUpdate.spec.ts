@@ -56,7 +56,7 @@ test.describe("Order Status Update API", () => {
       orderStatusApi.validateResponse(dispatchedResponse, 201);
 
       const { statusCode: dispatchedStatusCode } =
-        await testOrderDb.getOrderStatusByOrderUid(orderUid);
+        await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderUid);
       expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
 
       const receivedResponse = await orderStatusApi.updateOrderStatus(
@@ -69,7 +69,7 @@ test.describe("Order Status Update API", () => {
       orderStatusApi.validateResponse(receivedResponse, 201);
 
       const { statusCode: receivedStatusCode } =
-        await testOrderDb.getOrderStatusByOrderUid(orderUid);
+        await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderUid);
       expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
     },
   );

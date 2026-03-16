@@ -178,7 +178,7 @@ export class TestOrderDbClient extends BaseDbClient {
     return rows;
   }
 
-  async getOrderStatusByOrderUid(
+  async getLatestOrderStatusWithCountByOrderUid(
     orderUid: UUID,
   ): Promise<{ statusCode: OrderStatusCode; count: number }> {
     const rows = await this.query<{ status_code: string; count: string }>(
@@ -195,10 +195,7 @@ export class TestOrderDbClient extends BaseDbClient {
     };
   }
 
-  async getOrderStatusCountByCode(
-    orderUid: UUID,
-    statusCode: OrderStatusCode,
-  ): Promise<number> {
+  async getOrderStatusCountByCode(orderUid: UUID, statusCode: OrderStatusCode): Promise<number> {
     const rows = await this.query<{ count: string }>(
       `SELECT COUNT(*) AS count
        FROM order_status
