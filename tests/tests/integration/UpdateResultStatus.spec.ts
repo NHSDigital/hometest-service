@@ -46,7 +46,9 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     );
     expect(response.status()).toBe(201);
 
-    expect(await dbClient.getLatestOrderStatusByOrderUid(orderId)).toEqual("COMPLETE");
+    expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).statusCode).toEqual(
+      "COMPLETE",
+    );
     expect(await resultDbClient.getLatestResultStatusByOrderUid(orderId)).toEqual(
       "RESULT_AVAILABLE",
     );
@@ -65,7 +67,9 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     );
     expect(response.status()).toBe(201);
 
-    expect(await dbClient.getLatestOrderStatusByOrderUid(orderId)).toEqual("RECEIVED");
+    expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).statusCode).toEqual(
+      "RECEIVED",
+    );
     expect(await resultDbClient.getLatestResultStatusByOrderUid(orderId)).toEqual(
       "RESULT_WITHHELD",
     );
