@@ -194,4 +194,18 @@ export class TestOrderDbClient extends BaseDbClient {
       count: Number(rows[0].count),
     };
   }
+
+  async getOrderStatusCountByCode(
+    orderUid: UUID,
+    statusCode: OrderStatusCode,
+  ): Promise<number> {
+    const rows = await this.query<{ count: string }>(
+      `SELECT COUNT(*) AS count
+       FROM order_status
+       WHERE order_uid = $1::uuid
+         AND status_code = $2`,
+      [orderUid, statusCode],
+    );
+    return Number(rows[0].count);
+  }
 }

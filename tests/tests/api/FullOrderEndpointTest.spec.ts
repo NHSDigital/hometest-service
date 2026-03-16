@@ -3,7 +3,13 @@ import { test } from "../../fixtures/CombinedTestFixture";
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { ResultsObservationData } from "../../test-data/ResultsObservationData";
-import { headersOrder, headersTestResults } from "../../utils/ApiRequestHelper";
+import {
+  headersOrder,
+  headersTestResults,
+  orderStatusPayload,
+  buildHeaders,
+} from "../../utils/ApiRequestHelper";
+import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import {
   createGetResultHeaders,
   createGetResultParams,
@@ -51,8 +57,49 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
   test("should set order status to COMPLETE and make result available when test result is normal", async ({
     hivResultsApi,
     orderApi,
+    orderStatusApi,
     testedUser,
   }) => {
+    const dispatchedResponse = await orderStatusApi.updateOrderStatus(
+      orderStatusPayload(
+        orderId,
+        patientId,
+        OrderStatusTestData.DEFAULT_STATUS,
+        OrderStatusTestData.DEFAULT_INTENT,
+        {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_DISPATCHED },
+        },
+      ),
+      buildHeaders(randomUUID()),
+    );
+    orderStatusApi.validateResponse(dispatchedResponse, 201);
+
+    const { statusCode: dispatchedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
+    expect(
+      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED),
+    ).toBe(1);
+
+    const receivedResponse = await orderStatusApi.updateOrderStatus(
+      orderStatusPayload(
+        orderId,
+        patientId,
+        OrderStatusTestData.DEFAULT_STATUS,
+        OrderStatusTestData.DEFAULT_INTENT,
+        {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB },
+        },
+      ),
+      buildHeaders(randomUUID()),
+    );
+    orderStatusApi.validateResponse(receivedResponse, 201);
+
+    const { statusCode: receivedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
+    expect(
+      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED),
+    ).toBe(1);
+
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
     const response = await hivResultsApi.submitTestResults(
       testData,
@@ -82,8 +129,49 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
   test("should set order status to RECEIVED and withhold result when test result is abnormal", async ({
     hivResultsApi,
     orderApi,
+    orderStatusApi,
     testedUser,
   }) => {
+    const dispatchedResponse = await orderStatusApi.updateOrderStatus(
+      orderStatusPayload(
+        orderId,
+        patientId,
+        OrderStatusTestData.DEFAULT_STATUS,
+        OrderStatusTestData.DEFAULT_INTENT,
+        {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_DISPATCHED },
+        },
+      ),
+      buildHeaders(randomUUID()),
+    );
+    orderStatusApi.validateResponse(dispatchedResponse, 201);
+
+    const { statusCode: dispatchedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
+    expect(
+      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED),
+    ).toBe(1);
+
+    const receivedResponse = await orderStatusApi.updateOrderStatus(
+      orderStatusPayload(
+        orderId,
+        patientId,
+        OrderStatusTestData.DEFAULT_STATUS,
+        OrderStatusTestData.DEFAULT_INTENT,
+        {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB },
+        },
+      ),
+      buildHeaders(randomUUID()),
+    );
+    orderStatusApi.validateResponse(receivedResponse, 201);
+
+    const { statusCode: receivedStatusCode } = await dbClient.getOrderStatusByOrderUid(orderId);
+    expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
+    expect(
+      await dbClient.getOrderStatusCountByCode(orderId, OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED),
+    ).toBe(1);
+
     const testData = ResultsObservationData.buildAbnormalObservation(
       orderId,
       patientId,
