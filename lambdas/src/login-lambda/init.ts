@@ -6,24 +6,16 @@ import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 import { HttpClient } from "../lib/http/login-http-client";
 import { AuthTokenService } from "../lib/auth/auth-token-service";
-import {
-  type ILoginService,
-  LoginService,
-  type LoginServiceParams,
-} from "./login-service";
+import { type ILoginService, LoginService, type LoginServiceParams } from "./login-service";
 import { JwksClient } from "jwks-rsa";
 
 // ALPHA: This file will need revisiting.
 const envVars: LoginEnvVariables = {
   // ALPHA: Uncomment when environment variables are properly set up. Currently using hardcoded values for development and testing.
-  nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable(
-    "NHS_LOGIN_BASE_ENDPOINT_URL",
-  ),
+  nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_BASE_ENDPOINT_URL"),
   nhsLoginClientId: retrieveMandatoryEnvVariable("NHS_LOGIN_CLIENT_ID"),
   nhsLoginRedirectUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_REDIRECT_URL"),
-  nhsLoginPrivateKeySecretName: retrieveMandatoryEnvVariable(
-    "NHS_LOGIN_PRIVATE_KEY_SECRET_NAME",
-  ),
+  nhsLoginPrivateKeySecretName: retrieveMandatoryEnvVariable("NHS_LOGIN_PRIVATE_KEY_SECRET_NAME"),
   // ALPHA: Uncomment when authCookiePrivateKeySecret is properly retrieved.
   // authCookiePrivateKeysSecretName: retrieveMandatoryEnvVariable(
   //   'AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME'
@@ -56,8 +48,6 @@ interface LoginLambdaDependencies {
   authTokenService: AuthTokenService;
 }
 
-const className = "init";
-
 // ALPHA: Removed commons temporarily.
 export async function init(): Promise<LoginLambdaDependencies> {
   const secretManagerClient = new AwsSecretsClient(
@@ -78,12 +68,11 @@ export async function init(): Promise<LoginLambdaDependencies> {
 
   const authTokenService = new AuthTokenService({
     sessionMaxDurationMinutes: envVars.authSessionMaxDurationMinutes,
-    accessTokenExpiryDurationMinutes:
-      envVars.authAccessTokenExpiryDurationMinutes,
-    refreshTokenExpiryDurationMinutes:
-      envVars.authRefreshTokenExpiryDurationMinutes,
+    accessTokenExpiryDurationMinutes: envVars.authAccessTokenExpiryDurationMinutes,
+    refreshTokenExpiryDurationMinutes: envVars.authRefreshTokenExpiryDurationMinutes,
     privateKeys: authCookiePrivateKeySecret,
     publicKeys: {},
+    keyId: undefined,
   });
 
   const nhsLoginConfig: INhsLoginConfig = {
@@ -94,9 +83,7 @@ export async function init(): Promise<LoginLambdaDependencies> {
     privateKey: nhsLoginPrivateKey,
   };
 
-  const nhsLoginJwtHelper: NhsLoginJwtHelper = new NhsLoginJwtHelper(
-    nhsLoginConfig,
-  );
+  const nhsLoginJwtHelper: NhsLoginJwtHelper = new NhsLoginJwtHelper(nhsLoginConfig);
 
   const httpClient = new HttpClient();
   const jwksClient = new JwksClient({
