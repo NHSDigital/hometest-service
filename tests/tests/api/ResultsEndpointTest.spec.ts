@@ -16,7 +16,7 @@ let correlationId: string;
 const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
 
-test.describe("GET Result API @api", () => {
+test.describe("GET Result API", () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser }) => {
@@ -37,21 +37,23 @@ test.describe("GET Result API @api", () => {
     },
   );
 
-  test("should retrieve the result and confirm the correct result status", async ({
-    hivResultsApi,
-    testedUser,
-  }) => {
-    const params = createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId);
-    const headers = createGetResultHeaders(correlationId);
-    const response = await hivResultsApi.getResult(params, headers);
+  test(
+    "should retrieve the result and confirm the correct result status",
+    { tag: ["@API"] },
+    async ({ hivResultsApi, testedUser }) => {
+      const params = createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId);
+      const headers = createGetResultHeaders(correlationId);
+      const response = await hivResultsApi.getResult(params, headers);
 
-    hivResultsApi.validateStatus(response, 200);
-    const responseBody = await response.json();
-    console.log("The response received: " + JSON.stringify(responseBody, null, 2));
-    const resultStatus = responseBody.interpretation[0].coding[0].display;
-    expect(resultStatus).toBe("Normal");
-    console.log("Confirmed status: Normal");
-  });
+      hivResultsApi.validateStatus(response, 200);
+      expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
+      const responseBody = await response.json();
+      console.log("The response received: " + JSON.stringify(responseBody, null, 2));
+      const resultStatus = responseBody.interpretation[0].coding[0].display;
+      expect(resultStatus).toBe("Normal");
+      console.log("Confirmed status: Normal");
+    },
+  );
 
   test.afterAll(
     "Delete result status,order status, order, and patient records from the database and disconnect",
