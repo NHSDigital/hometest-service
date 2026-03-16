@@ -3,6 +3,7 @@ import { BasePage } from "./BasePage";
 
 export class CheckYourAnswersPage extends BasePage {
   readonly consentCheckbox: Locator;
+  readonly pageHeader: Locator;
   readonly submitOrderButton: Locator;
   readonly currentMobileNumber: Locator;
   readonly currentAddress: Locator;
@@ -14,6 +15,7 @@ export class CheckYourAnswersPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.consentCheckbox = page.locator("#consent-1");
+    this.pageHeader = page.locator("h1", { hasText: "Check your answers before submitting your order" });
     this.submitOrderButton = page.getByRole("button", { name: "Submit order" });
     this.currentMobileNumber = page.locator("#mobile-number-value");
     this.currentAddress = page.locator("#delivery-address-value");
@@ -27,9 +29,9 @@ export class CheckYourAnswersPage extends BasePage {
     await this.submitOrderButton.click();
   }
 
-  async getAddressValue(): Promise<string | null> {
-    const currentAddressValue = await this.currentAddress.textContent();
-    return currentAddressValue;
+  async getAddressValue(): Promise<string[] | null> {
+    const currentAddressValue = await this.currentAddress.allInnerTexts();
+    return currentAddressValue[0].split("\n");
   }
 
   async getMobileNumberValue(): Promise<string | null> {
@@ -60,5 +62,9 @@ export class CheckYourAnswersPage extends BasePage {
 
   async isConsentCheckboxChecked(): Promise<boolean> {
     return await this.consentCheckbox.isChecked();
+  }
+
+  async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
   }
 }

@@ -16,9 +16,11 @@ import { NHSEmailAndPasswordPage } from "../page-objects/NHSLogin/NHSEmailAndPas
 import { ErrorPage } from "../page-objects/ErrorPage";
 import { KitNotAvailableInYourAreaPage } from "../page-objects/KitNotAvailableInYourAreaPage";
 import { OrderSubmittedPage } from "../page-objects/OrderSubmittedPage";
+import { TermsOfUsePage } from "../page-objects/TermsOfUsePage";
 import { CodeSecurityPage } from "../page-objects/NHSLogin/CodeSecurityPage";
 import { SuppliersTermsOfUsePage } from "../page-objects/SuppliersTermsOfUsePage";
 import { CannotUseServiceUnder18Page } from "../page-objects/CannotUseServiceUnder18Page";
+import { GoToClinicPage } from "../page-objects/GoToClinicPage";
 import { SuppliersPrivacyPolicyPage } from "../page-objects/SuppliersPrivacyPolicyPage";
 
 export interface MyFixtures {
@@ -37,9 +39,11 @@ export interface MyFixtures {
   errorPage: ErrorPage;
   checkYourAnswersPage: CheckYourAnswersPage;
   orderSubmittedPage: OrderSubmittedPage;
+  termsOfUsePage: TermsOfUsePage;
   codeSecurityPage: CodeSecurityPage;
   suppliersTermsOfUsePage: SuppliersTermsOfUsePage;
   cannotUseServiceUnder18Page: CannotUseServiceUnder18Page;
+  goToClinicPage: GoToClinicPage;
   suppliersPrivacyPolicyPage: SuppliersPrivacyPolicyPage;
 }
 
@@ -104,12 +108,20 @@ export const pageObjectFixture = base.extend<MyFixtures>({
     await use(new OrderSubmittedPage(page));
   },
 
+  termsOfUsePage: async ({ page }, use) => {
+    await use(new TermsOfUsePage(page));
+  },
+
   codeSecurityPage: async ({ page }, use) => {
     await use(new CodeSecurityPage(page));
   },
 
   suppliersTermsOfUsePage: async ({ page }, use) => {
     await use(new SuppliersTermsOfUsePage(page));
+  },
+
+  goToClinicPage: async ({ page }, use) => {
+    await use(new GoToClinicPage(page));
   },
 
   cannotUseServiceUnder18Page: async ({ page }, use) => {

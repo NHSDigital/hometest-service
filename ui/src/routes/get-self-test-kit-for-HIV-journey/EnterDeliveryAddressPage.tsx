@@ -3,11 +3,10 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
+import { useAsyncErrorHandler, useContent } from "@/hooks";
 import { useEffect, useRef, useState } from "react";
-
 import FormPageLayout from "@/layouts/FormPageLayout";
 import type { ValidationMessages } from "@/content/schema";
-import { useContent } from "@/hooks";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -79,7 +78,7 @@ export default function EnterDeliveryAddressPage() {
           break;
         case "error":
           console.error("Postcode lookup failed");
-          break;
+          throw new Error("Postcode lookup failed");
       }
     }
   }, [lookupResultsStatus, isLoading, goToStep]);
@@ -92,7 +91,7 @@ export default function EnterDeliveryAddressPage() {
     setBuildingName(e.target.value);
   };
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleSubmit = useAsyncErrorHandler(async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const postcodeValidation = validatePostcode(postcode, commonContent.validation);
@@ -114,7 +113,7 @@ export default function EnterDeliveryAddressPage() {
       hasSubmittedRef.current = true;
       await lookupPostcode(updatedData.postcodeSearch);
     }
-  };
+  });
 
   return (
     <FormPageLayout
@@ -134,32 +133,30 @@ export default function EnterDeliveryAddressPage() {
           <ErrorSummary.Title id="error-summary-title">
             {commonContent.errorSummary.title}
           </ErrorSummary.Title>
-          <ErrorSummary.Body>
-            <ErrorSummary.List>
-              {postcodeError && (
-                <ErrorSummary.Item
-                  href="#postcode"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("postcode")?.focus();
-                  }}
-                >
-                  {postcodeError}
-                </ErrorSummary.Item>
-              )}
-              {buildingNameError && (
-                <ErrorSummary.Item
-                  href="#building-number-or-name"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("building-number-or-name")?.focus();
-                  }}
-                >
-                  {buildingNameError}
-                </ErrorSummary.Item>
-              )}
-            </ErrorSummary.List>
-          </ErrorSummary.Body>
+          <ErrorSummary.List>
+            {postcodeError && (
+              <ErrorSummary.ListItem
+                href="#postcode"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("postcode")?.focus();
+                }}
+              >
+                {postcodeError}
+              </ErrorSummary.ListItem>
+            )}
+            {buildingNameError && (
+              <ErrorSummary.ListItem
+                href="#building-number-or-name"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("building-number-or-name")?.focus();
+                }}
+              >
+                {buildingNameError}
+              </ErrorSummary.ListItem>
+            )}
+          </ErrorSummary.List>
         </ErrorSummary>
       )}
 

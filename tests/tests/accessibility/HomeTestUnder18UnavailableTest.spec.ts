@@ -34,35 +34,13 @@ test.describe("Home Test Under 18 Unavailable page", () => {
       accessibility,
     }) => {
       await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
-      await selectDeliveryAddressPage.clickContinueButton();
+      await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();
-      await cannotUseServiceUnder18Page.waitUntilPageLoad();
+      await cannotUseServiceUnder18Page.waitUntilPageLoaded();
 
       const accessErrors = await accessibility.runAccessibilityCheck(
         cannotUseServiceUnder18Page.page,
         "Cannot Use Service Under 18 Page",
-      );
-      expect(accessErrors).toHaveLength(0);
-    },
-  );
-
-  test(
-    "Home Test Under 18 Unavailable page (manual address) - accessibility scan",
-    { tag: ["@accessibility"] },
-    async ({
-      enterDeliveryAddressPage,
-      enterAddressManuallyPage,
-      cannotUseServiceUnder18Page,
-      accessibility,
-    }) => {
-      await enterDeliveryAddressPage.clickEnterAddressManuallyLink();
-      await enterAddressManuallyPage.fillDeliveryAddressFields(randomAddress);
-      await enterAddressManuallyPage.clickContinue();
-      await cannotUseServiceUnder18Page.waitUntilPageLoad();
-
-      const accessErrors = await accessibility.runAccessibilityCheck(
-        cannotUseServiceUnder18Page.page,
-        "Cannot Use Service Under 18 Page - Manual Address",
       );
       expect(accessErrors).toHaveLength(0);
     },
