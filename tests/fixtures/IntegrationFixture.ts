@@ -1,6 +1,6 @@
-import { apiFixture } from "./ApiFixture";
-import { configurationFixture } from "./ConfigurationFixture";
-import { dbFixture } from "./DbFixture";
+import { apiFixture } from "./apiFixture";
+import { configurationFixture } from "./configurationFixture";
+import { dbFixture } from "./dbFixture";
 import { mergeTests } from "@playwright/test";
 
 export const test = mergeTests(configurationFixture, apiFixture, dbFixture);
