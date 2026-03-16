@@ -1,0 +1,22 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/postcode/[A-Za-z0-9%20 ]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "postcode": "SW1A 1AA",
+      "localAuthority": {
+        "code": "E09000033",
+        "name": "City of Westminster"
+      },
+      "country": "England",
+      "region": "London"
+    }
+  }
+}

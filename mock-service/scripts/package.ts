@@ -34,7 +34,16 @@ async function createMockServiceZip(): Promise<void> {
     archive.on("error", reject);
     archive.pipe(output);
 
+    // Bundle the compiled handler
     archive.file(indexPath, { name: "index.js" });
+
+    // Bundle the WireMock JSON mapping files
+    const mappingsPath = join(lambdaPath, "mappings");
+    if (existsSync(mappingsPath)) {
+      archive.directory(mappingsPath, "mappings");
+      console.log("Including WireMock mappings directory");
+    }
+
     archive.finalize();
   });
 }

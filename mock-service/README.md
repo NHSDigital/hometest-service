@@ -1,45 +1,58 @@
 # Mock Service
 
-Lambda-hosted mock API for dev/test environments. Replaces WireMock Docker with a serverless deployment that can be shared across dev environments on AWS.
+Lambda-hosted WireMock-compatible stub runner for dev/test environments. Reads the same WireMock JSON mapping files from `local-environment/wiremock/mappings/` and serves them via a single Lambda function behind API Gateway.
 
-## What it mocks
+The JSON mapping files are the **single source of truth** — no per-endpoint TypeScript handlers. To add or change a mock, edit a JSON stub file.
 
-| Route | Purpose | Replaces |
-|---|---|---|
-| `GET /mock/health` | Health check | — |
-| `POST /mock/supplier/oauth/token` | OAuth2 client_credentials grant | WireMock `oauth-token.json` |
-| `POST /mock/supplier/order` | Create FHIR ServiceRequest order | WireMock `order-success.json` |
-| `GET /mock/supplier/order` | Get order status | WireMock `order-confirmed.json` etc. |
-| `GET /mock/supplier/results` | Get test results (FHIR Observation) | WireMock `results-success.json` |
-| `GET /mock/cognito/.well-known/jwks.json` | JWKS public key set | Not previously mocked |
-| `GET /mock/postcode/{postcode}` | Postcode → local authority | Not previously mocked |
+## How it works
 
-## Controlling responses
+1. At build time, all WireMock JSON mapping files are copied from `../local-environment/wiremock/mappings/` into the Lambda bundle.
+2. On cold start, the Lambda loads every `.json` file from the bundled `mappings/` directory.
+3. For each incoming request, the stub matcher evaluates WireMock matching rules (method, URL path/pattern, headers, query parameters, body patterns) and returns the first matching response (respecting priority).
+4. Response templates (`{{randomValue type='UUID'}}`, `{{now}}`) are rendered before returning.
 
-Send the `X-Mock-Status` header to force specific error scenarios:
+## Supported WireMock features
 
-```bash
-# OAuth: force 401 (invalid credentials)
-curl -X POST .../mock/supplier/oauth/token -H "X-Mock-Status: 401" ...
+| Feature | Example |
+|---|---|
+| Exact URL path | `"urlPath": "/oauth/token"` |
+| Regex URL path | `"urlPathPattern": "/order/.*"` |
+| Method matching | `"method": "POST"` |
+| Header matching | `"contains"`, `"matches"` (regex), `"equalTo"` |
+| Query parameter matching | `"matches"` (regex), `"equalTo"`, `"absent": true` |
+| Body patterns | `"matches"` (regex), `"matchesJsonPath"` with `"absent": true` |
+| Priority | `"priority": 1` (lower = matched first) |
+| JSON response body | `"jsonBody": { ... }` |
+| String response body | `"body": "..."` |
+| Response headers | `"headers": { "Content-Type": "..." }` |
+| Response templating | `{{randomValue type='UUID'}}`, `{{now}}`, `{{now offset='-2 days' format='yyyy-MM-dd'}}` |
 
-# Order: force 404 (not found) or 422 (unprocessable)
-curl .../mock/supplier/order?order_id=xxx -H "X-Mock-Status: 404"
+## Adding or changing mocks
 
-# Order: force status variant (dispatched, confirmed, complete)
-curl .../mock/supplier/order?order_id=xxx -H "X-Mock-Status: dispatched"
+Drop a new JSON file into `local-environment/wiremock/mappings/`:
 
-# Results: force 404 (not found) or 400 (invalid)
-curl .../mock/supplier/results?order_uid=xxx -H "X-Mock-Status: 404"
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/my-new-endpoint"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "message": "hello" }
+  }
+}
 ```
 
-## JWKS / JWT signing
+Rebuild the mock-service to pick up the change. No TypeScript code changes needed.
 
-The `/mock/cognito/.well-known/jwks.json` endpoint returns an RSA public key.
+## URL path prefixes
 
-- **Auto-generated**: On cold start, a fresh RSA key pair is generated. The public key is served at the JWKS endpoint, and the private key stays in memory.
-- **Shared key**: Set `MOCK_JWKS_PRIVATE_KEY` (PEM-encoded RSA private key) as a Lambda env var so all dev services use the same signing key.
+API Gateway routes requests under `/mock/supplier/` and `/mock/cognito/` prefixes. The Lambda strips these before matching against stub files:
 
-The `signMockJwt()` function (exported from `src/handlers/jwks.ts`) signs payloads with the private key for use in tests.
+- `/mock/supplier/oauth/token` → matches stubs with `"urlPath": "/oauth/token"`
+- `/mock/cognito/.well-known/jwks.json` → matches stubs with `"urlPath": "/.well-known/jwks.json"`
 
 ## Local development
 
@@ -47,8 +60,8 @@ The `signMockJwt()` function (exported from `src/handlers/jwks.ts`) signs payloa
 cd mock-service
 npm install
 npm test           # run unit tests
-npm run build      # esbuild → dist/mock-service-lambda/index.js
-npm run package    # zip → dist/mock-service-lambda.zip
+npm run build      # esbuild → dist/mock-service-lambda/index.js + mappings/
+npm run package    # zip → dist/mock-service-lambda.zip (includes mappings)
 ```
 
 ### Running locally (via LocalStack)
@@ -57,7 +70,7 @@ The mock-service is deployed to LocalStack alongside the other Lambdas as part o
 
 The local flow:
 
-1. `npm run build:mock-service && npm run package:mock-service` — builds the zip
+1. `npm run build:mock-service && npm run package:mock-service` — builds the zip (bundles JSON mappings)
 2. `npm run local:terraform:apply` — deploys it as a Lambda + API Gateway on LocalStack
 3. `npm run local:update-supplier-url` — updates the DB supplier `service_url` to point at the mock API Gateway
 
@@ -107,23 +120,12 @@ mock-service/
 ├── tsconfig.json
 ├── jest.config.ts
 ├── scripts/
-│   ├── build.ts          # esbuild bundler
-│   └── package.ts        # zip creator
+│   ├── build.ts              # esbuild bundler + copies JSON mappings
+│   └── package.ts            # zip creator (includes mappings/)
 └── src/
-    ├── index.ts           # Lambda entry point (Middy)
-    ├── router.ts          # Path-based request router
-    ├── router.test.ts
-    ├── utils/
-    │   └── response.ts    # JSON / FHIR response helpers
-    ├── handlers/
-    │   ├── health.ts
-    │   ├── jwks.ts         # JWKS + JWT signing utility
-    │   ├── jwks.test.ts
-    │   ├── oauth-token.ts  # OAuth2 client_credentials
-    │   ├── oauth-token.test.ts
-    │   ├── order.ts        # FHIR ServiceRequest mock
-    │   ├── postcode.ts     # Postcode lookup mock
-    │   └── results.ts      # FHIR Observation results
-    └── test-utils/
-        └── mock-event.ts   # APIGatewayProxyEvent factory
+    ├── index.ts              # Lambda entry point — loads stubs, routes requests
+    ├── stub-matcher.ts       # Generic WireMock-compatible request matcher
+    ├── stub-matcher.test.ts
+    ├── template-engine.ts    # WireMock response template renderer
+    └── template-engine.test.ts
 ```
