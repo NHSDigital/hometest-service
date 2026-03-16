@@ -21,11 +21,15 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     await resultDbClient.connect();
   });
 
-  test.beforeEach("Create a patient, order, initial order status", async ({ testedUser }) => {
+  test.beforeEach("Create a patient, order, order status", async ({ testedUser }) => {
     console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
     const result = await dbClient.createOrderWithPatientAndStatus(
-      new OrderBuilder().withUser(testedUser).withSupplier(supplierName).build(),
+      new OrderBuilder()
+        .withUser(testedUser)
+        .withSupplier(supplierName)
+        .withStatus("RECEIVED")
+        .build(),
     );
 
     orderId = result.order_uid;
