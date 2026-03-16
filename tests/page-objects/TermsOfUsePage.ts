@@ -30,6 +30,9 @@ export class TermsOfUsePage extends BasePage {
   async clickHomeTestPrivacyPolicyLink(): Promise<void> {
     await this.homeTestPrivacyPolicyLink.click();
   }
+    async waitUntilPageLoaded(): Promise<void> {
+    await this.pageHeader.waitFor({ state: "visible" });
+  }
 
   async waitUntilPageLoaded(): Promise<void> {
     await this.pageHeader.waitFor({ state: "visible" });
