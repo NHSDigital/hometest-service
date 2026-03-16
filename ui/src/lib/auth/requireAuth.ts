@@ -7,12 +7,8 @@ export interface SessionData {
   user: AuthUser;
 }
 
-export async function requireAuth({
-  request,
-}: {
-  request: Request;
-}): Promise<SessionData> {
-  if (!backendUrl) {
+export async function requireAuth({ request }: { request: Request }): Promise<SessionData> {
+  if (!backendUrl || backendUrl.trim() === "") {
     throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
   }
 

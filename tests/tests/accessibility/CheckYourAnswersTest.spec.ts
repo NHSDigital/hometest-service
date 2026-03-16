@@ -24,7 +24,7 @@ test(
     await selectDeliveryAddressPage.selectAddressAndContinue();
     await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
     await confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
-    await checkYourAnswersPage.waitUntilPageLoad();
+    await checkYourAnswersPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       checkYourAnswersPage.page,
       "Check Your Answers Page",
