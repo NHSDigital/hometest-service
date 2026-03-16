@@ -11,9 +11,7 @@ export default tseslint.config(
         ...globals.node,
       },
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ["credentials.d.ts"],
-        },
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -33,6 +31,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["testResults/**", "node_modules/**", "*.config.*"],
+    ignores: ["testResults/**", "node_modules/**", "*.config.*", "credentials.d.ts"],
   },
 );
