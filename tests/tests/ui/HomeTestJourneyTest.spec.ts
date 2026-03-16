@@ -131,10 +131,7 @@ test("Verify Terms of Use page", async ({
     "Get a self-test kit for HIV",
   );
   await homeTestStartPage.clickTermsOfUseLink();
-  let actualHeaderText = await termsOfUsePage.getHeaderText();
-  expect(actualHeaderText).toBe(
-    "Hometest Terms of Use - Draft V1 January 2026",
-  );
+  await expect(termsOfUsePage.pageHeader).toHaveText("Hometest Terms of Use - Draft V1 January 2026")
 
   // Cyber Aware Link
   const [cyberAwareTab] = await Promise.all([
@@ -161,9 +158,7 @@ test("Verify Terms of Use page", async ({
   const privacyPolicyHeaderText = await privacyPolicyPage.getHeaderText();
   expect(privacyPolicyHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
   await privacyPolicyPage.clickBackLink();
-  actualHeaderText = await termsOfUsePage.getHeaderText();
-  expect(actualHeaderText).toBe(
-    "Hometest Terms of Use - Draft V1 January 2026");
+  await termsOfUsePage.waitUntilPageLoaded();
   // Back to Home Test Start
   await termsOfUsePage.clickBackLink();
   await expect(homeTestStartPage.headerText).toHaveText(
