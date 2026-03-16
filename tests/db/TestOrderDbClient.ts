@@ -178,23 +178,20 @@ export class TestOrderDbClient extends BaseDbClient {
     return rows;
   }
 
-  async getLatestOrderStatusByOrderUid(orderUid: string): Promise<OrderStatusCode> {
-    const rows = await this.query<TestOrderModel>(
-      `SELECT status_code
+  async getOrderStatusByOrderUid(
+    orderUid: UUID,
+  ): Promise<{ statusCode: OrderStatusCode; count: number }> {
+    const rows = await this.query<{ status_code: string; count: string }>(
+      `SELECT status_code, COUNT(*) OVER() as count
        FROM order_status
        WHERE order_uid = $1::uuid
        ORDER BY created_at DESC
        LIMIT 1`,
       [orderUid],
     );
-    return rows[0].status_code as OrderStatusCode;
-  }
-
-  async getOrderStatusCountByOrderUid(orderUid: UUID): Promise<number> {
-    const rows = await this.query<{ count: string }>(
-      `SELECT COUNT(*) as count FROM order_status WHERE order_uid = $1::uuid`,
-      [orderUid],
-    );
-    return Number(rows[0].count);
+    return {
+      statusCode: rows[0].status_code as OrderStatusCode,
+      count: Number(rows[0].count),
+    };
   }
 }
