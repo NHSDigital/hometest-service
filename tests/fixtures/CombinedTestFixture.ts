@@ -1,10 +1,10 @@
-import { accessibilityFixture } from "./accessibilityFixture";
+import { accessibilityFixture } from "./AccessibilityFixture";
 import { apiFixture } from "./ApiFixture";
-import { configurationFixture } from "./configurationFixture";
-import { consoleErrorFixture } from "./consoleErrorFixture";
+import { configurationFixture } from "./ConfigurationFixture";
+import { consoleErrorFixture } from "./ConsoleErrorFixture";
 import { mergeTests } from "@playwright/test";
-import { pageObjectFixture } from "./pageObjectsFixture";
-import { storageStateFixture } from "./storageStateFixture";
+import { pageObjectFixture } from "./PageObjectsFixture";
+import { storageStateFixture } from "./StorageStateFixture";
 
 export const test = mergeTests(
   pageObjectFixture,

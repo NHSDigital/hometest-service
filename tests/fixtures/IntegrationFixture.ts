@@ -1,5 +1,5 @@
 import { apiFixture } from "./ApiFixture";
-import { configurationFixture } from "./configurationFixture";
+import { configurationFixture } from "./ConfigurationFixture";
 import { dbFixture } from "./DbFixture";
 import { mergeTests } from "@playwright/test";
 
