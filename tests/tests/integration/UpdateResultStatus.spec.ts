@@ -25,7 +25,11 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
     const result = await dbClient.createOrderWithPatientAndStatus(
-      new OrderBuilder().withUser(testedUser).withSupplier(supplierName).build(),
+      new OrderBuilder()
+        .withUser(testedUser)
+        .withSupplier(supplierName)
+        .withStatus("RECEIVED")
+        .build(),
     );
 
     orderId = result.order_uid;
