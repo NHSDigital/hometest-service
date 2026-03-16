@@ -1,4 +1,4 @@
-import { userPasswordGeneric, OTP } from '../credentials';
+import { OTP, userPasswordGeneric } from "../credentials";
 
 export interface Keys {
   passwordGeneric: string;
@@ -7,8 +7,8 @@ export interface Keys {
 
 export class CredentialsHelper {
   public async addCredentialsToEnvVariable(): Promise<void> {
-      console.log('Credentials taken from credentials.ts file');
-      process.env.GENERIC_PASS = userPasswordGeneric as string;
-      process.env.OTP = OTP as string;
+    console.log("Credentials taken from credentials.ts file");
+    process.env.GENERIC_PASS = userPasswordGeneric as string;
+    process.env.OTP = OTP as string;
   }
 }
