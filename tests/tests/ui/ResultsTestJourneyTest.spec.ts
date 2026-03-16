@@ -59,6 +59,7 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     orderStatusPage,
   }) => {
     await dbClient.updateOrderStatus(orderId, "RECEIVED");
+    await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
     await resultDbClient.updateResultStatus(orderId, "RESULT_WITHHELD");
     expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     await negativeResultPage.navigateToOrderResult(orderId);

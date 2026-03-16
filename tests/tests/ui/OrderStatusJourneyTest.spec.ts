@@ -93,6 +93,7 @@ test.describe("Order Status Page", () => {
       codeSecurityPage,
       testedUser,
     }) => {
+      await dbClient.updateOrderStatus(orderId, "RECEIVED");
       const context = orderStatusPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
