@@ -62,8 +62,8 @@ export class OrderService {
             ORDER BY created_at DESC
             LIMIT 1)
           INSERT INTO order_status (order_uid, status_code, correlation_id)
-          SELECT $1::uuid, $2, $3::uuid
-          WHERE NOT EXISTS (SELECT 1 FROM latest WHERE latest.status_code = $2);
+          SELECT $1::uuid, $2::varchar(50), $3::uuid
+          WHERE NOT EXISTS (SELECT 1 FROM latest WHERE latest.status_code = $2::varchar(50));
           `;
         await dbClient.query(orderStatusQuery, [orderUid, statusCode, correlationId]);
 
