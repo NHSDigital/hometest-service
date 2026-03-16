@@ -28,5 +28,6 @@ paths = [
   '''.session-cache/*''',
   '''ui/.next/*''', '''ui/build/*''',
   '''cdk.out/*''',
-  '''.idea/*'''
+  '''.idea/*''',
+  '''.pre-commit-config.yaml'''
 ]

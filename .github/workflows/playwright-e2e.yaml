@@ -1,11 +1,20 @@
 ---
 name: "Playwright E2E Tests"
+run-name: "E2E Tests: env: ${{ inputs.environment || 'local' }}, browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 on:
   schedule:
     - cron: '0 2 * * *'  # Every day at 2am UTC
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Target environment"
+        required: false
+        default: "local"
+        type: choice
+        options:
+          - local
+          - dev
       browser:
         description: "Browser to run tests on"
         required: false
@@ -27,15 +36,14 @@ jobs:
     name: "Playwright E2E tests"
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      TARGET_ENV: ${{ inputs.environment || 'local' }}
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v6
 
-      - name: "Install mise"
-        uses: jdx/mise-action@v3
-        with:
-          install: true
-          cache: true
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
 
       - name: "Install Playwright browsers"
         working-directory: tests
@@ -57,34 +65,50 @@ jobs:
           EOF
 
       - name: "Start the application"
+        if: env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev'
         run: |
           npm run start
 
       - name: "Show application status"
+        if: env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev'
         run: |
           docker compose -f local-environment/docker-compose.yml ps
           docker logs ui
 
       - name: "Get terraform outputs"
+        if: env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev'
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
           API_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url)
-          echo "ui_url=$UI_URL" >> $GITHUB_OUTPUT
-          echo "api_base_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "ui_url=$UI_URL" >> "$GITHUB_OUTPUT"
+          echo "api_base_url=$API_URL" >> "$GITHUB_OUTPUT"
           echo "UI URL: $UI_URL"
           echo "API URL: $API_URL"
 
+      - name: "Set environment URLs"
+        id: urls
+        run: |
+          if [ "$TARGET_ENV" == "dev" ]; then
+            echo "ui_url=https://dev.hometest.service.nhs.uk" >> "$GITHUB_OUTPUT"
+            echo "api_url=https://dev.hometest.service.nhs.uk/" >> "$GITHUB_OUTPUT"
+          else
+            echo "ui_url=${{ steps.terraform.outputs.ui_url }}" >> "$GITHUB_OUTPUT"
+            echo "api_url=${{ steps.terraform.outputs.api_base_url }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: "Wait for UI to be reachable"
         run: |
-          UI_URL="${{ steps.terraform.outputs.ui_url }}"
+          UI_URL="${{ steps.urls.outputs.ui_url }}"
           echo "Waiting for UI to be reachable at $UI_URL..."
           timeout=120
           elapsed=0
           until curl -sf "$UI_URL" > /dev/null 2>&1; do
             if [ $elapsed -ge $timeout ]; then
               echo "Timeout: UI not reachable after ${timeout}s"
-              docker logs ui
+              if [ "$TARGET_ENV" == "local" ] || [ "$TARGET_ENV" == "dev" ]; then
+                docker logs ui
+              fi
               exit 1
             fi
             echo "Waiting... (${elapsed}s)"
@@ -101,7 +125,7 @@ jobs:
           FILTER="${{ inputs.test_filter }}"
 
           # Build the command
-          CMD="npx playwright test"
+          CMD="HEADLESS=true ENV=dev npx playwright test"
 
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
@@ -114,19 +138,19 @@ jobs:
           fi
 
           echo "Running: $CMD"
-          eval $CMD
+          eval "$CMD"
         env:
           CI: true
           FORCE_COLOR: true
-          UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
-          API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
+          UI_BASE_URL: ${{ steps.urls.outputs.ui_url }}
+          API_BASE_URL: ${{ steps.urls.outputs.api_url }}
 
       - name: "Grab docker compose logs"
+        if: always() && (env.TARGET_ENV == 'local' || env.TARGET_ENV == 'dev')
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
           done
-        if: always()
 
       - name: "Publish Test Results"
         uses: dorny/test-reporter@v2
@@ -140,24 +164,26 @@ jobs:
       - name: "Generate Job Summary"
         if: always()
         run: |
-          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f tests/testResults/junit-results.xml ]; then
-            TESTS=$(grep -oP 'tests="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
-            FAILURES=$(grep -oP 'failures="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
-            ERRORS=$(grep -oP 'errors="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
-            TIME=$(grep -oP 'time="\K[0-9.]+' tests/testResults/junit-results.xml | head -1)
-            PASSED=$((TESTS - FAILURES - ERRORS))
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Total Tests | $TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| :white_check_mark: Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
-            echo "| :x: Failed | $FAILURES |" >> $GITHUB_STEP_SUMMARY
-            echo "| :warning: Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
-            echo "| :stopwatch: Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo ":warning: No test results found" >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            echo "## Playwright Test Results"
+            echo ""
+            if [ -f tests/testResults/junit-results.xml ]; then
+              TESTS=$(grep -oP 'tests="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+              FAILURES=$(grep -oP 'failures="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+              ERRORS=$(grep -oP 'errors="\K[0-9]+' tests/testResults/junit-results.xml | head -1)
+              TIME=$(grep -oP 'time="\K[0-9.]+' tests/testResults/junit-results.xml | head -1)
+              PASSED=$((TESTS - FAILURES - ERRORS))
+              echo "| Metric | Value |"
+              echo "|--------|-------|"
+              echo "| Total Tests | $TESTS |"
+              echo "| :white_check_mark: Passed | $PASSED |"
+              echo "| :x: Failed | $FAILURES |"
+              echo "| :warning: Errors | $ERRORS |"
+              echo "| :stopwatch: Duration | ${TIME}s |"
+            else
+              echo ":warning: No test results found"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: "Upload test results"
         uses: actions/upload-artifact@v7

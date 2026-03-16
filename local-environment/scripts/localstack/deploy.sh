@@ -1,9 +1,7 @@
 #!/bin/bash
 set -ex
-SCRIPT_DIR=$(dirname "$0")
 
 ENDPOINT_URL="http://localstack:4566"
-ROLE_ARN="arn:aws:iam::000000000000:role/lambda-exec"
 
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
