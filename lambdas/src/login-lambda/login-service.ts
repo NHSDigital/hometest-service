@@ -3,7 +3,6 @@ import { type INhsLoginClient } from "../lib/login/nhs-login-client";
 import { type ITokenService } from "../lib/login/token-service";
 import { type INhsTokenResponseModel } from "../lib/models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../lib/models/nhs-login/nhs-login-user-info-response-model";
-import { enrichUserInfoWithTestFirstName } from "../lib/login/test-user-mapping";
 import { type LoginBody } from ".";
 
 // ALPHA: This file will need revisiting.
