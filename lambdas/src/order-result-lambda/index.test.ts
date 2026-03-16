@@ -22,7 +22,7 @@ jest.mock("./init", () => {
   };
 });
 
-jest.mock("./validation", () => {
+jest.mock("./validation-service", () => {
   const extractAndValidateObservationFieldsMock = jest.fn();
   const extractInterpretationCodeFromFHIRObservationMock = jest.fn();
   const validateDBDataMock = jest.fn();
@@ -77,7 +77,7 @@ const {
   extractAndValidateObservationFieldsMock,
   extractInterpretationCodeFromFHIRObservationMock,
   validateDBDataMock,
-} = jest.requireMock("./validation") as {
+} = jest.requireMock("./validation-service") as {
   extractAndValidateObservationFieldsMock: jest.Mock;
   extractInterpretationCodeFromFHIRObservationMock: jest.Mock;
   validateDBDataMock: jest.Mock;
@@ -109,12 +109,14 @@ describe("order-result-lambda handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     extractAndValidateObservationFieldsMock.mockReturnValue({
-      validationResult: { isValid: true },
-      observation,
-      identifiers,
+      success: true,
+      data: {
+        observation,
+        identifiers,
+      },
     });
     initMock.orderService.retrieveOrderDetails.mockResolvedValue({});
-    validateDBDataMock.mockResolvedValue({ isValid: true, isIdempotent: false });
+    validateDBDataMock.mockResolvedValue({ success: true, data: { isIdempotent: false } });
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
   });
@@ -127,8 +129,8 @@ describe("order-result-lambda handler", () => {
 
   it("returns error if validation fails", async () => {
     extractAndValidateObservationFieldsMock.mockReturnValueOnce({
-      validationResult: {
-        isValid: false,
+      success: false,
+      error: {
         errorCode: 400,
         errorType: "invalid",
         errorMessage: "fail",
@@ -154,11 +156,13 @@ describe("order-result-lambda handler", () => {
 
   it("returns error if db validation fails", async () => {
     validateDBDataMock.mockResolvedValueOnce({
-      isValid: false,
-      errorCode: 400,
-      errorType: "invalid",
-      errorMessage: "db fail",
-      severity: "error",
+      success: false,
+      error: {
+        errorCode: 400,
+        errorType: "invalid",
+        errorMessage: "db fail",
+        severity: "error",
+      },
     });
     const res = await handler(event);
     expect(res.statusCode).toBe(400);
@@ -166,7 +170,7 @@ describe("order-result-lambda handler", () => {
   });
 
   it("returns 201 if idempotent", async () => {
-    validateDBDataMock.mockResolvedValueOnce({ isValid: true, isIdempotent: true });
+    validateDBDataMock.mockResolvedValueOnce({ success: true, data: { isIdempotent: true } });
     const res = await handler(event);
     expect(res.statusCode).toBe(201);
     expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
