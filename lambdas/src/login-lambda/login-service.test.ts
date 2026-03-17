@@ -40,7 +40,7 @@ describe("LoginService.performLogin", () => {
     };
   });
 
-  it("returns user info from NhsLoginClient without additional transformation", async () => {
+  it("verifies token and returns user info from NhsLoginClient without additional transformation", async () => {
     const userInfoResponse = createUserInfo({ given_name: "Mona" });
 
     (nhsLoginClientMock.getUserTokens as jest.Mock).mockResolvedValue({
@@ -78,7 +78,7 @@ describe("LoginService.performLogin", () => {
     });
   });
 
-  it("returns whatever user info the client provides", async () => {
+  it("verifies token and returns whatever user info the client provides", async () => {
     const userInfoResponse = createUserInfo({ given_name: "Mona" });
 
     (nhsLoginClientMock.getUserTokens as jest.Mock).mockResolvedValue({
