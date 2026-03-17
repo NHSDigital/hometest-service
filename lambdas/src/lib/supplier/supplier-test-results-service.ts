@@ -1,15 +1,9 @@
-import { Bundle, Observation } from "fhir/r4";
+import {Bundle, Observation} from "fhir/r4";
 
-import { HttpClient } from "../http/http-client";
-import { OAuthSupplierAuthClient } from "./supplier-auth-client";
-import { SecretsClient } from "../secrets/secrets-manager-client";
-import { SupplierService } from "../db/supplier-db";
-
-export interface SupplierTestResultsServiceProperties {
-  httpClient: HttpClient;
-  secretsClient: SecretsClient;
-  supplierDb: SupplierService;
-}
+import {HttpClient} from "../http/http-client";
+import {SecretsClient} from "../secrets/secrets-manager-client";
+import {SupplierService} from "../db/supplier-db";
+import {getTokenGenerator} from "./supplier-token-generator";
 
 export class SupplierTestResultsService {
   constructor(
@@ -29,24 +23,22 @@ export class SupplierTestResultsService {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const supplierAuthClient = OAuthSupplierAuthClient.fromSupplierConfig(
-      this.httpClient,
-      this.secretsClient,
+    const tokenGenerator = getTokenGenerator(
       serviceConfig,
+      this.httpClient,
+      this.secretsClient
     );
 
-    const accessToken = await supplierAuthClient.getAccessToken();
+    const accessToken = await tokenGenerator.generateToken();
 
     const resultsUrl = `${serviceConfig.serviceUrl}${serviceConfig.resultsPath}`;
     const url = new URL(resultsUrl);
     url.searchParams.append("order_uid", orderId);
 
-    const response = await this.httpClient.get<Bundle<Observation>>(url.toString(), {
+    return await this.httpClient.get<Bundle<Observation>>(url.toString(), {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/fhir+json",
       "X-Correlation-ID": correlationId,
     });
-
-    return response;
   }
 }
