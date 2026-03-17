@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom";
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+
 import React from "react";
 import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import { useThrowError } from "@/hooks/useThrowError";
@@ -8,7 +9,7 @@ import { useThrowError } from "@/hooks/useThrowError";
 function AsyncSubmitter({ error }: Readonly<{ error: Error }>) {
   const throwError = useThrowError();
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SubmitEvent) => {
     event.preventDefault();
     await Promise.resolve();
     throwError(error);
