@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import { EnvironmentVariables, availableEnvironments, Environment } from './environment-variables';
+import { EnvironmentVariables, availableEnvironments, Environment } from './EnvironmentVariables';
 
 export { EnvironmentVariables };
 
@@ -79,10 +79,10 @@ export class ConfigFactory {
       config.headless = process.env[EnvironmentVariables.HEADLESS] === 'true';
     }
     if (process.env[EnvironmentVariables.TIMEOUT]) {
-      config.timeout = parseInt(process.env[EnvironmentVariables.TIMEOUT], 10);
+      config.timeout = parseInt(process.env[EnvironmentVariables.TIMEOUT]!, 10);
     }
     if (process.env[EnvironmentVariables.SLOW_MO]) {
-      config.slowMo = parseInt(process.env[EnvironmentVariables.SLOW_MO], 10);
+      config.slowMo = parseInt(process.env[EnvironmentVariables.SLOW_MO]!, 10);
     }
     if (process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS]) {
       config.accessibilityStandards = process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS];
@@ -132,10 +132,10 @@ export class ConfigFactory {
       apiBaseUrl: process.env[EnvironmentVariables.API_BASE_URL],
       headless: process.env[EnvironmentVariables.HEADLESS] === 'true',
       timeout: process.env[EnvironmentVariables.TIMEOUT]
-        ? parseInt(process.env[EnvironmentVariables.TIMEOUT], 10)
+        ? parseInt(process.env[EnvironmentVariables.TIMEOUT]!, 10)
         : undefined,
       slowMo: process.env[EnvironmentVariables.SLOW_MO]
-        ? parseInt(process.env[EnvironmentVariables.SLOW_MO], 10)
+        ? parseInt(process.env[EnvironmentVariables.SLOW_MO]!, 10)
         : undefined,
       accessibilityStandards: process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS],
       reportingOutputDirectory: process.env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY],

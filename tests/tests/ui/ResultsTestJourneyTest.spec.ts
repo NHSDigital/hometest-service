@@ -17,40 +17,42 @@ const birthDate2 = "1990-01-01";
 
 test.describe("Results Page", { tag: "@ui" }, () => {
   test.beforeAll(
-    "Connect to the database and create a patient, order, initial order status and result status",
-    async ({ testedUser }) => {
+    "Connect to the database and create second patient order",
+    async () => {
       await dbClient.connect();
       await resultDbClient.connect();
-
-      const result = await dbClient.createOrderWithPatientAndStatus(
-        new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),
-      );
 
       const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus(
         new OrderBuilder()
           .withNhsNumber(nhsNumber2)
           .withBirthDate(birthDate2)
-          .withStatus("COMPLETE")
+          .withStatus("SUBMITTED")
           .build(),
+      );
+
+      orderId2 = resultSecondPatient.order_uid;
+      patientId2 = resultSecondPatient.patient_uid;
+    },
+  );
+
+  test.beforeEach(
+    "Create an order with SUBMITTED status for the tested user",
+    async ({ testedUser }) => {
+      const result = await dbClient.createOrderWithPatientAndStatus(
+        new OrderBuilder().withUser(testedUser).withStatus("SUBMITTED").build(),
       );
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
       orderReference = result.order_reference;
       console.log(`Created test order with ID: ${orderId} and reference: ${orderReference}`);
-
-      orderId2 = resultSecondPatient.order_uid;
-      patientId2 = resultSecondPatient.patient_uid;
-
-      const correlationId = randomUUID();
-      const correlationId2 = randomUUID();
-
-      await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
-      await resultDbClient.insertStatusResult(orderId2, "RESULT_AVAILABLE", correlationId2);
     },
   );
 
   test("Authenticated user opens a deep link - negative result", async ({ negativeResultPage }) => {
+    await dbClient.updateOrderStatus(orderId, "COMPLETE");
+    await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
+    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     await negativeResultPage.navigateToOrderResult(orderId);
     await expect(negativeResultPage.result).toHaveText("Negative");
     const orderReferenceOnPage = await negativeResultPage.getOrderReference();
@@ -62,7 +64,9 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     orderStatusPage,
   }) => {
     await dbClient.updateOrderStatus(orderId, "RECEIVED");
+    await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
     await resultDbClient.updateResultStatus(orderId, "RESULT_WITHHELD");
+    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     await negativeResultPage.navigateToOrderResult(orderId);
     await expect(orderStatusPage.statusTag).toHaveText("Test received");
     const url = await orderStatusPage.getCurrentUrl();
@@ -96,14 +100,20 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     });
   });
 
-  test.afterAll(
-    "Delete result status, order status, order, and patient records from the database and disconnect",
+  test.afterEach(
+    "Delete result status, order status, order, and patient records from the database",
     async ({ testedUser }) => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
       await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    },
+  );
+
+  test.afterAll(
+    "Delete second patient records and disconnect from the database",
+    async () => {
       await resultDbClient.deleteResultStatusByUid(orderId2);
       await dbClient.deleteOrderStatusByUid(orderId2);
       await dbClient.deleteConsentByPatientUid(patientId2);

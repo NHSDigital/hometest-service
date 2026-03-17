@@ -7,6 +7,7 @@ export enum RoutePath {
   OrderTrackingPage = "/orders/:orderId/tracking",
   TestResultsPage = "/orders/:orderId/results",
   HomeTestPrivacyPolicyPage = "/home-test-privacy-policy",
+  HomeTestTermsOfUsePage = "/home-test-terms-of-use",
   SuppliersTermsConditions = "/suppliers-terms-conditions",
   SuppliersPrivacyPolicy = "/suppliers-privacy-policy",
 }

@@ -1,11 +1,11 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
-export default {
+import type { Config } from 'jest';
+
+const config: Config = {
   preset: "ts-jest",
   testEnvironment: "node",
   setupFiles: ["<rootDir>/jest/jest.setup.js"],
   testRegex: ".*\\.test\\.ts$",
   testPathIgnorePatterns: ["/node_modules/"],
-  collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "json", "json-summary"],
   reporters: [
@@ -36,4 +36,5 @@ export default {
   transformIgnorePatterns: [
     "/node_modules/(?!(@middy|uuid|@aws-sdk)/)", // add ESM packages here
   ],
-};
+}
+export default config;
