@@ -12,24 +12,8 @@ on:
         description: "Build timestamp, set by the CI/CD pipeline workflow"
         required: true
         type: string
-      build_epoch:
-        description: "Build epoch, set by the CI/CD pipeline workflow"
-        required: true
-        type: string
       nodejs_version:
         description: "Node.js version, set by the CI/CD pipeline workflow"
-        required: true
-        type: string
-      python_version:
-        description: "Python version, set by the CI/CD pipeline workflow"
-        required: true
-        type: string
-      terraform_version:
-        description: "Terraform version, set by the CI/CD pipeline workflow"
-        required: true
-        type: string
-      version:
-        description: "Version of the software, set by the CI/CD pipeline workflow"
         required: true
         type: string
 
@@ -76,18 +60,6 @@ jobs:
           artifact-prefix: lambdas
           test-name: "Jest Lambda Tests"
           report-title: "Lambdas Coverage Report"
-  test-lint:
-    name: "Linting"
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v6
-      - name: "Run test coverage check"
-        run: |
-          make test-coverage
-      - name: "Save the coverage check result"
-        run: |
-          echo "Nothing to save"
 
   perform-static-analysis:
     name: "Perform static analysis"
@@ -101,7 +73,7 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # Full history is needed to improving relevancy of reporting
+          fetch-depth: 0 # Full history is needed to improving relevancy of reporting
       - name: "Download UI coverage data"
         uses: actions/download-artifact@v8
         with:
