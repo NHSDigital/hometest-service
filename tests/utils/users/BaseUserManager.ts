@@ -155,6 +155,41 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     }
   }
 
+  private decodeJwtPayload(token: string): Record<string, unknown> {
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      throw new Error("Invalid JWT format");
+    }
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(Buffer.from(base64, "base64").toString("utf8")) as Record<string, unknown>;
+  }
+
+  private isSessionValid(sessionFilePath: string): boolean {
+    try {
+      const content = fs.readFileSync(sessionFilePath, "utf8");
+      const session = JSON.parse(content) as {
+        cookies: Array<{ name: string; value: string }>;
+      };
+      const authCookie = session.cookies.find((c) => c.name === "auth");
+      if (!authCookie) {
+        return false;
+      }
+      const outerPayload = this.decodeJwtPayload(authCookie.value);
+      const sessionId = outerPayload.sessionId;
+      if (typeof sessionId !== "string") {
+        return false;
+      }
+      const innerPayload = this.decodeJwtPayload(sessionId);
+      const exp = innerPayload.exp;
+      if (typeof exp !== "number") {
+        return false;
+      }
+      return exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
+  }
+
   async loginWorkerUsers(): Promise<void> {
     process.env.GLOBAL_START_TIME = new Date().toISOString();
     console.log(`Tests will run on environment: ${process.env.ENV ?? "local"}`);
@@ -167,7 +202,14 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
         break;
       }
 
-      console.log(this.getWorkerUserSessionFilePath(i));
+      const sessionFilePath = this.getWorkerUserSessionFilePath(i);
+      console.log(sessionFilePath);
+
+      const isLocal = (process.env.ENV ?? "local") === "local";
+      if (isLocal && fs.existsSync(sessionFilePath) && this.isSessionValid(sessionFilePath)) {
+        console.log(`✅ Reusing existing valid session for worker user at index ${i}`);
+        continue;
+      }
 
       const user = this.workerUsers[i];
       const { browser, page, context } = await this.initializeBrowserForInitialLogin();
@@ -187,7 +229,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
         await this.loginWorkerUser(user, page);
 
         await page.context().storageState({
-          path: this.getWorkerUserSessionFilePath(i),
+          path: sessionFilePath,
         });
 
         if (this.config.enableTracingOnGlobalSetup) {

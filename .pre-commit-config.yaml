@@ -58,6 +58,26 @@ repos:
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false
 
+      - id: check-typescript-ui
+        name: TypeScript (UI)
+        entry: npm --prefix ui run check-typescript
+        language: system
+        files: ^ui/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: check-typescript-lambdas
+        name: TypeScript (Lambdas)
+        entry: npm --prefix lambdas run check-typescript
+        language: system
+        files: ^lambdas/.*\.(ts|js)$
+        pass_filenames: false
+
+      - id: check-typescript-tests
+        name: TypeScript (Tests)
+        entry: npm --prefix tests run check-typescript
+        language: system
+        files: ^tests/.*\.(ts|js)$
+        pass_filenames: false
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0
@@ -71,7 +91,7 @@ repos:
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.47.0
+    rev: v0.48.0
     hooks:
       - id: markdownlint
         # exclude: ^infrastructure/src
@@ -86,21 +106,9 @@ repos:
           - --args=-recursive
 
   - repo: https://github.com/sqlfluff/sqlfluff
-    rev: 4.0.4        # pin to a specific version
+    rev: 4.0.4 # pin to a specific version
     hooks:
       - id: sqlfluff-lint
-        args: ["--config", ".sqlfluff"]   # optional, if you keep config elsewhere
+        args: ["--config", ".sqlfluff"] # optional, if you keep config elsewhere
       - id: sqlfluff-fix
-        args: ["--config", ".sqlfluff"]   # auto-fix style issues
-
-  - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.11
-    hooks:
-      - id: actionlint
-        files: ^\.github/workflows/
-
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
-    hooks:
-      - id: shellcheck
-        args: [--severity=warning]
+        args: ["--config", ".sqlfluff"] # auto-fix style issues

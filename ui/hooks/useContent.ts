@@ -10,6 +10,7 @@ import type {
   ServiceErrorContent,
   GoToClinicContent,
   HomeTestPrivacyPolicyContent,
+  HomeTestTermsOfUseContent,
   HowComfortablePrickingFingerContent,
   KitNotAvailableInAreaContent,
   NoAddressFoundContent,
@@ -36,6 +37,7 @@ export const PageKeys = {
   ServiceError: "service-error",
   OrderTracking: "order-tracking",
   HomeTestPolicy: "home-test-privacy-policy",
+  TermsOfUse: "home-test-terms-of-use",
   SuppliersTermsConditions: "suppliers-terms-conditions",
   SuppliersPrivacyPolicy: "suppliers-privacy-policy",
   GoToClinic: "go-to-clinic",
@@ -61,6 +63,7 @@ export interface UseContentReturn {
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  "home-test-terms-of-use": HomeTestTermsOfUseContent;
   "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
@@ -86,6 +89,7 @@ export const useContent = (): UseContentReturn => {
     "test-results": content.pages["test-results"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
+    "home-test-terms-of-use": content.pages["home-test-terms-of-use"],
     "order-submitted": content.pages["order-submitted"],
     "suppliers-terms-conditions": content.pages["suppliers-terms-conditions"],
     "suppliers-privacy-policy": content.pages["suppliers-privacy-policy"],

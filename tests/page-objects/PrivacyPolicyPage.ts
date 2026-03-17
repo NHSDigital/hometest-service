@@ -7,7 +7,9 @@ export class PrivacyPolicyPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.pageHeader = page.locator("h1", { hasText: "privacy policy" });
+    this.pageHeader = page.locator("h1", {
+      hasText: "Hometest Privacy Policy - Draft v1.0 Jan 2026",
+    });
     this.makeAComplaintLink = page.getByRole("link", {
       name: "https://ico.org.uk/make-a-complaint/",
     });
@@ -22,7 +24,6 @@ export class PrivacyPolicyPage extends BasePage {
   }
 
   async getHeaderText(): Promise<string> {
-    return await this.pageHeader.textContent() ?? "";
+    return (await this.pageHeader.textContent()) ?? "";
   }
-
 }
