@@ -5,20 +5,21 @@ import {
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
-import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
-import { ConsoleCommons } from "../lib/commons";
-import { init } from "./init";
-import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
-import httpErrorHandler from "@middy/http-error-handler";
-import middy from "@middy/core";
-import cors from "@middy/http-cors";
-import httpSecurityHeaders from "@middy/http-security-headers";
-import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
-import z from "zod";
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+
+import { ConsoleCommons } from "../lib/commons";
 import { IncomingBusinessStatus } from "./types";
+import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
+import cors from "@middy/http-cors";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
+import { init } from "./init";
+import middy from "@middy/core";
+import { securityHeaders } from "../lib/http/security-headers";
+import z from "zod";
 
 const commons = new ConsoleCommons();
 const { orderStatusDb } = init();
@@ -27,7 +28,7 @@ const name = "order-status-lambda";
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
   identifier: z.array(FHIRIdentifierSchema).min(1).max(1),
   for: FHIRReferenceSchema,
-  lastModified: z.string().datetime(),
+  lastModified: z.iso.datetime(),
   businessStatus: FHIRCodeableConceptSchema.extend({
     text: z.enum(IncomingBusinessStatus),
   }),

@@ -122,8 +122,8 @@ export const FHIRTaskSchema = z.looseObject({
   statusReason: FHIRCodeableConceptSchema.optional(),
   businessStatus: FHIRCodeableConceptSchema.optional(),
   for: FHIRReferenceSchema.optional(),
-  authoredOn: z.string().datetime().optional(),
-  lastModified: z.string().datetime().optional(),
+  authoredOn: z.iso.datetime().optional(),
+  lastModified: z.iso.datetime().optional(),
   requester: FHIRReferenceSchema.optional(),
   owner: FHIRReferenceSchema.optional(),
 });
