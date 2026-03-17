@@ -1,63 +1,47 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+
+const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
+const MARKDOWN_LINK = /\[([^\][\n]+)]\(([^()\n]+)\)/; // [display text](href)
+// display text: any char except ], [, newline
+// href: any char except (, ), newline
 
 /**
  * Renders a text string, converting:
  * - **text** → <strong>text</strong> (supports nested bold)
- * - [display text](url) → internal React Router <Link> (for /paths) or external <a> (for https://)
- * - bare https://... URLs → external <a target="_blank">
+ * - [display text](href) → internal React Router <Link> (for /paths) or external <OpensInNewTabLink> (for http(s) URLs)
  */
 export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] => {
-  const combinedRegex = /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+(?<![.,;)]))/g;
+  const combinedRegex = new RegExp(`${BOLD.source}|${MARKDOWN_LINK.source}`, "g");
   const parts: ReactNode[] = [];
   let lastIndex = 0;
   let match;
 
   while ((match = combinedRegex.exec(text)) !== null) {
+    const [fullMatch, boldText, linkText, href] = match;
+
     if (match.index > lastIndex) {
       parts.push(
         <span key={`${keyPrefix}text-${match.index}`}>{text.slice(lastIndex, match.index)}</span>,
       );
     }
 
-    if (match[1] !== undefined) {
+    if (boldText !== undefined) {
       // **bold** text — recurse to support bold+link combos
-      const boldContent = match[1];
-      const innerParts = renderTextWithLinks(boldContent, `${keyPrefix}b${match.index}-`);
+      const innerParts = renderTextWithLinks(boldText, `${keyPrefix}b${match.index}-`);
       parts.push(<strong key={`${keyPrefix}bold-${match.index}`}>{innerParts}</strong>);
-    } else if (match[4]) {
-      // Bare https:// URL
-      const url = match[4];
-      parts.push(
-        <a
-          key={`${keyPrefix}ext-${match.index}`}
-          href={url}
-          className="nhsuk-link"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`${url} (opens in new tab)`}
-        >
-          {url}
-        </a>,
-      );
     } else {
       // Markdown-style link [display text](href)
-      const linkText = match[2];
-      const href = match[3];
       const isExternal = href.startsWith("http");
 
       if (isExternal) {
         parts.push(
-          <a
+          <OpensInNewTabLink
             key={`${keyPrefix}ext-${match.index}`}
-            href={href}
-            className="nhsuk-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${linkText} (opens in new tab)`}
-          >
-            {linkText}
-          </a>,
+            linkText={linkText}
+            linkHref={href}
+          />,
         );
       } else {
         parts.push(
@@ -68,7 +52,7 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
       }
     }
 
-    lastIndex = match.index + match[0].length;
+    lastIndex = match.index + fullMatch.length;
   }
 
   if (lastIndex < text.length) {

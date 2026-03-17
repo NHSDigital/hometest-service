@@ -114,7 +114,8 @@ describe("HomeTestTermsOfUsePage", () => {
         name: /help and support page/i,
       });
 
-      expect(helpLinks[0]).toHaveAttribute("rel", "noopener noreferrer");
+      expect(helpLinks[0]).toHaveAttribute("rel", expect.stringContaining("noopener"));
+      expect(helpLinks[0]).toHaveAttribute("rel", expect.stringContaining("noreferrer"));
     });
 
     it("adds aria-label with '(opens in new tab)' for accessibility", () => {
