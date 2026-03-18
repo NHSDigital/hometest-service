@@ -1,12 +1,8 @@
-import { Locator, Page } from '@playwright/test';
-import {
-  ConfigFactory,
-  type ConfigInterface
-} from '../configuration/EnvironmentConfiguration';
-import { BasePage } from './BasePage';
+import { Locator, Page } from "@playwright/test";
+import { AuthenticatedPage } from "./AuthenticatedPage";
 
-export class HomeTestStartPage extends BasePage {
-  readonly config: ConfigInterface;
+export class HomeTestStartPage extends AuthenticatedPage {
+  private static readonly startPagePath = "/get-self-test-kit-for-HIV";
   readonly findClinicLink: Locator;
   readonly nearestAELink: Locator;
   readonly sexualHealthServicesLink: Locator;
@@ -19,23 +15,22 @@ export class HomeTestStartPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.findClinicLink = page.getByRole('link', {
-      name: 'Find a sexual health clinic'
+    this.findClinicLink = page.getByRole("link", {
+      name: "Find a sexual health clinic",
     });
-    this.nearestAELink = page.getByRole('link', { name: 'your nearest A&E' });
-    this.sexualHealthServicesLink = page.getByRole('link', {
-      name: 'find sexual health services near you'
+    this.nearestAELink = page.getByRole("link", { name: "your nearest A&E" });
+    this.sexualHealthServicesLink = page.getByRole("link", {
+      name: "find sexual health services near you",
     });
-    this.learnMoreHIVAidsLink = page.getByRole('link', {
-      name: 'Learn more about HIV and AIDS'
+    this.learnMoreHIVAidsLink = page.getByRole("link", {
+      name: "Learn more about HIV and AIDS",
     });
-    this.startNowBtn = page.getByRole('button', { name: 'Start now' });
-    this.bloodSampleGuideLink = page.getByRole('link', {
-      name: 'Blood sample step-by-step guide'
+    this.startNowBtn = page.getByRole("button", { name: "Start now" });
+    this.bloodSampleGuideLink = page.getByRole("link", {
+      name: "Blood sample step-by-step guide",
     });
-    this.config = ConfigFactory.getConfig();
-    this.privacyPolicyLink = page.getByRole('link', { name: 'privacy policy' });
-    this.termsOfUseLink = page.getByRole('link', { name: 'terms of use' });
+    this.privacyPolicyLink = page.getByRole("link", { name: "privacy policy" });
+    this.termsOfUseLink = page.getByRole("link", { name: "terms of use" });
     this.pageHeader = page.locator("h1", { hasText: "Get a self-test kit for HIV" });
   }
 
@@ -44,7 +39,7 @@ export class HomeTestStartPage extends BasePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto(`${this.config.uiBaseUrl}/get-self-test-kit-for-HIV`);
+    await this.navigateToProtectedPath(HomeTestStartPage.startPagePath, this.pageHeader);
   }
 
   async clickFindClinicLink(expectedUrl: string): Promise<void> {
@@ -68,6 +63,8 @@ export class HomeTestStartPage extends BasePage {
   }
 
   async clickStartNowButton(): Promise<void> {
+    await this.waitUntilPageLoaded();
+    await this.startNowBtn.waitFor({ state: "visible" });
     await this.startNowBtn.click();
   }
 

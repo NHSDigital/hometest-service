@@ -11,7 +11,9 @@ export class CannotUseServiceUnder18Page extends BasePage {
     this.findAnotherClinicLink = page.locator("a", {
       hasText: "Find another sexual health clinic",
     });
-    this.pageHeader = page.locator("h1", { hasText: "You cannot use this service as you are under 18" });
+    this.pageHeader = page.locator("h1", {
+      hasText: "You cannot use this service as you are under 18",
+    });
   }
 
   async waitUntilPageLoaded(): Promise<void> {
@@ -19,11 +21,12 @@ export class CannotUseServiceUnder18Page extends BasePage {
   }
 
   async expectPostcodeInFindAnotherClinicLink(postcode: string): Promise<void> {
-    const encodedPostcode = encodeURIComponent(postcode);
+    const compactPostcode = postcode.replaceAll(/\s+/g, "");
+    const encodedOriginalPostcode = encodeURIComponent(postcode);
 
     await expect(this.findAnotherClinicLink).toHaveAttribute(
       "href",
-      new RegExp(`location=${encodedPostcode}`),
+      new RegExp(`location=(${compactPostcode}|${encodedOriginalPostcode})`),
     );
   }
 }
