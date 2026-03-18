@@ -169,6 +169,21 @@ describe("OrderTrackingPage", () => {
       await screen.findByTestId("order-status");
       expect(screen.getByText("Status: DISPATCHED")).toBeInTheDocument();
     });
+
+    it("does not render error alert while query is pending", async () => {
+      (orderDetailsService.get as jest.Mock).mockImplementation(() => new Promise(() => {}));
+
+      await act(async () => {
+        renderWithRouter(orderId);
+      });
+
+      expect(screen.getByTestId("page-layout")).toBeInTheDocument();
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "There is a problem" })).not.toBeInTheDocument();
+      expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
+    });
   });
 
   describe("Order not found", () => {
@@ -203,8 +218,6 @@ describe("OrderTrackingPage", () => {
       const apiError = new Error("order lookup failed");
       (orderDetailsService.get as jest.Mock).mockRejectedValue(apiError);
 
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-
       await act(async () => {
         renderWithRouter(orderId, { withErrorBoundary: true });
       });
@@ -212,8 +225,6 @@ describe("OrderTrackingPage", () => {
       expect(await screen.findByText("order lookup failed")).toBeInTheDocument();
       expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
       expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
-
-      consoleErrorSpy.mockRestore();
     });
   });
 
