@@ -3,8 +3,9 @@
 set -euo pipefail
 
 BACKEND_BASE_URL=$(terraform -chdir=local-environment/infra output -raw backend_base_url)
+NHS_LOGIN_AUTHORIZE_URL=$(terraform -chdir=local-environment/infra output -raw nhs_login_authorize_url)
 
-printf 'NEXT_PUBLIC_BACKEND_URL=%s\n' "$BACKEND_BASE_URL" > ./ui/.env.local
+printf 'NEXT_PUBLIC_BACKEND_URL=%s\nNEXT_PUBLIC_NHS_LOGIN_AUTHORIZE_URL=%s\n' "$BACKEND_BASE_URL" "$NHS_LOGIN_AUTHORIZE_URL" > ./ui/.env.local
 
 TESTS_ENV_FILE=./tests/configuration/.env.local
 mkdir -p "$(dirname "$TESTS_ENV_FILE")"
