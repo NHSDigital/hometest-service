@@ -13,7 +13,7 @@ catch-all route (`ui/src/app/[[...slug]]/page.tsx`).
 ```text
 Next.js (static shell)
   └── ui/src/app/[[...slug]]/page.tsx  → ClientOnly (dynamic import, ssr: false)
-        └── ui/src/app.tsx       → <BrowserRouter> (React Router entry)
+        └── ui/src/app.tsx       → App (React Router entry: createBrowserRouter + <RouterProvider>)
               └── ui/src/routes/ → all application routes/pages
 ```
 
@@ -34,7 +34,7 @@ Consequences:
 ui/src/
 ├── app/                  # Next.js shell only — do not add routes here
 │   └── [[...slug]]/      # Catch-all static page; mounts the React Router SPA
-├── app.tsx               # React Router <BrowserRouter> entry point
+├── app.tsx               # React Router entry (createBrowserRouter + <RouterProvider>)
 ├── routes/               # All application pages/route components live here
 ├── layouts/              # React Router layout components (e.g. JourneyLayout)
 ├── components/           # Reusable UI components
