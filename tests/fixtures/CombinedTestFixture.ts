@@ -5,6 +5,7 @@ import { consoleErrorFixture } from "./consoleErrorFixture";
 import { mergeTests } from "@playwright/test";
 import { pageObjectFixture } from "./pageObjectsFixture";
 import { storageStateFixture } from "./storageStateFixture";
+import { wiremockFixture } from "./wiremockFixture";
 
 export const test = mergeTests(
   pageObjectFixture,
@@ -13,4 +14,5 @@ export const test = mergeTests(
   accessibilityFixture,
   storageStateFixture,
   consoleErrorFixture,
+  wiremockFixture,
 );
