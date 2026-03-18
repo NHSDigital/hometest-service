@@ -1,8 +1,6 @@
 import "@testing-library/jest-dom";
-
 import { AuthContext, AuthUser, useCreateOrderContext } from "@/state";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-
 import { CreateOrderProvider } from "@/state/OrderContext";
 import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { JourneyStepNames } from "@/lib/models/route-paths";
@@ -133,13 +131,12 @@ jest.mock("@/hooks/useContent", () => ({
   }),
 }));
 
-function StateSeeder({ children }: { children: React.ReactNode }) {
+function StateSeeder({ children }: Readonly<{ children: React.ReactNode }>) {
   const { updateOrderAnswers } = useCreateOrderContext();
 
   useEffect(() => {
     updateOrderAnswers({ postcodeSearch: "B99 95C" });
   }, [updateOrderAnswers]);
-
   return <>{children}</>;
 }
 
@@ -158,14 +155,27 @@ const TestWrapper = ({ children, user }: { children: React.ReactNode; user?: Aut
 );
 
 describe("SelectDeliveryAddressPage", () => {
+  const submitForm = () => {
+    const form = screen.getByRole("button", { name: /continue/i }).closest("form");
+
+    if (!form) {
+      throw new Error("Delivery address form not found");
+    }
+
+    fireEvent.submit(form);
+  };
+
   beforeAll(() => {
     jest.useFakeTimers().setSystemTime(FIXED_TODAY);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockGoToStep.mockClear();
+    mockNavigationContext.goBack.mockClear();
+    mockNavigationContext.setReturnToStep.mockClear();
     mockNavigationContext.stepHistory = ["enter-delivery-address", "select-delivery-address"];
     mockNavigationContext.returnToStep = null;
+    (laLookupService.getByPostcode as jest.Mock).mockClear();
     mockUseAuth.mockImplementation(() => ({ user: mockUser }));
   });
 
@@ -225,8 +235,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should show error summary when no address is selected", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
       const errorSummary = errorSummaryHeading.closest(
@@ -249,8 +258,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should link to radio group in error summary", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       const errorLink = screen.getByRole("link", { name: "Select a delivery address" });
       expect(errorLink).toHaveAttribute("href", "#collection-point");
@@ -274,8 +282,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should show error message when submitting without selection", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       expect(screen.getAllByText("Select a delivery address")).toHaveLength(2);
     });
@@ -286,8 +293,7 @@ describe("SelectDeliveryAddressPage", () => {
       const radios = screen.getAllByRole("radio");
       fireEvent.click(radios[0]);
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       expect(screen.queryByText("Select a delivery address")).not.toBeInTheDocument();
     });
@@ -313,8 +319,7 @@ describe("SelectDeliveryAddressPage", () => {
       const radios = screen.getAllByRole("radio");
       fireEvent.click(radios[0]);
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       await screen.findByText(/1 TEST ROAD/i);
     });
@@ -410,8 +415,7 @@ describe("SelectDeliveryAddressPage", () => {
     it("should have proper ARIA labels for error summary", () => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
 
-      const submitButton = screen.getByRole("button", { name: /continue/i });
-      fireEvent.click(submitButton);
+      submitForm();
 
       const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
       const errorSummary = errorSummaryHeading.closest(

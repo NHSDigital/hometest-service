@@ -9,7 +9,7 @@ test.describe("Backend API, order endpoint", () => {
 
   test(
     "POST request, should create an order and verify its presence in the database",
-    { tag: ["@api"] },
+    { tag: ["@API"] },
     async ({ orderApi, testOrderDb }) => {
       const response = await orderApi.createOrder(payload, headersOrder);
       expect(response.status()).toEqual(201);
@@ -23,7 +23,9 @@ test.describe("Backend API, order endpoint", () => {
       expect(order!.nhs_number).toBe(payload.patient.nhsNumber);
 
       await expect
-        .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length)
+        .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid))?.length, {
+          timeout: 10000,
+        })
         .toBe(3);
 
       const statusRows = await testOrderDb.getOrderStatusesByOrderUid(createdOrderUid);

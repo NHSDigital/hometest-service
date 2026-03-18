@@ -7,9 +7,10 @@ import type {
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
-  GlobalErrorContent,
+  ServiceErrorContent,
   GoToClinicContent,
   HomeTestPrivacyPolicyContent,
+  HomeTestTermsOfUseContent,
   HowComfortablePrickingFingerContent,
   KitNotAvailableInAreaContent,
   NoAddressFoundContent,
@@ -33,9 +34,10 @@ export const PageKeys = {
   ComfortablePricking: "how-comfortable-pricking-finger",
   CannotUseServiceUnder18: "cannot-use-service-under-18",
   BloodSampleGuide: "blood-sample-guide",
-  GlobalError: "global-error",
+  ServiceError: "service-error",
   OrderTracking: "order-tracking",
   HomeTestPolicy: "home-test-privacy-policy",
+  TermsOfUse: "home-test-terms-of-use",
   SuppliersTermsConditions: "suppliers-terms-conditions",
   SuppliersPrivacyPolicy: "suppliers-privacy-policy",
   GoToClinic: "go-to-clinic",
@@ -57,10 +59,11 @@ export interface UseContentReturn {
   "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
   "blood-sample-guide": BloodSampleGuideContent;
-  "global-error": GlobalErrorContent;
+  "service-error": ServiceErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  "home-test-terms-of-use": HomeTestTermsOfUseContent;
   "order-submitted": OrderSubmittedContent;
   "suppliers-terms-conditions": SuppliersLegalDocumentsContent;
   "suppliers-privacy-policy": SuppliersLegalDocumentsContent;
@@ -81,11 +84,12 @@ export const useContent = (): UseContentReturn => {
     "confirm-mobile-phone-number": content.pages["confirm-mobile-phone-number"],
     "enter-mobile-phone-number": content.pages["enter-mobile-phone-number"],
     "check-your-answers": content.pages["check-your-answers"],
-    "global-error": content.pages["global-error"],
+    "service-error": content.pages["service-error"],
     "order-tracking": content.pages["order-tracking"],
     "test-results": content.pages["test-results"],
     "blood-sample-guide": content.pages["blood-sample-guide"],
     "home-test-privacy-policy": content.pages["home-test-privacy-policy"],
+    "home-test-terms-of-use": content.pages["home-test-terms-of-use"],
     "order-submitted": content.pages["order-submitted"],
     "suppliers-terms-conditions": content.pages["suppliers-terms-conditions"],
     "suppliers-privacy-policy": content.pages["suppliers-privacy-policy"],

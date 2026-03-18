@@ -18,7 +18,7 @@ test(
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
-    await selectDeliveryAddressPage.waitUntilPageLoad();
+    await selectDeliveryAddressPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
       selectDeliveryAddressPage.page,
       "Select Delivery Address Page",

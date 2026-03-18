@@ -300,7 +300,7 @@ export interface ConfirmMobilePhoneNumberContent {
   };
 }
 
-export interface GlobalErrorContent {
+export interface ServiceErrorContent {
   title: string;
   message: string;
 }
@@ -349,8 +349,17 @@ export interface TestResultsContent {
 
 export interface PrivacyPolicySubsection {
   heading?: string;
+  inlineHeading?: boolean;
   paragraphs?: string[];
   list?: string[];
+  indented?: boolean;
+  ordered?: boolean;
+  listStyle?: "bullet" | "dash";
+  table?: {
+    caption?: string;
+    headers: string[];
+    rows: string[][];
+  };
 }
 
 export interface PrivacyPolicySection {
@@ -361,6 +370,12 @@ export interface PrivacyPolicySection {
 }
 
 export interface HomeTestPrivacyPolicyContent {
+  title: string;
+  introduction: string[];
+  sections: PrivacyPolicySection[];
+}
+
+export interface HomeTestTermsOfUseContent {
   title: string;
   introduction: string[];
   sections: PrivacyPolicySection[];
@@ -478,10 +493,11 @@ export interface PagesContent {
   "enter-mobile-phone-number": EnterMobilePhoneNumberContent;
   "check-your-answers": CheckYourAnswersContent;
   "confirm-mobile-phone-number": ConfirmMobilePhoneNumberContent;
-  "global-error": GlobalErrorContent;
+  "service-error": ServiceErrorContent;
   "order-tracking": OrderTrackingContent;
   "test-results": TestResultsContent;
   "home-test-privacy-policy": HomeTestPrivacyPolicyContent;
+  "home-test-terms-of-use": HomeTestTermsOfUseContent;
   "blood-sample-guide": BloodSampleGuideContent;
   "order-submitted": OrderSubmittedContent;
   "kit-not-available-in-area": KitNotAvailableInAreaContent;

@@ -47,4 +47,12 @@ export class TestResultDbClient extends BaseDbClient {
     );
     return rows[0].status as ResultStatus;
   }
+
+  async getResultStatusCountByOrderUid(orderUid: UUID): Promise<number> {
+    const rows = await this.query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM result_status WHERE order_uid = $1`,
+      [orderUid],
+    );
+    return Number(rows[0].count);
+  }
 }
