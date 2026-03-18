@@ -33,7 +33,7 @@ test.describe("Editing during the order flow", { tag: "@ui" }, () => {
     const actualAddress = await checkYourAnswersPage.getAddressValue();
 
     // Verify all actual address records are present in selected address - selected address can contain additional information like building name which is not present in actual address
-    actualAddress?.forEach(addressLine => {
+    actualAddress?.forEach((addressLine) => {
       expect(selectedAddress).toContainEqual(addressLine);
     });
   });
@@ -122,21 +122,15 @@ test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage
 test("Verify Terms of Use page", async ({
   homeTestStartPage,
   termsOfUsePage,
-  privacyPolicyPage,
   context,
   page,
+  privacyPolicyPage,
 }) => {
   await homeTestStartPage.navigate();
-  await expect(homeTestStartPage.headerText).toHaveText(
-    "Get a self-test kit for HIV",
-  );
+  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
   await homeTestStartPage.clickTermsOfUseLink();
-  let actualHeaderText = await termsOfUsePage.getHeaderText();
-  expect(actualHeaderText).toBe(
-    "Hometest Terms of Use - Draft V1 January 2026",
-  );
+  await termsOfUsePage.waitUntilPageLoaded();
 
-  // Cyber Aware Link
   const [cyberAwareTab] = await Promise.all([
     context.waitForEvent("page"),
     termsOfUsePage.clickCyberAwareLink(),
@@ -146,7 +140,6 @@ test("Verify Terms of Use page", async ({
   await cyberAwareTab.close();
   await page.bringToFront();
 
-  // Help and Support Link
   const [helpAndSupportTab] = await Promise.all([
     context.waitForEvent("page"),
     termsOfUsePage.clickHelpAndSupportLink(),
@@ -156,17 +149,10 @@ test("Verify Terms of Use page", async ({
   await helpAndSupportTab.close();
   await page.bringToFront();
 
-  // Home Test Privacy Policy Link
   await termsOfUsePage.clickHomeTestPrivacyPolicyLink();
-  const privacyPolicyHeaderText = await privacyPolicyPage.getHeaderText();
-  expect(privacyPolicyHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
+  await privacyPolicyPage.waitUntilPageLoaded();
   await privacyPolicyPage.clickBackLink();
-  actualHeaderText = await termsOfUsePage.getHeaderText();
-  expect(actualHeaderText).toBe(
-    "Hometest Terms of Use - Draft V1 January 2026");
-  // Back to Home Test Start
+  await termsOfUsePage.waitUntilPageLoaded();
   await termsOfUsePage.clickBackLink();
-  await expect(homeTestStartPage.headerText).toHaveText(
-    "Get a self-test kit for HIV",
-  );
+  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
 });

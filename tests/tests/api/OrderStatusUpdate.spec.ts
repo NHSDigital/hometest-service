@@ -25,7 +25,12 @@ test.describe("Order Status Update API", () => {
     );
 
     patientUid = await testOrderDb.upsertPatient(nhsNumber, birthDate);
-    const orderResult = await testOrderDb.createTestOrder(supplierId, patientUid, testCode, originator);
+    const orderResult = await testOrderDb.createTestOrder(
+      supplierId,
+      patientUid,
+      testCode,
+      originator,
+    );
     orderUid = orderResult.order_uid;
     await testOrderDb.insertConsent(orderUid);
   });
@@ -37,29 +42,35 @@ test.describe("Order Status Update API", () => {
     await testOrderDb.deletePatientMapping(nhsNumber, birthDate);
   });
 
-  test("success (201) persists order status updates", async ({ orderStatusApi, testOrderDb }) => {
-    const dispatchedResponse = await orderStatusApi.updateOrderStatus(
-      orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
-        businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_DISPATCHED },
-      }),
-      buildHeaders(randomUUID()),
-    );
+  test(
+    "success (201) persists order status updates",
+    { tag: ["@API"] },
+    async ({ orderStatusApi, testOrderDb }) => {
+      const dispatchedResponse = await orderStatusApi.updateOrderStatus(
+        orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_DISPATCHED },
+        }),
+        buildHeaders(randomUUID()),
+      );
 
-    orderStatusApi.validateResponse(dispatchedResponse, 201);
+      orderStatusApi.validateResponse(dispatchedResponse, 201);
 
-    const dispatchedStatusCode = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
-    expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
+      const { statusCode: dispatchedStatusCode } =
+        await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderUid);
+      expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
 
-    const receivedResponse = await orderStatusApi.updateOrderStatus(
-      orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
-        businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB },
-      }),
-      buildHeaders(randomUUID()),
-    );
+      const receivedResponse = await orderStatusApi.updateOrderStatus(
+        orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB },
+        }),
+        buildHeaders(randomUUID()),
+      );
 
-    orderStatusApi.validateResponse(receivedResponse, 201);
+      orderStatusApi.validateResponse(receivedResponse, 201);
 
-    const receivedStatusCode = await testOrderDb.getLatestOrderStatusByOrderUid(orderUid);
-    expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
-  });
+      const { statusCode: receivedStatusCode } =
+        await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderUid);
+      expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
+    },
+  );
 });

@@ -2,9 +2,11 @@ import { Locator, Page } from "@playwright/test";
 export abstract class BasePage {
   readonly page: Page;
   readonly headerText: Locator;
+  readonly backLink: Locator;
 
   constructor(page: Page) {
     this.headerText = page.locator("h1");
+    this.backLink = page.getByText('Back', { exact: true });
     this.page = page;
   }
 
@@ -19,6 +21,6 @@ export abstract class BasePage {
   }
 
   async clickBackLink(): Promise<void> {
-    await this.page.getByRole("link", { name: "Back" }).click();
+    await this.backLink.click();
   }
 }
