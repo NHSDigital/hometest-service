@@ -211,7 +211,7 @@ module "login_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                               = "--enable-source-maps",
-    NHS_LOGIN_BASE_ENDPOINT_URL                = "https://auth.sandpit.signin.nhs.uk",
+    NHS_LOGIN_BASE_ENDPOINT_URL                = "http://wiremock:8080",
     NHS_LOGIN_CLIENT_ID                        = "hometest",
     NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
     NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
@@ -248,7 +248,7 @@ module "session_lambda" {
     NODE_OPTIONS                       = "--enable-source-maps"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
-    NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
+    NHS_LOGIN_BASE_ENDPOINT_URL        = "http://wiremock:8080",
   }
 }
 
@@ -271,7 +271,7 @@ module "postcode_lookup_lambda" {
   environment_variables = {
     NODE_OPTIONS                            = "--enable-source-maps",
     POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME = "os-places-creds",
-    POSTCODE_LOOKUP_BASE_URL                = "https://api.os.uk/search/places/v1",
+    POSTCODE_LOOKUP_BASE_URL                = "http://wiremock:8080",
     POSTCODE_LOOKUP_TIMEOUT_MS              = "5000",
     POSTCODE_LOOKUP_MAX_RETRIES             = "3",
     POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",

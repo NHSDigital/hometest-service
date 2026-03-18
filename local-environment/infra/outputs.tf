@@ -58,6 +58,11 @@ output "backend_base_url" {
   value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
+output "nhs_login_authorize_url" {
+  description = "NHS Login authorize URL (WireMock stub for local development)"
+  value       = "http://localhost:8080/authorize"
+}
+
 output "postcode_lookup_endpoint" {
   description = "Postcode Lookup Lambda endpoint"
   value       = module.postcode_lookup_lambda.localstack_endpoint_url
