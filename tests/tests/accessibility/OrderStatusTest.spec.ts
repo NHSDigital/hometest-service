@@ -22,9 +22,11 @@ let patientId: string;
 const dbClient = new TestOrderDbClient();
 
 test.describe("Accessibility Testing @accessibility", () => {
-  test.beforeAll(async ({ testedUser }) => {
+  test.beforeAll(async () => {
     await dbClient.connect();
+  });
 
+  test.beforeEach(async ({ testedUser }) => {
     const result = await dbClient.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(testedUser).build(),
     );
@@ -33,35 +35,35 @@ test.describe("Accessibility Testing @accessibility", () => {
     patientId = result.patient_uid;
   });
 
-  test("Home Test - Status Order Accessibility", async ({ orderStatusPage, accessibility }) => {
-    const accessErrors: Result[] = [];
+  for (const { statusCode, stepName } of ORDER_STATUS_STEPS) {
+    test(`Home Test - Status Order Accessibility: ${stepName}`, async ({
+      orderStatusPage,
+      accessibility,
+    }) => {
+      if (statusCode) {
+        await dbClient.updateOrderStatus(orderId, statusCode);
+      }
 
-    for (const { statusCode, stepName } of ORDER_STATUS_STEPS) {
-      await test.step(`Accessibility check: ${stepName}`, async () => {
-        if (statusCode) {
-          await dbClient.updateOrderStatus(orderId, statusCode);
-        }
+      await orderStatusPage.navigateToOrder(orderId);
+      await orderStatusPage.waitForOrderToLoad();
+      const accessErrors: Result[] = await accessibility.runAccessibilityCheck(
+        orderStatusPage,
+        stepName,
+        "Order Tracking Page",
+      );
 
-        await orderStatusPage.navigateToOrder(orderId);
-        await orderStatusPage.waitForOrderToLoad();
-        accessErrors.push(
-          ...(await accessibility.runAccessibilityCheck(
-            orderStatusPage,
-            stepName,
-            "Order Tracking Page",
-          )),
-        );
-      });
-    }
+      expect(accessErrors).toHaveLength(0);
+    });
+  }
 
-    expect(accessErrors).toHaveLength(0);
-  });
-
-  test.afterAll(async ({ testedUser }) => {
+  test.afterEach(async ({ testedUser }) => {
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteConsentByPatientUid(patientId);
     await dbClient.deleteOrderByPatientUid(patientId);
     await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+  });
+
+  test.afterAll(async () => {
     await dbClient.disconnect();
   });
 });

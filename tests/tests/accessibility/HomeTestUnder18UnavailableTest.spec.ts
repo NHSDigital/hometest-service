@@ -1,11 +1,15 @@
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
+import type { NHSLoginMockedUser } from "../../utils/users/BaseUser";
 import { SpecialUserKey } from "../../utils/users/SpecialUserKey";
+import { createWireMockUserInfoMapping } from "../../utils/users/wiremockUserInfoMapping";
 
 const randomAddress = AddressModel.getRandomAddress();
 
 test.describe("Home Test Under 18 Unavailable page", () => {
+  let userInfoMappingId: string | undefined;
+
   test.use({
     errorCaptureOptions: {
       failOnNetworkError: false,
@@ -13,15 +17,27 @@ test.describe("Home Test Under 18 Unavailable page", () => {
     },
   });
 
-  test.beforeEach(async ({ homeTestStartPage, userManager, page, context }) => {
+  test.beforeEach(async ({ config, homeTestStartPage, userManager, wiremock, page, context }) => {
     await context.clearCookies();
     await context.clearPermissions();
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18);
+    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
+
+    if (config.useWiremockAuth) {
+      userInfoMappingId = await wiremock.createMapping(createWireMockUserInfoMapping(user));
+    }
+
     await userManager.login(user, page);
 
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
+  });
+
+  test.afterEach(async ({ config, wiremock }) => {
+    if (config.useWiremockAuth && userInfoMappingId) {
+      await wiremock.deleteMapping(userInfoMappingId);
+      userInfoMappingId = undefined;
+    }
   });
 
   test(

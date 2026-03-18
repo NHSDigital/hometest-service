@@ -83,11 +83,18 @@ test.describe("Order Status Page", () => {
     });
 
     test("Unauthorized user opens a deep link", async ({ orderStatusPage, errorPage }) => {
-      await orderStatusPage.navigateToOrder(orderId2);
+      await orderStatusPage.navigateToOrderExpectingPath(
+        orderId2,
+        errorPage.orderNotFoundMessage,
+        `/orders/${orderId2}/tracking`,
+      );
       await expect(errorPage.orderNotFoundMessage).toBeVisible();
+      const url = await orderStatusPage.getCurrentUrl();
+      expect(url).toContain(`/orders/${orderId2}/tracking`);
     });
 
     test("Unauthenticated user opens a deep link", async ({
+      config,
       orderStatusPage,
       nhsEmailAndPasswordPage,
       codeSecurityPage,
@@ -97,14 +104,15 @@ test.describe("Order Status Page", () => {
       const context = orderStatusPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
-      await orderStatusPage.navigateToOrder(orderId);
-      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
-        testedUser as NHSLoginUser,
-      );
-      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
-        (testedUser as NHSLoginUser).otp!,
-      );
+      await orderStatusPage.openOrderDirect(orderId);
+
+      if (!config.useWiremockAuth) {
+        const sandboxUser = testedUser as NHSLoginUser;
+        await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+        await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(sandboxUser);
+        await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(sandboxUser.otp);
+      }
+
       await expect(orderStatusPage.statusTag).toHaveText("Test received");
       const url = await orderStatusPage.getCurrentUrl();
       expect(url).toContain(orderId);
