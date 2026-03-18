@@ -9,9 +9,9 @@ export class ErrorPage extends BasePage {
     super(page);
     this.orderNotFoundMessage = page
       .getByRole("alert")
-      .locator("p", { hasText: "We could not find this order." });
+      .getByText("We could not find this order.", { exact: true });
     this.pageHeader = page.locator("h1", { hasText: "Error" });
-}
+  }
 
   async waitUntilPageLoaded(): Promise<void> {
     await this.pageHeader.waitFor({ state: "visible" });
