@@ -43,6 +43,10 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     }
   }
 
+  protected getNumberOfWorkerUsers(): number {
+    return this.numberOfWorkerUsers;
+  }
+
   getWorkerUser(index: number): TUser {
     if (index < 0 || index >= this.workerUsers.length) {
       throw new Error(`Index out of bounds: ${index}`);
@@ -161,7 +165,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     return JSON.parse(Buffer.from(base64, "base64").toString("utf8")) as Record<string, unknown>;
   }
 
-  private isSessionValid(sessionFilePath: string): boolean {
+  protected isSessionJwtValid(sessionFilePath: string): boolean {
     try {
       const content = fs.readFileSync(sessionFilePath, "utf8");
       const session = JSON.parse(content) as {
@@ -187,6 +191,29 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     }
   }
 
+  protected async isSessionValid(sessionFilePath: string): Promise<boolean> {
+    // Quick JWT expiry check first
+    if (!this.isSessionJwtValid(sessionFilePath)) {
+      return false;
+    }
+    // Verify the session is accepted by the live session endpoint.
+    // This catches environment restarts where the signing key has changed.
+    try {
+      const content = fs.readFileSync(sessionFilePath, "utf8");
+      const session = JSON.parse(content) as {
+        cookies: Array<{ name: string; value: string }>;
+      };
+      const cookieHeader = session.cookies.map((c) => `${c.name}=${c.value}`).join("; ");
+      const response = await fetch(`${this.config.apiBaseUrl}/session`, {
+        method: "GET",
+        headers: { Cookie: cookieHeader },
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
   async loginWorkerUsers(): Promise<void> {
     process.env.GLOBAL_START_TIME = new Date().toISOString();
     console.log(`Tests will run on environment: ${process.env.ENV ?? "local"}`);
@@ -203,7 +230,11 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       console.log(sessionFilePath);
 
       const isLocal = (process.env.ENV ?? "local") === "local";
-      if (isLocal && fs.existsSync(sessionFilePath) && this.isSessionValid(sessionFilePath)) {
+      if (
+        isLocal &&
+        fs.existsSync(sessionFilePath) &&
+        (await this.isSessionValid(sessionFilePath))
+      ) {
         console.log(`✅ Reusing existing valid session for worker user at index ${i}`);
         continue;
       }
