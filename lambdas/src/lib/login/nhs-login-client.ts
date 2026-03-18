@@ -1,9 +1,10 @@
-import { type HttpClient } from '../http/login-http-client';
-import { type INhsLoginConfig } from '../models/nhs-login/nhs-login-config';
-import { type INhsTokenResponseModel } from '../models/nhs-login/nhs-login-token-response-model';
-import { type INhsUserInfoResponseModel } from '../models/nhs-login/nhs-login-user-info-response-model';
-import { type JwksClient } from 'jwks-rsa';
-import { type NhsLoginJwtHelper } from './nhs-login-jwt-helper';
+import { type HttpClient } from "../http/login-http-client";
+import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
+import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
+import { type JwksClient } from "jwks-rsa";
+import { type NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
+import { enrichUserInfoWithTestFirstName } from "./test-user-mapping";
 
 export interface INhsLoginClient {
   getUserTokens: (code: string) => Promise<INhsTokenResponseModel>;
@@ -24,7 +25,7 @@ export class NhsLoginClient implements INhsLoginClient {
     nhsLoginConfig: INhsLoginConfig,
     nhsLoginJwtHelper: NhsLoginJwtHelper,
     httpClient: HttpClient,
-    jwksClient: JwksClient
+    jwksClient: JwksClient,
   ) {
     this.nhsLoginConfig = nhsLoginConfig;
     this.nhsLoginJwtHelper = nhsLoginJwtHelper;
@@ -42,40 +43,36 @@ export class NhsLoginClient implements INhsLoginClient {
         code,
         client_id: this.nhsLoginConfig.clientId,
         redirect_uri: this.nhsLoginConfig.redirectUri,
-        grant_type: 'authorization_code',
-        client_assertion_type:
-          'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        client_assertion: signedToken
+        grant_type: "authorization_code",
+        client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+        client_assertion: signedToken,
       });
 
       console.log(formData.toString());
 
-      const response: INhsTokenResponseModel =
-        await this.httpClient.postRequest<URLSearchParams, any>(
-          this.nhsLoginTokenUri,
-          formData,
-          {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        );
+      const response: INhsTokenResponseModel = await this.httpClient.postRequest<
+        URLSearchParams,
+        any
+      >(this.nhsLoginTokenUri, formData, {
+        "Content-Type": "application/x-www-form-urlencoded",
+      });
       return response;
     } catch (error) {
       throw error;
     }
   }
 
-  public async getUserInfo(
-    userAccessToken: string
-  ): Promise<INhsUserInfoResponseModel> {
+  public async getUserInfo(userAccessToken: string): Promise<INhsUserInfoResponseModel> {
     try {
-      const userInfoResponse =
-        await this.httpClient.getRequest<INhsUserInfoResponseModel>(
-          this.nhsLoginUserInfoUri,
-          {
-            Authorization: `Bearer ${userAccessToken}`
-          }
-        );
-      return userInfoResponse;
+      const userInfoResponse = await this.httpClient.getRequest<INhsUserInfoResponseModel>(
+        this.nhsLoginUserInfoUri,
+        {
+          Authorization: `Bearer ${userAccessToken}`,
+        },
+      );
+      // ALPHA: Enrich user info with test data for missing given_name (temporary workaround)
+      const enrichedUserInfo = enrichUserInfoWithTestFirstName(userInfoResponse);
+      return enrichedUserInfo;
     } catch (error) {
       throw error;
     }
