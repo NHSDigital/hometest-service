@@ -1,11 +1,15 @@
 import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
 import { AddressModel } from "../../models/Address";
+import type { NHSLoginMockedUser } from "../../utils/users/BaseUser";
 import { SpecialUserKey } from "../../utils/users/SpecialUserKey";
+import { createWireMockUserInfoMapping } from "../../utils/users/wiremockUserInfoMapping";
 
 const randomAddress = AddressModel.getRandomAddress();
 
 test.describe("HIV Test Order journeys - User under 18", () => {
+  let userInfoMappingId: string | undefined;
+
   test.use({
     errorCaptureOptions: {
       failOnNetworkError: false,
@@ -13,15 +17,27 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     },
   });
 
-  test.beforeEach(async ({ homeTestStartPage, userManager, page, context }) => {
+  test.beforeEach(async ({ config, homeTestStartPage, userManager, wiremock, page, context }) => {
     await context.clearCookies();
     await context.clearPermissions();
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18);
+    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
+
+    if (config.useWiremockAuth) {
+      userInfoMappingId = await wiremock.createMapping(createWireMockUserInfoMapping(user));
+    }
+
     await userManager.login(user, page);
     await homeTestStartPage.navigate();
     await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
+  });
+
+  test.afterEach(async ({ config, wiremock }) => {
+    if (config.useWiremockAuth && userInfoMappingId) {
+      await wiremock.deleteMapping(userInfoMappingId);
+      userInfoMappingId = undefined;
+    }
   });
 
   test("Order test journey with address search", async ({
@@ -32,7 +48,8 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
+    await cannotUseServiceUnder18Page.waitUntilPageLoaded();
+    await expect(cannotUseServiceUnder18Page.pageHeader).toHaveText(
       "You cannot use this service as you are under 18",
     );
     await cannotUseServiceUnder18Page.expectPostcodeInFindAnotherClinicLink(randomAddress.postCode);
@@ -46,7 +63,8 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await enterDeliveryAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillDeliveryAddressFields(randomAddress);
     await enterAddressManuallyPage.clickContinue();
-    await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
+    await cannotUseServiceUnder18Page.waitUntilPageLoaded();
+    await expect(cannotUseServiceUnder18Page.pageHeader).toHaveText(
       "You cannot use this service as you are under 18",
     );
     await cannotUseServiceUnder18Page.expectPostcodeInFindAnotherClinicLink(randomAddress.postCode);
