@@ -177,7 +177,7 @@ import { CreateOrderProvider } from "../../state";
 
 ## Component Rules
 
-- Use **functional components with hooks** only. Never use class components.
+- Use **functional components with hooks** only. Never use class components **except for React Error Boundaries** (e.g. the existing boundaries in `ui/src/app/[[...slug]]/client.tsx` or `TestErrorBoundary`). For new Error Boundaries, prefer a functional Error Boundary utility/library where practical, but class-based Error Boundaries are allowed when needed.
 - Keep components focused: extract sub-components or hooks rather than growing a single file.
 - Do not use `dangerouslySetInnerHTML` unless through an explicit sanitisation wrapper.
 - Never use inline `style={{...}}`. Use Tailwind classes or NHS frontend CSS classes. Prioritise NHS classes for spacing, typography, and layout where possible.
