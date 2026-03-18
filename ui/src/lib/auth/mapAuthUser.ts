@@ -1,4 +1,4 @@
-import { AuthUser } from "@/state";
+import type { AuthUser } from "@/state";
 
 interface AuthUserApiData {
   sub: string;

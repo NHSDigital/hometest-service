@@ -2,8 +2,8 @@ import { APIResponse } from "@playwright/test";
 import { BaseApiClient } from "./BaseApiClient";
 import { API_ENDPOINTS } from "../Endpoints";
 import { HIVObservation } from "../../test-data/ResultsObservationData";
-import { ApiHeaders } from "../../utils";
-import { GetResultParams, GetResultHeaders } from "../../test-data/GetResultRequestParams";
+import type { ApiHeaders } from "../../utils";
+import type { GetResultParams, GetResultHeaders } from "../../test-data/GetResultRequestParams";
 
 export class HIVResultsApiResource extends BaseApiClient {
   async submitTestResults(testData: HIVObservation, headers: ApiHeaders): Promise<APIResponse> {
