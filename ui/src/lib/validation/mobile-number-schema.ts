@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ValidationMessages } from "@/content/schema";
+import type { ValidationMessages } from "@/content";
 
 const UK_MOBILE_REGEX = /^(?:(?:\+44|0044|44)7\d{9,13}|07\d{9,13})$/;
 

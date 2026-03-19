@@ -4,33 +4,4 @@
 
 export { content, getCommonContent, getPageContent } from "./ContentService";
 export { validateContent, isValidContentFile, assertValidContent } from "./ContentValidator";
-export type {
-  ContentFile,
-  CommonContent,
-  PagesContent,
-  StartPageContent,
-  EnterDeliveryAddressContent,
-  EnterAddressManuallyContent,
-  CannotUseServiceUnder18Content,
-  NoAddressFoundContent,
-  ServiceErrorContent,
-  OrderTrackingContent,
-  TestResultsContent,
-  NavigationContent,
-  ValidationMessages,
-  CommonLinks,
-  ErrorSummaryContent,
-  OrderStatusContent,
-  OrderStatusHeaderContent,
-  OrderStatusesContent,
-  ConfirmedStatusContent,
-  DispatchedStatusContent,
-  ReceivedStatusContent,
-  ReadyStatusContent,
-  HelpLinksContent,
-  MoreInformationContent,
-  AboutServiceContent,
-  FeedbackContent,
-  FooterContent,
-  KitNotAvailableInAreaContent,
-} from "./schema";
+export * from "./schema";

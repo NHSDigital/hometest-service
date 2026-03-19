@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/state/AuthContext";
+import { useAuth } from "@/state";
 import { mapAuthUser } from "@/lib/auth/mapAuthUser";
 import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
 import { useEffect, useRef } from "react";

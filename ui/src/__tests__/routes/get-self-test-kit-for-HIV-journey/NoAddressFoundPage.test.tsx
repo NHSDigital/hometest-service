@@ -2,15 +2,12 @@ import "@testing-library/jest-dom";
 
 import { render, screen } from "@testing-library/react";
 
-import { CreateOrderProvider } from "@/state/OrderContext";
-import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 import { MemoryRouter } from "react-router-dom";
 import NoAddressFoundPage from "@/routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter
-    initialEntries={["/get-self-test-kit-for-HIV/no-address-found"]}
-  >
+  <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/no-address-found"]}>
     <JourneyNavigationProvider>
       <CreateOrderProvider>{children}</CreateOrderProvider>
     </JourneyNavigationProvider>

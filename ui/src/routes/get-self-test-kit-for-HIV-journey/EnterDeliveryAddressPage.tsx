@@ -6,7 +6,7 @@ import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup }
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import { useEffect, useRef, useState } from "react";
 import FormPageLayout from "@/layouts/FormPageLayout";
-import type { ValidationMessages } from "@/content/schema";
+import type { ValidationMessages } from "@/content";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;

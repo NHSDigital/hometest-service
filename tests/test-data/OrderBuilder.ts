@@ -1,5 +1,5 @@
 import type { CreateOrderInput, OrderStatusCode, Supplier } from "../models/TestOrder";
-import type { BaseTestUser } from "../utils/users/BaseUser";
+import type { BaseTestUser } from "../utils/users";
 
 export class OrderBuilder {
   private builder: Partial<CreateOrderInput> = {
