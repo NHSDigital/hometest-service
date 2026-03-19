@@ -30,6 +30,25 @@ const UNDER_18_USER: NHSLoginMockedUser = {
  * BaseUserManager handles the browser lifecycle and storage state save.
  */
 export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
+  private createRandomAdultUser(): NHSLoginMockedUser {
+    const minAdultAge = 19;
+    const maxAdultAge = 90;
+    const age = Math.floor(Math.random() * (maxAdultAge - minAdultAge + 1)) + minAdultAge;
+
+    const dob = new Date();
+    dob.setFullYear(dob.getFullYear() - age);
+    const dobString = dob.toISOString().split("T")[0];
+
+    const nhsNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
+    return {
+      nhsNumber,
+      dob: dobString,
+      age,
+      code: "wiremock-auth-code",
+    };
+  }
+
   public getWorkerUsers(): NHSLoginMockedUser[] {
     return [DEFAULT_WORKER_USER];
   }
@@ -45,7 +64,11 @@ export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
     return page;
   }
 
+
   protected getSpecialUsers(): Map<SpecialUserKey, NHSLoginMockedUser> {
-    return new Map([[SpecialUserKey.UNDER_18, UNDER_18_USER]]);
+    const specialUsersMap = new Map<SpecialUserKey, NHSLoginMockedUser>();
+    specialUsersMap.set(SpecialUserKey.RANDOM, this.createRandomAdultUser());
+    specialUsersMap.set(SpecialUserKey.UNDER_18, UNDER_18_USER);
+    return specialUsersMap;
   }
 }
