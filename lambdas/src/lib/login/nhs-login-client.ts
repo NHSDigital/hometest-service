@@ -47,8 +47,6 @@ export class NhsLoginClient implements INhsLoginClient {
       client_assertion: signedToken,
     });
 
-    console.log(formData.toString());
-
     const response: INhsTokenResponseModel = await this.httpClient.postRequest<
       URLSearchParams,
       any

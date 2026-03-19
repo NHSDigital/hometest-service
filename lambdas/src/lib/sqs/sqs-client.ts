@@ -1,4 +1,4 @@
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { MessageAttributeValue, SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 export interface SqsResult {
   messageId?: string;
@@ -9,7 +9,7 @@ export interface SQSClientInterface {
   sendMessage(
     queueUrl: string,
     messageBody: string,
-    messageAttributes?: Record<string, any>,
+    messageAttributes?: Record<string, MessageAttributeValue>,
   ): Promise<SqsResult>;
 }
 export class AWSSQSClient implements SQSClientInterface {
@@ -26,7 +26,7 @@ export class AWSSQSClient implements SQSClientInterface {
   async sendMessage(
     queueUrl: string,
     messageBody: string,
-    messageAttributes?: Record<string, any>,
+    messageAttributes?: Record<string, MessageAttributeValue>,
   ): Promise<SqsResult> {
     const command = new SendMessageCommand({
       QueueUrl: queueUrl,
