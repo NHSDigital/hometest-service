@@ -1,7 +1,5 @@
 import { test as baseTest } from '@playwright/test';
-import type { BaseUserManager } from '../utils/users';
-import { UserManagerFactory } from '../utils/users';
-import type { BaseTestUser } from '../utils/users';
+import { UserManagerFactory, type BaseUserManager, type BaseTestUser } from '../utils/users';
 
 const userManager = new UserManagerFactory().getUserManager();
 
