@@ -1,4 +1,12 @@
-import React, { ReactNode, createContext, useCallback, useContext, useState } from "react";
+import React, {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import sessionService from "@/lib/services/session-service";
 import { backendUrl } from "@/settings";
 
 export interface AddressResult {
@@ -32,6 +40,22 @@ interface PostcodeLookupProviderProps {
   children: ReactNode;
 }
 
+interface PersistedPostcodeLookupState {
+  postcode: string;
+  addresses: AddressResult[];
+  selectedAddress: AddressResult | null;
+  lookupResultsStatus: "idle" | "found" | "not_found" | "error";
+  error: string | null;
+}
+
+const defaultPersistedPostcodeLookupState: PersistedPostcodeLookupState = {
+  postcode: "",
+  addresses: [],
+  selectedAddress: null,
+  lookupResultsStatus: "idle",
+  error: null,
+};
+
 export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ children }) => {
   const [postcode, setPostcode] = useState<string>("");
   const [addresses, setAddresses] = useState<AddressResult[]>([]);
@@ -41,6 +65,46 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
     "idle" | "found" | "not_found" | "error"
   >("idle");
   const [error, setError] = useState<string | null>(null);
+  const [hasHydrated, setHasHydrated] = useState<boolean>(false);
+
+  useEffect(() => {
+    const persistedState = sessionService.rehydratePostcodeLookup<PersistedPostcodeLookupState>(
+      defaultPersistedPostcodeLookupState,
+    );
+
+    setPostcode(persistedState.postcode);
+    setAddresses(persistedState.addresses);
+    setSelectedAddress(persistedState.selectedAddress);
+    setLookupResultsStatus(persistedState.lookupResultsStatus);
+    setError(persistedState.error);
+    setHasHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
+    const isEmptyState =
+      postcode === "" &&
+      addresses.length === 0 &&
+      selectedAddress === null &&
+      lookupResultsStatus === "idle" &&
+      error === null;
+
+    if (isEmptyState) {
+      sessionService.clearPostcodeLookup();
+      return;
+    }
+
+    sessionService.dehydratePostcodeLookup<PersistedPostcodeLookupState>({
+      postcode,
+      addresses,
+      selectedAddress,
+      lookupResultsStatus,
+      error,
+    });
+  }, [hasHydrated, postcode, addresses, selectedAddress, lookupResultsStatus, error]);
 
   const lookupPostcode = async (postcodeValue: string): Promise<void> => {
     setIsLoading(true);
@@ -76,6 +140,7 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
     setPostcode("");
     setLookupResultsStatus("idle");
     setError(null);
+    sessionService.clearPostcodeLookup();
   }, []);
 
   const value: PostcodeLookupContextType = {

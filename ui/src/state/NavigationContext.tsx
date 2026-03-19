@@ -1,14 +1,45 @@
 "use client";
 
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
-import { ReactNode, createContext, useCallback, useContext, useState } from "react";
+import sessionService from "@/lib/services/session-service";
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 type Step = JourneyStepNames | RoutePath.GetSelfTestKitPage;
 
+const getStepFromPath = (path: string): Step => {
+  if (path === RoutePath.GetSelfTestKitPage) {
+    return RoutePath.GetSelfTestKitPage;
+  }
+
+  return (
+    (path.replace(`${RoutePath.GetSelfTestKitPage}/`, "") as JourneyStepNames) ||
+    RoutePath.GetSelfTestKitPage
+  );
+};
+
+const getPathForStep = (step: Step): string => {
+  return step === RoutePath.GetSelfTestKitPage
+    ? RoutePath.GetSelfTestKitPage
+    : `${RoutePath.GetSelfTestKitPage}/${step}`;
+};
+
 export interface NavigationState {
   currentStep: Step;
   stepHistory: Step[];
+}
+
+interface PersistedJourneyNavigationState {
+  stepHistory: Step[];
+  returnToStep: Step | null;
 }
 
 export interface JourneyNavigationContextType {
@@ -30,50 +61,50 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract current step from the HIV test journey path
-  const getStepFromPath = (path: string): Step => {
-    if (path === RoutePath.GetSelfTestKitPage) return RoutePath.GetSelfTestKitPage;
-    return (
-      (path.replace(`${RoutePath.GetSelfTestKitPage}/`, "") as JourneyStepNames) ||
-      RoutePath.GetSelfTestKitPage
-    );
-  };
-
   const currentStep = getStepFromPath(location.pathname);
 
-  const [navigation, setNavigation] = useState<{
-    stepHistory: Step[];
-    lastStep: Step;
-  }>(() => ({
-    stepHistory: [currentStep],
-    lastStep: currentStep,
-  }));
+  const [navigation, setNavigation] = useState<PersistedJourneyNavigationState>(() => {
+    const persistedState =
+      sessionService.rehydrateJourneyNavigation<PersistedJourneyNavigationState>({
+        stepHistory: [currentStep],
+        returnToStep: null,
+      });
 
-  const [returnToStep, setReturnToStep] = useState<Step | null>(null);
+    const stepHistory =
+      persistedState.stepHistory.length > 0 ? persistedState.stepHistory : [currentStep];
+    const lastStep = stepHistory[stepHistory.length - 1];
 
-  let stepHistory = navigation.stepHistory;
-  if (navigation.lastStep !== currentStep) {
-    const newHistory =
-      navigation.stepHistory[navigation.stepHistory.length - 1] === currentStep
-        ? navigation.stepHistory
-        : [...navigation.stepHistory, currentStep];
+    return {
+      stepHistory: lastStep === currentStep ? stepHistory : [...stepHistory, currentStep],
+      returnToStep: persistedState.returnToStep,
+    };
+  });
 
-    stepHistory = newHistory;
-    setNavigation({
-      stepHistory: newHistory,
-      lastStep: currentStep,
+  const stepHistory = useMemo(() => {
+    const lastStep = navigation.stepHistory[navigation.stepHistory.length - 1];
+
+    return lastStep === currentStep
+      ? navigation.stepHistory
+      : [...navigation.stepHistory, currentStep];
+  }, [navigation.stepHistory, currentStep]);
+
+  useEffect(() => {
+    const hasOnlyCurrentStep = stepHistory.length === 1 && stepHistory[0] === currentStep;
+
+    if (hasOnlyCurrentStep && navigation.returnToStep === null) {
+      sessionService.clearJourneyNavigation();
+      return;
+    }
+
+    sessionService.dehydrateJourneyNavigation<PersistedJourneyNavigationState>({
+      stepHistory,
+      returnToStep: navigation.returnToStep,
     });
-  }
+  }, [currentStep, stepHistory, navigation.returnToStep]);
 
   const goToStep = useCallback(
-    (step: string) => {
-      // Build journey-specific path
-      const targetPath =
-        step === RoutePath.GetSelfTestKitPage
-          ? RoutePath.GetSelfTestKitPage
-          : `${RoutePath.GetSelfTestKitPage}/${step}`;
-
-      navigate(targetPath);
+    (step: Step) => {
+      navigate(getPathForStep(step));
     },
     [navigate],
   );
@@ -81,34 +112,40 @@ export function JourneyNavigationProvider({ children }: { children: ReactNode })
   const goBack = useCallback(() => {
     if (stepHistory.length > 1) {
       const newHistory = stepHistory.slice(0, -1);
-      const previousStep = newHistory[newHistory.length - 1];
 
-      setNavigation({
+      setNavigation((previousNavigation) => ({
+        ...previousNavigation,
         stepHistory: newHistory,
-        lastStep: previousStep,
-      });
+      }));
 
       navigate(-1);
     }
-  }, [stepHistory, currentStep, navigate]);
+  }, [stepHistory, navigate]);
 
   const canGoBack = useCallback(() => {
     return stepHistory.length > 1;
   }, [stepHistory.length]);
 
   const clearHistory = useCallback(() => {
-    setNavigation({
+    setNavigation((previousNavigation) => ({
+      ...previousNavigation,
       stepHistory: [currentStep],
-      lastStep: currentStep,
-    });
+    }));
   }, [currentStep]);
+
+  const setReturnToStep = useCallback((step: Step | null) => {
+    setNavigation((previousNavigation) => ({
+      ...previousNavigation,
+      returnToStep: step,
+    }));
+  }, []);
 
   return (
     <JourneyNavigationContext.Provider
       value={{
         currentStep,
         stepHistory,
-        returnToStep,
+        returnToStep: navigation.returnToStep,
         goToStep,
         goBack,
         canGoBack,
