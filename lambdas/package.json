@@ -20,13 +20,13 @@
     "check-typescript": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.1011.0",
-    "@aws-sdk/client-sqs": "^3.1011.0",
-    "@aws-sdk/rds-signer": "^3.1011.0",
-    "@middy/core": "^7.1.7",
-    "@middy/http-cors": "^7.1.7",
-    "@middy/http-error-handler": "^7.1.7",
-    "@middy/http-security-headers": "^7.1.7",
+    "@aws-sdk/client-secrets-manager": "^3.1012.0",
+    "@aws-sdk/client-sqs": "^3.1012.0",
+    "@aws-sdk/rds-signer": "^3.1012.0",
+    "@middy/core": "^7.2.1",
+    "@middy/http-cors": "^7.2.1",
+    "@middy/http-error-handler": "^7.2.1",
+    "@middy/http-security-headers": "^7.2.1",
     "axios": "^1.13.6",
     "cookie": "^1.1.1",
     "dayjs": "^1.11.20",
@@ -60,8 +60,5 @@
     "tsx": "4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.1"
-  },
-  "overrides": {
-    "fast-xml-parser": "^5.5.6"
   }
 }
