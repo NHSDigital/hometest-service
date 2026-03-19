@@ -1,7 +1,7 @@
 import { test, expect } from "../../fixtures/IntegrationFixture";
 import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
 import { OrderTestData } from "../../test-data/OrderTestData";
-import { headersOrder } from "../../utils/ApiRequestHelper";
+import { headersOrder } from "../../utils";
 
 test.describe("Backend API, order endpoint", () => {
   const payload = OrderTestData.getDefaultOrder();

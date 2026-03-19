@@ -3,7 +3,7 @@ import {
   ConfigFactory,
   type ConfigInterface
 } from '../configuration/EnvironmentConfiguration';
-import type { NHSLoginUser } from '../utils/users/BaseUser';
+import type { NHSLoginUser } from '../utils/users';
 import { NHSEmailAndPasswordPage } from './NHSLogin/NHSEmailAndPasswordPage';
 import { CodeSecurityPage } from './NHSLogin/CodeSecurityPage';
 

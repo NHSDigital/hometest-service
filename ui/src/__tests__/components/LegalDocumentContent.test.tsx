@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
 import { LegalDocumentContent } from "@/components/LegalDocumentContent";
-import { type LegalDocumentContent as LegalDocumentContentType } from "@/content/schema";
+import { type LegalDocumentContent as LegalDocumentContentType } from "@/content";
 
 const content: LegalDocumentContentType = {
   title: "Home Test Privacy Policy",

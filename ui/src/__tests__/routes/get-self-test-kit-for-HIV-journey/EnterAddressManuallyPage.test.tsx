@@ -2,9 +2,14 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import { MemoryRouter } from "react-router-dom";
-import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
-import { JourneyNavigationProvider, useJourneyNavigationContext } from "@/state/NavigationContext";
-import { AuthProvider, useAuth } from "@/state";
+import {
+  AuthProvider,
+  CreateOrderProvider,
+  JourneyNavigationProvider,
+  useAuth,
+  useCreateOrderContext,
+  useJourneyNavigationContext,
+} from "@/state";
 import laLookupService from "@/lib/services/la-lookup-service";
 
 const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026

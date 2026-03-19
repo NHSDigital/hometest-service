@@ -1,18 +1,21 @@
 import "@testing-library/jest-dom";
 
-import { CannotUseServiceUnder18Content, CommonContent } from "@/content/index";
+import { CannotUseServiceUnder18Content, CommonContent } from "@/content";
 import CannotUseServiceUnder18Page, {
   HARD_CODED_CLINIC_DATA,
   NHS_LINKS,
 } from "@/routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
-import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
+import {
+  CreateOrderProvider,
+  JourneyNavigationContext,
+  JourneyNavigationProvider,
+  OrderAnswers,
+  useCreateOrderContext,
+} from "@/state";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import React, { ReactNode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-
-import { JourneyNavigationContext } from "@/state/NavigationContext";
 import { MemoryRouter } from "react-router-dom";
-import { OrderAnswers } from "@/state/OrderContext";
 
 const mockedContent: CannotUseServiceUnder18Content = {
   title: "some-mocked-title",
