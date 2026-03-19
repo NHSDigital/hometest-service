@@ -4,6 +4,7 @@ import { configurationFixture } from "./configurationFixture";
 import { consoleErrorFixture } from "./consoleErrorFixture";
 import { mergeTests } from "@playwright/test";
 import { pageObjectFixture } from "./pageObjectsFixture";
+import { randomUserFixture } from "./randomUserFixture";
 import { storageStateFixture } from "./storageStateFixture";
 import { wiremockFixture } from "./wiremockFixture";
 
@@ -15,4 +16,5 @@ export const test = mergeTests(
   storageStateFixture,
   consoleErrorFixture,
   wiremockFixture,
+  randomUserFixture,
 );

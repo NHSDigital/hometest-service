@@ -1,12 +1,19 @@
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 
+
 test(
   "Blood sample guide page",
   {
     tag: ["@accessibility"],
   },
-  async ({ homeTestStartPage, bloodSampleGuidePage, accessibility }) => {
+
+  async ({ homeTestStartPage, bloodSampleGuidePage, accessibility, loginAsRandomUser, context, page }) => {
+    await context.clearCookies();
+    await context.clearPermissions();
+
+    await loginAsRandomUser(page);
+
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickBloodSampleGuideLink();
     await bloodSampleGuidePage.waitUntilPageLoaded();
