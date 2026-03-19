@@ -6,10 +6,14 @@ export interface SqsResult {
 }
 
 export interface SQSClientInterface {
-  sendMessage(queueUrl: string, messageBody: string, messageAttributes?: Record<string, any>): Promise<SqsResult>;
+  sendMessage(
+    queueUrl: string,
+    messageBody: string,
+    messageAttributes?: Record<string, any>,
+  ): Promise<SqsResult>;
 }
 export class AWSSQSClient implements SQSClientInterface {
-  private client: SQSClient;
+  private readonly client: SQSClient;
 
   constructor(region: string = process.env.AWS_REGION || "eu-west-1") {
     this.client = new SQSClient({
@@ -22,7 +26,7 @@ export class AWSSQSClient implements SQSClientInterface {
   async sendMessage(
     queueUrl: string,
     messageBody: string,
-    messageAttributes?: Record<string, any>
+    messageAttributes?: Record<string, any>,
   ): Promise<SqsResult> {
     const command = new SendMessageCommand({
       QueueUrl: queueUrl,
