@@ -1,252 +1,187 @@
 # GitHub Copilot Instructions
 
-This document provides context for GitHub Copilot to assist with the Playwright test framework in this project.
+## About the Project
 
-## Project Overview
+<!-- vale Vale.Terms = NO -->
+`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `npm --prefix` — this is **not** an npm workspaces setup.
+<!-- vale Vale.Terms = YES -->
 
-This is a Playwright-based end-to-end test framework for the hometest-service application. The framework supports UI testing, API testing, and accessibility testing.
+| Package | Purpose |
+|---|---|
+| `ui/` | Next.js 16 static-export shell wrapping a React Router SPA |
+| `lambdas/` | AWS Lambda handlers (Node.js ESM, middy middleware) |
+| `tests/` | Playwright end-to-end, API, integration, and accessibility tests |
+| `database/` | PostgreSQL schema, seed data, and numbered migration scripts |
 
-## Technology Stack
+The application is deployed on AWS (Lambda, API Gateway, RDS, SQS, Secrets Manager, CloudFront/S3). Local development uses Docker Compose with LocalStack.
 
-- **Test Framework**: Playwright Test (`@playwright/test`)
-- **Language**: TypeScript
-- **Accessibility**: axe-core with `@axe-core/playwright` and `axe-html-reporter`
-- **Environment Management**: dotenv with environment-specific configuration files
+---
 
-## Project Structure
+## NHS & Patient Data — Mandatory Rules
+
+This service handles NHS patient data. These rules are non-negotiable:
+
+- **Never log PII.** NHS numbers, dates of birth, full names, addresses, and test results must never appear in log output, error messages, or response bodies beyond what the API contract requires.
+- **Always use parameterised SQL.** Never interpolate variables into raw SQL strings.
+- **Never hardcode secrets, credentials, or connection strings.** All secrets are managed via AWS Secrets Manager.
+- **Before generating any code that stores, transmits, or processes patient data, ask for clarification** about the data classification and whether the approach is appropriate.
+- When uncertain about a data-handling decision, surface the question rather than making an assumption.
+
+---
+
+## TypeScript Standards
+
+All TypeScript packages (`ui/`, `lambdas/`, `tests/`) use TypeScript 5.9.3.
+
+- Always write fully typed code. Never use `any` unless `DBClient.query` type parameters genuinely warrant it, and even then use the generic form (`query<T>(...)`).
+- Always define explicit interfaces or types for function parameters and return values — do not rely on inference for public API boundaries.
+- Never use `@ts-ignore` or `@ts-nocheck`.
+- Use `const` and `let`. Never use `var`.
+- Use ESM `import`/`export`. Never use CommonJS `require()`.
+- Prefer `unknown` over `any` when the type is genuinely unknown.
+
+---
+
+## Formatting & Linting
+
+All code must satisfy Prettier and ESLint before commit. Pre-commit hooks enforce this.
+
+- **Prettier**: 100-character line width, 2-space indent, double quotes, LF line endings, trailing commas everywhere.
+- **ESLint**: `typescript-eslint` strict rules. Each package has its own `eslint.config.mjs`.
+- **EditorConfig**: 2 spaces for TypeScript/JS/JSON/YAML; 4 spaces for Python/Dockerfile; tabs for Makefile.
+
+---
+
+## Monorepo Structure
 
 ```text
-tests/
-├── api/                    # API testing utilities
-│   ├── clients/            # API client classes
-│   │   ├── BaseApiClient.ts
-│   │   └── UserApi.ts
-│   └── endpoints.ts        # API endpoint definitions
-├── configuration/          # Environment configuration
-│   ├── .env.dev
-│   ├── .env.staging
-│   └── configuration.ts
-├── fixtures/               # Playwright fixtures
-│   ├── accessibilityFixture.ts
-│   ├── apiFixture.ts
-│   ├── configurationFixture.ts
-│   ├── pageObjectsFixture.ts
-│   └── index.ts
-├── page-objects/           # Page Object Model classes
-├── tests/                  # Test specs
-│   ├── accessibility/
-│   ├── api/
-│   └── ui/
-├── utils/                  # Utility modules
-│   └── AccessibilityModule.ts
-├── playwright.config.ts
-└── package.json
+ui/           Next.js 16 + React Router SPA frontend
+lambdas/      AWS Lambda handlers + shared lib/
+tests/        Playwright test suite
+database/     Goose SQL migrations and seed data
+local-environment/  Docker Compose + LocalStack + Terraform for local dev
+.github/      CI/CD workflows, Dependabot, Copilot instructions
 ```
 
-## Code Conventions
+---
 
-### Test Files
+## Git Conventions
 
-- Test files use `.spec.ts` extension
-- Import test and expect from fixtures: `import { test, expect } from '../fixtures';`
-- Use `test.describe()` for grouping related tests
-- Use descriptive test names that explain the expected behavior
+- **Branch naming**: `feature/HOTE-[JIRA-ID]-short-description` (e.g. `feature/HOTE-817-copilot-instructions`)
+- **Commit messages**: Conventional Commits format — `feat:`, `fix:`, `chore:`, `test:`, `refactor:`, `docs:`, `ci:`
+- **Gitflow**: `main` / `develop` / `feature/` / `release/` / `hotfix/`
+- **Jira board prefix**: `HOTE`
 
-```typescript
-import { test, expect } from '../fixtures';
+---
 
-test.describe('Feature Name', () => {
-  test('should perform expected behavior when condition', async ({ page, config, pageObjects }) => {
-    // Test implementation
-  });
-});
-```
+## Testing Expectations
 
-### Page Object Model
+| Layer | Required tests |
+|---|---|
+| Lambda handler | Jest unit test (`*.test.ts`) + integration test (`*.integration.test.ts`) using `@testcontainers/postgresql` (optional, confirm with developer) |
+| Lambda lib module | Jest unit test |
+| UI React component | Jest + React Testing Library unit test |
+| UI page/route | Jest + React Testing Library unit test |
+| E2E / accessibility | Written by the test engineering team — do not generate these without being asked |
 
-- Each page has its own class in `page-objects/`
-- Page objects receive `Page` in constructor
-- Use Playwright locators as class properties
-- Methods should be async and return Promise
+---
 
-```typescript
-import { Page, Locator } from '@playwright/test';
-import { config, EnvironmentVariables } from '../configuration';
+## Anti-Patterns — Never Generate These
 
-export class ExamplePage {
-  readonly page: Page;
-  readonly headerText: Locator;
-  readonly submitButton: Locator;
+- `console.log` in lambda or UI production code. In lambdas, use `console.info` for operational log points and `console.error` for runtime errors. Never use `console.log`.
+- ORM usage (Prisma, TypeORM, Drizzle, etc.). The DB layer uses raw `pg` with the `DBClient` interface.
+- `next/link`, `next/navigation`, or `useRouter` from Next.js. The UI uses React Router for all navigation.
+- Next.js API routes (`app/api/` or `pages/api/`). All backend logic lives in Lambda functions.
+- Server-side Next.js rendering or server components. The app is `output: "export"` (fully static).
+- `dangerouslySetInnerHTML` without explicit sanitisation.
+- Inline `style={{...}}` in React components. Use Tailwind classes or `nhsuk-frontend` classes.
+- Hardcoded environment-specific URLs, secrets, or feature flags.
+- Non-parameterised SQL (string interpolation or concatenation in queries).
+- `eval()`, `new Function()`, or dynamic code execution.
+- React class components. Use functional components with hooks.
+- Default exports for non-component modules (utility files, service classes, constants), **except** UI service singletons in `ui/src/lib/services/*`, which are intentionally default-exported.
 
-  constructor(page: Page) {
-    this.page = page;
-    this.headerText = page.locator('h1');
-    this.submitButton = page.getByRole('button', { name: 'Submit' });
-  }
+---
 
-  async navigate(): Promise<void> {
-    await this.page.goto(config.get(EnvironmentVariables.UI_BASE_URL));
-  }
-
-  async clickSubmit(): Promise<void> {
-    await this.submitButton.click();
-  }
-}
-```
-
-### Fixtures
-
-- Custom fixtures are defined in `fixtures/` directory
-- Fixtures are merged using `mergeTests()` from Playwright
-- Available fixtures: `config`, `pageObjects`, `api`, `accessibility`
-
-```typescript
-import { test, expect } from '../fixtures';
-
-test('example with fixtures', async ({ config, pageObjects, accessibility }) => {
-  const baseUrl = config.get(EnvironmentVariables.UI_BASE_URL);
-  await pageObjects.homePage.navigate();
-  await accessibility.runAccessibilityCheck(pageObjects.homePage, 'Home Page');
-});
-```
-
-### Configuration
-
-- Use `EnvironmentVariables` enum for configuration keys
-- Access config via `config.get()`, `config.getBoolean()`, `config.getNumber()`
-- Environment is set via `ENV` environment variable
-
-```typescript
-import { config, EnvironmentVariables } from '../configuration';
-
-const baseUrl = config.get(EnvironmentVariables.UI_BASE_URL);
-const isHeadless = config.getBoolean(EnvironmentVariables.HEADLESS);
-const timeout = config.getNumber(EnvironmentVariables.TIMEOUT);
-```
-
-### API Testing
-
-- API clients extend `BaseApiClient`
-- Use `API_ENDPOINTS` object for endpoint definitions
-- API fixture provides configured client instances
-
-```typescript
-// endpoints.ts
-export const API_ENDPOINTS = {
-  users: {
-    base: '/users',
-    getUser: (id: number) => `/users/${id}`,
-    createUser: '/users',
-  },
-} as const;
-
-// In tests
-test('api test', async ({ api }) => {
-  const response = await api.userApi.getUser(1);
-  expect(response.status()).toBe(200);
-});
-```
-
-### Accessibility Testing
-
-- Use `AccessibilityModule` for WCAG compliance testing
-- Standards tested: WCAG 2.0 A/AA, WCAG 2.1 A/AA, WCAG 2.2 AA
-- Reports are generated in `testResults/accessibility/`
-
-```typescript
-test('accessibility check', async ({ accessibility, pageObjects }) => {
-  await pageObjects.homePage.navigate();
-  const hasViolations = await accessibility.runAccessibilityCheck(
-    pageObjects.homePage,
-    'Home Page'
-  );
-  expect(hasViolations).toBe(false);
-});
-```
-
-## Locator Best Practices
-
-Prefer these locator strategies in order:
-
-1. `page.getByRole()` - Most accessible and resilient
-2. `page.getByText()` - For visible text content
-3. `page.getByLabel()` - For form fields
-4. `page.getByTestId()` - For data-testid attributes
-5. `page.locator()` - CSS selectors as last resort
-
-```typescript
-// Preferred
-page.getByRole('button', { name: 'Submit' });
-page.getByRole('link', { name: 'Learn more' });
-page.getByLabel('Email address');
-page.getByTestId('submit-form');
-
-// Avoid when possible
-page.locator('#submit-btn');
-page.locator('.form-button');
-```
-
-## Running Tests
+## Running the Project
 
 ```bash
-# Set environment first
-export ENV=dev
+# Install all workspace dependencies (also installs ui/, lambdas/, tests/ via postinstall)
+npm install
 
-# Run all tests
+# Build and package lambdas (required before first start or after lambda changes)
+npm run build:lambdas
+npm run package:lambdas
+
+# Start the full local environment (Docker + LocalStack + Terraform deploy + UI)
+npm start
+
+# Stop the local environment and destroy Terraform state
+npm run stop
+
+# Restart the local environment
+npm run local:restart
+
+# Start only the backend (Docker + DB migration)
+npm run local:backend:start
+
+# Start only the frontend (Docker UI container)
+npm run local:frontend:start
+
+# Run all unit tests (ui + lambdas)
 npm test
 
-# Run specific test file
-npx playwright test tests/ui/example.spec.ts
+# Run Playwright tests (reads URLs from Terraform outputs)
+npm run test:playwright
 
-# Run with headed browser
-npm run test:headed
-
-# Run with debug mode
-npm run test:debug
-
-# Run specific project (browser)
-npx playwright test --project=chromium
+# Individual service controls
+npm run local:service:db:start       # start Postgres only
+npm run local:service:db:migrate     # run DB migrations
+npm run local:service:localstack:start  # start LocalStack only
 ```
 
-## Browser Projects
+## Review Philosophy
 
-Available browser projects in `playwright.config.ts`:
+- Only comment when you have HIGH CONFIDENCE (>80%) that an issue exists
+- Be concise: one sentence per comment when possible
+- Focus on actionable feedback, not observations
+- When reviewing text, only comment on clarity issues if the text is genuinely confusing or could lead to errors.
 
-- `chromium` - Desktop Chrome
-- `firefox` - Desktop Firefox
-- `safari` - Desktop Safari
-- `edge` - Desktop Edge
-- `mobileChromium` - Pixel 5
-- `mobileSafari` - iPhone 12
+## Priority Areas (Review These)
 
-## Assertions
+### Security & Safety
 
-Use Playwright's built-in assertions:
+- Unsafe code blocks without justification
+- Command injection risks (shell commands, user input)
+- Path traversal vulnerabilities
+<!-- vale Vale.Terms = NO -->
+- Credential exposure or hardcoded secrets
+<!-- vale Vale.Terms = YES -->
+- Missing input validation on external data
+- Improper error handling that could leak sensitive info
 
-```typescript
-// Page assertions
-await expect(page).toHaveTitle(/Expected Title/);
-await expect(page).toHaveURL(/expected-path/);
+### Correctness Issues
 
-// Locator assertions
-await expect(locator).toBeVisible();
-await expect(locator).toHaveText('Expected text');
-await expect(locator).toBeEnabled();
-await expect(locator).toHaveAttribute('href', '/path');
+- Logic errors that could cause uncaught exceptions or incorrect behavior
+- Race conditions in async code
+- Resource leaks (files, connections, memory)
+- Off-by-one errors or boundary conditions
+- Incorrect error propagation
+- Optional types that don’t need to be optional
+- Booleans that should default to false but are set as optional
+- Error context that doesn’t add useful information
+- Overly defensive code with unnecessary checks
+- Unnecessary comments that restate obvious code behavior
 
-// API response assertions
-expect(response.status()).toBe(200);
-expect(await response.json()).toEqual(expectedData);
-```
+### Architecture & Patterns
 
-## Error Handling
+- Code that violates existing patterns in the codebase
+- Missing error handling
+- Async/await misuse or blocking operations in async contexts
+- Incorrect interface or class implementations
 
-- Tests automatically retry on CI (configured in playwright.config.ts)
-- Use `test.fail()` for known failing tests
-- Use `test.skip()` for conditionally skipping tests
-- Use `test.fixme()` for tests that need fixing
+## Response Format
 
-```typescript
-test.skip(process.env.CI === 'true', 'Skip on CI');
-test.fail('Known issue: #123');
-```
+1. State the problem (1 sentence)
+2. Why it matters (1 sentence, if needed)
+3. Suggested fix (snippet or specific action)
