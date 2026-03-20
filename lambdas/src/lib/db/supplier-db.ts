@@ -7,8 +7,6 @@ export interface SupplierOffering {
   location: Location;
   testCode: string;
 }
-export type LaCode = string;
-export type TestCode = string;
 
 interface SupplierRow {
   supplier_id: string;
@@ -19,7 +17,7 @@ interface SupplierRow {
   test_code: string;
 }
 
-type GetSupplierParams = [LaCode, TestCode | null];
+type GetSupplierParams = [string, string | null];
 
 export interface SupplierServiceProperties {
   dbClient: DBClient;
@@ -131,7 +129,7 @@ export class SupplierService {
     }
   }
 
-  async getSuppliersByLaCode(laCode: LaCode): Promise<{ id: string; name: string }[]> {
+  async getSuppliersByLaCode(laCode: string): Promise<{ id: string; name: string }[]> {
     const query = `
       SELECT s.supplier_id,
              s.supplier_name
@@ -161,8 +159,8 @@ export class SupplierService {
   }
 
   async getSuppliersByLocalAuthorityAndTest(
-    laCode: LaCode,
-    testCode?: TestCode,
+    laCode: string,
+    testCode?: string,
   ): Promise<SupplierOffering[]> {
     const query = `
       SELECT s.supplier_id,
