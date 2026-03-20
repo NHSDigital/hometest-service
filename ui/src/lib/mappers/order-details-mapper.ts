@@ -44,7 +44,7 @@ export class OrderDetailsMapper {
       throw new Error("Missing status");
     }
 
-    if (!(statusCode in OrderStatus)) {
+    if (!Object.values(OrderStatus).includes(statusCode as OrderStatus)) {
       throw new Error(`Invalid status: ${statusCode}`);
     }
 
