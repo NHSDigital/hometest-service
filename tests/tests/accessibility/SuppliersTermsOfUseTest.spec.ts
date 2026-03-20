@@ -6,7 +6,10 @@ test(
   {
     tag: ["@accessibility"],
   },
-  async ({ suppliersTermsOfUsePage, accessibility }) => {
+  async ({ suppliersTermsOfUsePage, accessibility, loginUser, context, page }) => {
+    await context.clearCookies();
+    await context.clearPermissions();
+    await loginUser(page);
     await suppliersTermsOfUsePage.navigate("SH:24");
     await suppliersTermsOfUsePage.waitUntilPageLoaded();
 

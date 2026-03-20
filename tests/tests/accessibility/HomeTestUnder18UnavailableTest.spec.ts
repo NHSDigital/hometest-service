@@ -17,19 +17,20 @@ test.describe("Home Test Under 18 Unavailable page", () => {
     },
   });
 
-  test.beforeEach(async ({ config, homeTestStartPage, userManager, wiremock, page, context }) => {
+  test.beforeEach(async ({ config, homeTestStartPage, loginUser,  page, context }) => {
     await context.clearCookies();
     await context.clearPermissions();
+    await loginUser(page, SpecialUserKey.UNDER_18);
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
+    // const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
 
-    if (config.useWiremockAuth) {
-      userInfoMappingId = await wiremock.createMapping(createWireMockUserInfoMapping(user));
-    }
+    // if (config.useWiremockAuth) {
+    //   userInfoMappingId = await wiremock.createMapping(createWireMockUserInfoMapping(user));
+    // }
 
-    await userManager.login(user, page);
+    // await userManager.login(user, page);
 
-    await homeTestStartPage.navigate();
+   // await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
   });
 

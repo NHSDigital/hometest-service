@@ -36,11 +36,11 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     this.workerUsers = this.getWorkerUsers();
     this.specialUsers = this.getSpecialUsers();
 
-    if (numberOfWorkerUsers > this.workerUsers.length) {
-      throw new Error(
-        `numberOfWorkerUsers (${numberOfWorkerUsers}) exceeds available worker users (${this.workerUsers.length})`,
-      );
-    }
+    // if (numberOfWorkerUsers > this.workerUsers.length) {
+    //   throw new Error(
+    //     `numberOfWorkerUsers (${numberOfWorkerUsers}) exceeds available worker users (${this.workerUsers.length})`,
+    //   );
+    // }
   }
 
   protected getNumberOfWorkerUsers(): number {

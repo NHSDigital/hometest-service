@@ -18,7 +18,13 @@ test.describe("Home Test Unavailable page", () => {
       selectDeliveryAddressPage,
       kitNotAvailableInYourAreaPage,
       accessibility,
+      loginUser,
+      context,
+      page,
     }) => {
+      await context.clearCookies();
+      await context.clearPermissions();
+      await loginUser(page);
       const unavailableAddress = {
         addressLine1: "BT GLOBAL SERVICES",
         addressLine2: "1 SOVEREIGN STREET",

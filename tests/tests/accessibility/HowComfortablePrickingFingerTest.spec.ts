@@ -15,7 +15,13 @@ test(
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
     accessibility,
+    loginUser,
+    context,
+    page,
   }) => {
+    await context.clearCookies();
+    await context.clearPermissions();
+    await loginUser(page);
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);

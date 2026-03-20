@@ -4,6 +4,7 @@ import { type Result } from "axe-core";
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
+import type { NHSLoginMockedUser } from "../../utils/users/BaseUser";
 
 interface OrderStatusStep {
   statusCode?: OrderStatusCode;
@@ -19,6 +20,7 @@ const ORDER_STATUS_STEPS: OrderStatusStep[] = [
 
 let orderId: string;
 let patientId: string;
+let loggedInUser: NHSLoginMockedUser;
 const dbClient = new TestOrderDbClient();
 
 test.describe("Accessibility Testing @accessibility", () => {
@@ -26,9 +28,11 @@ test.describe("Accessibility Testing @accessibility", () => {
     await dbClient.connect();
   });
 
-  test.beforeEach(async ({ testedUser }) => {
+  test.beforeEach(async ({ loginUser, page }) => {
+    const user = await loginUser(page);
+    loggedInUser = user;
     const result = await dbClient.createOrderWithPatientAndStatus(
-      new OrderBuilder().withUser(testedUser).build(),
+      new OrderBuilder().withUser(user).build(),
     );
 
     orderId = result.order_uid;
@@ -56,11 +60,11 @@ test.describe("Accessibility Testing @accessibility", () => {
     });
   }
 
-  test.afterEach(async ({ testedUser }) => {
+  test.afterEach(async () => {
     await dbClient.deleteOrderStatusByUid(orderId);
     await dbClient.deleteConsentByPatientUid(patientId);
     await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    await dbClient.deletePatientMapping(loggedInUser.nhsNumber!, loggedInUser.dob!);
   });
 
   test.afterAll(async () => {

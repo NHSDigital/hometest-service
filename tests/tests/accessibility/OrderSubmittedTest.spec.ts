@@ -2,23 +2,27 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
+import { NHSLoginMockedUser } from "../../utils/users/BaseUser";
 
 const randomAddress = AddressModel.getRandomAddress();
 const dbClient = new TestOrderDbClient();
+let loggedInUser: NHSLoginMockedUser;
 
 test.describe("Accessibility Testing @accessibility", () => {
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ loginUser,page }) => {
     await dbClient.connect();
+    const user = await loginUser(page);
+    loggedInUser = user;
   });
 
-  test.afterEach(async ({ testedUser }) => {
-    const patientId = await dbClient.getPatientUidByNhsNumber(testedUser.nhsNumber!);
+  test.afterEach(async () => {
+    const patientId = await dbClient.getPatientUidByNhsNumber(loggedInUser.nhsNumber!);
     if (patientId) {
       await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderStatusByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
     }
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    await dbClient.deletePatientMapping(loggedInUser.nhsNumber!, loggedInUser.dob!);
     await dbClient.disconnect();
   });
 

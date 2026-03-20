@@ -17,7 +17,15 @@ test(
     checkYourAnswersPage,
     confirmMobileNumberPage,
     accessibility,
+    context,
+    loginUser,
+    page
   }) => {
+    await context.clearCookies();
+    await context.clearPermissions();
+
+    await loginUser(page);
+
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);

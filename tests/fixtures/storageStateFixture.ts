@@ -1,15 +1,17 @@
 import { test as baseTest } from "@playwright/test";
 import type { BaseUserManager } from "../utils/users/BaseUserManager";
 import { UserManagerFactory } from "../utils/users/UserManagerFactory";
-import type { BaseTestUser } from "../utils/users/BaseUser";
+import { BaseTestUser } from "../utils/users/BaseUser";
+import { ConfigFactory } from "../configuration/EnvironmentConfiguration";
 
 const userManager = new UserManagerFactory().getUserManager();
 
 function getWorkerIndex(): number {
-  return storageStateFixture.info().parallelIndex ?? 0;
+  return userManagementFixture.info().parallelIndex ?? 0;
 }
 
-export const storageStateFixture = baseTest.extend<
+// Provides user management fixtures (always used).
+export const userManagementFixture = baseTest.extend<
   object,
   {
     testedUser: BaseTestUser;
@@ -17,12 +19,6 @@ export const storageStateFixture = baseTest.extend<
     userManager: BaseUserManager<BaseTestUser>;
   }
 >({
-  // Use the same storage state for all tests in this worker.
-  storageState: async ({ testedUser, workerStorageState }, use) => {
-    console.log(`Test using user with nhsNumber: ${testedUser.nhsNumber}`);
-    console.log(`Test start date : ${new Date().toISOString()}`);
-    await use(workerStorageState);
-  },
   // Authenticate once per worker with a worker-scoped fixture.
   workerStorageState: [
     async ({}, use) => {
@@ -43,6 +39,11 @@ export const storageStateFixture = baseTest.extend<
   ],
   testedUser: [
     async ({}, use) => {
+      if (ConfigFactory.getConfig().useWiremockAuth) {
+        await use(new BaseTestUser());
+        return;
+      }
+
       const user: BaseTestUser = userManager.getWorkerUser(getWorkerIndex());
 
       // Validate that required user properties exist
@@ -57,4 +58,13 @@ export const storageStateFixture = baseTest.extend<
     },
     { scope: "worker" },
   ],
+});
+
+// Extends userManagementFixture with the storageState override (only used when wiremock is off).
+export const storageStateFixture = userManagementFixture.extend<object>({
+  storageState: async ({ testedUser, workerStorageState }, use) => {
+    console.log(`Test using user with nhsNumber: ${testedUser.nhsNumber}`);
+    console.log(`Test start date : ${new Date().toISOString()}`);
+    await use(workerStorageState);
+  },
 });

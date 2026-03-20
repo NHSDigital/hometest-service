@@ -8,13 +8,8 @@ test(
     tag: ["@accessibility"],
   },
 
-  async ({ homeTestStartPage, bloodSampleGuidePage, accessibility, loginAsRandomUser, context, page }) => {
-    await context.clearCookies();
-    await context.clearPermissions();
-
-    await loginAsRandomUser(page);
-
-    await homeTestStartPage.navigate();
+  async ({ homeTestStartPage, bloodSampleGuidePage, accessibility, loginUser, context, page }) => {
+    await loginUser(page);
     await homeTestStartPage.clickBloodSampleGuideLink();
     await bloodSampleGuidePage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(
