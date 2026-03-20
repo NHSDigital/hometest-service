@@ -82,7 +82,12 @@ test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
     wiremock,
+    loginUser,
+    context,
+    page,
   }) => {
+
+    await loginUser(page);
     // --- Arrange: create dynamic WireMock stub for OS Places /find ---
     await wiremock.createMapping(osPlacesStub);
 

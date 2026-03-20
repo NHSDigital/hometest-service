@@ -29,7 +29,7 @@ test.describe("Accessibility Testing @accessibility", () => {
   });
 
   test.beforeEach(async ({ loginUser, page }) => {
-    const user = await loginUser(page);
+    const { user } = await loginUser(page);
     loggedInUser = user;
     const result = await dbClient.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(user).build(),
@@ -48,7 +48,7 @@ test.describe("Accessibility Testing @accessibility", () => {
         await dbClient.updateOrderStatus(orderId, statusCode);
       }
 
-      await orderStatusPage.navigateToOrder(orderId);
+      await orderStatusPage.openOrderDirect(orderId);
       await orderStatusPage.waitForOrderToLoad();
       const accessErrors: Result[] = await accessibility.runAccessibilityCheck(
         orderStatusPage,

@@ -16,7 +16,12 @@ test.describe(
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
       goToClinicPage,
+      loginUser,
+      context,
+      page,
     }) => {
+
+      await loginUser(page);
       await homeTestStartPage.navigate();
       await homeTestStartPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);

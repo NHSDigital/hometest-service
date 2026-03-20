@@ -8,7 +8,11 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     homeTestStartPage,
     privacyPolicyPage,
     context,
+    loginUser,
+    page,
   }) => {
+
+    await loginUser(page);
     await homeTestStartPage.navigate();
     await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickPrivacyPolicyLink();

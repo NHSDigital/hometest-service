@@ -49,11 +49,33 @@ export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
     };
   }
 
+  private createRandomUnder18User(): NHSLoginMockedUser {
+    const minUnder18Age = 14;
+    const maxUnder18Age = 17;
+    const age = Math.floor(Math.random() * (maxUnder18Age - minUnder18Age + 1)) + minUnder18Age;
+
+    const dob = new Date();
+    dob.setFullYear(dob.getFullYear() - age);
+    const dobString = dob.toISOString().split("T")[0];
+
+    const nhsNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
+    return {
+      nhsNumber,
+      dob: dobString,
+      age,
+      code: "wiremock-auth-code",
+    };
+  }
+
   public getWorkerUsers(): NHSLoginMockedUser[] {
     return [DEFAULT_WORKER_USER];
   }
 
   protected async loginWorkerUser(_user: NHSLoginMockedUser, page: Page): Promise<Page> {
+      const context = page.context();
+      await context.clearCookies();
+      await context.clearPermissions();
     await page.goto(`${this.config.uiBaseUrl}/login`);
     // Wait until the OAuth redirect chain completes:
     // /login → WireMock /authorize → /callback → post-login page
@@ -68,7 +90,7 @@ export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
   protected getSpecialUsers(): Map<SpecialUserKey, NHSLoginMockedUser> {
     const specialUsersMap = new Map<SpecialUserKey, NHSLoginMockedUser>();
     specialUsersMap.set(SpecialUserKey.RANDOM, this.createRandomAdultUser());
-    specialUsersMap.set(SpecialUserKey.UNDER_18, UNDER_18_USER);
+    specialUsersMap.set(SpecialUserKey.UNDER_18, this.createRandomUnder18User());
     return specialUsersMap;
   }
 }

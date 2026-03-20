@@ -6,8 +6,7 @@ test(
     tag: ['@accessibility'],
   },
   async ({ homeTestStartPage, termsOfUsePage, accessibility, loginUser, context, page }) => {
-    await context.clearCookies();
-    await context.clearPermissions();
+
     await loginUser(page);
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickTermsOfUseLink();

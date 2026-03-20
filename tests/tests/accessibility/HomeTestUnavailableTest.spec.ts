@@ -22,8 +22,6 @@ test.describe("Home Test Unavailable page", () => {
       context,
       page,
     }) => {
-      await context.clearCookies();
-      await context.clearPermissions();
       await loginUser(page);
       const unavailableAddress = {
         addressLine1: "BT GLOBAL SERVICES",

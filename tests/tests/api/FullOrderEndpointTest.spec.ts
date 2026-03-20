@@ -17,6 +17,8 @@ import {
 import { OrderTestData } from "../../test-data/OrderTestData";
 import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
 import { randomUUID } from "crypto";
+import { NHSLoginMockedUser } from "../../utils/users/BaseUser";
+import { WireMockUserManager } from "../../utils/users/WireMockUserManager";
 
 let orderId: string;
 let patientId: string;
@@ -24,14 +26,16 @@ let correlationId: string;
 const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
 const supplierId = OrderTestData.PREVENTX_SUPPLIER_ID;
+let testedUser: NHSLoginMockedUser;
 
 test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
+  testedUser = new WireMockUserManager(1).getWorkerUsers()[0];
   test.beforeAll("Connect to the database", async () => {
     await dbClient.connect();
     await resultDbClient.connect();
   });
 
-  test.beforeEach("Create an order via API", async ({ testedUser, orderApi }) => {
+  test.beforeEach("Create an order via API", async ({ orderApi }) => {
     const payload = OrderTestData.getDefaultOrder();
     payload.patient.nhsNumber = testedUser.nhsNumber!;
     payload.patient.birthDate = testedUser.dob!;
@@ -58,7 +62,6 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     hivResultsApi,
     orderApi,
     orderStatusApi,
-    testedUser,
   }) => {
     const dispatchedResponse = await orderStatusApi.updateOrderStatus(
       orderStatusPayload(
@@ -138,7 +141,6 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     hivResultsApi,
     orderApi,
     orderStatusApi,
-    testedUser,
   }) => {
     const dispatchedResponse = await orderStatusApi.updateOrderStatus(
       orderStatusPayload(
@@ -217,16 +219,16 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
 
   test.afterEach(
     "Delete result status, order status, order, and patient records from the database",
-    async ({ testedUser }) => {
+    async () => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteConsentByOrderUid(orderId);
       await dbClient.deleteOrderByUid(orderId);
-      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     },
   );
 
   test.afterAll("Disconnect from the database", async () => {
+    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     await dbClient.disconnect();
     await resultDbClient.disconnect();
   });
