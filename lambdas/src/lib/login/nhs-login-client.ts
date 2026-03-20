@@ -36,54 +36,40 @@ export class NhsLoginClient implements INhsLoginClient {
   }
 
   public async getUserTokens(code: string): Promise<INhsTokenResponseModel> {
-    try {
-      const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
+    const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
 
-      const formData = new URLSearchParams({
-        code,
-        client_id: this.nhsLoginConfig.clientId,
-        redirect_uri: this.nhsLoginConfig.redirectUri,
-        grant_type: "authorization_code",
-        client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-        client_assertion: signedToken,
-      });
+    const formData = new URLSearchParams({
+      code,
+      client_id: this.nhsLoginConfig.clientId,
+      redirect_uri: this.nhsLoginConfig.redirectUri,
+      grant_type: "authorization_code",
+      client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+      client_assertion: signedToken,
+    });
 
-      console.log(formData.toString());
-
-      const response: INhsTokenResponseModel = await this.httpClient.postRequest<
-        URLSearchParams,
-        any
-      >(this.nhsLoginTokenUri, formData, {
-        "Content-Type": "application/x-www-form-urlencoded",
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response: INhsTokenResponseModel = await this.httpClient.postRequest<
+      URLSearchParams,
+      any
+    >(this.nhsLoginTokenUri, formData, {
+      "Content-Type": "application/x-www-form-urlencoded",
+    });
+    return response;
   }
 
   public async getUserInfo(userAccessToken: string): Promise<INhsUserInfoResponseModel> {
-    try {
-      const userInfoResponse = await this.httpClient.getRequest<INhsUserInfoResponseModel>(
-        this.nhsLoginUserInfoUri,
-        {
-          Authorization: `Bearer ${userAccessToken}`,
-        },
-      );
-      // ALPHA: Enrich user info with test data for missing given_name (temporary workaround)
-      const enrichedUserInfo = enrichUserInfoWithTestFirstName(userInfoResponse);
-      return enrichedUserInfo;
-    } catch (error) {
-      throw error;
-    }
+    const userInfoResponse = await this.httpClient.getRequest<INhsUserInfoResponseModel>(
+      this.nhsLoginUserInfoUri,
+      {
+        Authorization: `Bearer ${userAccessToken}`,
+      },
+    );
+    // ALPHA: Enrich user info with test data for missing given_name (temporary workaround)
+    const enrichedUserInfo = enrichUserInfoWithTestFirstName(userInfoResponse);
+    return enrichedUserInfo;
   }
 
   public async fetchPublicKeyById(kid: string): Promise<string> {
-    try {
-      const response = await this.jwksClient.getSigningKey(kid);
-      return response.getPublicKey();
-    } catch (error) {
-      throw error;
-    }
+    const response = await this.jwksClient.getSigningKey(kid);
+    return response.getPublicKey();
   }
 }

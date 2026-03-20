@@ -1,9 +1,11 @@
-export type ValidationResult = {
-  valid: false
-} | {
-  valid: true,
-  cleaned: string
-}
+export type ValidationResult =
+  | {
+      valid: false;
+    }
+  | {
+      valid: true;
+      cleaned: string;
+    };
 
 /*
 How in depth do we want to validate the postcode?
@@ -27,15 +29,15 @@ The outer code and inner code are joined with a space.
 To simplify, all letters must be uppercase.
 */
 
-const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/
+const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/;
 
 export function validatePostcodeFormat(postcode: string): ValidationResult {
   // normalise
-  const normalised: string = postcode.toUpperCase().replace(/\s+/g, '');
+  const normalised: string = postcode.toUpperCase().replaceAll(/\s+/g, "");
 
   // a normalised postcode should be 5-7 characters long
   if (normalised.length < 5 || normalised.length > 7) {
-    return {valid: false};
+    return { valid: false };
   }
 
   // a valid postcode format ends in 3 chars, so we will split on that
@@ -44,8 +46,8 @@ export function validatePostcodeFormat(postcode: string): ValidationResult {
   const formattedPostcode = `${outerCode} ${innerCode}`;
 
   if (!POSTCODE_REGEX.test(formattedPostcode)) {
-    return {valid: false};
+    return { valid: false };
   }
 
-  return {valid: true, cleaned: formattedPostcode};
+  return { valid: true, cleaned: formattedPostcode };
 }
