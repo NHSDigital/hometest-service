@@ -46,23 +46,20 @@ function createBundle(statusCode: string, overrides?: Partial<ServiceRequest>): 
 }
 
 describe("OrderDetailsMapper", () => {
-  describe("extractStatus - processing status mapping", () => {
-    it.each(["GENERATED", "QUEUED", "SUBMITTED"])("should map %s to PROCESSING", (statusCode) => {
+  describe("extractStatus", () => {
+    it.each([
+      "GENERATED",
+      "QUEUED",
+      "SUBMITTED",
+      "CONFIRMED",
+      "DISPATCHED",
+      "RECEIVED",
+      "COMPLETE",
+    ])("should map %s to OrderStatus", (statusCode) => {
       const bundle = createBundle(statusCode);
       const result = OrderDetailsMapper.mapBundleToOrderDetails(bundle);
-      expect(result.status).toBe(OrderStatus.PROCESSING);
+      expect(result.status).toBe(statusCode);
     });
-  });
-
-  describe("extractStatus - direct status mapping", () => {
-    it.each(["CONFIRMED", "DISPATCHED", "RECEIVED", "COMPLETE"])(
-      "should map %s directly to OrderStatus",
-      (statusCode) => {
-        const bundle = createBundle(statusCode);
-        const result = OrderDetailsMapper.mapBundleToOrderDetails(bundle);
-        expect(result.status).toBe(statusCode);
-      },
-    );
   });
 
   describe("extractStatus - invalid status", () => {
