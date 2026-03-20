@@ -12,12 +12,14 @@ This folder contains a lightweight, build-time JSON CMS for managing static cont
 
 ```text
 content/
-├── content.json          # All content lives here
-├── schema.ts             # TypeScript type definitions
-├── ContentService.ts     # Singleton service for accessing content
-├── ContentValidator.ts   # Validation functions
-├── index.ts              # Barrel exports
-└── __tests__/            # Unit tests
+├── content.json                   # Main application content
+├── hometest-privacy-policy.json   # Privacy Policy page content
+├── hometest-terms-of-use.json     # Terms of Use page content
+├── schema.ts                      # TypeScript type definitions
+├── ContentService.ts              # Singleton service for accessing content
+├── ContentValidator.ts            # Validation functions
+├── index.ts                       # Barrel exports
+└── __tests__/                     # Unit tests
 ```
 
 ## Quick Start
@@ -55,14 +57,18 @@ export default function MyPage() {
 
 ### `content.json`
 
-The JSON file has two main sections:
+The main JSON file has two top-level sections:
 
 ```json
 {
   "commonContent": { ... },  // Shared across all pages
-  "pages": { ... }           // Page-specific content
+  "pages": { ... }           // Page-specific content (excluding Privacy Policy and Terms of Use)
 }
 ```
+
+### `hometest-privacy-policy.json` and `hometest-terms-of-use.json`
+
+The Privacy Policy and Terms of Use content live in their own dedicated files. `ContentService` loads and merges all three files together at build time, so consumers of the content module see no difference — `getPageContent("home-test-privacy-policy")` and `getPageContent("home-test-terms-of-use")` work as normal.
 
 ### Common Content
 
@@ -110,7 +116,7 @@ Each page has its own content object, keyed by route name:
 
 ### 1. Edit Existing Text
 
-Simply update the value in `content.json`:
+For general pages, update the value in `content.json`. For the Privacy Policy or Terms of Use, update `hometest-privacy-policy.json` or `hometest-terms-of-use.json` respectively:
 
 ```json
 {
