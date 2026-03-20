@@ -42,7 +42,7 @@ export class ConfigFactory {
 
     this.cachedConfig ??= this.loadConfiguration();
 
-    console.log("Current configuration:", this.cachedConfig);
+//
 
     return this.cachedConfig;
   }

@@ -6,7 +6,10 @@ test(
   {
     tag: ["@accessibility"],
   },
-  async ({ homeTestStartPage, enterDeliveryAddressPage, accessibility }) => {
+  async ({ homeTestStartPage, enterDeliveryAddressPage, accessibility, loginUser, context, page }) => {
+    await context.clearCookies();
+    await context.clearPermissions();
+    await loginUser(page);
     await homeTestStartPage.navigate();
     await homeTestStartPage.clickStartNowButton();
     await enterDeliveryAddressPage.waitUntilPageLoaded();

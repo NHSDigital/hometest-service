@@ -6,7 +6,7 @@ export abstract class AuthenticatedPage extends BasePage {
   private static readonly loginPath = "/login";
   private static readonly callbackPath = "/callback";
   private static readonly serviceErrorPath = "/service-error";
-  private static readonly initialRenderTimeoutMs = 1000;
+  private static readonly initialRenderTimeoutMs = 10000;
 
   readonly config: ConfigInterface;
 

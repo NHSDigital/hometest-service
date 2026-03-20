@@ -31,7 +31,7 @@ export class OrderStatusPage extends AuthenticatedPage {
     readyLocator: Locator,
     expectedPath: string,
   ): Promise<void> {
-    await this.navigateToProtectedPath(`/orders/${orderId}/tracking`, readyLocator, [expectedPath]);
+    await this.navigateToProtectedPath(`/orders/${orderId}/tracking`, this.pageHeader, [expectedPath]);
   }
 
   async openOrderDirect(orderId: string): Promise<void> {

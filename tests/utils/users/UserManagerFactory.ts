@@ -11,7 +11,7 @@ export class UserManagerFactory {
   getUserManager(): BaseUserManager<BaseTestUser> {
     if (this.config.useWiremockAuth) {
       console.log("Using WireMock-based authentication for local environment");
-      return new WireMockUserManager(1);
+      return new WireMockUserManager(getNumberOfWorkers(this.config.authType));
     }
     return new SandboxUserManager(getNumberOfWorkers(this.config.authType));
   }

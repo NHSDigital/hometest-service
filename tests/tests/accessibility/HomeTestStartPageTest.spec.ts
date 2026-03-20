@@ -6,7 +6,10 @@ test(
   {
     tag: ["@accessibility"],
   },
-  async ({ homeTestStartPage, accessibility }) => {
+  async ({ homeTestStartPage, accessibility, loginUser, context, page }) => {
+    await context.clearCookies();
+    await context.clearPermissions();
+    await loginUser(page);
     await homeTestStartPage.navigate();
     await homeTestStartPage.waitUntilPageLoaded();
     const accessErrors = await accessibility.runAccessibilityCheck(

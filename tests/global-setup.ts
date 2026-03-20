@@ -12,7 +12,7 @@ async function globalSetup() {
     await new CredentialsHelper().addCredentialsToEnvVariable();
   }
 
-  await new UserManagerFactory().getUserManager().loginWorkerUsers();
+ // await new UserManagerFactory().getUserManager().loginWorkerUsers();
 }
 
 export default globalSetup;
