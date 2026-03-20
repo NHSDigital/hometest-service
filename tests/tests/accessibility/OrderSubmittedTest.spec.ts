@@ -11,7 +11,7 @@ let loggedInUser: NHSLoginMockedUser;
 test.describe("Accessibility Testing @accessibility", () => {
   test.beforeEach(async ({ loginUser,page }) => {
     await dbClient.connect();
-    const user = await loginUser(page);
+    const { user } = await loginUser(page);
     loggedInUser = user;
   });
 

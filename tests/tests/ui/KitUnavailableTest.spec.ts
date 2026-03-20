@@ -34,7 +34,12 @@ test.describe(
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       kitNotAvailableInYourAreaPage,
+      loginUser,
+      context,
+      page,
     }) => {
+
+      await loginUser(page);
       const unavailablePostcode = "SW1A 1AA";
 
       await homeTestStartPage.navigate();

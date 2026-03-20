@@ -17,18 +17,10 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     },
   });
 
-  test.beforeEach(async ({ config, homeTestStartPage, userManager, wiremock, page, context }) => {
-    await context.clearCookies();
-    await context.clearPermissions();
+  test.beforeEach(async ({ homeTestStartPage, loginUser, page, context }) => {
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
-
-    if (config.useWiremockAuth) {
-      userInfoMappingId = await wiremock.createMapping(createWireMockUserInfoMapping(user));
-    }
-
-    await userManager.login(user, page);
-    await homeTestStartPage.navigate();
+    const { mappingId } = await loginUser(page, SpecialUserKey.UNDER_18);
+    userInfoMappingId = mappingId;
     await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
   });
@@ -48,6 +40,7 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
+
     await cannotUseServiceUnder18Page.waitUntilPageLoaded();
     await expect(cannotUseServiceUnder18Page.pageHeader).toHaveText(
       "You cannot use this service as you are under 18",

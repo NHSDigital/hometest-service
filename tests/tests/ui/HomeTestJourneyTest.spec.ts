@@ -10,8 +10,9 @@ const cyberAwareUrl = "https://www.ncsc.gov.uk/cyberaware/home";
 const helpAndSupportUrl = "https://www.nhs.uk/nhs-app/help/";
 
 test.describe("Editing during the order flow", { tag: "@ui" }, () => {
-  test.beforeEach(async ({ homeTestStartPage }) => {
-    await homeTestStartPage.navigate();
+  test.beforeEach(async ({ homeTestStartPage, loginUser, context, page }) => {
+
+    await loginUser(page);
     await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();
   });
@@ -65,7 +66,12 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
       howComfortablePrickingFingerPage,
       confirmMobileNumberPage,
       checkYourAnswersPage,
+      loginUser,
+      context,
+      page,
     }) => {
+
+      await loginUser(page);
       await homeTestStartPage.navigate();
       await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
       await homeTestStartPage.clickStartNowButton();
@@ -105,7 +111,9 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
   });
 });
 
-test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage, context }) => {
+test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage, context, loginUser, page }) => {
+
+  await loginUser(page);
   await homeTestStartPage.navigate();
   await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
   await homeTestStartPage.clickPrivacyPolicyLink();
@@ -125,7 +133,10 @@ test("Verify Terms of Use page", async ({
   context,
   page,
   privacyPolicyPage,
+  loginUser,
 }) => {
+
+  await loginUser(page);
   await homeTestStartPage.navigate();
   await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
   await homeTestStartPage.clickTermsOfUseLink();

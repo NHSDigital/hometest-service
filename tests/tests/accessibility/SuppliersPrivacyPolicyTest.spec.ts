@@ -7,8 +7,7 @@ test(
     tag: ["@accessibility"],
   },
   async ({ suppliersPrivacyPolicyPage, accessibility, loginUser, context, page }) => {
-    await context.clearCookies();
-    await context.clearPermissions();
+
     await loginUser(page);
     await suppliersPrivacyPolicyPage.navigate("SH:24");
     await suppliersPrivacyPolicyPage.waitUntilPageLoaded();

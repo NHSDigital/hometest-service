@@ -7,7 +7,9 @@ const randomAddress = AddressModel.getRandomAddress();
 const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();
 
 test.describe("Reaching Check Your Answers page", { tag: "@ui" }, () => {
-  test.beforeEach(async ({ homeTestStartPage }) => {
+  test.beforeEach(async ({ homeTestStartPage, loginUser, context, page }) => {
+
+    await loginUser(page);
     await homeTestStartPage.navigate();
     await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
     await homeTestStartPage.clickStartNowButton();

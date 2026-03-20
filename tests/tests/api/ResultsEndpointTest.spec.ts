@@ -9,17 +9,21 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { randomUUID } from "crypto";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
+import { NHSLoginMockedUser } from "../../utils/users/BaseUser";
+import { WireMockUserManager } from "../../utils/users/WireMockUserManager";
 
 let orderId: string;
 let patientId: string;
 let correlationId: string;
 const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
+let testedUser: NHSLoginMockedUser; // I
 
 test.describe("GET Result API", () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
-    async ({ testedUser }) => {
+    async ({  }) => {
+       testedUser = new WireMockUserManager(1).getWorkerUsers()[0];
       await dbClient.connect();
       await resultDbClient.connect();
       // testedUser.nhsNumber and testedUser.dob are validated in the global fixture
@@ -40,7 +44,7 @@ test.describe("GET Result API", () => {
   test(
     "should retrieve the result and confirm the correct result status",
     { tag: ["@API"] },
-    async ({ hivResultsApi, testedUser }) => {
+    async ({ hivResultsApi }) => {
       const params = createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId);
       const headers = createGetResultHeaders(correlationId);
       const response = await hivResultsApi.getResult(params, headers);
@@ -57,7 +61,7 @@ test.describe("GET Result API", () => {
 
   test.afterAll(
     "Delete result status,order status, order, and patient records from the database and disconnect",
-    async ({ testedUser }) => {
+    async () => {
       await resultDbClient.deleteResultStatusByUid(orderId);
       await dbClient.deleteOrderStatusByUid(orderId);
       await dbClient.deleteConsentByPatientUid(patientId);
