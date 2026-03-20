@@ -142,9 +142,8 @@ export const assertValidContent: (content: unknown) => asserts content is MainCo
 ) => {
   const result = validateContent(content);
   if (!result.valid) {
-    throw new Error(
-      `Content validation failed:\n${result.errors.map((e) => `  - ${e}`).join("\n")}`,
-    );
+    const errorList = result.errors.map((e) => "  - " + e).join("\n");
+    throw new Error(`Content validation failed:\n${errorList}`);
   }
 };
 
@@ -163,7 +162,8 @@ const assertValidLegalPageContent = (label: string, content: unknown): void => {
     errors.push("sections must be an array");
   }
   if (errors.length > 0) {
-    throw new Error(`${label} validation failed:\n${errors.map((e) => `  - ${e}`).join("\n")}`);
+    const errorList = errors.map((e) => "  - " + e).join("\n");
+    throw new Error(`${label} validation failed:\n${errorList}`);
   }
 };
 
