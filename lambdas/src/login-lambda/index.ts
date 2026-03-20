@@ -1,7 +1,4 @@
-import {
-  type APIGatewayProxyEvent,
-  type APIGatewayProxyResult,
-} from "aws-lambda";
+import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
 import { defaultCorsOptions } from "./cors-configuration";
 import { init } from "./init";
 import middy from "@middy/core";
@@ -9,18 +6,12 @@ import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { securityHeaders } from "../lib/http/security-headers";
-import {
-  retrieveMandatoryEnvVariable,
-  retrieveOptionalEnvVariable,
-} from "../lib/utils/utils";
+import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
 
 // ALPHA: This file will need revisiting.
-const authCookieSameSite = retrieveMandatoryEnvVariable(
-  "AUTH_COOKIE_SAME_SITE",
-);
+const authCookieSameSite = retrieveMandatoryEnvVariable("AUTH_COOKIE_SAME_SITE");
 const authCookieSecure =
-  retrieveOptionalEnvVariable("AUTH_COOKIE_SECURE", "true").toLowerCase() ===
-  "true";
+  retrieveOptionalEnvVariable("AUTH_COOKIE_SECURE", "true").toLowerCase() === "true";
 
 export interface LoginBody {
   code: string; // the auth code from NHS login
@@ -48,13 +39,11 @@ export const lambdaHandler = async (
     const loginOutput = await loginService.performLogin(body);
 
     const signedAuthAccessJwt = authTokenService.generateAuthAccessToken({
-
-      sessionId: loginOutput.nhsLoginAccessToken!,
+      sessionId: loginOutput.nhsLoginAccessToken,
       sessionStartTime: Date.now(),
     });
 
     const signedAuthRefreshJwt = authTokenService.generateAuthRefreshToken({
-
       refreshToken: loginOutput.nhsLoginRefreshToken || "",
     });
 
@@ -71,13 +60,8 @@ export const lambdaHandler = async (
       },
     };
   } catch (e) {
-    const err = e as
-      | { cause?: { details?: { responseData?: unknown } } }
-      | undefined;
-    console.error(
-      `${className} - Error in login handler:`,
-      err?.cause?.details?.responseData,
-    );
+    const err = e as { cause?: { details?: { responseData?: unknown } } } | undefined;
+    console.error(`${className} - Error in login handler:`, err?.cause?.details?.responseData);
     throw e;
   }
 };

@@ -1,5 +1,5 @@
-import { PostcodeLookupClient } from './postcode-lookup-client-interface';
-import { PostcodeLookupResponse } from './models/postcode-lookup-response';
+import { PostcodeLookupClient } from "./postcode-lookup-client-interface";
+import { PostcodeLookupResponse } from "./models/postcode-lookup-response";
 
 export class PostcodeLookupService {
   private readonly client: PostcodeLookupClient;
@@ -10,7 +10,7 @@ export class PostcodeLookupService {
 
   async performLookup(postcode: string): Promise<PostcodeLookupResponse> {
     if (!this.isValidPostcodeFormat(postcode)) {
-      throw new Error('Invalid postcode format');
+      throw new Error("Invalid postcode format");
     }
 
     const normalizedPostcode = this.normalizePostcode(postcode);
@@ -18,12 +18,15 @@ export class PostcodeLookupService {
       const response = await this.client.lookupPostcode(normalizedPostcode);
       return response;
     } catch (error) {
-      throw new Error(`Failed to lookup postcode: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
+      throw new Error(
+        `Failed to lookup postcode: ${error instanceof Error ? error.message : "Unknown error"}`,
+        { cause: error },
+      );
     }
   }
 
   private normalizePostcode(postcode: string): string {
-    return postcode.trim().toUpperCase().replace(/\s+/g, ' ');
+    return postcode.trim().toUpperCase().replaceAll(/\s+/g, " ");
   }
 
   private isValidPostcodeFormat(postcode: string): boolean {
