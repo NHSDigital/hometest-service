@@ -49,6 +49,7 @@ test.describe("Order Status Page", () => {
   }
 
   const ORDER_STATUS: OrderStatus[] = [
+    { status: "SUBMITTED", tag: "Confirmed" },
     { status: "DISPATCHED", tag: "Dispatched" },
     { status: "RECEIVED", tag: "Test received" },
   ];
