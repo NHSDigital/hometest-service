@@ -1,14 +1,25 @@
 import { BackLink } from "nhsuk-react-components";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 interface PageLayoutProps {
   children?: React.ReactNode;
   onBackButtonClick?: () => void;
-  loadingOverlay?: React.ReactNode;
+  isLoading?: boolean;
+  loadingMessage?: string;
 }
 
-export default function PageLayout({ children, onBackButtonClick, loadingOverlay }: Readonly<PageLayoutProps>) {
-  if (loadingOverlay) {
-    return <div className="nhsuk-width-container">{loadingOverlay}</div>;
+export default function PageLayout({
+  children,
+  onBackButtonClick,
+  isLoading = false,
+  loadingMessage = "Submitting your order",
+}: Readonly<PageLayoutProps>) {
+  if (isLoading) {
+    return (
+      <div className="nhsuk-width-container">
+        <LoadingSpinner message={loadingMessage} />
+      </div>
+    );
   }
 
   return (
