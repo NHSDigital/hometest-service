@@ -1,11 +1,13 @@
 import { FormBackLink } from "../components/FormBackLink";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 interface FormPageLayoutProps {
   children: React.ReactNode;
   showBackButton?: boolean;
   backButtonText?: string;
   onBackButtonClick?: () => void;
-  loadingOverlay?: React.ReactNode;
+  isLoading?: boolean;
+  loadingMessage?: string;
 }
 
 export default function FormPageLayout({
@@ -13,10 +15,15 @@ export default function FormPageLayout({
   showBackButton = false,
   backButtonText,
   onBackButtonClick,
-  loadingOverlay,
+  isLoading = false,
+  loadingMessage = "Submitting your order",
 }: Readonly<FormPageLayoutProps>) {
-  if (loadingOverlay) {
-    return <div className="nhsuk-width-container">{loadingOverlay}</div>;
+  if (isLoading) {
+    return (
+      <div className="nhsuk-width-container">
+        <LoadingSpinner message={loadingMessage} />
+      </div>
+    );
   }
 
   return (

@@ -10,7 +10,6 @@ import { backendUrl } from "@/settings";
 import { useNavigate } from "react-router-dom";
 import { useAsyncErrorHandler } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -86,5 +85,5 @@ export default function CallbackPage() {
     handleCallback();
   }, [handleCallback]);
 
-  return <PageLayout loadingOverlay={<LoadingSpinner message="Loading..." />} />;
+  return <PageLayout isLoading loadingMessage="Loading..." />;
 }

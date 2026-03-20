@@ -4,7 +4,6 @@ import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-r
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useState } from "react";
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
@@ -149,7 +148,7 @@ export default function CheckYourAnswersPage() {
   return (
     <FormPageLayout
       showBackButton
-      loadingOverlay={isSubmitting ? <LoadingSpinner /> : undefined}
+      isLoading={isSubmitting}
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();
