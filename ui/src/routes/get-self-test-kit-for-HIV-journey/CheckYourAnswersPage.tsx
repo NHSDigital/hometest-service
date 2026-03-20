@@ -4,6 +4,7 @@ import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-r
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useState } from "react";
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
@@ -47,6 +48,7 @@ export default function CheckYourAnswersPage() {
     orderAnswers.consentCheckboxChecked ?? false,
   );
   const [consentError, setConsentError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
@@ -88,6 +90,7 @@ export default function CheckYourAnswersPage() {
     }
 
     setConsentError(null);
+    setIsSubmitting(true);
 
     const consentTimestamp = new Date().toISOString();
     updateOrderAnswers({
@@ -125,14 +128,18 @@ export default function CheckYourAnswersPage() {
       consent: true,
     };
 
-    const orderResponse = await orderService.submitOrder(orderRequest);
-    console.log("Order router response:", orderResponse);
+    try {
+      const orderResponse = await orderService.submitOrder(orderRequest);
+      console.log("Order router response:", orderResponse);
 
-    updateOrderAnswers({
-      orderReferenceNumber: orderResponse.orderReference,
-    });
+      updateOrderAnswers({
+        orderReferenceNumber: orderResponse.orderReference,
+      });
 
-    goToStep(JourneyStepNames.OrderSubmitted);
+      goToStep(JourneyStepNames.OrderSubmitted);
+    } finally {
+      setIsSubmitting(false);
+    }
   });
 
   const addressLines = orderAnswers.deliveryAddress
@@ -142,6 +149,7 @@ export default function CheckYourAnswersPage() {
   return (
     <FormPageLayout
       showBackButton
+      loadingOverlay={isSubmitting ? <LoadingSpinner /> : undefined}
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();

@@ -370,6 +370,31 @@ describe("CheckYourAnswersPage", () => {
       });
     });
 
+    it("shows the loading spinner while submission is in flight", async () => {
+      let resolveSubmit!: () => void;
+      mockSubmitOrder.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSubmit = () => resolve({ orderReference: 123, orderUid: "uid", message: "ok" });
+          }),
+      );
+
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      fireEvent.click(screen.getByRole("checkbox"));
+      submitForm();
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Submitting your order" })).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole("heading", { name: /check your answers/i }),
+      ).not.toBeInTheDocument();
+
+      resolveSubmit();
+    });
+
     it("shows the error boundary when submitOrder rejects", async () => {
       mockSubmitOrder.mockRejectedValueOnce(new Error("Network error"));
 
