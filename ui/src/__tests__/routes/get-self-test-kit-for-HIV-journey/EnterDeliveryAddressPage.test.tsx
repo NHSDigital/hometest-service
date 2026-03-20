@@ -15,13 +15,15 @@ const mockClearAddresses = jest.fn();
 
 // Exposed setters so tests can drive React state changes in the mock hook
 let setMockLookupResultsStatus: (value: string) => void;
+let setMockIsLoading: (value: boolean) => void;
 
 jest.mock("@/state", () => ({
   ...jest.requireActual("@/state"),
   usePostcodeLookup: () => {
     const [status, setStatus] = React.useState("idle");
-    const [isLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
     setMockLookupResultsStatus = setStatus;
+    setMockIsLoading = setIsLoading;
     return {
       lookupPostcode: mockLookupPostcode,
       lookupResultsStatus: status,
@@ -64,6 +66,36 @@ describe("EnterDeliveryAddressPage", () => {
       expect(screen.getByLabelText(/building number or name/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
       expect(screen.getByText(/enter address manually/i)).toBeInTheDocument();
+    });
+
+    it("does not show the loading spinner overlay when lookup is idle", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      expect(
+        screen.queryByRole("heading", {
+          name: "Loading...",
+        }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows a loading-only page when lookup is loading", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      act(() => {
+        setMockIsLoading(true);
+      });
+
+      expect(
+        screen.getByRole("heading", {
+          name: "Loading...",
+        }),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByRole("heading", {
+          name: /enter your delivery address and we'll check if the kit's available/i,
+        }),
+      ).not.toBeInTheDocument();
     });
   });
 

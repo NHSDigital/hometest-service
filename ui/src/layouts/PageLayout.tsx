@@ -1,11 +1,16 @@
 import { BackLink } from "nhsuk-react-components";
 
 interface PageLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onBackButtonClick?: () => void;
+  loadingOverlay?: React.ReactNode;
 }
 
-export default function PageLayout({ children, onBackButtonClick }: Readonly<PageLayoutProps>) {
+export default function PageLayout({ children, onBackButtonClick, loadingOverlay }: Readonly<PageLayoutProps>) {
+  if (loadingOverlay) {
+    return <div className="nhsuk-width-container">{loadingOverlay}</div>;
+  }
+
   return (
     <div className="nhsuk-width-container">
       {onBackButtonClick && <BackLink onClick={onBackButtonClick}>Back</BackLink>}

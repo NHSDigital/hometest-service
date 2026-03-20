@@ -5,6 +5,7 @@ import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import { useEffect, useRef, useState } from "react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import type { ValidationMessages } from "@/content/schema";
 
@@ -118,6 +119,7 @@ export default function EnterDeliveryAddressPage() {
   return (
     <FormPageLayout
       showBackButton
+      loadingOverlay={isLoading ? <LoadingSpinner message="Searching..." /> : undefined}
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();

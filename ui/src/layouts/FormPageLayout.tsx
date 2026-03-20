@@ -5,6 +5,7 @@ interface FormPageLayoutProps {
   showBackButton?: boolean;
   backButtonText?: string;
   onBackButtonClick?: () => void;
+  loadingOverlay?: React.ReactNode;
 }
 
 export default function FormPageLayout({
@@ -12,7 +13,12 @@ export default function FormPageLayout({
   showBackButton = false,
   backButtonText,
   onBackButtonClick,
+  loadingOverlay,
 }: Readonly<FormPageLayoutProps>) {
+  if (loadingOverlay) {
+    return <div className="nhsuk-width-container">{loadingOverlay}</div>;
+  }
+
   return (
     <div className="nhsuk-width-container">
       {showBackButton && <FormBackLink text={backButtonText} onClick={onBackButtonClick} />}
