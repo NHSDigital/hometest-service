@@ -1,13 +1,14 @@
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { NegativeTestResult } from "@/components/test-results/NegativeTestResult";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import { RoutePath } from "@/lib/models/route-paths";
 import { isValidGuid } from "@/lib/utils/guid";
 import { useAuth } from "@/state/AuthContext";
-import { useEffect } from "react";
 import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
 import { usePageContent } from "@/hooks";
 import { useTestResultsQuery } from "@/lib/queries/test-results-query";
@@ -39,7 +40,7 @@ function TestResultsContent({
   }, [isLoading, redirectToTracking, shouldRedirectToTracking]);
 
   if (isLoading) {
-    return null;
+    return <LoadingSpinner message="Loading" />;
   }
 
   if (resultError) {
@@ -83,7 +84,7 @@ function OrderDetailsContent({
   }, [isOrderLoading, redirectToTracking, shouldRedirectToTracking]);
 
   if (isOrderLoading) {
-    return null;
+    return <LoadingSpinner message="Loading" />;
   }
 
   if (orderError) {

@@ -217,6 +217,19 @@ describe("TestResultsPage", () => {
     expect(testResultsService.get).not.toHaveBeenCalled();
   });
 
+  it("shows a loading spinner while order query is pending", async () => {
+    (orderDetailsService.get as jest.Mock).mockImplementation(() => new Promise(() => {}));
+
+    await act(async () => {
+      renderWithRouter(orderId);
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "Loading your results..." }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("order-status-header")).not.toBeInTheDocument();
+  });
+
   it("shows the error boundary when the order query errors", async () => {
     const orderError = new Error("Failed to fetch order");
     (orderDetailsService.get as jest.Mock).mockRejectedValue(orderError);

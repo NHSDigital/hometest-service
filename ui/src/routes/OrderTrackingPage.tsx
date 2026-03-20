@@ -1,6 +1,7 @@
 "use client";
 
 import { AboutService } from "@/components/AboutService";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
@@ -19,7 +20,7 @@ function OrderContent({ orderId, patient }: { orderId: string; patient: Patient 
   } = useOrderStatusQuery(orderId, patient);
 
   if (isLoading) {
-    return null;
+    return <LoadingSpinner message="Loading" />;
   }
 
   if (orderError) {

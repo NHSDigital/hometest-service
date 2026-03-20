@@ -6,7 +6,7 @@ import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import type { ValidationMessages } from "@/content/schema";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useContent } from "@/hooks";
+import { useContent, usePageLoading } from "@/hooks";
 import { useState } from "react";
 import { isUnder18 } from "@/lib/utils/is-under-18";
 
@@ -122,6 +122,7 @@ export default function EnterAddressManuallyPage() {
     useJourneyNavigationContext();
   const { commonContent, "enter-address-manually": content } = useContent();
   const { user } = useAuth();
+  const { isLoading, loadingMessage, setLoading } = usePageLoading("Loading");
 
   const [addressLine1, setAddressLine1] = useState(
     orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine1 || "") : ""
@@ -199,6 +200,7 @@ export default function EnterAddressManuallyPage() {
       postcodeValidation.valid
     ) {
       try {
+        setLoading(true);
         const postcode = postcodeValidation.value;
         const laResponse = await laLookupService.getByPostcode(postcode);
         if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
@@ -245,6 +247,8 @@ export default function EnterAddressManuallyPage() {
       } catch (err) {
         // ALPHA: Remove the console log and use proper logging pattern
         console.error("Failed to lookup local authority:", err);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -252,6 +256,8 @@ export default function EnterAddressManuallyPage() {
   return (
     <FormPageLayout
       showBackButton
+      isLoading={isLoading}
+      loadingMessage={loadingMessage}
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();

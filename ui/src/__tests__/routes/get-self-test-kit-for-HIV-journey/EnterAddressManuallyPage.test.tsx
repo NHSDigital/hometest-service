@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import { MemoryRouter } from "react-router-dom";
 import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
@@ -113,6 +113,33 @@ describe("EnterAddressManuallyPage", () => {
       expect(screen.getByLabelText(/town or city/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/postcode/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
+    });
+  });
+
+  describe("Loading state", () => {
+    it("does not show a loading spinner on initial render", () => {
+      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+
+      expect(screen.queryByRole("heading", { name: "Loading" })).not.toBeInTheDocument();
+    });
+
+    it("shows a loading spinner while LA lookup is in progress", async () => {
+      mockedGetByPostcode.mockImplementation(() => new Promise(() => {}));
+
+      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+
+      fillValidRequiredFields();
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Loading" })).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole("heading", {
+          name: /enter your delivery address manually/i,
+        }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -310,6 +337,14 @@ describe("EnterAddressManuallyPage", () => {
         },
       });
 
+      let resolvePostcodeLookup!: (value: object) => void;
+      mockedGetByPostcode.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolvePostcodeLookup = resolve;
+          }),
+      );
+
       render(
         <>
           <EnterAddressManuallyPage />
@@ -319,12 +354,16 @@ describe("EnterAddressManuallyPage", () => {
       );
 
       fillValidRequiredFields();
-
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-      await waitFor(() => {
-        expect(screen.getByTestId("current-step")).toHaveTextContent("cannot-use-service-under-18");
+      await act(async () => {
+        resolvePostcodeLookup({
+          localAuthority: { localAuthorityCode: "4230", region: "Salford" },
+          suppliers: [{ id: "SUP1", name: "Supplier One", testCode: "31676001" }],
+        });
       });
+
+      expect(screen.getByTestId("current-step")).toHaveTextContent("cannot-use-service-under-18");
     });
   });
 });
