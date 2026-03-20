@@ -170,17 +170,16 @@ describe("OrderTrackingPage", () => {
       expect(screen.getByText("Status: DISPATCHED")).toBeInTheDocument();
     });
 
-    it("does not render error alert while query is pending", async () => {
+    it("shows a loading spinner while query is pending", async () => {
       (orderDetailsService.get as jest.Mock).mockImplementation(() => new Promise(() => {}));
 
       await act(async () => {
         renderWithRouter(orderId);
       });
 
-      expect(screen.getByTestId("page-layout")).toBeInTheDocument();
-
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-      expect(screen.queryByRole("heading", { name: "There is a problem" })).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Loading your order..." }),
+      ).toBeInTheDocument();
       expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
       expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
     });

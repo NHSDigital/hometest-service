@@ -8,7 +8,7 @@ import {
   usePostcodeLookup,
 } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { useContent, useAsyncErrorHandler } from "@/hooks";
+import { useAsyncErrorHandler, useContent, usePageLoading } from "@/hooks";
 import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
@@ -25,6 +25,7 @@ export default function SelectDeliveryAddressPage() {
     orderAnswers.selectedAddressId || "",
   );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const { isLoading, loadingMessage, setLoading } = usePageLoading("Loading");
   const { user } = useAuth();
 
   const isUnder18User = user ? isUnder18(user.birthdate) : false;
@@ -46,50 +47,54 @@ export default function SelectDeliveryAddressPage() {
     if (!selected) return;
 
     const postcode = selected.postcode;
-    const laResponse = await laLookupService.getByPostcode(postcode);
-    if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
-      updateOrderAnswers({ postcodeSearch: postcode });
-      goToStep(JourneyStepNames.KitNotAvailableInArea);
-      return;
-    }
-    updateOrderAnswers({
-      deliveryAddress: {
-        addressLine1: selected.line1,
-        addressLine2: selected.line2,
-        addressLine3: selected.line3,
-        addressLine4: selected.line4,
-        postTown: selected.town,
-        postcode: postcode,
-      },
-      addressEntryMethod: "postcode-search",
-      selectedAddressId: selected.id,
-      localAuthority: {
-        code: laResponse.localAuthority.localAuthorityCode,
-        region: laResponse.localAuthority.region,
-      },
-      supplier: laResponse.suppliers.map((supplier) => ({
-        id: supplier.id,
-        name: supplier.name,
-        testCode: supplier.testCode,
-      })),
-    });
+    try {
+      setLoading(true);
+      const laResponse = await laLookupService.getByPostcode(postcode);
+      if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+        updateOrderAnswers({ postcodeSearch: postcode });
+        goToStep(JourneyStepNames.KitNotAvailableInArea);
+        return;
+      }
+      updateOrderAnswers({
+        deliveryAddress: {
+          addressLine1: selected.line1,
+          addressLine2: selected.line2,
+          addressLine3: selected.line3,
+          addressLine4: selected.line4,
+          postTown: selected.town,
+          postcode: postcode,
+        },
+        addressEntryMethod: "postcode-search",
+        selectedAddressId: selected.id,
+        localAuthority: {
+          code: laResponse.localAuthority.localAuthorityCode,
+          region: laResponse.localAuthority.region,
+        },
+        supplier: laResponse.suppliers.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+          testCode: supplier.testCode,
+        })),
+      });
 
-    if (!postcode) {
-      throw new Error("Postcode is required for address selection.");
-    }
+      if (!postcode) {
+        throw new Error("Postcode is required for address selection.");
+      }
 
-    if (isUnder18User) {
-      goToStep(JourneyStepNames.CannotUseServiceUnder18);
+      if (isUnder18User) {
+        goToStep(JourneyStepNames.CannotUseServiceUnder18);
+        return;
+      }
 
-      return;
-    }
-
-    if (returnToStep) {
-      const step = returnToStep;
-      setReturnToStep(null);
-      goToStep(step);
-    } else {
-      goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+      if (returnToStep) {
+        const step = returnToStep;
+        setReturnToStep(null);
+        goToStep(step);
+      } else {
+        goToStep(JourneyStepNames.HowComfortablePrickingFinger);
+      }
+    } finally {
+      setLoading(false);
     }
   });
 
@@ -100,6 +105,8 @@ export default function SelectDeliveryAddressPage() {
   return (
     <FormPageLayout
       showBackButton
+      isLoading={isLoading}
+      loadingMessage={loadingMessage}
       onBackButtonClick={() => {
         updateOrderAnswers({
           postcodeSearch: undefined,

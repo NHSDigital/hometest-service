@@ -73,7 +73,7 @@ describe("EnterDeliveryAddressPage", () => {
 
       expect(
         screen.queryByRole("heading", {
-          name: "Loading...",
+          name: "Loading",
         }),
       ).not.toBeInTheDocument();
     });

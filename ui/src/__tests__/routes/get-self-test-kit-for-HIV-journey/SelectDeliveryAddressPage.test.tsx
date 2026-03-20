@@ -454,4 +454,30 @@ describe("SelectDeliveryAddressPage", () => {
       expect(mockGoToStep).toHaveBeenCalledWith(JourneyStepNames.CannotUseServiceUnder18);
     });
   });
+
+  describe("Loading state", () => {
+    it("does not show a loading spinner on initial render", () => {
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      expect(screen.queryByRole("heading", { name: "Loading" })).not.toBeInTheDocument();
+    });
+
+    it("shows a loading spinner while LA lookup is in progress", async () => {
+      (laLookupService.getByPostcode as jest.Mock).mockImplementation(() => new Promise(() => {}));
+
+      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.click(radios[0]);
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Loading" })).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole("heading", { name: /addresses found/i }),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

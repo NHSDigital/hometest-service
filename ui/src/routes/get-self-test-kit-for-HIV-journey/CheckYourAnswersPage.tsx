@@ -47,7 +47,7 @@ export default function CheckYourAnswersPage() {
     orderAnswers.consentCheckboxChecked ?? false,
   );
   const [consentError, setConsentError] = useState<string | null>(null);
-  const { isLoading, loadingMessage, setLoading } = usePageLoading();
+  const { isLoading, loadingMessage, setLoading } = usePageLoading("Submitting your order");
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
@@ -89,7 +89,7 @@ export default function CheckYourAnswersPage() {
     }
 
     setConsentError(null);
-    setLoading(true, "Submitting your order");
+    setLoading(true);
 
     const consentTimestamp = new Date().toISOString();
     updateOrderAnswers({

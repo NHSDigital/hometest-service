@@ -55,7 +55,7 @@ export default function EnterDeliveryAddressPage() {
   const { lookupPostcode, lookupResultsStatus, isLoading: isLookupLoading, clearAddresses } =
     usePostcodeLookup();
   const { commonContent, "enter-delivery-address": content } = useContent();
-  const { isLoading, loadingMessage, setLoading } = usePageLoading("Searching...");
+  const { isLoading, loadingMessage, setLoading } = usePageLoading("Loading");
 
   const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
   const [buildingName, setBuildingName] = useState(orderAnswers.buildingNumber || "");
