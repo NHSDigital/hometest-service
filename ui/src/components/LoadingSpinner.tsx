@@ -2,7 +2,7 @@ interface LoadingSpinnerProps {
   message?: string;
 }
 
-export function LoadingSpinner({ message = "Submitting your order" }: Readonly<LoadingSpinnerProps>) {
+export function LoadingSpinner({ message = "Loading" }: Readonly<LoadingSpinnerProps>) {
   return (
     <div className="loading-spinner-background">
       <div aria-hidden="true" className="loading-spinner" />

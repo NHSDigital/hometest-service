@@ -3,7 +3,7 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
-import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { useAsyncErrorHandler, useContent, usePageLoading } from "@/hooks";
 import { useEffect, useRef, useState } from "react";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import type { ValidationMessages } from "@/content/schema";
@@ -52,8 +52,10 @@ const validateBuildingName = (
 export default function EnterDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
-  const { lookupPostcode, lookupResultsStatus, isLoading, clearAddresses } = usePostcodeLookup();
+  const { lookupPostcode, lookupResultsStatus, isLoading: isLookupLoading, clearAddresses } =
+    usePostcodeLookup();
   const { commonContent, "enter-delivery-address": content } = useContent();
+  const { isLoading, loadingMessage, setLoading } = usePageLoading("Searching...");
 
   const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
   const [buildingName, setBuildingName] = useState(orderAnswers.buildingNumber || "");
@@ -67,7 +69,11 @@ export default function EnterDeliveryAddressPage() {
   }, [clearAddresses]);
 
   useEffect(() => {
-    if (hasSubmittedRef.current && !isLoading && lookupResultsStatus !== "idle") {
+    setLoading(isLookupLoading);
+  }, [isLookupLoading, setLoading]);
+
+  useEffect(() => {
+    if (hasSubmittedRef.current && !isLookupLoading && lookupResultsStatus !== "idle") {
       hasSubmittedRef.current = false;
       switch (lookupResultsStatus) {
         case "not_found":
@@ -81,7 +87,7 @@ export default function EnterDeliveryAddressPage() {
           throw new Error("Postcode lookup failed");
       }
     }
-  }, [lookupResultsStatus, isLoading, goToStep]);
+  }, [lookupResultsStatus, isLookupLoading, goToStep]);
 
   const handlePostcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPostcode(e.target.value);
@@ -119,7 +125,7 @@ export default function EnterDeliveryAddressPage() {
     <FormPageLayout
       showBackButton
       isLoading={isLoading}
-      loadingMessage="Searching..."
+      loadingMessage={loadingMessage}
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();
