@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { RoutePath } from "@/lib/models/route-paths";
 import { backendUrl } from "@/settings";
 import { useNavigate } from "react-router-dom";
-import { useAsyncErrorHandler } from "@/hooks";
+import { useAsyncErrorHandler, usePageLoading } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 
 function safeReturnTo(value: string | null | undefined) {
@@ -38,6 +38,7 @@ export default function CallbackPage() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
   const didRun = useRef(false);
+  const { isLoading, loadingMessage, setLoading } = usePageLoading("Loading...");
   const handleCallback = useAsyncErrorHandler(async () => {
     if (!backendUrl || backendUrl.trim() === "") {
       console.error("Missing NEXT_PUBLIC_BACKEND_URL");
@@ -82,8 +83,9 @@ export default function CallbackPage() {
     // ALPHA: Revisit this solution to the double call of useEffect.
     if (didRun.current) return;
     didRun.current = true;
+    setLoading(true, "Loading...");
     handleCallback();
-  }, [handleCallback]);
+  }, [handleCallback, setLoading]);
 
-  return <PageLayout isLoading loadingMessage="Loading..." />;
+  return <PageLayout isLoading={isLoading} loadingMessage={loadingMessage} />;
 }

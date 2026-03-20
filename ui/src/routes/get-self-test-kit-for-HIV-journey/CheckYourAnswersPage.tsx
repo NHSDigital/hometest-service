@@ -1,11 +1,11 @@
 "use client";
 
-import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
+import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { useState } from "react";
-import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { useAsyncErrorHandler, useContent, usePageLoading } from "@/hooks";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
@@ -47,7 +47,7 @@ export default function CheckYourAnswersPage() {
     orderAnswers.consentCheckboxChecked ?? false,
   );
   const [consentError, setConsentError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isLoading, loadingMessage, setLoading } = usePageLoading();
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
 
@@ -89,7 +89,7 @@ export default function CheckYourAnswersPage() {
     }
 
     setConsentError(null);
-    setIsSubmitting(true);
+    setLoading(true, "Submitting your order");
 
     const consentTimestamp = new Date().toISOString();
     updateOrderAnswers({
@@ -137,7 +137,7 @@ export default function CheckYourAnswersPage() {
 
       goToStep(JourneyStepNames.OrderSubmitted);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   });
 
@@ -148,7 +148,8 @@ export default function CheckYourAnswersPage() {
   return (
     <FormPageLayout
       showBackButton
-      isLoading={isSubmitting}
+      isLoading={isLoading}
+      loadingMessage={loadingMessage}
       onBackButtonClick={() => {
         if (stepHistory.length > 1) {
           goBack();

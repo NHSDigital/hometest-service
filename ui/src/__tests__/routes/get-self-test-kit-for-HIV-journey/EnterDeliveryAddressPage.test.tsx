@@ -87,7 +87,7 @@ describe("EnterDeliveryAddressPage", () => {
 
       expect(
         screen.getByRole("heading", {
-          name: "Loading...",
+            name: "Searching...",
         }),
       ).toBeInTheDocument();
 
