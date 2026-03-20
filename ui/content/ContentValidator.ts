@@ -6,7 +6,13 @@
  * malformed content during development.
  */
 
-import type { CommonContent, MainContentFile, MainPagesContent } from "./schema";
+import type {
+  CommonContent,
+  HomeTestPrivacyPolicyContent,
+  HomeTestTermsOfUseContent,
+  MainContentFile,
+  MainPagesContent,
+} from "./schema";
 
 export interface ValidationResult {
   valid: boolean;
@@ -140,4 +146,35 @@ export const assertValidContent: (content: unknown) => asserts content is MainCo
       `Content validation failed:\n${result.errors.map((e) => `  - ${e}`).join("\n")}`,
     );
   }
+};
+
+const assertValidLegalPageContent = (label: string, content: unknown): void => {
+  const errors: string[] = [];
+  if (!isObject(content)) {
+    throw new Error(`${label} content must be an object`);
+  }
+  if (!isNonEmptyString(content["title"])) {
+    errors.push("title must be a non-empty string");
+  }
+  if (!Array.isArray(content["introduction"])) {
+    errors.push("introduction must be an array");
+  }
+  if (!Array.isArray(content["sections"])) {
+    errors.push("sections must be an array");
+  }
+  if (errors.length > 0) {
+    throw new Error(`${label} validation failed:\n${errors.map((e) => `  - ${e}`).join("\n")}`);
+  }
+};
+
+export const assertValidPrivacyPolicyContent: (
+  content: unknown,
+) => asserts content is HomeTestPrivacyPolicyContent = (content) => {
+  assertValidLegalPageContent("Privacy policy", content);
+};
+
+export const assertValidTermsOfUseContent: (
+  content: unknown,
+) => asserts content is HomeTestTermsOfUseContent = (content) => {
+  assertValidLegalPageContent("Terms of use", content);
 };

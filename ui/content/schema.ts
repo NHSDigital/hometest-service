@@ -519,7 +519,11 @@ export interface ContentFile {
 // content.json File Types
 // ============================================================================
 
-export type MainPagesContent = Omit<PagesContent, "home-test-privacy-policy" | "home-test-terms-of-use">;
+export type MainPagesContent = Omit<
+  PagesContent,
+  | "home-test-privacy-policy"
+  | "home-test-terms-of-use"
+>;
 
 export interface MainContentFile {
   commonContent: CommonContent;

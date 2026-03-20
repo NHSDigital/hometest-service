@@ -18,8 +18,7 @@ content/
 ├── schema.ts                      # TypeScript type definitions
 ├── ContentService.ts              # Singleton service for accessing content
 ├── ContentValidator.ts            # Validation functions
-├── index.ts                       # Barrel exports
-└── __tests__/                     # Unit tests
+└── index.ts                       # Barrel exports
 ```
 
 ## Quick Start
@@ -74,12 +73,12 @@ The Privacy Policy and Terms of Use content live in their own dedicated files. `
 
 Shared content used across multiple pages:
 
-| Key | Purpose |
-|-----|---------|
-| `navigation` | Back/Continue button labels |
-| `validation` | Form validation error messages |
-| `links` | External NHS links (sexual health clinic, A&E) |
-| `errorSummary` | Error summary component text |
+| Key            | Purpose                                        |
+| -------------- | ---------------------------------------------- |
+| `navigation`   | Back/Continue button labels                    |
+| `validation`   | Form validation error messages                 |
+| `links`        | External NHS links (sexual health clinic, A&E) |
+| `errorSummary` | Error summary component text                   |
 
 Example:
 
@@ -105,12 +104,12 @@ Example:
 
 Each page has its own content object, keyed by route name:
 
-| Key | Route |
-|-----|-------|
+| Key                         | Route                        |
+| --------------------------- | ---------------------------- |
 | `get-self-test-kit-for-HIV` | `/get-self-test-kit-for-HIV` |
-| `enter-delivery-address` | `/enter-delivery-address` |
-| `enter-address-manually` | `/enter-address-manually` |
-| `no-address-found` | `/no-address-found` |
+| `enter-delivery-address`    | `/enter-delivery-address`    |
+| `enter-address-manually`    | `/enter-address-manually`    |
+| `no-address-found`          | `/no-address-found`          |
 
 ## How to Change Content
 
@@ -122,7 +121,7 @@ For general pages, update the value in `content.json`. For the Privacy Policy or
 {
   "pages": {
     "get-self-test-kit-for-HIV": {
-      "title": "Get a self-test kit for HIV"  // ← Change this text
+      "title": "Get a self-test kit for HIV" // ← Change this text
     }
   }
 }
@@ -137,7 +136,7 @@ For general pages, update the value in `content.json`. For the Privacy Policy or
   "pages": {
     "enter-delivery-address": {
       "title": "...",
-      "newField": "Your new content here"  // ← Add new field
+      "newField": "Your new content here" // ← Add new field
     }
   }
 }
@@ -148,7 +147,7 @@ For general pages, update the value in `content.json`. For the Privacy Policy or
 ```ts
 export interface EnterDeliveryAddressContent {
   title: string;
-  newField: string;  // ← Add type definition
+  newField: string; // ← Add type definition
   // ...
 }
 ```

@@ -8,12 +8,14 @@
  */
 
 import type { ContentFile, HomeTestPrivacyPolicyContent, HomeTestTermsOfUseContent } from "./schema";
-import { assertValidContent } from "./ContentValidator";
+import { assertValidContent, assertValidPrivacyPolicyContent, assertValidTermsOfUseContent } from "./ContentValidator";
 import contentData from "./content.json";
 import privacyPolicyData from "./hometest-privacy-policy.json";
 import termsOfUseData from "./hometest-terms-of-use.json";
 
 assertValidContent(contentData);
+assertValidPrivacyPolicyContent(privacyPolicyData);
+assertValidTermsOfUseContent(termsOfUseData);
 
 export const content: ContentFile = {
   commonContent: contentData.commonContent,
