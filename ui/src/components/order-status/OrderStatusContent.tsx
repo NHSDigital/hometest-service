@@ -14,8 +14,10 @@ interface OrderStatusContentProps {
 export function OrderStatusContent({ order }: OrderStatusContentProps) {
   const renderStatus = () => {
     switch (order.status) {
-      case OrderStatus.PROCESSING:
+      case OrderStatus.GENERATED:
+      case OrderStatus.QUEUED:
         return <ProcessingStatus />;
+      case OrderStatus.SUBMITTED:
       case OrderStatus.CONFIRMED:
         return (
           <ConfirmedStatus maxDeliveryDays={order.maxDeliveryDays} supplier={order.supplier} />
