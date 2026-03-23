@@ -5,7 +5,7 @@ output "api_gateway_url" {
 
 output "api_base_url" {
   description = "LocalStack API base URL for tests"
-  value       = "http://localhost:4566/restapis/${aws_api_gateway_rest_api.api.id}/${var.environment}/_user_request_"
+  value       = "http://127.0.0.1:4566/restapis/${aws_api_gateway_rest_api.api.id}/${var.environment}/_user_request_"
 }
 
 output "api_gateway_id" {
@@ -55,7 +55,7 @@ output "session_endpoint" {
 
 output "backend_base_url" {
   description = "Base URL for calling backend routes in LocalStack (append /login, /session, etc.)"
-  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
+  value       = "http://127.0.0.1:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
 output "nhs_login_authorize_url" {

@@ -33,8 +33,8 @@
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
     "local:compose:up": "npm run local:compose -- up -d",
     "local:compose:down": "npm run local:compose -- down",
-    "local:service:lambda:disable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda put-function-concurrency --function-name hometest-service-$LAMBDA --reserved-concurrent-executions 0 --endpoint-url http://localhost:4566 --region eu-west-2",
-    "local:service:lambda:enable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda delete-function-concurrency --function-name hometest-service-$LAMBDA --endpoint-url http://localhost:4566 --region eu-west-2"
+    "local:service:lambda:disable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda put-function-concurrency --function-name hometest-service-$LAMBDA --reserved-concurrent-executions 0 --endpoint-url http://127.0.0.1:4566 --region eu-west-2",
+    "local:service:lambda:enable": "AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws lambda delete-function-concurrency --function-name hometest-service-$LAMBDA --endpoint-url http://127.0.0.1:4566 --region eu-west-2"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",
