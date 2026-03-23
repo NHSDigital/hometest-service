@@ -1,7 +1,6 @@
 ---
 name: "Initialize mise"
 description: "Initialize mise"
-
 runs:
   using: "composite"
   steps:
