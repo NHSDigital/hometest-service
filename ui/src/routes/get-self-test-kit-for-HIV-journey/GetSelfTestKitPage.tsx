@@ -88,7 +88,7 @@ export default function GetSelfTestKitPage() {
         <a href={content.otherOptions.sexualHealthLink.href}>
           {content.otherOptions.sexualHealthLink.text}
         </a>
-        .
+        {"."}
       </p>
 
       <LearnMoreAboutHivAndAidsLink />

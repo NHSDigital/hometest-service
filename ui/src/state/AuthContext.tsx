@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, createContext, useCallback, useContext, useState } from "react";
+import { ReactNode, createContext, useContext, useMemo, useState } from "react";
 
 export interface AuthUser {
   sub: string;
@@ -20,23 +20,17 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<AuthUser | null>(null);
-
-  const setUser = useCallback((user: AuthUser | null) => {
-    setUserState(user);
-  }, []);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const value = useMemo(
+    () => ({
+      user,
+      setUser,
+    }),
+    [user],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

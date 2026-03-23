@@ -30,7 +30,6 @@ import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
 import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
 import HomeTestTermsOfUsePage from "./routes/HomeTestTermsOfUsePage";
-import { requireAuth } from "@/lib/auth/requireAuth";
 import ServiceErrorPage from "./routes/ServiceErrorPage";
 import ErrorRedirect from "./components/ErrorRedirect";
 
@@ -73,7 +72,6 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    loader: requireAuth,
     errorElement: <ErrorRedirect />,
     children: [
       {
