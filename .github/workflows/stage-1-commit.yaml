@@ -62,7 +62,5 @@ jobs:
         uses: actions/checkout@v6
       - name: Initialize mise
         uses: ./.github/actions/init-mise
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run pre-commit checks
         uses: ./.github/actions/perform-pre-commit

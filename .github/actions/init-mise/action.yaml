@@ -1,11 +1,6 @@
 ---
 name: "Initialize mise"
 description: "Initialize mise"
-inputs:
-  github_token:
-    description: "GitHub token to avoid rate limiting when mise fetches tool versions"
-    required: false
-    default: ""
 
 runs:
   using: "composite"
@@ -19,8 +14,6 @@ runs:
 
     - name: Install mise
       uses: jdx/mise-action@v4
-      env:
-        MISE_VERBOSE: "1"
       with:
         cache: true
         install: true
