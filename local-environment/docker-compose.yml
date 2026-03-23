@@ -1,7 +1,7 @@
 ---
 services:
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:4.14.0
     container_name: localstack-main
     profiles:
       - backend
@@ -9,7 +9,7 @@ services:
       - "127.0.0.1:4566:4566" # LocalStack Gateway
       - "127.0.0.1:4510-4559:4510-4559" # external services port range
     environment:
-      - SERVICES=lambda,iam,logs,s3,cloudformation,sts,apigateway,ssm,sqs
+      - SERVICES=lambda,iam,logs,s3,cloudformation,sts,apigateway,ssm,secretsmanager,sqs
       - DEBUG=1
       - LAMBDA_EXECUTOR=docker
       - AWS_DEFAULT_REGION=eu-west-2
