@@ -14,7 +14,7 @@ export const getNumberOfWorkers = (authType: AuthType): number => {
   // Run only 1 worker for local environment
   const env = ConfigFactory.getEnvironment();
   if (env === "local") {
-    return 1;
+    return 4;
   }
 
   switch (authType) {

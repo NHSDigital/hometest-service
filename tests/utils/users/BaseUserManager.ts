@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs";
 import * as path from "path";
 import { SpecialUserKey } from "./SpecialUserKey";
+import { createWireMockUserInfoMapping } from "./wiremockUserInfoMapping";
 
 interface NetworkError {
   url: string;
@@ -254,7 +255,20 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       }
 
       try {
+
+
         await this.loginWorkerUser(user, page);
+
+        page.on("response", async (response) => {
+        if (response.url().includes("session")) {
+          try {
+            const body = await response.text();
+            console.log(`[Worker ${i}][] Session body: ${body}`);
+          } catch {
+            // ignore
+          }
+        }
+      });
 
         await page.context().storageState({
           path: sessionFilePath,

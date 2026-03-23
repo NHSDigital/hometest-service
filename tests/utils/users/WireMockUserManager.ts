@@ -2,9 +2,29 @@ import { BaseUserManager } from "./BaseUserManager";
 import type { NHSLoginMockedUser } from "./BaseUser";
 import type { Page } from "@playwright/test";
 import { SpecialUserKey } from "./SpecialUserKey";
+import { createWireMockUserInfoMapping } from "./wiremockUserInfoMapping";
+import { WireMockClient } from "../../api/clients/WireMockClient";
 
 const DEFAULT_WORKER_USER: NHSLoginMockedUser = {
   nhsNumber: "9912003071",
+  dob: "1990-01-01",
+  code: "wiremock-auth-code",
+};
+
+const DEFAULT_WORKER_USER1: NHSLoginMockedUser = {
+  nhsNumber: "9912003072",
+  dob: "1990-01-01",
+  code: "wiremock-auth-code",
+};
+
+const DEFAULT_WORKER_USER2: NHSLoginMockedUser = {
+  nhsNumber: "9912003073",
+  dob: "1990-01-01",
+  code: "wiremock-auth-code",
+};
+
+const DEFAULT_WORKER_USER3: NHSLoginMockedUser = {
+  nhsNumber: "9912003074",
   dob: "1990-01-01",
   code: "wiremock-auth-code",
 };
@@ -15,6 +35,9 @@ const UNDER_18_USER: NHSLoginMockedUser = {
   age: 16,
   code: "wiremock-auth-code",
 };
+
+
+let  mappingId: string | undefined;
 
 /**
  * User manager that authenticates via the WireMock-simulated NHS Login flow.
@@ -30,11 +53,16 @@ const UNDER_18_USER: NHSLoginMockedUser = {
  * BaseUserManager handles the browser lifecycle and storage state save.
  */
 export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
+  private readonly wiremock: WireMockClient = new WireMockClient(this.config.wiremockBaseUrl);
+
   public getWorkerUsers(): NHSLoginMockedUser[] {
-    return [DEFAULT_WORKER_USER];
+    return [DEFAULT_WORKER_USER, DEFAULT_WORKER_USER1, DEFAULT_WORKER_USER2, DEFAULT_WORKER_USER3];
   }
 
   protected async loginWorkerUser(_user: NHSLoginMockedUser, page: Page): Promise<Page> {
+
+    mappingId = await this.wiremock.createMapping(createWireMockUserInfoMapping(_user));
+
     await page.goto(`${this.config.uiBaseUrl}/login`);
     // Wait until the OAuth redirect chain completes:
     // /login → WireMock /authorize → /callback → post-login page
