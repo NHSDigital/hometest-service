@@ -15,10 +15,10 @@ terraform = "1.14.4"
 terragrunt = "0.99.1"
 
 # https://github.com/terraform-linters/tflint/releases
-tflint = "latest"
+tflint = "0.61.0"
 
 # https://github.com/terraform-docs/terraform-docs/releases
-terraform-docs = "latest"
+terraform-docs = "0.21.0"
 
 # https://github.com/aws/aws-cli/tags
 awscli = "2.33.13"
@@ -26,7 +26,7 @@ awscli = "2.33.13"
 ## Security scanning
 
 # https://github.com/aquasecurity/trivy/releases
-trivy = "latest"
+trivy = "0.69.3"
 
 # https://github.com/bridgecrewio/checkov/releases
 # checkov = "latest"
@@ -37,10 +37,10 @@ gitleaks = "8.18.4"
 ## Pre-commit and linting
 
 # https://github.com/pre-commit/pre-commit/releases
-pre-commit = "latest"
+pre-commit = "4.5.1"
 
 # https://github.com/errata-ai/vale/releases
-vale = "latest"
+vale = "3.14.1"
 
 # https://github.com/igorshubovych/markdownlint-cli/releases
 # markdownlint-cli = "latest"
