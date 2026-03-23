@@ -1,3 +1,7 @@
+[settings]
+lockfile = true
+install_before = "7d"
+
 [tools]
 # Custom registries are not included in mise-versions
 # https://mise-versions.jdx.dev/
