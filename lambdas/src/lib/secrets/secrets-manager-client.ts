@@ -2,6 +2,7 @@ import {
   SecretsManagerClient as AwsSecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
+import { getAwsClientOptions } from "../aws/aws-client-config";
 
 export interface SecretsClient {
   getSecretString(secretName: string): Promise<string>;
@@ -12,7 +13,7 @@ export class AwsSecretsClient implements SecretsClient {
   private readonly client: AwsSecretsManagerClient;
 
   constructor(region: string) {
-    this.client = new AwsSecretsManagerClient({ region: region });
+    this.client = new AwsSecretsManagerClient(getAwsClientOptions(region));
   }
 
   async getSecretString(secretName: string): Promise<string> {

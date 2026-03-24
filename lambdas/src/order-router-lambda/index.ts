@@ -2,7 +2,7 @@ import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 
 import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
 import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
-import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
+import { getTokenGenerator } from "../lib/supplier/supplier-auth-client";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { SupplierConfig } from "../lib/db/supplier-db";
 import { init } from "./init";
@@ -11,7 +11,7 @@ import z from "zod";
 
 const name = "order-router-lambda";
 
-const { httpClient, supplierDb, secretsClient, orderStatusService } = init();
+const { httpClient, supplierDb, secretsClient, dbClient, kmsClient, orderStatusService } = init();
 
 export interface ParsedOrderBody {
   supplier_code: string;
@@ -64,17 +64,15 @@ const getSupplierServiceConfig = async (supplierCode: string): Promise<SupplierC
 
 const getSupplierAccessToken = async (serviceConfig: SupplierConfig): Promise<string> => {
   try {
-    const supplierAuthClient = new OAuthSupplierAuthClient(
+    const tokenGenerator = getTokenGenerator(
       httpClient,
       secretsClient,
-      serviceConfig.serviceUrl,
-      serviceConfig.oauthTokenPath,
-      serviceConfig.clientId,
-      serviceConfig.clientSecretName,
-      serviceConfig.oauthScope,
+      dbClient,
+      kmsClient,
+      serviceConfig,
     );
 
-    return await supplierAuthClient.getAccessToken();
+    return await tokenGenerator.generateToken();
   } catch (error) {
     throw new Error(`${name}: Failed to get supplier access token`, {
       cause: error,
@@ -120,6 +118,9 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
     const parsedBody = parseAndValidateRequestBody(messageBody);
     const serviceConfig = await getSupplierServiceConfig(parsedBody.supplier_code);
     const accessToken = await getSupplierAccessToken(serviceConfig);
+    console.info(
+      `${name}: Successfully obtained access token for supplier ${parsedBody.supplier_code}`,
+    );
     const correlationId = parsedBody.correlation_id;
 
     const orderResult = await sendOrderToSupplier(

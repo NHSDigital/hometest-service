@@ -5,6 +5,8 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { SupplierService } from "../lib/db/supplier-db";
 import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { TestResultDbClient } from "../lib/db/test-result-db-client";
+import { AwsKmsTokenEncryptionClient } from "../lib/kms/kms-client";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
   testResultDbClient: TestResultDbClient;
@@ -12,11 +14,12 @@ export interface Environment {
 }
 
 export function init(): Environment {
-  const awsRegion =
-    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const kmsKeyId = retrieveMandatoryEnvVariable("KMS_KEY_ID");
 
   const httpClient = new FetchHttpClient();
   const secretsClient = new AwsSecretsClient(awsRegion);
+  const kmsClient = new AwsKmsTokenEncryptionClient(kmsKeyId, awsRegion);
 
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const testResultDbClient = new TestResultDbClient(dbClient);
@@ -26,6 +29,8 @@ export function init(): Environment {
     httpClient,
     secretsClient,
     supplierDb,
+    dbClient,
+    kmsClient,
   );
 
   return {
