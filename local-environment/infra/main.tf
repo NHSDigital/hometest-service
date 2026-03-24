@@ -63,6 +63,33 @@ locals {
   secret_file_map = merge(local.secret_json_map, local.secret_txt_map, local.secret_key_map)
 }
 
+locals {
+  wiremock_container_base_url    = "http://wiremock:8080"
+  wiremock_browser_base_url      = "http://localhost:8080"
+  nhs_login_sandpit_base_url     = "https://auth.sandpit.signin.nhs.uk"
+  postcode_lookup_os_places_base = "https://api.os.uk/search/places/v1"
+
+  use_wiremock_mode = var.local_service_mode == "wiremock"
+
+  resolved_nhs_login_base_url = var.local_nhs_login_base_url_override != null ? var.local_nhs_login_base_url_override : (
+    local.use_wiremock_mode ? local.wiremock_container_base_url : local.nhs_login_sandpit_base_url
+  )
+
+  resolved_nhs_login_authorize_url = var.local_nhs_login_authorize_url_override != null ? var.local_nhs_login_authorize_url_override : (
+    local.use_wiremock_mode ? "${local.wiremock_browser_base_url}/authorize" : "${local.nhs_login_sandpit_base_url}/authorize"
+  )
+
+  resolved_postcode_lookup_base_url = var.local_postcode_lookup_base_url_override != null ? var.local_postcode_lookup_base_url_override : (
+    local.use_wiremock_mode ? local.wiremock_container_base_url : local.postcode_lookup_os_places_base
+  )
+
+  resolved_supplier_service_url = var.local_supplier_service_url_override != null ? var.local_supplier_service_url_override : (
+    local.use_wiremock_mode ? local.wiremock_container_base_url : null
+  )
+
+  resolved_use_wiremock_auth = var.local_use_wiremock_auth_override != null ? var.local_use_wiremock_auth_override : local.use_wiremock_mode
+}
+
 # Fail early if required secrets are missing
 resource "null_resource" "validate_secrets" {
   lifecycle {
@@ -72,6 +99,15 @@ resource "null_resource" "validate_secrets" {
         Missing required secret files in ${local.secrets_dir}:
         ${join("\n  - ", local.missing_secrets)}
       EOT
+    }
+  }
+}
+
+resource "null_resource" "validate_local_service_config" {
+  lifecycle {
+    precondition {
+      condition     = local.resolved_supplier_service_url != null
+      error_message = "local_supplier_service_url_override must be set when local_service_mode is real."
     }
   }
 }
@@ -211,7 +247,7 @@ module "login_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                               = "--enable-source-maps",
-    NHS_LOGIN_BASE_ENDPOINT_URL                = "http://wiremock:8080",
+    NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url,
     NHS_LOGIN_CLIENT_ID                        = "hometest",
     NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
     NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
@@ -248,7 +284,7 @@ module "session_lambda" {
     NODE_OPTIONS                       = "--enable-source-maps"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
-    NHS_LOGIN_BASE_ENDPOINT_URL        = "http://wiremock:8080",
+    NHS_LOGIN_BASE_ENDPOINT_URL        = local.resolved_nhs_login_base_url,
   }
 }
 
@@ -271,7 +307,7 @@ module "postcode_lookup_lambda" {
   environment_variables = {
     NODE_OPTIONS                            = "--enable-source-maps",
     POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME = "os-places-creds",
-    POSTCODE_LOOKUP_BASE_URL                = "http://wiremock:8080",
+    POSTCODE_LOOKUP_BASE_URL                = local.resolved_postcode_lookup_base_url,
     POSTCODE_LOOKUP_TIMEOUT_MS              = "5000",
     POSTCODE_LOOKUP_MAX_RETRIES             = "3",
     POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",
@@ -537,4 +573,8 @@ resource "aws_api_gateway_stage" "api_stage" {
 
 data "external" "supplier_id" {
   program = ["bash", "${path.module}/../scripts/localstack/get_supplier_id.sh"]
+
+  depends_on = [
+    null_resource.validate_local_service_config
+  ]
 }

@@ -118,8 +118,25 @@ After running `npm start`, use targeted commands instead of restarting everythin
 
   ```shell
   npm run local:terraform:apply
-  npm run local:terraform:env
   ```
+
+  This expects the backend containers, including LocalStack, to already be running. If they are not, start them first:
+
+  ```shell
+  npm run local:backend:start
+  ```
+
+  To switch local integrations between WireMock and real upstreams, pass Terraform variables when applying.
+
+  ```shell
+  TF_VAR_local_service_mode=wiremock npm run local:terraform:apply
+
+  TF_VAR_local_service_mode=real \
+  TF_VAR_local_supplier_service_url_override=https://supplier.example.com \
+  npm run local:terraform:apply
+  ```
+
+  Optional overrides are also available for NHS Login base URL, NHS Login authorize URL, postcode lookup base URL, and the UI/tests WireMock-auth flag.
 
 - **Restart backend containers only** (Postgres, LocalStack, WireMock, db-migrate):
 
