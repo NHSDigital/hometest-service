@@ -32,7 +32,7 @@ repos:
 
       - id: prettier-formatting
         name: prettier-formatting
-        entry: npm run prettier:pre-commit --
+        entry: npm run format:pre-commit --
         language: system
 
       - id: eslint-ui
