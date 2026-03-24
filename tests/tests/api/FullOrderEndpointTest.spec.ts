@@ -4,7 +4,7 @@ import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
 import { ResultsObservationData } from "../../test-data/ResultsObservationData";
 import {
-  headersOrder,
+  createHeaders,
   headersTestResults,
   orderStatusPayload,
   buildHeaders,
@@ -16,7 +16,10 @@ import {
 } from "../../test-data/GetResultRequestParams";
 import { OrderTestData } from "../../test-data/OrderTestData";
 import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
+import type { OrderApiResource } from "../../api/clients/OrderApiResource";
+import type { HIVResultsApiResource } from "../../api/clients/HIVResultsApiResource";
+import type { OrderStatusCode } from "../../models/TestOrder";
 
 let orderId: string;
 let patientId: string;
@@ -24,6 +27,60 @@ let correlationId: string;
 const dbClient = new TestOrderDbClient();
 const resultDbClient = new TestResultDbClient();
 const supplierId = OrderTestData.PREVENTX_SUPPLIER_ID;
+const POLL_TIMEOUT_MS = 15000;
+
+async function waitForOrderStatus(
+  orderApi: OrderApiResource,
+  nhsNumber: string,
+  dob: string,
+  orderId: string,
+  expectedStatus: OrderStatusCode,
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const statusResponse = await orderApi.getOrder(nhsNumber, dob, orderId);
+        if (statusResponse.status() !== 200) {
+          return `http-${statusResponse.status()}`;
+        }
+
+        return orderApi.extractOrderStatus(await statusResponse.json());
+      },
+      { timeout: POLL_TIMEOUT_MS },
+    )
+    .toBe(expectedStatus);
+}
+
+async function waitForResultResponseStatus(
+  hivResultsApi: HIVResultsApiResource,
+  nhsNumber: string,
+  dob: string,
+  orderId: string,
+  correlationId: string,
+  expectedStatus: number,
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const resultResponse = await hivResultsApi.getResult(
+          createGetResultParams(nhsNumber, dob, orderId),
+          createGetResultHeaders(correlationId),
+        );
+
+        return resultResponse.status();
+      },
+      { timeout: POLL_TIMEOUT_MS },
+    )
+    .toBe(expectedStatus);
+}
+
+async function waitForResultStatusCount(orderId: string, expectedCount: number): Promise<void> {
+  await expect
+    .poll(async () => resultDbClient.getResultStatusCountByOrderUid(orderId), {
+      timeout: POLL_TIMEOUT_MS,
+    })
+    .toBe(expectedCount);
+}
 
 test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
   test.beforeAll("Connect to the database", async () => {
@@ -36,7 +93,10 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     payload.patient.nhsNumber = testedUser.nhsNumber!;
     payload.patient.birthDate = testedUser.dob!;
 
-    const orderResponse = await orderApi.createOrder(payload, headersOrder);
+    const orderResponse = await orderApi.createOrder(
+      payload,
+      createHeaders("application/json", randomUUID()),
+    );
     expect(orderResponse.status()).toBe(201);
 
     const orderBody = CreateOrderResponseModel.fromJson(await orderResponse.json());
@@ -115,11 +175,15 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     expect(response.status()).toBe(201);
 
-    await orderApi.assertOrderHasStatus(
+    await waitForOrderStatus(orderApi, testedUser.nhsNumber!, testedUser.dob!, orderId, "COMPLETE");
+
+    await waitForResultResponseStatus(
+      hivResultsApi,
       testedUser.nhsNumber!,
       testedUser.dob!,
       orderId,
-      "COMPLETE",
+      correlationId,
+      200,
     );
 
     const resultResponse = await hivResultsApi.getResult(
@@ -127,11 +191,14 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
       createGetResultHeaders(correlationId),
     );
     hivResultsApi.validateStatus(resultResponse, 200);
-    const resultBody = await resultResponse.json();
+    const resultBody = (await resultResponse.json()) as {
+      interpretation: Array<{ coding: Array<{ display: string }> }>;
+    };
+
     expect(resultBody.interpretation).toHaveLength(1);
     expect(resultBody.interpretation[0].coding[0].display).toBe("Normal");
 
-    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
+    await waitForResultStatusCount(orderId, 1);
   });
 
   test("should set order status to RECEIVED and withhold result when test result is abnormal", async ({
@@ -199,20 +266,18 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     expect(response.status()).toBe(201);
 
-    await orderApi.assertOrderHasStatus(
+    await waitForOrderStatus(orderApi, testedUser.nhsNumber!, testedUser.dob!, orderId, "RECEIVED");
+
+    await waitForResultStatusCount(orderId, 1);
+
+    await waitForResultResponseStatus(
+      hivResultsApi,
       testedUser.nhsNumber!,
       testedUser.dob!,
       orderId,
-      "RECEIVED",
+      correlationId,
+      404,
     );
-
-    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
-
-    const resultResponse = await hivResultsApi.getResult(
-      createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId),
-      createGetResultHeaders(correlationId),
-    );
-    hivResultsApi.validateStatus(resultResponse, 404);
   });
 
   test.afterEach(
