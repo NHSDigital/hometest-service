@@ -1,8 +1,9 @@
 import "./globals.css";
 import "nhsuk-frontend/dist/nhsuk/nhsuk-frontend.css";
 
-import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 import type { Metadata } from "next";
+
+import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 
 export const metadata: Metadata = {
   title: DEFAULT_PAGE_TITLE,
