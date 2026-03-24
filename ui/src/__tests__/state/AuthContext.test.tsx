@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 
-import { AuthProvider, AuthUser, useAuth } from "@/state/AuthContext";
+import { AuthProvider, AuthUser, useAuth } from "@/state";
 import { act, render, renderHook, screen } from "@testing-library/react";
 
 const AUTH_STORAGE_KEY = "hometest:auth:user";

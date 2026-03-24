@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import { render } from "@testing-library/react";
 
 import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
-import { type LegalDocumentContent as LegalDocumentContentType } from "@/content/schema";
+import { type LegalDocumentContent as LegalDocumentContentType } from "@/content";
 
 const mockUsePageContent = jest.fn();
 const mockLegalDocumentContent: jest.Mock<null, [{ content: LegalDocumentContentType }]> = jest.fn<

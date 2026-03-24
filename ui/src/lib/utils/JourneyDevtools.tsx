@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useCreateOrderContext } from "@/state/OrderContext";
-import { useJourneyNavigationContext } from "@/state/NavigationContext";
-import { usePostcodeLookup } from "@/state/PostcodeLookupContext";
+import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup } from "@/state";
 import { registerDebugState, unregisterDebugState } from "./debug";
 
 function JourneyDevtoolsInner() {
@@ -14,13 +12,29 @@ function JourneyDevtoolsInner() {
   useEffect(() => {
     registerDebugState("order", () => orderAnswers);
     registerDebugState("navigation", () => ({ currentStep, stepHistory, returnToStep }));
-    registerDebugState("postcode", () => ({ postcode, addresses, selectedAddress, lookupResultsStatus, error }));
+    registerDebugState("postcode", () => ({
+      postcode,
+      addresses,
+      selectedAddress,
+      lookupResultsStatus,
+      error,
+    }));
     return () => {
       unregisterDebugState("order");
       unregisterDebugState("navigation");
       unregisterDebugState("postcode");
     };
-  }, [orderAnswers, currentStep, stepHistory, returnToStep, postcode, addresses, selectedAddress, lookupResultsStatus, error]);
+  }, [
+    orderAnswers,
+    currentStep,
+    stepHistory,
+    returnToStep,
+    postcode,
+    addresses,
+    selectedAddress,
+    lookupResultsStatus,
+    error,
+  ]);
 
   return null;
 }

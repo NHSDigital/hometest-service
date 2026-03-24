@@ -1,17 +1,18 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { z } from "zod";
-import middy from "@middy/core";
-import cors from "@middy/http-cors";
-import httpErrorHandler from "@middy/http-error-handler";
-import httpSecurityHeaders from "@middy/http-security-headers";
-import { OrderServiceRequestSchema } from "./order-service-request-schema";
-import { OrderServiceRequest } from "./order-service-request-type";
 import { createJsonResponse, getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
-import { init } from "./init";
+
+import { OrderServiceRequest } from "./order-service-request-type";
+import { OrderServiceRequestSchema } from "./order-service-request-schema";
+import { OrderStatusCodes } from "../lib/db/order-status-db";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
-import { OrderStatusCodes } from "../lib/db/order-status-db";
+import cors from "@middy/http-cors";
 import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { generateReadableError } from "../lib/utils/validation-utils";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
+import { init } from "./init";
+import middy from "@middy/core";
 import { securityHeaders } from "../lib/http/security-headers";
 
 const name = "order-service-lambda";
@@ -28,8 +29,7 @@ const parseAndValidateRequest = (eventBody: string | null): OrderServiceRequest 
 
   const validationResult = OrderServiceRequestSchema.safeParse(parsedBody);
   if (!validationResult.success) {
-    let errorDetails = z.prettifyError(validationResult.error);
-    errorDetails = errorDetails.replace(/(?:\u2716 |\r?\n )/g, "");
+    const errorDetails = generateReadableError(validationResult.error);
     throw new Error(`Validation failed: ${errorDetails}`);
   }
 

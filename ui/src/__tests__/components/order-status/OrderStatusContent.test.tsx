@@ -19,22 +19,31 @@ describe("OrderStatusContent", () => {
   };
 
   describe("Processing status", () => {
-    const processingOrder: OrderDetails = {
-      ...baseOrder,
-      status: OrderStatus.PROCESSING,
-    };
-
-    it("renders processing status", () => {
-      renderWithRouter(<OrderStatusContent order={processingOrder} />);
-      expect(screen.getByText("PROCESSING")).toBeInTheDocument();
-    });
+    it.each([[OrderStatus.GENERATED], [OrderStatus.QUEUED]])(
+      "renders processing status for %s",
+      (status) => {
+        const processingOrder: OrderDetails = {
+          ...baseOrder,
+          status,
+        };
+        renderWithRouter(<OrderStatusContent order={processingOrder} />);
+        expect(screen.getByText("PROCESSING")).toBeInTheDocument();
+      },
+    );
   });
 
-  describe("Confirmed status", () => {
-    it("renders confirmed status heading", () => {
-      renderWithRouter(<OrderStatusContent order={baseOrder} />);
-      expect(screen.getByText(/wait for your kit to be dispatched/i)).toBeInTheDocument();
-    });
+  describe("Confirmed and Submitted status", () => {
+    it.each([[OrderStatus.CONFIRMED], [OrderStatus.SUBMITTED]])(
+      "renders confirmed status heading for %s",
+      (status) => {
+        const order: OrderDetails = {
+          ...baseOrder,
+          status,
+        };
+        renderWithRouter(<OrderStatusContent order={order} />);
+        expect(screen.getByText(/wait for your kit to be dispatched/i)).toBeInTheDocument();
+      },
+    );
 
     it("displays expected delivery timeframe", () => {
       renderWithRouter(<OrderStatusContent order={baseOrder} />);

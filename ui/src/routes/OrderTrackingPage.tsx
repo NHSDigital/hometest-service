@@ -5,14 +5,26 @@ import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import { isValidGuid } from "@/lib/utils/guid";
-import { useAuth } from "@/state/AuthContext";
+import { useAuth } from "@/state";
 import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
 import { usePageContent } from "@/hooks";
 import { useParams } from "react-router-dom";
 
 function OrderContent({ orderId, patient }: { orderId: string; patient: Patient }) {
-  const { data: order } = useOrderStatusQuery(orderId, patient);
   const content = usePageContent("order-tracking");
+  const {
+    data: order,
+    isPending: isLoading,
+    error: orderError,
+  } = useOrderStatusQuery(orderId, patient);
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (orderError) {
+    throw orderError;
+  }
 
   if (!order) {
     return (

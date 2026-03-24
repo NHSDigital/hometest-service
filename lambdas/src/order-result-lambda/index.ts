@@ -114,5 +114,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
-  return createFhirResponse(201, observation!);
+  return createFhirResponse(201, observation);
 };

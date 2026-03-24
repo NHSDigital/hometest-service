@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "@/state/AuthContext";
+import { useAuth } from "@/state";
 import { registerDebugState, unregisterDebugState } from "./debug";
 
 function AppDevtoolsInner() {

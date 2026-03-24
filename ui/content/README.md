@@ -12,12 +12,13 @@ This folder contains a lightweight, build-time JSON CMS for managing static cont
 
 ```text
 content/
-├── content.json          # All content lives here
-├── schema.ts             # TypeScript type definitions
-├── ContentService.ts     # Singleton service for accessing content
-├── ContentValidator.ts   # Validation functions
-├── index.ts              # Barrel exports
-└── __tests__/            # Unit tests
+├── content.json                   # Main application content
+├── hometest-privacy-policy.json   # Privacy Policy page content
+├── hometest-terms-of-use.json     # Terms of Use page content
+├── schema.ts                      # TypeScript type definitions
+├── ContentService.ts              # Singleton service for accessing content
+├── ContentValidator.ts            # Validation functions
+└── index.ts                       # Barrel exports
 ```
 
 ## Quick Start
@@ -55,25 +56,29 @@ export default function MyPage() {
 
 ### `content.json`
 
-The JSON file has two main sections:
+The main JSON file has two top-level sections:
 
 ```json
 {
   "commonContent": { ... },  // Shared across all pages
-  "pages": { ... }           // Page-specific content
+  "pages": { ... }           // Page-specific content (excluding Privacy Policy and Terms of Use)
 }
 ```
+
+### `hometest-privacy-policy.json` and `hometest-terms-of-use.json`
+
+The Privacy Policy and Terms of Use content live in their own dedicated files. `ContentService` loads and merges all three files together at build time, so consumers of the content module see no difference — `getPageContent("home-test-privacy-policy")` and `getPageContent("home-test-terms-of-use")` work as normal.
 
 ### Common Content
 
 Shared content used across multiple pages:
 
-| Key | Purpose |
-|-----|---------|
-| `navigation` | Back/Continue button labels |
-| `validation` | Form validation error messages |
-| `links` | External NHS links (sexual health clinic, A&E) |
-| `errorSummary` | Error summary component text |
+| Key            | Purpose                                        |
+| -------------- | ---------------------------------------------- |
+| `navigation`   | Back/Continue button labels                    |
+| `validation`   | Form validation error messages                 |
+| `links`        | External NHS links (sexual health clinic, A&E) |
+| `errorSummary` | Error summary component text                   |
 
 Example:
 
@@ -99,24 +104,24 @@ Example:
 
 Each page has its own content object, keyed by route name:
 
-| Key | Route |
-|-----|-------|
+| Key                         | Route                        |
+| --------------------------- | ---------------------------- |
 | `get-self-test-kit-for-HIV` | `/get-self-test-kit-for-HIV` |
-| `enter-delivery-address` | `/enter-delivery-address` |
-| `enter-address-manually` | `/enter-address-manually` |
-| `no-address-found` | `/no-address-found` |
+| `enter-delivery-address`    | `/enter-delivery-address`    |
+| `enter-address-manually`    | `/enter-address-manually`    |
+| `no-address-found`          | `/no-address-found`          |
 
 ## How to Change Content
 
 ### 1. Edit Existing Text
 
-Simply update the value in `content.json`:
+For general pages, update the value in `content.json`. For the Privacy Policy or Terms of Use, update `hometest-privacy-policy.json` or `hometest-terms-of-use.json` respectively:
 
 ```json
 {
   "pages": {
     "get-self-test-kit-for-HIV": {
-      "title": "Get a self-test kit for HIV"  // ← Change this text
+      "title": "Get a self-test kit for HIV" // ← Change this text
     }
   }
 }
@@ -131,7 +136,7 @@ Simply update the value in `content.json`:
   "pages": {
     "enter-delivery-address": {
       "title": "...",
-      "newField": "Your new content here"  // ← Add new field
+      "newField": "Your new content here" // ← Add new field
     }
   }
 }
@@ -142,7 +147,7 @@ Simply update the value in `content.json`:
 ```ts
 export interface EnterDeliveryAddressContent {
   title: string;
-  newField: string;  // ← Add type definition
+  newField: string; // ← Add type definition
   // ...
 }
 ```

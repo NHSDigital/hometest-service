@@ -1,12 +1,13 @@
 import "@testing-library/jest-dom";
 
-import { AuthContext, AuthUser } from "@/state/AuthContext";
+import { AuthContext, AuthUser } from "@/state";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 
 import OrderTrackingPage from "@/routes/OrderTrackingPage";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import { act } from "react";
 import orderDetailsService from "@/lib/services/order-details-service";
 
@@ -50,8 +51,19 @@ const mockUser: AuthUser = {
   email: "john.smith@example.com",
 };
 
-const renderWithRouter = (orderId: string) => {
-  const queryClient = new QueryClient();
+const renderWithRouter = (orderId: string, options?: { withErrorBoundary?: boolean }) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const routeElement = (
+    <Routes>
+      <Route path="/orders/:orderId/tracking" element={<OrderTrackingPage />} />
+    </Routes>
+  );
 
   return render(
     <QueryClientProvider client={queryClient}>
@@ -62,9 +74,11 @@ const renderWithRouter = (orderId: string) => {
         }}
       >
         <MemoryRouter initialEntries={[`/orders/${orderId}/tracking`]}>
-          <Routes>
-            <Route path="/orders/:orderId/tracking" element={<OrderTrackingPage />} />
-          </Routes>
+          {options?.withErrorBoundary ? (
+            <TestErrorBoundary>{routeElement}</TestErrorBoundary>
+          ) : (
+            routeElement
+          )}
         </MemoryRouter>
       </AuthContext.Provider>
     </QueryClientProvider>,
@@ -155,6 +169,21 @@ describe("OrderTrackingPage", () => {
       await screen.findByTestId("order-status");
       expect(screen.getByText("Status: DISPATCHED")).toBeInTheDocument();
     });
+
+    it("does not render error alert while query is pending", async () => {
+      (orderDetailsService.get as jest.Mock).mockImplementation(() => new Promise(() => {}));
+
+      await act(async () => {
+        renderWithRouter(orderId);
+      });
+
+      expect(screen.getByTestId("page-layout")).toBeInTheDocument();
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "There is a problem" })).not.toBeInTheDocument();
+      expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
+    });
   });
 
   describe("Order not found", () => {
@@ -172,19 +201,6 @@ describe("OrderTrackingPage", () => {
       expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
     });
 
-    it("displays error message when order is undefined", async () => {
-      (orderDetailsService.get as jest.Mock).mockResolvedValue(undefined);
-
-      await act(async () => {
-        renderWithRouter(orderId);
-      });
-
-      const errorHeading = await screen.findByRole("heading", { name: "There is a problem" });
-      const errorAlert = errorHeading.closest('[role="alert"]');
-      expect(errorAlert).toBeInTheDocument();
-      expect(screen.getByText("We could not find this order.")).toBeInTheDocument();
-    });
-
     it("does not render OrderStatus or AboutService when order not found", async () => {
       (orderDetailsService.get as jest.Mock).mockResolvedValue(null);
 
@@ -194,6 +210,19 @@ describe("OrderTrackingPage", () => {
 
       await screen.findAllByRole("alert");
 
+      expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
+    });
+
+    it("throws query error to error boundary when order lookup fails", async () => {
+      const apiError = new Error("order lookup failed");
+      (orderDetailsService.get as jest.Mock).mockRejectedValue(apiError);
+
+      await act(async () => {
+        renderWithRouter(orderId, { withErrorBoundary: true });
+      });
+
+      expect(await screen.findByText("order lookup failed")).toBeInTheDocument();
       expect(screen.queryByTestId("order-status")).not.toBeInTheDocument();
       expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
     });

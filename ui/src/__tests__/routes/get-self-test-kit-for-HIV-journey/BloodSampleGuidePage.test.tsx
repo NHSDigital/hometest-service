@@ -3,8 +3,7 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
 import BloodSampleGuidePage from "@/routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
-import { CreateOrderProvider } from "@/state/OrderContext";
-import { JourneyNavigationProvider } from "@/state/NavigationContext";
+import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 import { MemoryRouter } from "react-router-dom";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
