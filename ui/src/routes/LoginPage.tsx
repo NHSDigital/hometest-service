@@ -1,24 +1,16 @@
 "use client";
 
+import { getAuthorizeLoginHintFragment } from "@/lib/auth/loginHint";
 import { generateState, persistLoginCsrf } from "@/lib/auth/loginState";
 import { nhsLoginAuthorizeUrl } from "@/settings";
 import { useEffect } from "react";
-
-const wireMockLoginHintStorageKey = "wiremockLoginHint";
 
 export default function RedirectPage() {
   useEffect(() => {
     // Generate your URL client-side
     const params = new URLSearchParams(globalThis.location.search);
     const returnTo = params.get("returnTo") ?? "/";
-    const loginHintFromQuery = params.get("login_hint");
-    const persistedLoginHint = globalThis.localStorage.getItem(wireMockLoginHintStorageKey);
-    const loginHint = loginHintFromQuery ?? persistedLoginHint;
-    const loginHintQuery = loginHint ? `&login_hint=${encodeURIComponent(loginHint)}` : "";
-
-    if (loginHintFromQuery) {
-      globalThis.localStorage.setItem(wireMockLoginHintStorageKey, loginHintFromQuery);
-    }
+    const loginHintQuery = getAuthorizeLoginHintFragment(params.get("login_hint"));
 
     const { csrf, encoded: state } = generateState(returnTo);
     persistLoginCsrf(csrf);
