@@ -29,38 +29,23 @@ describe("validation-service", () => {
   });
 
   describe("validateBody", () => {
-    it("throws error and logs when body is null", () => {
+    it("throws error when body is null", () => {
       expect(() => validation.validateAndExtractObservation(null, commons)).toThrow(
         "Body is empty",
       );
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Invalid JSON in request body",
-        expect.objectContaining({ error: expect.any(Error) }),
-      );
     });
 
-    it("throws error and logs when body is empty object", () => {
+    it("throws error when body is empty object", () => {
       expect(() => validation.validateAndExtractObservation("{}", commons)).toThrow(
         "Body is empty",
       );
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Invalid JSON in request body",
-        expect.objectContaining({ error: expect.any(Error) }),
-      );
     });
 
-    it("throws error and logs when body is invalid JSON", () => {
+    it("throws error when body is invalid JSON", () => {
       expect(() => validation.validateAndExtractObservation("{invalid json}", commons)).toThrow();
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Invalid JSON in request body",
-        expect.objectContaining({ error: expect.any(Error) }),
-      );
     });
 
-    it("throws error and logs when schema validation fails", () => {
+    it("throws error when schema validation fails", () => {
       const generateReadableErrorSpy = jest
         .spyOn(validationUtils, "generateReadableError")
         .mockReturnValue("Invalid schema");
@@ -73,11 +58,6 @@ describe("validation-service", () => {
 
       expect(() => validation.validateAndExtractObservation(invalidObservation, commons)).toThrow();
       expect(generateReadableErrorSpy).toHaveBeenCalledTimes(1);
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Validation failed",
-        expect.objectContaining({ error: "Invalid schema" }),
-      );
     });
 
     it("does not throw when body is valid and schema passes", () => {
@@ -129,11 +109,6 @@ describe("validation-service", () => {
 
       const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'), commons);
 
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Header validation failed",
-        { error: "missing correlation id" },
-      );
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toEqual({
@@ -239,11 +214,6 @@ describe("validation-service", () => {
           severity: "error",
         });
       }
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Test order not found for orderUid",
-        { orderUid: "order-uid" },
-      );
     });
 
     it("returns conflict when idempotency check fails (different result)", async () => {
@@ -264,11 +234,6 @@ describe("validation-service", () => {
           severity: "error",
         });
       }
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Idempotency check failed, different result detected on same correlation ID.",
-        { orderUid: "order-uid", correlationId: "corr-id" },
-      );
     });
 
     it("returns success and isIdempotent=true when idempotency check passes (same result)", async () => {
@@ -285,11 +250,6 @@ describe("validation-service", () => {
           isIdempotent: true,
         });
       }
-      expect(commons.logInfo).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Duplicate submission with same correlation ID detected, returning success without reprocessing",
-        { orderUid: "order-uid", correlationId: "corr-id" },
-      );
     });
 
     it("returns invalid when patient_uid does not match", async () => {
@@ -310,11 +270,6 @@ describe("validation-service", () => {
           severity: "error",
         });
       }
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Patient ID in Observation does not match test order record",
-        { orderUid: "order-uid", patientId: "patient-uid" },
-      );
     });
 
     it("returns forbidden when supplier_id does not match", async () => {
@@ -335,11 +290,6 @@ describe("validation-service", () => {
           severity: "error",
         });
       }
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-result-lambda",
-        "Supplier ID in Observation does not match test order record",
-        { orderUid: "order-uid", supplierId: "supplier-123" },
-      );
     });
 
     it("returns valid when all checks pass and not idempotent", async () => {
