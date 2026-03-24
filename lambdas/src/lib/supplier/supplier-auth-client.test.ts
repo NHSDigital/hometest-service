@@ -1,9 +1,26 @@
-import { OAuthSupplierAuthClient } from "./supplier-auth-client";
+import {
+  __resetSupplierTokenGeneratorCacheForTests,
+  getTokenGenerator,
+  OAuthSupplierAuthClient,
+} from "./supplier-auth-client";
+
+const mockTokenStoreGet = jest.fn();
+const mockTokenStoreSet = jest.fn();
+
+jest.mock("./supplier-token-store", () => ({
+  PostgresTokenStore: jest.fn().mockImplementation(() => ({
+    get: mockTokenStoreGet,
+    set: mockTokenStoreSet,
+  })),
+}));
 
 describe("OAuthSupplierAuthClient", () => {
   it("returns access token when successful", async () => {
     const httpClient = {
-      post: jest.fn().mockResolvedValue({ access_token: "token-123" }),
+      post: jest.fn().mockResolvedValue({
+        access_token: "token-123",
+        expires_in: 3600,
+      }),
     } as any;
 
     const secretsClient = {
@@ -32,164 +49,268 @@ describe("OAuthSupplierAuthClient", () => {
     );
   });
 
-  it("accepts supplier config via factory", async () => {
+  it("returns token metadata from getToken", async () => {
     const httpClient = {
-      post: jest.fn().mockResolvedValue({ access_token: "token-config" }),
+      post: jest.fn().mockResolvedValue({
+        access_token: "token-456",
+        expires_in: 123,
+      }),
     } as any;
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const client = OAuthSupplierAuthClient.fromSupplierConfig(httpClient, secretsClient, {
-      serviceUrl: "https://supplier.example.com",
-      clientSecretName: "secret-name",
-      clientId: "client-id",
-      oauthTokenPath: "/oauth/token",
-      oauthScope: "orders results",
-      orderPath: "/order",
-      resultsPath: "/results",
+    const client = new OAuthSupplierAuthClient(
+      httpClient,
+      secretsClient,
+      "https://supplier.example.com",
+      "/oauth/token",
+      "client-id",
+      "secret-name",
+      "orders results",
+    );
+
+    await expect(client.getToken()).resolves.toEqual({
+      accessToken: "token-456",
+      expiresInSeconds: 123,
+    });
+  });
+});
+
+describe("getTokenGenerator", () => {
+  const baseConfig = {
+    serviceUrl: "https://supplier.example.com",
+    clientSecretName: "secret-name",
+    clientId: "client-id",
+    oauthTokenPath: "/oauth/token",
+    oauthScope: "orders results",
+    orderPath: "/order",
+    resultsPath: "/results",
+  };
+
+  const dbClient = {
+    query: jest.fn(),
+    withTransaction: jest.fn(),
+    close: jest.fn(),
+  } as any;
+
+  const encryptionClient = {
+    encrypt: jest.fn(),
+    decrypt: jest.fn(),
+  } as any;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-03-24T12:00:00.000Z"));
+    jest.clearAllMocks();
+    __resetSupplierTokenGeneratorCacheForTests();
+    mockTokenStoreGet.mockResolvedValue(null);
+    mockTokenStoreSet.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("reuses in-memory token before expiry", async () => {
+    const httpClient = {
+      post: jest.fn().mockResolvedValue({
+        access_token: "token-abc",
+        expires_in: 3600,
+      }),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
+    } as any;
+
+    const tokenGenerator = getTokenGenerator(
+      httpClient,
+      secretsClient,
+      dbClient,
+      encryptionClient,
+      baseConfig,
+    );
+
+    await expect(tokenGenerator.generateToken()).resolves.toBe("token-abc");
+    await expect(tokenGenerator.generateToken()).resolves.toBe("token-abc");
+
+    expect(httpClient.post).toHaveBeenCalledTimes(1);
+  });
+
+  it("refreshes token when inside 30 second buffer", async () => {
+    const httpClient = {
+      post: jest
+        .fn()
+        .mockResolvedValueOnce({ access_token: "token-1", expires_in: 60 })
+        .mockResolvedValueOnce({ access_token: "token-2", expires_in: 60 }),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
+    } as any;
+
+    const tokenGenerator = getTokenGenerator(
+      httpClient,
+      secretsClient,
+      dbClient,
+      encryptionClient,
+      baseConfig,
+    );
+
+    await expect(tokenGenerator.generateToken()).resolves.toBe("token-1");
+
+    jest.advanceTimersByTime(31_000);
+
+    await expect(tokenGenerator.generateToken()).resolves.toBe("token-2");
+    expect(httpClient.post).toHaveBeenCalledTimes(2);
+  });
+
+  it("caps persisted token expiry to 24 hours", async () => {
+    const nowMs = Date.now();
+
+    const httpClient = {
+      post: jest.fn().mockResolvedValue({
+        access_token: "token-long-lived",
+        expires_in: 999_999,
+      }),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
+    } as any;
+
+    const tokenGenerator = getTokenGenerator(
+      httpClient,
+      secretsClient,
+      dbClient,
+      encryptionClient,
+      baseConfig,
+    );
+
+    await tokenGenerator.generateToken();
+
+    expect(mockTokenStoreSet).toHaveBeenCalledWith(
+      "https://supplier.example.com|/oauth/token|client-id|secret-name|orders results",
+      {
+        accessToken: "token-long-lived",
+        expiresAtMs: nowMs + 86_399 * 1000,
+      },
+    );
+  });
+
+  it("deduplicates concurrent token requests", async () => {
+    let resolvePost: ((value: any) => void) | undefined;
+
+    const postPromise = new Promise((resolve) => {
+      resolvePost = resolve;
     });
 
-    const token = await client.getAccessToken();
-
-    expect(token).toBe("token-config");
-    expect(secretsClient.getSecretValue).toHaveBeenCalledWith("secret-name");
-    expect(httpClient.post).toHaveBeenCalledWith(
-      "https://supplier.example.com/oauth/token",
-      "grant_type=client_credentials&client_id=client-id&client_secret=secret-abc&scope=orders+results",
-      { Accept: "application/json" },
-      "application/x-www-form-urlencoded",
-    );
-  });
-
-  it("uses custom token path when provided", async () => {
     const httpClient = {
-      post: jest.fn().mockResolvedValue({ access_token: "token-789" }),
+      post: jest.fn().mockReturnValue(postPromise),
     } as any;
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const client = new OAuthSupplierAuthClient(
+    const tokenGenerator = getTokenGenerator(
       httpClient,
       secretsClient,
-      "https://supplier.example.com",
-      "/custom/token",
-      "client-id",
-      "secret-name",
-      "orders results",
+      dbClient,
+      encryptionClient,
+      baseConfig,
     );
 
-    const token = await client.getAccessToken();
+    const p1 = tokenGenerator.generateToken();
+    const p2 = tokenGenerator.generateToken();
+    const p3 = tokenGenerator.generateToken();
 
-    expect(token).toBe("token-789");
-    expect(httpClient.post).toHaveBeenCalledWith(
-      "https://supplier.example.com/custom/token",
-      "grant_type=client_credentials&client_id=client-id&client_secret=secret-abc&scope=orders+results",
-      { Accept: "application/json" },
-      "application/x-www-form-urlencoded",
-    );
+    resolvePost!({ access_token: "token-deduped", expires_in: 3600 });
+
+    await expect(Promise.all([p1, p2, p3])).resolves.toEqual([
+      "token-deduped",
+      "token-deduped",
+      "token-deduped",
+    ]);
+    expect(httpClient.post).toHaveBeenCalledTimes(1);
   });
 
-  it("uses custom scope when provided", async () => {
+  it("retries after failed in-flight token request", async () => {
     const httpClient = {
-      post: jest.fn().mockResolvedValue({ access_token: "token-456" }),
+      post: jest
+        .fn()
+        .mockRejectedValueOnce(new Error("network"))
+        .mockResolvedValueOnce({ access_token: "token-ok", expires_in: 3600 }),
     } as any;
 
     const secretsClient = {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const client = new OAuthSupplierAuthClient(
+    const tokenGenerator = getTokenGenerator(
       httpClient,
       secretsClient,
-      "https://supplier.example.com",
-      "/oauth/token",
-      "client-id",
-      "secret-name",
-      "custom scope",
+      dbClient,
+      encryptionClient,
+      baseConfig,
     );
 
-    const token = await client.getAccessToken();
+    await expect(tokenGenerator.generateToken()).rejects.toThrow("network");
+    await expect(tokenGenerator.generateToken()).resolves.toBe("token-ok");
 
-    expect(token).toBe("token-456");
-    expect(httpClient.post).toHaveBeenCalledWith(
-      "https://supplier.example.com/oauth/token",
-      "grant_type=client_credentials&client_id=client-id&client_secret=secret-abc&scope=custom+scope",
-      { Accept: "application/json" },
-      "application/x-www-form-urlencoded",
-    );
+    expect(httpClient.post).toHaveBeenCalledTimes(2);
   });
 
-  it("propagates errors from secrets client", async () => {
+  it("uses persisted token when available and valid", async () => {
+    const nowMs = Date.now();
+
+    mockTokenStoreGet.mockResolvedValueOnce({
+      accessToken: "persisted-token",
+      expiresAtMs: nowMs + 90_000,
+    });
+
+    const httpClient = {
+      post: jest.fn(),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn(),
+    } as any;
+
+    const tokenGenerator = getTokenGenerator(
+      httpClient,
+      secretsClient,
+      dbClient,
+      encryptionClient,
+      baseConfig,
+    );
+
+    await expect(tokenGenerator.generateToken()).resolves.toBe("persisted-token");
+    expect(httpClient.post).not.toHaveBeenCalled();
+  });
+
+  it("returns same generator instance for same supplier key", () => {
     const httpClient = { post: jest.fn() } as any;
-    const secretsClient = {
-      getSecretValue: jest.fn().mockRejectedValue(new Error("secret error")),
-    } as any;
+    const secretsClient = { getSecretValue: jest.fn() } as any;
 
-    const client = new OAuthSupplierAuthClient(
-      httpClient,
-      secretsClient,
-      "https://supplier.example.com",
-      "/oauth/token",
-      "client-id",
-      "secret-name",
-      "orders results",
-    );
+    const a = getTokenGenerator(httpClient, secretsClient, dbClient, encryptionClient, baseConfig);
+    const b = getTokenGenerator(httpClient, secretsClient, dbClient, encryptionClient, baseConfig);
 
-    await expect(client.getAccessToken()).rejects.toThrow("secret error");
+    expect(a).toBe(b);
   });
 
-  it("propagates errors from http client", async () => {
-    const httpClient = {
-      post: jest.fn().mockRejectedValue(new Error("http error")),
-    } as any;
+  it("returns different generator for different supplier key", () => {
+    const httpClient = { post: jest.fn() } as any;
+    const secretsClient = { getSecretValue: jest.fn() } as any;
 
-    const secretsClient = {
-      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
+    const a = getTokenGenerator(httpClient, secretsClient, dbClient, encryptionClient, baseConfig);
+    const b = getTokenGenerator(httpClient, secretsClient, dbClient, encryptionClient, {
+      ...baseConfig,
+      clientId: "other-client",
+    });
 
-    const client = new OAuthSupplierAuthClient(
-      httpClient,
-      secretsClient,
-      "https://supplier.example.com",
-      "/oauth/token",
-      "client-id",
-      "secret-name",
-      "orders results",
-    );
-
-    await expect(client.getAccessToken()).rejects.toThrow("http error");
-  });
-
-  it("removes trailing slash from baseUrl before appending tokenPath", async () => {
-    const httpClient = {
-      post: jest.fn().mockResolvedValue({ access_token: "token-abc" }),
-    } as any;
-
-    const secretsClient = {
-      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
-    } as any;
-
-    const client = new OAuthSupplierAuthClient(
-      httpClient,
-      secretsClient,
-      "https://supplier.example.com/",
-      "/oauth/token",
-      "client-id",
-      "secret-name",
-      "orders results",
-    );
-
-    await client.getAccessToken();
-
-    expect(httpClient.post).toHaveBeenCalledWith(
-      "https://supplier.example.com/oauth/token",
-      expect.any(String),
-      expect.any(Object),
-      expect.any(String),
-    );
+    expect(a).not.toBe(b);
   });
 });

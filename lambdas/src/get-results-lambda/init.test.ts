@@ -1,7 +1,4 @@
-import {
-  restoreEnvironment,
-  setupEnvironment,
-} from "../lib/test-utils/environment-test-helpers";
+import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
 
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { FetchHttpClient } from "../lib/http/http-client";
@@ -12,6 +9,7 @@ import { TestResultDbClient } from "../lib/db/test-result-db-client";
 import { init } from "./init";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { AwsKmsTokenEncryptionClient } from "../lib/kms/kms-client";
 
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");
@@ -20,6 +18,7 @@ jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/db/test-result-db-client");
 jest.mock("../lib/supplier/supplier-test-results-service");
 jest.mock("../lib/db/db-config");
+jest.mock("../lib/kms/kms-client");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -31,6 +30,7 @@ describe("init", () => {
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
+    KMS_KEY_ID: "alias/test-key",
   };
 
   // This represents the return value of postgresConfigFromEnv(secretsClient)
@@ -62,9 +62,7 @@ describe("init", () => {
       expect(result).toHaveProperty("testResultDbClient");
       expect(result).toHaveProperty("supplierTestResultsService");
       expect(result.testResultDbClient).toBeInstanceOf(TestResultDbClient);
-      expect(result.supplierTestResultsService).toBeInstanceOf(
-        SupplierTestResultsService,
-      );
+      expect(result.supplierTestResultsService).toBeInstanceOf(SupplierTestResultsService);
     });
 
     it("should create AwsSecretsClient with AWS_REGION when set", () => {
@@ -104,9 +102,7 @@ describe("init", () => {
     it("should create TestResultDbClient with PostgresDbClient instance", () => {
       init();
 
-      expect(TestResultDbClient).toHaveBeenCalledWith(
-        expect.any(PostgresDbClient),
-      );
+      expect(TestResultDbClient).toHaveBeenCalledWith(expect.any(PostgresDbClient));
     });
 
     it("should create SupplierService with PostgresDbClient instance", () => {
@@ -130,7 +126,18 @@ describe("init", () => {
         expect.any(FetchHttpClient),
         expect.any(AwsSecretsClient),
         expect.any(SupplierService),
+        expect.any(PostgresDbClient),
+        expect.any(AwsKmsTokenEncryptionClient),
       );
+    });
+
+    it("should create AwsKmsTokenEncryptionClient using configured KMS key", () => {
+      process.env.AWS_REGION = "eu-west-2";
+      process.env.KMS_KEY_ID = "alias/test-key";
+
+      init();
+
+      expect(AwsKmsTokenEncryptionClient).toHaveBeenCalledWith("alias/test-key", "eu-west-2");
     });
 
     it("should return an Environment object with all required properties", () => {
@@ -147,8 +154,7 @@ describe("init", () => {
     it("should pass a PostgresDbClient instance to TestResultDbClient", () => {
       init();
 
-      const testResultDbClientCalls = (TestResultDbClient as jest.Mock).mock
-        .calls;
+      const testResultDbClientCalls = (TestResultDbClient as jest.Mock).mock.calls;
       expect(testResultDbClientCalls[0][0]).toBeInstanceOf(PostgresDbClient);
     });
 
@@ -156,17 +162,13 @@ describe("init", () => {
       init();
 
       const supplierServiceCalls = (SupplierService as jest.Mock).mock.calls;
-      expect(supplierServiceCalls[0][0].dbClient).toBeInstanceOf(
-        PostgresDbClient,
-      );
+      expect(supplierServiceCalls[0][0].dbClient).toBeInstanceOf(PostgresDbClient);
     });
 
     it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
       init();
 
-      expect(postgresConfigFromEnv).toHaveBeenCalledWith(
-        expect.any(AwsSecretsClient),
-      );
+      expect(postgresConfigFromEnv).toHaveBeenCalledWith(expect.any(AwsSecretsClient));
     });
 
     it("should create components in the correct order", () => {
@@ -179,6 +181,10 @@ describe("init", () => {
           },
           {
             mock: AwsSecretsClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: AwsKmsTokenEncryptionClient as jest.Mock,
             times: 1,
           },
           {
