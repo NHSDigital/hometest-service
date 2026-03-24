@@ -7,6 +7,7 @@ export abstract class AuthenticatedPage extends BasePage {
   private static readonly callbackPath = "/callback";
   private static readonly serviceErrorPath = "/service-error";
   private static readonly initialRenderTimeoutMs = 10000;
+  private static readonly protectedRouteTimeoutMs = 30000;
 
   readonly config: ConfigInterface;
 
@@ -27,39 +28,11 @@ export abstract class AuthenticatedPage extends BasePage {
     return pathname === AuthenticatedPage.loginPath || pathname === AuthenticatedPage.callbackPath;
   }
 
-  private async bootstrapViaLogin(
-    returnToPath: string,
-    expectedPaths: readonly string[],
-  ): Promise<void> {
-    const returnTo = encodeURIComponent(returnToPath);
-    await this.page.goto(
-      `${this.config.uiBaseUrl}${AuthenticatedPage.loginPath}?returnTo=${returnTo}`,
-    );
-
-    await this.page.waitForURL(
-      (url) => {
-        const route = this.getCurrentRoute(url);
-        return (
-          this.isExpectedPath(route, expectedPaths) ||
-          url.pathname === AuthenticatedPage.serviceErrorPath
-        );
-      },
-      { timeout: 30000, waitUntil: "commit" },
-    );
-
-    const finalUrl = new URL(this.page.url());
-    if (finalUrl.pathname === AuthenticatedPage.serviceErrorPath) {
-      throw new Error(
-        `Login bootstrap ended on ${AuthenticatedPage.serviceErrorPath} instead of one of ${expectedPaths.join(", ")}`,
-      );
-    }
-  }
-
   private async waitForProtectedRoute(
     path: string,
     readyLocator: Locator,
     expectedPaths: readonly string[],
-  ): Promise<boolean> {
+  ): Promise<void> {
     try {
       await Promise.race([
         readyLocator.waitFor({
@@ -77,10 +50,11 @@ export abstract class AuthenticatedPage extends BasePage {
         ),
       ]);
     } catch {
-      return false;
+      // Fall through to explicit route and locator validation below.
     }
 
     const currentUrl = new URL(this.page.url());
+    const currentRoute = this.getCurrentRoute(currentUrl);
     const currentPathname = currentUrl.pathname;
 
     if (currentPathname === AuthenticatedPage.serviceErrorPath) {
@@ -90,34 +64,21 @@ export abstract class AuthenticatedPage extends BasePage {
     }
 
     if (this.isBootstrapPath(currentPathname)) {
-      await this.page.waitForURL(
-        (url) => {
-          const route = this.getCurrentRoute(url);
-          return (
-            this.isExpectedPath(route, expectedPaths) ||
-            url.pathname === AuthenticatedPage.serviceErrorPath
-          );
-        },
-        { timeout: 30000, waitUntil: "commit" },
+      throw new Error(
+        `Expected authenticated navigation to ${path}, but the app redirected to ${currentRoute}. The saved Playwright session is missing or invalid.`,
       );
-
-      const finalUrl = new URL(this.page.url());
-      if (finalUrl.pathname === AuthenticatedPage.serviceErrorPath) {
-        throw new Error(
-          `Navigation ended on ${AuthenticatedPage.serviceErrorPath} instead of ${path}`,
-        );
-      }
     }
 
-    if (!this.isExpectedPath(this.getCurrentRoute(new URL(this.page.url())), expectedPaths)) {
-      return false;
+    if (!this.isExpectedPath(currentRoute, expectedPaths)) {
+      throw new Error(
+        `Navigation ended on ${currentRoute} instead of one of ${expectedPaths.join(", ")}`,
+      );
     }
 
-    if (!(await readyLocator.isVisible())) {
-      return false;
-    }
-
-    return true;
+    await readyLocator.waitFor({
+      state: "visible",
+      timeout: AuthenticatedPage.protectedRouteTimeoutMs,
+    });
   }
 
   protected async navigateToProtectedPath(
@@ -126,19 +87,6 @@ export abstract class AuthenticatedPage extends BasePage {
     expectedPaths: readonly string[] = [path],
   ): Promise<void> {
     await this.page.goto(`${this.config.uiBaseUrl}${path}`);
-
-    if (await this.waitForProtectedRoute(path, readyLocator, expectedPaths)) {
-      return;
-    }
-
-    await this.bootstrapViaLogin(path, expectedPaths);
-
-    if (await this.waitForProtectedRoute(path, readyLocator, expectedPaths)) {
-      return;
-    }
-
-    throw new Error(
-      `Failed to reach protected route ${path} after explicit login bootstrap; expected one of ${expectedPaths.join(", ")}`,
-    );
+    await this.waitForProtectedRoute(path, readyLocator, expectedPaths);
   }
 }

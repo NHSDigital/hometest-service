@@ -104,15 +104,15 @@ test.describe("Results Page", { tag: "@ui" }, () => {
       await context.clearCookies();
       await context.clearPermissions();
 
-      if (!config.useWiremockAuth) {
+      if (config.useWiremockAuth) {
         await negativeResultPage.openOrderResultDirect(orderId);
-        await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+        await negativeResultPage.waitForResultsToLoad();
+        await expect(negativeResultPage.result).toHaveText("Negative");
         return;
       }
 
-      await negativeResultPage.navigateToOrderResult(orderId);
-      await negativeResultPage.waitForResultsToLoad();
-      await expect(negativeResultPage.result).toHaveText("Negative");
+      await negativeResultPage.openOrderResultDirect(orderId);
+      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
     });
   });
 

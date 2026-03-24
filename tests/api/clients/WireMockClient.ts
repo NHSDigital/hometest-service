@@ -13,6 +13,7 @@ export interface WireMockMapping {
     headers?: Record<string, string>;
     jsonBody?: unknown;
     body?: string;
+    transformers?: string[];
   };
 }
 

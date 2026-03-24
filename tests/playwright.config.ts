@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 import * as dotenv from "dotenv";
-import * as path from "path";
+import * as path from "node:path";
 
 /**
  * Read environment variables from file.
@@ -11,18 +11,16 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 const config = ConfigFactory.getConfig();
 
 export const getNumberOfWorkers = (authType: AuthType): number => {
-  // Run only 1 worker for local environment
   const env = ConfigFactory.getEnvironment();
   if (env === "local") {
     return 4;
   }
 
-  switch (authType) {
-    case AuthType.SANDBOX:
-      return 2;
-    default:
-      return 1;
+  if (authType === AuthType.SANDBOX) {
+    return 2;
   }
+
+  return 1;
 };
 
 export const defaultUserAgent =
@@ -45,7 +43,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
+  /* Apply the auth/environment worker policy. */
   workers: getNumberOfWorkers(config.authType),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [

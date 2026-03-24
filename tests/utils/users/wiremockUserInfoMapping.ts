@@ -1,7 +1,11 @@
 import type { WireMockMapping } from "../../api/clients/WireMockClient";
 import type { NHSLoginMockedUser } from "./BaseUser";
 
-export function createWireMockUserInfoMapping(user: NHSLoginMockedUser): WireMockMapping {
+export function createWireMockUserInfoMapping(
+  user: NHSLoginMockedUser,
+  accessToken?: string,
+  sub: string = "test-sub-123",
+): WireMockMapping {
   return {
     priority: 1,
     request: {
@@ -9,7 +13,7 @@ export function createWireMockUserInfoMapping(user: NHSLoginMockedUser): WireMoc
       urlPath: "/userinfo",
       headers: {
         Authorization: {
-          matches: "Bearer .*",
+          ...(accessToken ? { equalTo: `Bearer ${accessToken}` } : { matches: "Bearer .*" }),
         },
       },
     },
@@ -21,7 +25,7 @@ export function createWireMockUserInfoMapping(user: NHSLoginMockedUser): WireMoc
       jsonBody: {
         iss: "http://wiremock:8080",
         aud: "hometest",
-        sub: "test-sub-123",
+        sub,
         family_name: "MILLAR",
         given_name: "Mona",
         identity_proofing_level: "P9",

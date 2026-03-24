@@ -1,43 +1,35 @@
 import { BaseUserManager } from "./BaseUserManager";
-import type { NHSLoginMockedUser } from "./BaseUser";
+import * as fs from "node:fs";
 import type { Page } from "@playwright/test";
 import { SpecialUserKey } from "./SpecialUserKey";
-import { createWireMockUserInfoMapping } from "./wiremockUserInfoMapping";
-import { WireMockClient } from "../../api/clients/WireMockClient";
+import {
+  getWireMockAuthManifestPath,
+  loadWireMockAuthManifest,
+  type WireMockAuthUser,
+} from "./wiremockAuthMappings";
 
-const DEFAULT_WORKER_USER: NHSLoginMockedUser = {
-  nhsNumber: "9912003071",
-  dob: "1990-01-01",
-  code: "wiremock-auth-code",
-};
+const WIREMOCK_LOGIN_HINT_STORAGE_KEY = "wiremockLoginHint";
 
-const DEFAULT_WORKER_USER1: NHSLoginMockedUser = {
-  nhsNumber: "9912003072",
-  dob: "1990-01-01",
-  code: "wiremock-auth-code",
-};
+function getManifestUsers(): {
+  workerUsers: WireMockAuthUser[];
+  specialUsers: Map<SpecialUserKey, WireMockAuthUser>;
+} {
+  const manifestPath = getWireMockAuthManifestPath();
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(
+      `WireMock auth manifest not found at ${manifestPath}. Global setup must create it before workers start.`,
+    );
+  }
 
-const DEFAULT_WORKER_USER2: NHSLoginMockedUser = {
-  nhsNumber: "9912003073",
-  dob: "1990-01-01",
-  code: "wiremock-auth-code",
-};
+  const manifest = loadWireMockAuthManifest();
 
-const DEFAULT_WORKER_USER3: NHSLoginMockedUser = {
-  nhsNumber: "9912003074",
-  dob: "1990-01-01",
-  code: "wiremock-auth-code",
-};
-
-const UNDER_18_USER: NHSLoginMockedUser = {
-  nhsNumber: "9686883932",
-  dob: "2009-04-06",
-  age: 16,
-  code: "wiremock-auth-code",
-};
-
-
-let  mappingId: string | undefined;
+  return {
+    workerUsers: manifest.workerUsers,
+    specialUsers: new Map(
+      Object.entries(manifest.specialUsers) as Array<[SpecialUserKey, WireMockAuthUser]>,
+    ),
+  };
+}
 
 /**
  * User manager that authenticates via the WireMock-simulated NHS Login flow.
@@ -52,18 +44,43 @@ let  mappingId: string | undefined;
  * are all handled naturally — no manual injection required.
  * BaseUserManager handles the browser lifecycle and storage state save.
  */
-export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
-  private readonly wiremock: WireMockClient = new WireMockClient(this.config.wiremockBaseUrl);
+export class WireMockUserManager extends BaseUserManager<WireMockAuthUser> {
+  protected override async isSessionValid(sessionFilePath: string): Promise<boolean> {
+    const baseSessionIsValid = await super.isSessionValid(sessionFilePath);
+    if (!baseSessionIsValid) {
+      return false;
+    }
 
-  public getWorkerUsers(): NHSLoginMockedUser[] {
-    return [DEFAULT_WORKER_USER, DEFAULT_WORKER_USER1, DEFAULT_WORKER_USER2, DEFAULT_WORKER_USER3];
+    try {
+      const content = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(sessionFilePath, "utf8"),
+      );
+      const session = JSON.parse(content) as {
+        origins?: Array<{
+          origin: string;
+          localStorage?: Array<{ name: string; value: string }>;
+        }>;
+      };
+
+      const uiOrigin = new URL(this.config.uiBaseUrl).origin;
+      const uiStorage = session.origins?.find((origin) => origin.origin === uiOrigin);
+
+      return Boolean(
+        uiStorage?.localStorage?.some(({ name }) => name === WIREMOCK_LOGIN_HINT_STORAGE_KEY),
+      );
+    } catch {
+      return false;
+    }
   }
 
-  protected async loginWorkerUser(_user: NHSLoginMockedUser, page: Page): Promise<Page> {
+  public getWorkerUsers(): WireMockAuthUser[] {
+    return getManifestUsers().workerUsers;
+  }
 
-    mappingId = await this.wiremock.createMapping(createWireMockUserInfoMapping(_user));
+  protected async loginWorkerUser(user: WireMockAuthUser, page: Page): Promise<Page> {
+    const loginHint = encodeURIComponent(user.nhsNumber ?? user.authContext.sub);
 
-    await page.goto(`${this.config.uiBaseUrl}/login`);
+    await page.goto(`${this.config.uiBaseUrl}/login?login_hint=${loginHint}`);
     // Wait until the OAuth redirect chain completes:
     // /login → WireMock /authorize → /callback → post-login page
     await page.waitForURL(
@@ -73,7 +90,7 @@ export class WireMockUserManager extends BaseUserManager<NHSLoginMockedUser> {
     return page;
   }
 
-  protected getSpecialUsers(): Map<SpecialUserKey, NHSLoginMockedUser> {
-    return new Map([[SpecialUserKey.UNDER_18, UNDER_18_USER]]);
+  protected getSpecialUsers(): Map<SpecialUserKey, WireMockAuthUser> {
+    return getManifestUsers().specialUsers;
   }
 }
