@@ -19,8 +19,9 @@ export const storageStateFixture = baseTest.extend<
 >({
   // Use the same storage state for all tests in this worker.
   storageState: async ({ testedUser, workerStorageState }, use) => {
-    console.log(`Test using user with nhsNumber: ${testedUser.nhsNumber}`);
-    console.log(`Test start date : ${new Date().toISOString()}`);
+    const worker = `Worker-${getWorkerIndex() + 1}`;
+    const testTitle = storageStateFixture.info().title;
+    console.log(`[${worker}] "${testTitle}" | nhsNumber: ${testedUser.nhsNumber} | started: ${new Date().toISOString()}`);
     await use(workerStorageState);
   },
   // Authenticate once per worker with a worker-scoped fixture.

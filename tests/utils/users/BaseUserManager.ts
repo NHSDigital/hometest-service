@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs";
 import * as path from "path";
 import { SpecialUserKey } from "./SpecialUserKey";
-import { createWireMockUserInfoMapping } from "./wiremockUserInfoMapping";
 
 interface NetworkError {
   url: string;

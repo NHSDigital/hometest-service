@@ -4,6 +4,7 @@ import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 import { NHSLoginUser } from "../../utils/users/BaseUser";
+import { AuthType } from "../../configuration/EnvironmentConfiguration";
 
 let orderId: string;
 let patientId: string;
@@ -106,7 +107,7 @@ test.describe("Order Status Page", () => {
       await context.clearPermissions();
       await orderStatusPage.openOrderDirect(orderId);
 
-      if (!config.useWiremockAuth) {
+      if (config.authType !== AuthType.WIREMOCK) {
         const sandboxUser = testedUser as NHSLoginUser;
         await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
         await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(sandboxUser);

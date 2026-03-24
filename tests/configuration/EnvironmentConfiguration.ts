@@ -8,6 +8,7 @@ export type { Environment };
 
 export enum AuthType {
   SANDBOX = "sandbox",
+  WIREMOCK = "wiremock",
 }
 
 export interface Config {
@@ -20,7 +21,6 @@ export interface Config {
   accessibilityStandards: string;
   reportingOutputDirectory: string;
   enableTracingOnGlobalSetup: boolean;
-  useWiremockAuth: boolean;
   wiremockBaseUrl: string;
   chromiumOnly: boolean;
 }
@@ -41,8 +41,6 @@ export class ConfigFactory {
     }
 
     this.cachedConfig ??= this.loadConfiguration();
-
-    console.log("Current configuration:", this.cachedConfig);
 
     return this.cachedConfig;
   }
@@ -68,11 +66,10 @@ export class ConfigFactory {
       headless: true,
       timeout: 30000,
       slowMo: 0,
-      authType: AuthType.SANDBOX,
+      authType: (process.env.ENV ?? "local") === "local" ? AuthType.WIREMOCK : AuthType.SANDBOX,
       accessibilityStandards: "wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa",
       reportingOutputDirectory: "tests/testResults",
       enableTracingOnGlobalSetup: false,
-      useWiremockAuth: (process.env.ENV ?? "local") === "local",
       wiremockBaseUrl: "http://localhost:8080",
       chromiumOnly: false,
     };
@@ -109,8 +106,8 @@ export class ConfigFactory {
       partial.accessibilityStandards = env[EnvironmentVariables.ACCESSIBILITY_STANDARDS];
     if (env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY])
       partial.reportingOutputDirectory = env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY];
-    if (env[EnvironmentVariables.USE_WIREMOCK_AUTH] !== undefined)
-      partial.useWiremockAuth = env[EnvironmentVariables.USE_WIREMOCK_AUTH] === "true";
+    if (env[EnvironmentVariables.AUTH_TYPE])
+      partial.authType = env[EnvironmentVariables.AUTH_TYPE] as AuthType;
     if (env[EnvironmentVariables.WIREMOCK_BASE_URL])
       partial.wiremockBaseUrl = env[EnvironmentVariables.WIREMOCK_BASE_URL];
     if (env[EnvironmentVariables.CHROMIUM_ONLY] !== undefined)

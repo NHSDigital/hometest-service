@@ -4,6 +4,7 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { randomUUID } from "node:crypto";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
+import { AuthType } from "../../configuration/EnvironmentConfiguration";
 
 let orderId: string;
 let patientId: string;
@@ -104,7 +105,7 @@ test.describe("Results Page", { tag: "@ui" }, () => {
       await context.clearCookies();
       await context.clearPermissions();
 
-      if (config.useWiremockAuth) {
+      if (config.authType === AuthType.WIREMOCK) {
         await negativeResultPage.openOrderResultDirect(orderId);
         await negativeResultPage.waitForResultsToLoad();
         await expect(negativeResultPage.result).toHaveText("Negative");

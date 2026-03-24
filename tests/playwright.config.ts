@@ -11,16 +11,12 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 const config = ConfigFactory.getConfig();
 
 export const getNumberOfWorkers = (authType: AuthType): number => {
-  const env = ConfigFactory.getEnvironment();
-  if (env === "local") {
-    return 4;
+  switch (authType) {
+    case AuthType.WIREMOCK:
+      return 4;
+    case AuthType.SANDBOX:
+      return ConfigFactory.getEnvironment() === "local" ? 1 : 2;
   }
-
-  if (authType === AuthType.SANDBOX) {
-    return 2;
-  }
-
-  return 1;
 };
 
 export const defaultUserAgent =

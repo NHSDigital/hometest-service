@@ -1,20 +1,21 @@
 import { CredentialsHelper } from "./utils/CredentialsHelper";
 import { UserManagerFactory } from "./utils/users/UserManagerFactory";
-import { ConfigFactory } from "./configuration/EnvironmentConfiguration";
+import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 import { WireMockClient } from "./api/clients/WireMockClient";
 import {
   cleanupWireMockAuthState,
   configureWireMockAuthMappings,
   createWireMockAuthManifest,
-} from "./utils/users/wiremockAuthMappings";
-import { createWireMockUserInfoMapping } from "./utils/users/wiremockUserInfoMapping";
+} from "./utils/users/WiremockAuthMappings";
+import { createWireMockUserInfoMapping } from "./utils/users/WiremockUserInfoMapping";
+
 
 async function globalSetup() {
   console.log("🚀 Global setup started");
   console.log(`Tests will run on environment: ${process.env.ENV ?? "local"}`);
 
   const config = ConfigFactory.getConfig();
-  if (config.useWiremockAuth) {
+  if (config.authType === AuthType.WIREMOCK) {
     cleanupWireMockAuthState();
 
     const wiremock = new WireMockClient(config.wiremockBaseUrl);

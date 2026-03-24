@@ -1,7 +1,7 @@
 import { FullConfig } from "@playwright/test";
 import { WireMockClient } from "./api/clients/WireMockClient";
-import { ConfigFactory } from "./configuration/EnvironmentConfiguration";
-import { cleanupWireMockAuthState } from "./utils/users/wiremockAuthMappings";
+import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
+import { cleanupWireMockAuthState } from "./utils/users/WiremockAuthMappings";
 
 async function globalTeardown(config: FullConfig) {
   console.log("🧹 Global teardown started");
@@ -9,7 +9,7 @@ async function globalTeardown(config: FullConfig) {
 
   const testConfig = ConfigFactory.getConfig();
 
-  if (testConfig.useWiremockAuth) {
+  if (testConfig.authType === AuthType.WIREMOCK) {
     const wiremock = new WireMockClient(testConfig.wiremockBaseUrl);
 
     try {

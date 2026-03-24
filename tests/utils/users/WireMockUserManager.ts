@@ -6,7 +6,7 @@ import {
   getWireMockAuthManifestPath,
   loadWireMockAuthManifest,
   type WireMockAuthUser,
-} from "./wiremockAuthMappings";
+} from "./WiremockAuthMappings";
 
 const WIREMOCK_LOGIN_HINT_STORAGE_KEY = "wiremockLoginHint";
 
