@@ -18,17 +18,10 @@ jest.mock("@/state", () => ({
   useJourneyNavigationContext: () => mockNavigationContext,
 }));
 
-// Mock console.log to avoid noise in test output
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
 describe("FormBackLink", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockNavigationContext.canGoBack.mockReturnValue(true);
-  });
-
-  afterAll(() => {
-    consoleSpy.mockRestore();
   });
 
   describe("Rendering", () => {
