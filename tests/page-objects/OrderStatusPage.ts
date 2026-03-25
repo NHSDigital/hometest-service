@@ -12,7 +12,6 @@ export class OrderStatusPage extends AuthenticatedPage {
 
   constructor(page: Page) {
     super(page);
-    this.pageHeader = page.locator("h1.nhsuk-heading-l", { hasText: "HIV self-test" });
     this.statusTag = page.locator("#order-status-tag");
     this.orderedDate = page.getByLabel(/Order date/);
     this.referenceNumber = page.locator("#reference-number");
