@@ -1,7 +1,9 @@
-import { defineConfig, devices } from "@playwright/test";
-import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
-import * as dotenv from "dotenv";
 import * as path from "node:path";
+
+import { defineConfig, devices } from "@playwright/test";
+import * as dotenv from "dotenv";
+
+import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 
 /**
  * Read environment variables from file.
@@ -61,41 +63,34 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers.
-   * Set CHROMIUM_ONLY=true in configuration/.env.local to run only Chromium locally.
+   * Use Playwright's built-in --project flag to target a single browser when needed.
    */
-  projects: config.chromiumOnly
-    ? [
-        {
-          name: "chromium",
-          use: { ...devices["Desktop Chrome"] },
-        },
-      ]
-    : [
-        {
-          name: "chromium",
-          use: { ...devices["Desktop Chrome"] },
-        },
-        {
-          name: "firefox",
-          use: { ...devices["Desktop Firefox"] },
-        },
-        {
-          name: "safari",
-          use: { ...devices["Desktop Safari"] },
-        },
-        {
-          name: "edge",
-          use: { ...devices["Desktop Edge"] },
-        },
-        {
-          name: "mobileChromium",
-          use: { ...devices["Pixel 5"] },
-        },
-        {
-          name: "mobileSafari",
-          use: { ...devices["iPhone 12"] },
-        },
-      ],
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "safari",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "edge",
+      use: { ...devices["Desktop Edge"] },
+    },
+    {
+      name: "mobileChromium",
+      use: { ...devices["Pixel 5"] },
+    },
+    {
+      name: "mobileSafari",
+      use: { ...devices["iPhone 12"] },
+    },
+  ],
 
   /* Run your local dev server before starting the tests */
   // webServer: {

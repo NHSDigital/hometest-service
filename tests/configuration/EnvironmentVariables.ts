@@ -16,7 +16,6 @@ export enum EnvironmentVariables {
   DB_SCHEMA = "DB_SCHEMA",
   AUTH_TYPE = "AUTH_TYPE",
   WIREMOCK_BASE_URL = "WIREMOCK_BASE_URL",
-  CHROMIUM_ONLY = "CHROMIUM_ONLY",
 }
 
 export const availableEnvironments = ["local", "dev"] as const;

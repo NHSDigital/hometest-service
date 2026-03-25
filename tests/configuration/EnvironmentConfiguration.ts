@@ -22,7 +22,6 @@ export interface Config {
   reportingOutputDirectory: string;
   enableTracingOnGlobalSetup: boolean;
   wiremockBaseUrl: string;
-  chromiumOnly: boolean;
 }
 
 export type ConfigInterface = Config;
@@ -71,7 +70,6 @@ export class ConfigFactory {
       reportingOutputDirectory: "tests/testResults",
       enableTracingOnGlobalSetup: false,
       wiremockBaseUrl: "http://localhost:8080",
-      chromiumOnly: false,
     };
   }
 
@@ -110,8 +108,6 @@ export class ConfigFactory {
       partial.authType = env[EnvironmentVariables.AUTH_TYPE] as AuthType;
     if (env[EnvironmentVariables.WIREMOCK_BASE_URL])
       partial.wiremockBaseUrl = env[EnvironmentVariables.WIREMOCK_BASE_URL];
-    if (env[EnvironmentVariables.CHROMIUM_ONLY] !== undefined)
-      partial.chromiumOnly = env[EnvironmentVariables.CHROMIUM_ONLY] === "true";
 
     return partial;
   }
