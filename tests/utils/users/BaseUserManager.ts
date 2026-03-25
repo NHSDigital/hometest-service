@@ -254,21 +254,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       }
 
       try {
-
-
         await this.loginWorkerUser(user, page);
-
-        page.on("response", async (response) => {
-        if (response.url().includes("session")) {
-          try {
-            const body = await response.text();
-            console.log(`[Worker ${i}][] Session body: ${body}`);
-          } catch {
-            // ignore
-          }
-        }
-      });
-
         await page.context().storageState({
           path: sessionFilePath,
         });
