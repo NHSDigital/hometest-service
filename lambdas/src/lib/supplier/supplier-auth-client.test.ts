@@ -1,6 +1,5 @@
 import {
-  __resetSupplierTokenGeneratorCacheForTests,
-  getTokenGenerator,
+  createTokenGenerator,
   OAuthSupplierAuthClient,
 } from "./supplier-auth-client";
 
@@ -123,7 +122,7 @@ describe("OAuthSupplierAuthClient", () => {
   });
 });
 
-describe("getTokenGenerator", () => {
+describe("createTokenGenerator", () => {
   const baseConfig = {
     serviceUrl: "https://supplier.example.com",
     clientSecretName: "secret-name",
@@ -138,7 +137,6 @@ describe("getTokenGenerator", () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date("2026-03-24T12:00:00.000Z"));
     jest.clearAllMocks();
-    __resetSupplierTokenGeneratorCacheForTests();
   });
 
   afterEach(() => {
@@ -157,7 +155,7 @@ describe("getTokenGenerator", () => {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, baseConfig);
+    const tokenGenerator = createTokenGenerator(httpClient, secretsClient, baseConfig);
 
     await expect(tokenGenerator.generateToken()).resolves.toBe("token-abc");
     await expect(tokenGenerator.generateToken()).resolves.toBe("token-abc");
@@ -177,7 +175,7 @@ describe("getTokenGenerator", () => {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, baseConfig);
+    const tokenGenerator = createTokenGenerator(httpClient, secretsClient, baseConfig);
 
     await expect(tokenGenerator.generateToken()).resolves.toBe("token-1");
 
@@ -199,7 +197,7 @@ describe("getTokenGenerator", () => {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, baseConfig);
+    const tokenGenerator = createTokenGenerator(httpClient, secretsClient, baseConfig);
 
     await expect(tokenGenerator.generateToken()).resolves.toBe("token-long-lived");
 
@@ -229,7 +227,7 @@ describe("getTokenGenerator", () => {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, baseConfig);
+    const tokenGenerator = createTokenGenerator(httpClient, secretsClient, baseConfig);
 
     const p1 = tokenGenerator.generateToken();
     const p2 = tokenGenerator.generateToken();
@@ -257,7 +255,7 @@ describe("getTokenGenerator", () => {
       getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
     } as any;
 
-    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, baseConfig);
+    const tokenGenerator = createTokenGenerator(httpClient, secretsClient, baseConfig);
 
     await expect(tokenGenerator.generateToken()).rejects.toThrow("network");
     await expect(tokenGenerator.generateToken()).resolves.toBe("token-ok");
@@ -265,25 +263,12 @@ describe("getTokenGenerator", () => {
     expect(httpClient.post).toHaveBeenCalledTimes(2);
   });
 
-  it("returns same generator instance for same supplier key", () => {
+  it("returns a new generator instance for each call", () => {
     const httpClient = { post: jest.fn() } as any;
     const secretsClient = { getSecretValue: jest.fn() } as any;
 
-    const a = getTokenGenerator(httpClient, secretsClient, baseConfig);
-    const b = getTokenGenerator(httpClient, secretsClient, baseConfig);
-
-    expect(a).toBe(b);
-  });
-
-  it("returns different generator for different supplier key", () => {
-    const httpClient = { post: jest.fn() } as any;
-    const secretsClient = { getSecretValue: jest.fn() } as any;
-
-    const a = getTokenGenerator(httpClient, secretsClient, baseConfig);
-    const b = getTokenGenerator(httpClient, secretsClient, {
-      ...baseConfig,
-      clientId: "other-client",
-    });
+    const a = createTokenGenerator(httpClient, secretsClient, baseConfig);
+    const b = createTokenGenerator(httpClient, secretsClient, baseConfig);
 
     expect(a).not.toBe(b);
   });

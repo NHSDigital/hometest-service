@@ -31,7 +31,8 @@ jest.mock("./init", () => ({
 // Mock token generator
 jest.mock("../lib/supplier/supplier-auth-client", () => {
   return {
-    getTokenGenerator: jest.fn().mockImplementation(() => ({
+    buildTokenGeneratorCacheKey: jest.fn(() => "supplier-cache-key"),
+    createTokenGenerator: jest.fn().mockImplementation(() => ({
       generateToken: mockGenerateToken,
     })),
   };

@@ -145,9 +145,7 @@ class CachedSupplierTokenGenerator implements SupplierTokenGenerator {
   }
 }
 
-const tokenGeneratorCache: Record<string, SupplierTokenGenerator> = {};
-
-const buildTokenGeneratorCacheKey = (supplierConfig: SupplierConfig): string => {
+export const buildTokenGeneratorCacheKey = (supplierConfig: SupplierConfig): string => {
   return [
     supplierConfig.serviceUrl,
     supplierConfig.oauthTokenPath,
@@ -157,32 +155,16 @@ const buildTokenGeneratorCacheKey = (supplierConfig: SupplierConfig): string => 
   ].join("|");
 };
 
-export const getTokenGenerator = (
+export const createTokenGenerator = (
   httpClient: HttpClient,
   secretsClient: SecretsClient,
   supplierConfig: SupplierConfig,
 ): SupplierTokenGenerator => {
-  const cacheKey = buildTokenGeneratorCacheKey(supplierConfig);
-  const existingGenerator = tokenGeneratorCache[cacheKey];
-
-  if (existingGenerator) {
-    return existingGenerator;
-  }
-
   const authClient = OAuthSupplierAuthClient.fromSupplierConfig(
     httpClient,
     secretsClient,
     supplierConfig,
   );
 
-  const tokenGenerator = new CachedSupplierTokenGenerator(authClient);
-  tokenGeneratorCache[cacheKey] = tokenGenerator;
-
-  return tokenGenerator;
-};
-
-export const __resetSupplierTokenGeneratorCacheForTests = (): void => {
-  for (const cacheKey of Object.keys(tokenGeneratorCache)) {
-    delete tokenGeneratorCache[cacheKey];
-  }
+  return new CachedSupplierTokenGenerator(authClient);
 };
