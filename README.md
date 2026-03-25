@@ -145,7 +145,7 @@ After running `npm start`, use targeted commands instead of restarting everythin
   ```shell
   TF_VAR_local_service_mode=wiremock
   TF_VAR_local_supplier_service_url_override=https://supplier.example.com  # override supplier service API
-  TF_VAR_local_use_wiremock_auth_override=https://auth.sandpit.signin.nhs.uk # override all auth with NHS sandpit
+  TF_VAR_local_use_ui_auth_override=https://auth.sandpit.signin.nhs.uk # override all auth with NHS sandpit
   TF_VAR_local_postcode_lookup_base_url_override=https://api.os.uk/search/places/v1 # override postcode lookup with OS Places
   npm run local:terraform:apply
   ```
