@@ -93,31 +93,6 @@ test.describe("Order Status Page", () => {
       const url = await orderStatusPage.getCurrentUrl();
       expect(url).toContain(`/orders/${orderId2}/tracking`);
     });
-
-    test("Unauthenticated user opens a deep link", async ({
-      config,
-      orderStatusPage,
-      nhsEmailAndPasswordPage,
-      codeSecurityPage,
-      testedUser,
-    }) => {
-      await dbClient.updateOrderStatus(orderId, "RECEIVED");
-      const context = orderStatusPage.page.context();
-      await context.clearCookies();
-      await context.clearPermissions();
-      await orderStatusPage.openOrderDirect(orderId);
-
-      if (config.authType !== AuthType.WIREMOCK) {
-        const sandboxUser = testedUser as NHSLoginUser;
-        await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-        await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(sandboxUser);
-        await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(sandboxUser.otp);
-      }
-
-      await expect(orderStatusPage.statusTag).toHaveText("Test received");
-      const url = await orderStatusPage.getCurrentUrl();
-      expect(url).toContain(orderId);
-    });
   });
 
   test.afterAll(

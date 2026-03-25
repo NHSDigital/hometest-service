@@ -14,7 +14,7 @@ export const getNumberOfWorkers = (authType: AuthType): number => {
   switch (authType) {
     case AuthType.WIREMOCK:
       return 4;
-    case AuthType.SANDBOX:
+    case AuthType.SANDPIT:
       return ConfigFactory.getEnvironment() === "local" ? 1 : 2;
   }
 };

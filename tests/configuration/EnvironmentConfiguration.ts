@@ -7,7 +7,7 @@ export { EnvironmentVariables };
 export type { Environment };
 
 export enum AuthType {
-  SANDBOX = "sandbox",
+  SANDPIT = "sandpit",
   WIREMOCK = "wiremock",
 }
 
@@ -66,7 +66,7 @@ export class ConfigFactory {
       headless: true,
       timeout: 30000,
       slowMo: 0,
-      authType: (process.env.ENV ?? "local") === "local" ? AuthType.WIREMOCK : AuthType.SANDBOX,
+      authType: (process.env.ENV ?? "local") === "local" ? AuthType.WIREMOCK : AuthType.SANDPIT,
       accessibilityStandards: "wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa",
       reportingOutputDirectory: "tests/testResults",
       enableTracingOnGlobalSetup: false,

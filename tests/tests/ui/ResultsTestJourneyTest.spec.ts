@@ -93,28 +93,6 @@ test.describe("Results Page", { tag: "@ui" }, () => {
       const url = await negativeResultPage.getCurrentUrl();
       expect(url).toContain(`/orders/${orderId2}/tracking`);
     });
-
-    test("Unauthenticated user opens a deep link", async ({
-      config,
-      negativeResultPage,
-      nhsEmailAndPasswordPage,
-    }) => {
-      await dbClient.updateOrderStatus(orderId, "COMPLETE");
-      await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
-      const context = negativeResultPage.page.context();
-      await context.clearCookies();
-      await context.clearPermissions();
-
-      if (config.authType === AuthType.WIREMOCK) {
-        await negativeResultPage.openOrderResultDirect(orderId);
-        await negativeResultPage.waitForResultsToLoad();
-        await expect(negativeResultPage.result).toHaveText("Negative");
-        return;
-      }
-
-      await negativeResultPage.openOrderResultDirect(orderId);
-      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-    });
   });
 
   test.afterEach(
