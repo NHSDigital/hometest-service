@@ -3,7 +3,13 @@ import type { BaseUserManager } from "../utils/users/BaseUserManager";
 import { UserManagerFactory } from "../utils/users/UserManagerFactory";
 import type { BaseTestUser } from "../utils/users/BaseUser";
 
-const userManager = new UserManagerFactory().getUserManager();
+let _userManager: BaseUserManager<BaseTestUser> | undefined;
+function getUserManager(): BaseUserManager<BaseTestUser> {
+  if (!_userManager) {
+    _userManager = new UserManagerFactory().getUserManager();
+  }
+  return _userManager;
+}
 
 function getWorkerIndex(): number {
   return storageStateFixture.info().parallelIndex ?? 0;
@@ -30,7 +36,7 @@ export const storageStateFixture = baseTest.extend<
       const workerIndex = getWorkerIndex();
       console.log(`Creating new worker with index: ${workerIndex}`);
 
-      const fileName: string = userManager.getWorkerUserSessionFilePath(workerIndex);
+      const fileName: string = getUserManager().getWorkerUserSessionFilePath(workerIndex);
       console.log(`Test using session: ${fileName}`);
       await use(fileName);
     },
@@ -38,13 +44,13 @@ export const storageStateFixture = baseTest.extend<
   ],
   userManager: [
     async ({}, use) => {
-      await use(userManager);
+      await use(getUserManager());
     },
     { scope: "worker" },
   ],
   testedUser: [
     async ({}, use) => {
-      const user: BaseTestUser = userManager.getWorkerUser(getWorkerIndex());
+      const user: BaseTestUser = getUserManager().getWorkerUser(getWorkerIndex());
 
       // Validate that required user properties exist
       if (!user.nhsNumber || !user.dob) {
