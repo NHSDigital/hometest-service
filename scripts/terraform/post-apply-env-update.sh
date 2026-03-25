@@ -60,6 +60,15 @@ NHS_LOGIN_AUTHORIZE_URL=$(terraform -chdir=local-environment/infra output -raw n
 USE_WIREMOCK_AUTH=$(terraform -chdir=local-environment/infra output -raw use_wiremock_auth)
 SUPPLIER_SERVICE_URL=$(terraform -chdir=local-environment/infra output -raw supplier_service_url)
 
+case "$USE_WIREMOCK_AUTH" in
+	true) TESTS_AUTH_TYPE="wiremock" ;;
+	false) TESTS_AUTH_TYPE="sandpit" ;;
+	*)
+		echo "Unexpected use_wiremock_auth value: $USE_WIREMOCK_AUTH" >&2
+		exit 1
+		;;
+esac
+
 printf 'NEXT_PUBLIC_BACKEND_URL=%s\nNEXT_PUBLIC_NHS_LOGIN_AUTHORIZE_URL=%s\nNEXT_PUBLIC_USE_WIREMOCK_AUTH=%s\n' "$LOCALHOST_BACKEND_BASE_URL" "$NHS_LOGIN_AUTHORIZE_URL" "$USE_WIREMOCK_AUTH" > ./ui/.env.local
 
 TESTS_ENV_FILE=./tests/configuration/.env.local
@@ -67,7 +76,7 @@ mkdir -p "$(dirname "$TESTS_ENV_FILE")"
 touch "$TESTS_ENV_FILE"
 
 update_env_value "$TESTS_ENV_FILE" "API_BASE_URL" "$LOCALHOST_BACKEND_BASE_URL"
-update_env_value "$TESTS_ENV_FILE" "USE_WIREMOCK_AUTH" "$USE_WIREMOCK_AUTH"
+update_env_value "$TESTS_ENV_FILE" "AUTH_TYPE" "$TESTS_AUTH_TYPE"
 
 sync_supplier_service_url "$SUPPLIER_SERVICE_URL"
 
