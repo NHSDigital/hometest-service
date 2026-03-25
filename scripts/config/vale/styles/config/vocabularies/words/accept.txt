@@ -35,4 +35,4 @@ Jira
 Hardcoded
 Monorepo
 hardcode
-Wiremock
+WireMock
