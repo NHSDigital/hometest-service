@@ -10,7 +10,7 @@ interface CachedSupplierToken {
 interface OAuthTokenResponse {
   access_token: string;
   token_type: string;
-  expires_in: number;
+  expires_in?: number | string;
   scope?: string;
 }
 
@@ -28,7 +28,18 @@ export interface SupplierTokenGenerator {
 }
 
 const TOKEN_REFRESH_BUFFER_MS = 30_000;
+const DEFAULT_TOKEN_TTL_SECONDS = 60;
 const MAX_TOKEN_TTL_SECONDS = 86_399;
+
+const normalizeExpiresInSeconds = (expiresIn: number | string | undefined): number => {
+  const parsedExpiresIn = Number(expiresIn);
+
+  if (!Number.isFinite(parsedExpiresIn) || parsedExpiresIn <= 0) {
+    return DEFAULT_TOKEN_TTL_SECONDS;
+  }
+
+  return parsedExpiresIn;
+};
 
 export class OAuthSupplierAuthClient implements SupplierAuthClient {
   constructor(
@@ -77,7 +88,7 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
 
     return {
       accessToken: tokenData.access_token,
-      expiresInSeconds: tokenData.expires_in,
+      expiresInSeconds: normalizeExpiresInSeconds(tokenData.expires_in),
     };
   }
 

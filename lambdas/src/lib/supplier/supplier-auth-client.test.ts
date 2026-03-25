@@ -66,6 +66,61 @@ describe("OAuthSupplierAuthClient", () => {
       expiresInSeconds: 123,
     });
   });
+
+  it("coerces expires_in strings to numbers", async () => {
+    const httpClient = {
+      post: jest.fn().mockResolvedValue({
+        access_token: "token-789",
+        expires_in: "300",
+      }),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
+    } as any;
+
+    const client = new OAuthSupplierAuthClient(
+      httpClient,
+      secretsClient,
+      "https://supplier.example.com",
+      "/oauth/token",
+      "client-id",
+      "secret-name",
+      "orders results",
+    );
+
+    await expect(client.getToken()).resolves.toEqual({
+      accessToken: "token-789",
+      expiresInSeconds: 300,
+    });
+  });
+
+  it("falls back to a safe TTL when expires_in is invalid", async () => {
+    const httpClient = {
+      post: jest.fn().mockResolvedValue({
+        access_token: "token-999",
+      }),
+    } as any;
+
+    const secretsClient = {
+      getSecretValue: jest.fn().mockResolvedValue("secret-abc"),
+    } as any;
+
+    const client = new OAuthSupplierAuthClient(
+      httpClient,
+      secretsClient,
+      "https://supplier.example.com",
+      "/oauth/token",
+      "client-id",
+      "secret-name",
+      "orders results",
+    );
+
+    await expect(client.getToken()).resolves.toEqual({
+      accessToken: "token-999",
+      expiresInSeconds: 60,
+    });
+  });
 });
 
 describe("getTokenGenerator", () => {
