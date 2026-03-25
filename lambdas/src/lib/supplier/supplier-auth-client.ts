@@ -1,9 +1,11 @@
 import { HttpClient } from "../http/http-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
 import type { SupplierConfig } from "../db/supplier-db";
-import { DBClient } from "../db/db-client";
-import { TokenEncryptionClient } from "../kms/kms-client";
-import { CachedSupplierToken, PostgresTokenStore, TokenStore } from "./supplier-token-store";
+
+interface CachedSupplierToken {
+  accessToken: string;
+  expiresAtMs: number;
+}
 
 interface OAuthTokenResponse {
   access_token: string;
@@ -91,8 +93,6 @@ class CachedSupplierTokenGenerator implements SupplierTokenGenerator {
 
   constructor(
     private readonly authClient: OAuthSupplierAuthClient,
-    private readonly cacheKey: string,
-    private readonly tokenStore: TokenStore,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -105,24 +105,13 @@ class CachedSupplierTokenGenerator implements SupplierTokenGenerator {
       return this.inFlightTokenRequest;
     }
 
-    this.inFlightTokenRequest = this.resolveToken();
+    this.inFlightTokenRequest = this.fetchAndCacheToken();
 
     try {
       return await this.inFlightTokenRequest;
     } finally {
       this.inFlightTokenRequest = null;
     }
-  }
-
-  private async resolveToken(): Promise<string> {
-    const persistedToken = await this.tokenStore.get(this.cacheKey);
-
-    if (persistedToken && this.isTokenValid(persistedToken.expiresAtMs)) {
-      this.cachedToken = persistedToken;
-      return persistedToken.accessToken;
-    }
-
-    return this.fetchAndCacheToken();
   }
 
   private hasValidCachedToken(): boolean {
@@ -136,20 +125,10 @@ class CachedSupplierTokenGenerator implements SupplierTokenGenerator {
   private async fetchAndCacheToken(): Promise<string> {
     const token = await this.authClient.getToken();
     const ttlSeconds = Math.min(Math.max(token.expiresInSeconds, 0), MAX_TOKEN_TTL_SECONDS);
-    const cachedToken: CachedSupplierToken = {
+    this.cachedToken = {
       accessToken: token.accessToken,
       expiresAtMs: this.now() + ttlSeconds * 1000,
     };
-
-    this.cachedToken = cachedToken;
-
-    try {
-      await this.tokenStore.set(this.cacheKey, cachedToken);
-    } catch (error) {
-      console.warn("supplier-auth-client: failed to persist supplier token cache", {
-        error,
-      });
-    }
 
     return token.accessToken;
   }
@@ -170,8 +149,6 @@ const buildTokenGeneratorCacheKey = (supplierConfig: SupplierConfig): string => 
 export const getTokenGenerator = (
   httpClient: HttpClient,
   secretsClient: SecretsClient,
-  dbClient: DBClient,
-  encryptionClient: TokenEncryptionClient,
   supplierConfig: SupplierConfig,
 ): SupplierTokenGenerator => {
   const cacheKey = buildTokenGeneratorCacheKey(supplierConfig);
@@ -187,9 +164,7 @@ export const getTokenGenerator = (
     supplierConfig,
   );
 
-  const tokenStore = new PostgresTokenStore(dbClient, encryptionClient);
-  const tokenGenerator = new CachedSupplierTokenGenerator(authClient, cacheKey, tokenStore);
-
+  const tokenGenerator = new CachedSupplierTokenGenerator(authClient);
   tokenGeneratorCache[cacheKey] = tokenGenerator;
 
   return tokenGenerator;

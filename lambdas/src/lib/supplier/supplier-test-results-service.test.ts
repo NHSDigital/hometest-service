@@ -1,11 +1,9 @@
 import { Bundle, Observation } from "fhir/r4";
 import { SupplierConfig, SupplierService } from "../db/supplier-db";
 
-import { DBClient } from "../db/db-client";
 import { HttpClient } from "../http/http-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierTestResultsService } from "./supplier-test-results-service";
-import { TokenEncryptionClient } from "../kms/kms-client";
 
 const mockGenerateToken = jest.fn();
 
@@ -20,8 +18,6 @@ describe("SupplierTestResultsService", () => {
   let mockHttpClient: jest.Mocked<HttpClient>;
   let mockSecretsClient: jest.Mocked<SecretsClient>;
   let mockSupplierDb: jest.Mocked<SupplierService>;
-  let mockDbClient: jest.Mocked<DBClient>;
-  let mockEncryptionClient: jest.Mocked<TokenEncryptionClient>;
 
   beforeEach(() => {
     mockHttpClient = {
@@ -39,24 +35,7 @@ describe("SupplierTestResultsService", () => {
       getSupplierConfigBySupplierId: jest.fn(),
     } as unknown as jest.Mocked<SupplierService>;
 
-    mockDbClient = {
-      query: jest.fn(),
-      withTransaction: jest.fn(),
-      close: jest.fn(),
-    } as unknown as jest.Mocked<DBClient>;
-
-    mockEncryptionClient = {
-      encrypt: jest.fn(),
-      decrypt: jest.fn(),
-    } as jest.Mocked<TokenEncryptionClient>;
-
-    service = new SupplierTestResultsService(
-      mockHttpClient,
-      mockSecretsClient,
-      mockSupplierDb,
-      mockDbClient,
-      mockEncryptionClient,
-    );
+    service = new SupplierTestResultsService(mockHttpClient, mockSecretsClient, mockSupplierDb);
 
     mockGenerateToken.mockReset();
   });

@@ -9,7 +9,6 @@ import { TestResultDbClient } from "../lib/db/test-result-db-client";
 import { init } from "./init";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
-import { AwsKmsTokenEncryptionClient } from "../lib/kms/kms-client";
 
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");
@@ -18,7 +17,6 @@ jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/db/test-result-db-client");
 jest.mock("../lib/supplier/supplier-test-results-service");
 jest.mock("../lib/db/db-config");
-jest.mock("../lib/kms/kms-client");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -30,7 +28,6 @@ describe("init", () => {
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
-    KMS_KEY_ID: "alias/test-key",
   };
 
   // This represents the return value of postgresConfigFromEnv(secretsClient)
@@ -126,18 +123,7 @@ describe("init", () => {
         expect.any(FetchHttpClient),
         expect.any(AwsSecretsClient),
         expect.any(SupplierService),
-        expect.any(PostgresDbClient),
-        expect.any(AwsKmsTokenEncryptionClient),
       );
-    });
-
-    it("should create AwsKmsTokenEncryptionClient using configured KMS key", () => {
-      process.env.AWS_REGION = "eu-west-2";
-      process.env.KMS_KEY_ID = "alias/test-key";
-
-      init();
-
-      expect(AwsKmsTokenEncryptionClient).toHaveBeenCalledWith("alias/test-key", "eu-west-2");
     });
 
     it("should return an Environment object with all required properties", () => {
@@ -181,10 +167,6 @@ describe("init", () => {
           },
           {
             mock: AwsSecretsClient as jest.Mock,
-            times: 1,
-          },
-          {
-            mock: AwsKmsTokenEncryptionClient as jest.Mock,
             times: 1,
           },
           {
