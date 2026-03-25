@@ -119,7 +119,6 @@ test.describe("Home test E2E tests", () => {
     if (patientId) {
       await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderStatusByPatientUid(patientId);
-      await dbClient.deleteOrderStatusByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
 
     }
