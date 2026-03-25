@@ -22,8 +22,6 @@ jest.mock("./init", () => ({
       getSupplierConfigBySupplierId: mockGetSupplierConfigBySupplierId,
     },
     secretsClient: {},
-    dbClient: {},
-    kmsClient: {},
     orderStatusService: {
       addOrderStatusUpdate: mockAddOrderStatusUpdate,
     },
