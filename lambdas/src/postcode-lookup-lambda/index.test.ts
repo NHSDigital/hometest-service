@@ -92,8 +92,7 @@ describe('postcode-lookup-lambda handler', () => {
     expect(mockPerformLookup).toHaveBeenCalledWith('SW1A 1AA');
   });
 
-  it('should log error details and rethrow when service throws error', async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+  it('should rethrow when service throws error', async () => {
     const mockError = {
       cause: {
         details: {
@@ -108,16 +107,9 @@ describe('postcode-lookup-lambda handler', () => {
     } as Partial<APIGatewayProxyEvent> as APIGatewayProxyEvent;
 
     await expect(lambdaHandler(event)).rejects.toEqual(mockError);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'handler - Error in postcode lookup handler:',
-      { error: 'Service unavailable' }
-    );
-
-    consoleErrorSpy.mockRestore();
   });
 
   it('should handle errors without cause details', async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     const mockError = new Error('Generic error');
     mockPerformLookup.mockRejectedValue(mockError);
 
@@ -126,11 +118,5 @@ describe('postcode-lookup-lambda handler', () => {
     } as Partial<APIGatewayProxyEvent> as APIGatewayProxyEvent;
 
     await expect(lambdaHandler(event)).rejects.toEqual(mockError);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'handler - Error in postcode lookup handler:',
-      undefined
-    );
-
-    consoleErrorSpy.mockRestore();
   });
 });

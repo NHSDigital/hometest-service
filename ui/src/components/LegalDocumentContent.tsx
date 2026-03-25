@@ -1,5 +1,5 @@
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
-import { type LegalDocumentContent } from "@/content/schema";
+import { type LegalDocumentContent } from "@/content";
 
 type LegalDocumentContentProps = {
   content: LegalDocumentContent;

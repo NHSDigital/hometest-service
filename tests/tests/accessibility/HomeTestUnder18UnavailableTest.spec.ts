@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
-import { SpecialUserKey } from "../../utils/users/SpecialUserKey";
+import { SpecialUserKey } from "../../utils/users";
 
 const randomAddress = AddressModel.getRandomAddress();
 

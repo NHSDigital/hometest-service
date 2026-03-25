@@ -3,7 +3,7 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
-import { NHSLoginUser } from "../../utils/users/BaseUser";
+import { NHSLoginUser } from "../../utils/users";
 
 let orderId: string;
 let patientId: string;
@@ -49,6 +49,7 @@ test.describe("Order Status Page", () => {
   }
 
   const ORDER_STATUS: OrderStatus[] = [
+    { status: "SUBMITTED", tag: "Confirmed" },
     { status: "DISPATCHED", tag: "Dispatched" },
     { status: "RECEIVED", tag: "Test received" },
   ];

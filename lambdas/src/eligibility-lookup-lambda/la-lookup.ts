@@ -1,4 +1,4 @@
-import postcodeLaMapping from '../__mocks__/postcode-la-mapping.json';
+import postcodeLaMapping from "../__mocks__/postcode-la-mapping.json";
 
 export interface LaLookupResult {
   localAuthorityCode: string;
@@ -7,7 +7,7 @@ export interface LaLookupResult {
 
 export class LaLookupService {
   async lookupByPostcode(postcode: string): Promise<LaLookupResult | null> {
-    const normalized = postcode.replace(/\s+/g, '').toUpperCase();
+    const normalized = postcode.replaceAll(/\s+/g, "").toUpperCase();
     const stubbed = (postcodeLaMapping as Record<string, LaLookupResult>)[normalized];
     return stubbed ?? null;
   }

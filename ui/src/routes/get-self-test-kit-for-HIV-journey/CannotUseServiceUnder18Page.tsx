@@ -1,10 +1,9 @@
 "use client";
 
 import { useContent } from "@/hooks";
-import { useJourneyNavigationContext } from "@/state/NavigationContext";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { ActionLink } from "nhsuk-react-components";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
-import { useCreateOrderContext } from "@/state/OrderContext";
 import { RoutePath } from "@/lib/models/route-paths";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { FeedbackSection } from "@/components/FeedbackSection";

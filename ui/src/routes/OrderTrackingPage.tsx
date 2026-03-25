@@ -6,7 +6,7 @@ import { OrderStatus } from "@/components/order-status";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import { isValidGuid } from "@/lib/utils/guid";
-import { useAuth } from "@/state/AuthContext";
+import { useAuth } from "@/state";
 import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
 import { usePageContent } from "@/hooks";
 import { useParams } from "react-router-dom";

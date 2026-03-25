@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 
 import { render } from "@testing-library/react";
 import { AppDevtools } from "@/lib/utils/AppDevtools";
-import { AuthProvider } from "@/state/AuthContext";
+import { AuthProvider } from "@/state";
 
 describe("AppDevtools", () => {
   const originalEnv = process.env.NODE_ENV;
@@ -12,12 +12,20 @@ describe("AppDevtools", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv, configurable: true, writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: originalEnv,
+      configurable: true,
+      writable: true,
+    });
     delete globalThis.__appDebug;
   });
 
   it("renders nothing to the DOM", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "development",
+      configurable: true,
+      writable: true,
+    });
 
     const { container } = render(
       <AuthProvider>
@@ -29,7 +37,11 @@ describe("AppDevtools", () => {
   });
 
   it("registers auth debug state in development", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "development",
+      configurable: true,
+      writable: true,
+    });
 
     render(
       <AuthProvider>
@@ -42,7 +54,11 @@ describe("AppDevtools", () => {
   });
 
   it("does not register debug state in production", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "production",
+      configurable: true,
+      writable: true,
+    });
 
     render(
       <AuthProvider>
@@ -54,7 +70,11 @@ describe("AppDevtools", () => {
   });
 
   it("cleans up debug state on unmount", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development", configurable: true, writable: true });
+    Object.defineProperty(process.env, "NODE_ENV", {
+      value: "development",
+      configurable: true,
+      writable: true,
+    });
 
     const { unmount } = render(
       <AuthProvider>
