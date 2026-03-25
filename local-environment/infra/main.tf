@@ -71,11 +71,14 @@ locals {
 
   use_wiremock_mode = var.local_service_mode == "wiremock"
 
-  resolved_nhs_login_base_url = var.local_use_ui_auth_override != null ? var.local_use_ui_auth_override : (
+  resolved_nhs_login_override_container_base_url = var.local_use_ui_auth_url_override != null ? replace(var.local_use_ui_auth_url_override, "localhost", "wiremock") : null
+  resolved_nhs_login_override_browser_base_url   = var.local_use_ui_auth_url_override != null ? replace(var.local_use_ui_auth_url_override, "wiremock", "localhost") : null
+
+  resolved_nhs_login_base_url = local.resolved_nhs_login_override_container_base_url != null ? local.resolved_nhs_login_override_container_base_url : (
     local.use_wiremock_mode ? local.wiremock_container_base_url : local.nhs_login_sandpit_base_url
   )
 
-  resolved_nhs_login_authorize_url = var.local_use_ui_auth_override != null ? "${var.local_use_ui_auth_override}/authorize" : (
+  resolved_nhs_login_authorize_url = local.resolved_nhs_login_override_browser_base_url != null ? "${local.resolved_nhs_login_override_browser_base_url}/authorize" : (
     local.use_wiremock_mode ? "${local.wiremock_browser_base_url}/authorize" : "${local.nhs_login_sandpit_base_url}/authorize"
   )
 
@@ -87,7 +90,7 @@ locals {
     local.use_wiremock_mode ? local.wiremock_container_base_url : null
   )
 
-  resolved_use_wiremock_auth = var.local_use_ui_auth_override != null ? var.local_use_ui_auth_override : local.use_wiremock_mode
+  resolved_use_wiremock_auth = local.resolved_nhs_login_override_container_base_url != null ? length(regexall("wiremock", lower(local.resolved_nhs_login_override_container_base_url))) > 0 : local.use_wiremock_mode
 }
 
 # Fail early if required secrets are missing

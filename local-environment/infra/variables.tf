@@ -39,8 +39,8 @@ variable "local_supplier_service_url_override" {
   default     = null
 }
 
-variable "local_use_ui_auth_override" {
-  description = "Optional override for whether the UI/tests should use WireMock-specific local auth behavior."
-  type        = bool
+variable "local_use_ui_auth_url_override" {
+  description = "Optional override for UI/backend/tests to use a specific UI login/auth URL instead of deriving from local_service_mode."
+  type        = string
   default     = null
 }

@@ -17,6 +17,7 @@
     "local:deploy": "NODE_ENV=development npm run build:lambdas && npm run package:lambdas && npm run local:terraform:apply",
     "local:backend:start": "COMPOSE_PROFILES=backend npm run local:compose:up && npm run local:service:db:migrate",
     "local:frontend:start": "npm run local:terraform:env && npm run local:frontend:up",
+    "local:frontend:restart": "npm run local:compose -- up -d --force-recreate ui",
     "local:frontend:up": "COMPOSE_PROFILES=frontend npm run local:compose:up",
     "local:service:ui:start": "npm run local:compose:up -- ui",
     "local:service:ui:stop": "npm run local:compose:down -- ui",
