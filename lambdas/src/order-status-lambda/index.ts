@@ -12,7 +12,7 @@ import { ConsoleCommons } from "../lib/commons";
 import { IncomingBusinessStatus } from "./types";
 import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
@@ -172,5 +172,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());
