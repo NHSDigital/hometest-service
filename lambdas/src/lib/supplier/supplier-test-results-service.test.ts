@@ -8,10 +8,17 @@ import { SupplierTestResultsService } from "./supplier-test-results-service";
 const mockGenerateToken = jest.fn();
 
 jest.mock("./supplier-auth-client", () => ({
-  getTokenGenerator: jest.fn().mockImplementation(() => ({
+  buildTokenGeneratorCacheKey: jest.fn(() => "supplier-cache-key"),
+  createTokenGenerator: jest.fn().mockImplementation(() => ({
     generateToken: mockGenerateToken,
   })),
 }));
+
+const { createTokenGenerator: mockCreateTokenGenerator } = jest.requireMock(
+  "./supplier-auth-client",
+) as {
+  createTokenGenerator: jest.Mock;
+};
 
 describe("SupplierTestResultsService", () => {
   let service: SupplierTestResultsService;
@@ -38,6 +45,7 @@ describe("SupplierTestResultsService", () => {
     service = new SupplierTestResultsService(mockHttpClient, mockSecretsClient, mockSupplierDb);
 
     mockGenerateToken.mockReset();
+    mockCreateTokenGenerator.mockClear();
   });
 
   describe("getResults", () => {
@@ -132,6 +140,15 @@ describe("SupplierTestResultsService", () => {
         expect.stringContaining("order_uid=order-123-abc%2Bdef"),
         expect.any(Object),
       );
+    });
+
+    it("reuses the same generator for repeated requests on one service instance", async () => {
+      mockHttpClient.get.mockResolvedValue(mockBundle);
+
+      await service.getResults(orderId, supplierId, correlationId);
+      await service.getResults(orderId, supplierId, correlationId);
+
+      expect(mockCreateTokenGenerator).toHaveBeenCalledTimes(1);
     });
   });
 });

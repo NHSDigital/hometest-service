@@ -1,11 +1,17 @@
 import { Bundle, Observation } from "fhir/r4";
 
 import { HttpClient } from "../http/http-client";
-import { getTokenGenerator } from "./supplier-auth-client";
+import {
+  buildTokenGeneratorCacheKey,
+  createTokenGenerator,
+  type SupplierTokenGenerator,
+} from "./supplier-auth-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierService } from "../db/supplier-db";
 
 export class SupplierTestResultsService {
+  private readonly tokenGenerators = new Map<string, SupplierTokenGenerator>();
+
   constructor(
     private readonly httpClient: HttpClient,
     private readonly secretsClient: SecretsClient,
@@ -23,7 +29,13 @@ export class SupplierTestResultsService {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const tokenGenerator = getTokenGenerator(this.httpClient, this.secretsClient, serviceConfig);
+    const cacheKey = buildTokenGeneratorCacheKey(serviceConfig);
+    let tokenGenerator = this.tokenGenerators.get(cacheKey);
+
+    if (!tokenGenerator) {
+      tokenGenerator = createTokenGenerator(this.httpClient, this.secretsClient, serviceConfig);
+      this.tokenGenerators.set(cacheKey, tokenGenerator);
+    }
 
     const accessToken = await tokenGenerator.generateToken();
 

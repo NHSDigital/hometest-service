@@ -2,9 +2,13 @@ import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 
 import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
 import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
-import { getTokenGenerator } from "../lib/supplier/supplier-auth-client";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { SupplierConfig } from "../lib/db/supplier-db";
+import {
+  buildTokenGeneratorCacheKey,
+  createTokenGenerator,
+  type SupplierTokenGenerator,
+} from "../lib/supplier/supplier-auth-client";
 import { init } from "./init";
 import { isUUID } from "../lib/utils/utils";
 import z from "zod";
@@ -12,6 +16,7 @@ import z from "zod";
 const name = "order-router-lambda";
 
 const { httpClient, supplierDb, secretsClient, orderStatusService } = init();
+const supplierTokenGenerators = new Map<string, SupplierTokenGenerator>();
 
 export interface ParsedOrderBody {
   supplier_code: string;
@@ -64,7 +69,13 @@ const getSupplierServiceConfig = async (supplierCode: string): Promise<SupplierC
 
 const getSupplierAccessToken = async (serviceConfig: SupplierConfig): Promise<string> => {
   try {
-    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, serviceConfig);
+    const cacheKey = buildTokenGeneratorCacheKey(serviceConfig);
+    let tokenGenerator = supplierTokenGenerators.get(cacheKey);
+
+    if (!tokenGenerator) {
+      tokenGenerator = createTokenGenerator(httpClient, secretsClient, serviceConfig);
+      supplierTokenGenerators.set(cacheKey, tokenGenerator);
+    }
 
     return await tokenGenerator.generateToken();
   } catch (error) {
