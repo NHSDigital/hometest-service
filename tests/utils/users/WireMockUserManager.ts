@@ -1,12 +1,14 @@
-import { BaseUserManager } from "./BaseUserManager";
 import * as fs from "node:fs";
+
 import type { Page } from "@playwright/test";
+
+import { BaseUserManager } from "./BaseUserManager";
 import { SpecialUserKey } from "./SpecialUserKey";
 import {
+  type WireMockAuthUser,
   getWireMockAuthManifestPath,
   loadWireMockAuthManifest,
-  type WireMockAuthUser,
-} from "./WiremockAuthMappings";
+} from "./wiremockAuthMappings";
 
 const WIREMOCK_LOGIN_HINT_STORAGE_KEY = "wiremockLoginHint";
 

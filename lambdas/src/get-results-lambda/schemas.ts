@@ -4,7 +4,7 @@ export const getResultsQueryParamsSchema = z.looseObject({
   order_id: z.uuid("Invalid order id format").toLowerCase(),
   nhs_number: z
     .string()
-    .transform((val) => val.replace(/\s/g, ""))
+    .transform((val) => val.replaceAll(/\s/g, ""))
     .refine((val) => /^\d{10}$/.test(val), {
       message: "NHS number must be exactly 10 digits",
     }),

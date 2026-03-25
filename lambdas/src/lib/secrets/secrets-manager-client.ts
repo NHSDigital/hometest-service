@@ -1,27 +1,22 @@
 import {
-  GetSecretValueCommand,
   SecretsManagerClient as AwsSecretsManagerClient,
+  GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 
 export interface SecretsClient {
   getSecretString(secretName: string): Promise<string>;
-  getSecretValue(
-    secretName: string,
-    options?: { jsonKey?: string },
-  ): Promise<string>;
+  getSecretValue(secretName: string, options?: { jsonKey?: string }): Promise<string>;
 }
 
 export class AwsSecretsClient implements SecretsClient {
-  private client: AwsSecretsManagerClient;
+  private readonly client: AwsSecretsManagerClient;
 
   constructor(region: string) {
     this.client = new AwsSecretsManagerClient({ region: region });
   }
 
   async getSecretString(secretName: string): Promise<string> {
-    const response = await this.client.send(
-      new GetSecretValueCommand({ SecretId: secretName }),
-    );
+    const response = await this.client.send(new GetSecretValueCommand({ SecretId: secretName }));
 
     if (!response.SecretString) {
       throw new Error("Secret string is empty");
@@ -30,10 +25,7 @@ export class AwsSecretsClient implements SecretsClient {
     return response.SecretString;
   }
 
-  async getSecretValue(
-    secretName: string,
-    options?: { jsonKey?: string },
-  ): Promise<string> {
+  async getSecretValue(secretName: string, options?: { jsonKey?: string }): Promise<string> {
     const secretString = await this.getSecretString(secretName);
 
     if (!options?.jsonKey) {

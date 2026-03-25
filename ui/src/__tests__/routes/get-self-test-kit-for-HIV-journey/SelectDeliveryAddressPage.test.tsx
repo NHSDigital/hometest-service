@@ -1,11 +1,15 @@
 import "@testing-library/jest-dom";
-import { AuthContext, AuthUser, useCreateOrderContext } from "@/state";
+import {
+  AuthContext,
+  AuthUser,
+  CreateOrderProvider,
+  JourneyNavigationProvider,
+  PostcodeLookupProvider,
+  useCreateOrderContext,
+} from "@/state";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { CreateOrderProvider } from "@/state/OrderContext";
-import { JourneyNavigationProvider } from "@/state/NavigationContext";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { MemoryRouter } from "react-router-dom";
-import { PostcodeLookupProvider } from "@/state/PostcodeLookupContext";
 import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useEffect } from "react";

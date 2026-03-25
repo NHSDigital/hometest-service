@@ -1,9 +1,10 @@
-import { type HttpClient } from '../http/login-http-client';
-import { type INhsLoginConfig } from '../models/nhs-login/nhs-login-config';
-import { type INhsTokenResponseModel } from '../models/nhs-login/nhs-login-token-response-model';
-import { type INhsUserInfoResponseModel } from '../models/nhs-login/nhs-login-user-info-response-model';
-import { type JwksClient } from 'jwks-rsa';
-import { type NhsLoginJwtHelper } from './nhs-login-jwt-helper';
+import { type HttpClient } from "../http/login-http-client";
+import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
+import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
+import { type JwksClient } from "jwks-rsa";
+import { type NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
+import { enrichUserInfoWithTestFirstName } from "./test-user-mapping";
 
 export interface INhsLoginClient {
   getUserTokens: (code: string) => Promise<INhsTokenResponseModel>;
@@ -24,7 +25,7 @@ export class NhsLoginClient implements INhsLoginClient {
     nhsLoginConfig: INhsLoginConfig,
     nhsLoginJwtHelper: NhsLoginJwtHelper,
     httpClient: HttpClient,
-    jwksClient: JwksClient
+    jwksClient: JwksClient,
   ) {
     this.nhsLoginConfig = nhsLoginConfig;
     this.nhsLoginJwtHelper = nhsLoginJwtHelper;
@@ -35,58 +36,40 @@ export class NhsLoginClient implements INhsLoginClient {
   }
 
   public async getUserTokens(code: string): Promise<INhsTokenResponseModel> {
-    try {
-      const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
+    const signedToken = this.nhsLoginJwtHelper.createClientAuthJwt();
 
-      const formData = new URLSearchParams({
-        code,
-        client_id: this.nhsLoginConfig.clientId,
-        redirect_uri: this.nhsLoginConfig.redirectUri,
-        grant_type: 'authorization_code',
-        client_assertion_type:
-          'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-        client_assertion: signedToken
-      });
+    const formData = new URLSearchParams({
+      code,
+      client_id: this.nhsLoginConfig.clientId,
+      redirect_uri: this.nhsLoginConfig.redirectUri,
+      grant_type: "authorization_code",
+      client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+      client_assertion: signedToken,
+    });
 
-      console.log(formData.toString());
-
-      const response: INhsTokenResponseModel =
-        await this.httpClient.postRequest<URLSearchParams, any>(
-          this.nhsLoginTokenUri,
-          formData,
-          {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        );
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response: INhsTokenResponseModel = await this.httpClient.postRequest<
+      URLSearchParams,
+      any
+    >(this.nhsLoginTokenUri, formData, {
+      "Content-Type": "application/x-www-form-urlencoded",
+    });
+    return response;
   }
 
-  public async getUserInfo(
-    userAccessToken: string
-  ): Promise<INhsUserInfoResponseModel> {
-    try {
-      const userInfoResponse =
-        await this.httpClient.getRequest<INhsUserInfoResponseModel>(
-          this.nhsLoginUserInfoUri,
-          {
-            Authorization: `Bearer ${userAccessToken}`
-          }
-        );
-      return userInfoResponse;
-    } catch (error) {
-      throw error;
-    }
+  public async getUserInfo(userAccessToken: string): Promise<INhsUserInfoResponseModel> {
+    const userInfoResponse = await this.httpClient.getRequest<INhsUserInfoResponseModel>(
+      this.nhsLoginUserInfoUri,
+      {
+        Authorization: `Bearer ${userAccessToken}`,
+      },
+    );
+    // ALPHA: Enrich user info with test data for missing given_name (temporary workaround)
+    const enrichedUserInfo = enrichUserInfoWithTestFirstName(userInfoResponse);
+    return enrichedUserInfo;
   }
 
   public async fetchPublicKeyById(kid: string): Promise<string> {
-    try {
-      const response = await this.jwksClient.getSigningKey(kid);
-      return response.getPublicKey();
-    } catch (error) {
-      throw error;
-    }
+    const response = await this.jwksClient.getSigningKey(kid);
+    return response.getPublicKey();
   }
 }

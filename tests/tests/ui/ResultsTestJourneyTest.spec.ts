@@ -1,10 +1,11 @@
+import { randomUUID } from "node:crypto";
+
+import { expect } from "@playwright/test";
+
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
-import { randomUUID } from "node:crypto";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
-import { AuthType } from "../../configuration/EnvironmentConfiguration";
 
 let orderId: string;
 let patientId: string;
@@ -47,11 +48,15 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     },
   );
 
-  test("Authenticated user opens a deep link - negative result", async ({ negativeResultPage }) => {
+  test("Authenticated user opens a deep link - negative result", async ({
+    negativeResultPage,
+    errorPage,
+  }) => {
     await dbClient.updateOrderStatus(orderId, "COMPLETE");
     await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
     expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
     await negativeResultPage.navigateToOrderResult(orderId);
+    await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
     await expect(negativeResultPage.result).toHaveText("Negative");
     const orderReferenceOnPage = await negativeResultPage.getOrderReference();
     expect(orderReferenceOnPage).toBe(orderReference);

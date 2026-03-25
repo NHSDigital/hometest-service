@@ -1,6 +1,6 @@
-import jwt, { type SignOptions } from 'jsonwebtoken';
-import { type INhsLoginConfig } from '../models/nhs-login/nhs-login-config';
-import { v4 as uuidv4 } from 'uuid';
+import jwt, { type SignOptions } from "jsonwebtoken";
+import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { v4 as uuidv4 } from "uuid";
 
 export interface INhsLoginJwtHelper {
   createClientAuthJwt: () => string;
@@ -16,23 +16,15 @@ export class NhsLoginJwtHelper implements INhsLoginJwtHelper {
 
   public createClientAuthJwt(): string {
     const clientTokenSignOptions: SignOptions = {
-      algorithm: 'RS512',
+      algorithm: "RS512",
       subject: this.nhsLoginConfig.clientId,
       issuer: this.nhsLoginConfig.clientId,
       audience: `${this.nhsLoginConfig.baseUri}/token`,
       jwtid: uuidv4(),
-      expiresIn: this.nhsLoginConfig.expiresIn
+      expiresIn: this.nhsLoginConfig.expiresIn,
     };
 
-    try {
-      const signedToken = jwt.sign(
-        {},
-        this.nhsLoginConfig.privateKey,
-        clientTokenSignOptions
-      );
-      return signedToken;
-    } catch (error) {
-      throw error;
-    }
+    const signedToken = jwt.sign({}, this.nhsLoginConfig.privateKey, clientTokenSignOptions);
+    return signedToken;
   }
 }

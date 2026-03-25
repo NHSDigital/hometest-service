@@ -3,7 +3,7 @@ import { test } from "../../fixtures/CombinedTestFixture";
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { ResultsObservationData } from "../../test-data/ResultsObservationData";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { headersTestResults } from "../../utils/ApiRequestHelper";
+import { headersTestResults } from "../../utils";
 import { randomUUID } from "crypto";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 

@@ -1,13 +1,10 @@
 import { test as baseTest } from "@playwright/test";
-import type { BaseUserManager } from "../utils/users/BaseUserManager";
-import { UserManagerFactory } from "../utils/users/UserManagerFactory";
-import type { BaseTestUser } from "../utils/users/BaseUser";
+
+import { type BaseTestUser, type BaseUserManager, UserManagerFactory } from "../utils/users";
 
 let _userManager: BaseUserManager<BaseTestUser> | undefined;
 function getUserManager(): BaseUserManager<BaseTestUser> {
-  if (!_userManager) {
-    _userManager = new UserManagerFactory().getUserManager();
-  }
+  _userManager ??= new UserManagerFactory().getUserManager();
   return _userManager;
 }
 
@@ -27,7 +24,9 @@ export const storageStateFixture = baseTest.extend<
   storageState: async ({ testedUser, workerStorageState }, use) => {
     const worker = `Worker-${getWorkerIndex() + 1}`;
     const testTitle = storageStateFixture.info().title;
-    console.log(`[${worker}] "${testTitle}" | nhsNumber: ${testedUser.nhsNumber} | started: ${new Date().toISOString()}`);
+    console.log(
+      `[${worker}] "${testTitle}" | nhsNumber: ${testedUser.nhsNumber} | started: ${new Date().toISOString()}`,
+    );
     await use(workerStorageState);
   },
   // Authenticate once per worker with a worker-scoped fixture.

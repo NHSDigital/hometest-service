@@ -1,5 +1,5 @@
 import { type Locator, type Page } from "@playwright/test";
-import type { NHSLoginUser } from "../../utils/users/BaseUser";
+import type { NHSLoginUser } from "../../utils/users";
 import { BasePage } from "../BasePage";
 
 export class NHSEmailAndPasswordPage extends BasePage {

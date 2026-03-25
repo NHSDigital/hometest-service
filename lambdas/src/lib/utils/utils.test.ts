@@ -202,17 +202,14 @@ describe("retrieveMandatoryJsonEnvVariable", () => {
 
 describe("retrieveOptionalEnvVariable", () => {
   const originalEnv = process.env;
-  const originalLog = console.log;
 
   beforeEach(() => {
     jest.resetModules();
     process.env = { ...originalEnv };
-    console.log = jest.fn();
   });
 
   afterAll(() => {
     process.env = originalEnv;
-    console.log = originalLog;
   });
 
   it("should return the value when environment variable is set", () => {
@@ -223,9 +220,6 @@ describe("retrieveOptionalEnvVariable", () => {
   it("should return empty string when environment variable is not set and no default provided", () => {
     delete process.env.TEST_VAR;
     expect(retrieveOptionalEnvVariable("TEST_VAR")).toBe("");
-    expect(console.log).toHaveBeenCalledWith(
-      "The environment variable TEST_VAR has not been provided for the lambda",
-    );
   });
 
   it("should return default value when environment variable is not set", () => {

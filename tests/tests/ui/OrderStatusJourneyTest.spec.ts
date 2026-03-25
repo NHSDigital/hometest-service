@@ -1,10 +1,10 @@
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { expect } from "@playwright/test";
+
+import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
-import { NHSLoginUser } from "../../utils/users/BaseUser";
-import { AuthType } from "../../configuration/EnvironmentConfiguration";
+import { type NHSLoginUser } from "../../utils/users";
 
 let orderId: string;
 let patientId: string;
@@ -50,13 +50,18 @@ test.describe("Order Status Page", () => {
   }
 
   const ORDER_STATUS: OrderStatus[] = [
+    { status: "SUBMITTED", tag: "Confirmed" },
     { status: "DISPATCHED", tag: "Dispatched" },
     { status: "RECEIVED", tag: "Test received" },
   ];
 
-  test("Authenticated user opens a deep link - Order confirmed", async ({ orderStatusPage }) => {
+  test("Authenticated user opens a deep link - Order confirmed", async ({
+    orderStatusPage,
+    errorPage,
+  }) => {
     expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
     await orderStatusPage.navigateToOrder(orderId);
+    await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
     await expect(orderStatusPage.statusTag).toHaveText("Confirmed");
     const orderReferenceOnPage = await orderStatusPage.getOrderReference();
     expect(orderReferenceOnPage).toBe(orderReference);
@@ -65,10 +70,12 @@ test.describe("Order Status Page", () => {
   for (const { status, tag } of ORDER_STATUS) {
     test(`Authenticated user opens a deep link - Order status is ${status}`, async ({
       orderStatusPage,
+      errorPage,
     }) => {
       await dbClient.updateOrderStatus(orderId, status);
       expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
       await orderStatusPage.navigateToOrder(orderId);
+      await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
       await expect(orderStatusPage.statusTag).toHaveText(tag);
       const orderReferenceOnPage = await orderStatusPage.getOrderReference();
       expect(orderReferenceOnPage).toBe(orderReference);
@@ -92,6 +99,31 @@ test.describe("Order Status Page", () => {
       await expect(errorPage.orderNotFoundMessage).toBeVisible();
       const url = await orderStatusPage.getCurrentUrl();
       expect(url).toContain(`/orders/${orderId2}/tracking`);
+    });
+
+    test("Unauthenticated user opens a deep link", async ({
+      orderStatusPage,
+      nhsEmailAndPasswordPage,
+      codeSecurityPage,
+      testedUser,
+      errorPage,
+    }) => {
+      await dbClient.updateOrderStatus(orderId, "RECEIVED");
+      const context = orderStatusPage.page.context();
+      await context.clearCookies();
+      await context.clearPermissions();
+      await orderStatusPage.navigateToOrder(orderId);
+      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
+        testedUser as NHSLoginUser,
+      );
+      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
+        (testedUser as NHSLoginUser).otp,
+      );
+      await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
+      await expect(orderStatusPage.statusTag).toHaveText("Test received");
+      const url = await orderStatusPage.getCurrentUrl();
+      expect(url).toContain(`/orders/${orderId}/tracking`);
     });
   });
 

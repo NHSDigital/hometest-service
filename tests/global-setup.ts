@@ -1,14 +1,13 @@
-import { CredentialsHelper } from "./utils/CredentialsHelper";
-import { UserManagerFactory } from "./utils/users/UserManagerFactory";
-import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 import { WireMockClient } from "./api/clients/WireMockClient";
+import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
+import { CredentialsHelper } from "./utils";
+import { UserManagerFactory } from "./utils/users";
 import {
   cleanupWireMockAuthState,
   configureWireMockAuthMappings,
   createWireMockAuthManifest,
-} from "./utils/users/WiremockAuthMappings";
-import { createWireMockUserInfoMapping } from "./utils/users/WiremockUserInfoMapping";
-
+} from "./utils/users/wiremockAuthMappings";
+import { createWireMockUserInfoMapping } from "./utils/users/wiremockUserInfoMapping";
 
 async function globalSetup() {
   console.log("🚀 Global setup started");

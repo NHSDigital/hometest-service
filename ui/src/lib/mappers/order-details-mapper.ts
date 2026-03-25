@@ -29,8 +29,6 @@ export class OrderDetailsMapper {
     };
   }
 
-  private static readonly PROCESSING_STATUSES = new Set(["GENERATED", "QUEUED", "SUBMITTED"]);
-
   private static extractStatus(serviceRequest: ServiceRequest): OrderStatus {
     const businessStatusExtension = FhirUtils.findExtension(
       serviceRequest,
@@ -46,11 +44,7 @@ export class OrderDetailsMapper {
       throw new Error("Missing status");
     }
 
-    if (this.PROCESSING_STATUSES.has(statusCode)) {
-      return OrderStatus.PROCESSING;
-    }
-
-    if (!(statusCode in OrderStatus)) {
+    if (!Object.values(OrderStatus).includes(statusCode as OrderStatus)) {
       throw new Error(`Invalid status: ${statusCode}`);
     }
 

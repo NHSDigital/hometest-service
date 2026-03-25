@@ -1,10 +1,12 @@
 "use client";
 
-import PageLayout from "@/layouts/PageLayout";
-import { RoutePath } from "@/lib/models/route-paths";
-import { useAuth } from "@/state/AuthContext";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+
+import PageLayout from "@/layouts/PageLayout";
+import { RoutePath } from "@/lib/models/route-paths";
+import { useAuth } from "@/state";
+
 import { SessionUnauthenticatedError, fetchSessionUser } from "./fetchSessionUser";
 
 const publicRoutes = new Set<string>([

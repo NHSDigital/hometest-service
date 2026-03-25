@@ -56,7 +56,7 @@ runs:
         retention-days: 30
 
     - name: "Test Report"
-      uses: dorny/test-reporter@v2
+      uses: dorny/test-reporter@v3
       if: always()
       with:
         name: "${{ inputs.test-name }}"
