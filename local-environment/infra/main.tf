@@ -126,6 +126,7 @@ resource "aws_secretsmanager_secret_version" "secrets" {
   secret_string = file("${local.secrets_dir}/${each.value}")
 }
 
+# IAM role for Lambda execution
 resource "aws_iam_role" "lambda_role" {
   name = "${var.project_name}-lambda-role"
 
@@ -221,7 +222,6 @@ module "eligibility_lookup_lambda" {
     DB_SCHEMA      = "hometest"
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
-
   }
 }
 
