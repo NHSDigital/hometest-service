@@ -65,11 +65,11 @@ Tests should be placed in the `tests/` directory with the `.spec.ts` extension.
 Example test structure:
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test.describe('My Test Suite', () => {
-  test('my test case', async ({ page }) => {
-    await page.goto('https://example.com');
+test.describe("My Test Suite", () => {
+  test("my test case", async ({ page }) => {
+    await page.goto("https://example.com");
     await expect(page).toHaveTitle(/Example/);
   });
 });
@@ -122,10 +122,10 @@ Each file contains:
 Configuration is available through fixtures:
 
 ```typescript
-import { test, expect } from '../fixtures';
-import { EnvironmentVariables } from '../configuration';
+import { EnvironmentVariables } from "../configuration";
+import { expect, test } from "../fixtures";
 
-test('example test', async ({ config }) => {
+test("example test", async ({ config }) => {
   const baseUrl = config.get(EnvironmentVariables.UI_BASE_URL);
   const headless = config.getBoolean(EnvironmentVariables.HEADLESS);
   const timeout = config.getNumber(EnvironmentVariables.TIMEOUT);
@@ -160,17 +160,17 @@ When running tests locally (`ENV=local`), you need to configure your test user c
    The `users.ts` file should already exist in the tests directory. If not, create it with the following structure:
 
    ```typescript
-   import type { NHSLoginUser } from './utils/users/BaseUser';
+   import type { NHSLoginUser } from "./utils/users/BaseUser";
 
    export const localUser: NHSLoginUser = {
-     email: 'your-email@example.com',
-     nhsNumber: '9999999999',
-     odsCode: 'YOUR_ODS_CODE',
+     email: "your-email@example.com",
+     nhsNumber: "9999999999",
+     odsCode: "YOUR_ODS_CODE",
      age: 49,
      otp: process.env.OTP as unknown as string,
      password: process.env.GENERIC_PASS as unknown as string,
-     description: 'eligible user - local environment',
-     patientId: 'your-patient-id-here'
+     description: "eligible user - local environment",
+     patientId: "your-patient-id-here",
    };
    ```
 
@@ -188,10 +188,10 @@ When running tests locally (`ENV=local`), you need to configure your test user c
 
    Set the required authentication environment variables by creating a `credentials.ts` file:
 
-  ```typescript
-  export OTP="your-otp-secret"
-  export GENERIC_PASS="your-password"
-  ```
+```typescript
+export OTP="your-otp-secret"
+export GENERIC_PASS="your-password"
+```
 
 #### How It Works
 
@@ -199,9 +199,9 @@ The `SandBoxUserManager` class automatically detects the environment:
 
 ```typescript
 // From SandBoxUserManager.ts
-if (env === 'local') {
-  const { localUser } = require('../../users');
-  console.log('Using local environment user from users.ts');
+if (env === "local") {
+  const { localUser } = require("../../users");
+  console.log("Using local environment user from users.ts");
   return [localUser];
 }
 ```
@@ -276,11 +276,14 @@ Run
 
 npm start
 
-when it fisnishes
+when it finishes
 
-hometest-service % TF_VAR_local_service_mode=wiremock \
+```shell
+cd hometest-service
+TF_VAR_local_service_mode=wiremock \
 TF_VAR_local_use_ui_auth_url_override=<https://auth.sandpit.signin.nhs.uk> \
 npm run local:terraform:apply
+```
 
 **Prerequisites:**
 
