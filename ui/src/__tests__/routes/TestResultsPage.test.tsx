@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 
-import { AuthUser, useAuth } from "@/state/AuthContext";
+import { AuthUser, useAuth } from "@/state";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

@@ -18,71 +18,30 @@ describe("OrderStatus", () => {
     maxDeliveryDays: 5,
   };
 
-  it("renders OrderStatusHeader component", () => {
-    renderWithRouter(<OrderStatus order={mockOrder} />);
-    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
-    expect(screen.getByText(/15 January 2026/i)).toBeInTheDocument();
-  });
+  describe("renders both header and content for each status", () => {
+    it.each<[OrderStatusEnum, string | RegExp, OrderDetails["dispatchedDate"]]>([
+      [OrderStatusEnum.GENERATED, /PROCESSING/i, undefined],
+      [OrderStatusEnum.QUEUED, /PROCESSING/i, undefined],
+      [OrderStatusEnum.SUBMITTED, /wait for your kit to be dispatched/i, undefined],
+      [OrderStatusEnum.CONFIRMED, /wait for your kit to be dispatched/i, undefined],
+      [OrderStatusEnum.DISPATCHED, /wait for your kit to arrive/i, "2026-01-20"],
+      [OrderStatusEnum.RECEIVED, /wait for your result/i, undefined],
+      [OrderStatusEnum.COMPLETE, /your result is ready/i, undefined],
+    ])("%s status", (status, expectedContent, dispatchedDate) => {
+      const order: OrderDetails = {
+        ...mockOrder,
+        status,
+        dispatchedDate,
+      };
+      renderWithRouter(<OrderStatus order={order} />);
 
-  it("renders OrderStatusContent component", () => {
-    renderWithRouter(<OrderStatus order={mockOrder} />);
-    expect(screen.getByText(/wait for your kit to be dispatched/i)).toBeInTheDocument();
-  });
+      expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
+      expect(screen.getByText(/15 January 2026/i)).toBeInTheDocument();
+      expect(screen.getByText(expectedContent)).toBeInTheDocument();
 
-  it("renders both header and content for processing status", () => {
-    const processingOrder: OrderDetails = {
-      ...mockOrder,
-      status: OrderStatusEnum.PROCESSING,
-    };
-    renderWithRouter(<OrderStatus order={processingOrder} />);
-
-    // Header content
-    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
-
-    // Status content
-    expect(screen.getByText(/PROCESSING/i)).toBeInTheDocument();
-  });
-
-  it("renders both header and content for dispatched status", () => {
-    const dispatchedOrder: OrderDetails = {
-      ...mockOrder,
-      status: OrderStatusEnum.DISPATCHED,
-      dispatchedDate: "2026-01-20",
-    };
-    renderWithRouter(<OrderStatus order={dispatchedOrder} />);
-
-    // Header content
-    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
-
-    // Status content
-    expect(screen.getByText(/wait for your kit to arrive/i)).toBeInTheDocument();
-  });
-
-  it("renders both header and content for received status", () => {
-    const receivedOrder: OrderDetails = {
-      ...mockOrder,
-      status: OrderStatusEnum.RECEIVED,
-    };
-    renderWithRouter(<OrderStatus order={receivedOrder} />);
-
-    // Header content
-    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
-
-    // Status content
-    expect(screen.getByText(/wait for your result/i)).toBeInTheDocument();
-  });
-
-  it("renders both header and content for complete status", () => {
-    const readyOrder: OrderDetails = {
-      ...mockOrder,
-      status: OrderStatusEnum.COMPLETE,
-    };
-    renderWithRouter(<OrderStatus order={readyOrder} />);
-
-    // Header content
-    expect(screen.getByRole("heading", { name: "HIV self-test" })).toBeInTheDocument();
-
-    // Status content
-    expect(screen.getByText(/your result is ready/i)).toBeInTheDocument();
+      if (dispatchedDate) {
+        expect(screen.getByText(/20 January 2026/i)).toBeInTheDocument();
+      }
+    });
   });
 });

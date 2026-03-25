@@ -4,7 +4,7 @@ import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import type { ValidationMessages } from "@/content/schema";
+import type { ValidationMessages } from "@/content";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { useContent, usePageLoading } from "@/hooks";
 import { useState } from "react";
@@ -125,19 +125,29 @@ export default function EnterAddressManuallyPage() {
   const { isLoading, loadingMessage, setLoading } = usePageLoading("Loading");
 
   const [addressLine1, setAddressLine1] = useState(
-    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine1 || "") : ""
+    orderAnswers.addressEntryMethod === "manual"
+      ? orderAnswers.deliveryAddress?.addressLine1 || ""
+      : "",
   );
   const [addressLine2, setAddressLine2] = useState(
-    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine2 || "") : ""
+    orderAnswers.addressEntryMethod === "manual"
+      ? orderAnswers.deliveryAddress?.addressLine2 || ""
+      : "",
   );
   const [addressLine3, setAddressLine3] = useState(
-    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.addressLine3 || "") : ""
+    orderAnswers.addressEntryMethod === "manual"
+      ? orderAnswers.deliveryAddress?.addressLine3 || ""
+      : "",
   );
   const [townOrCity, setTownOrCity] = useState(
-    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.postTown || "") : ""
+    orderAnswers.addressEntryMethod === "manual"
+      ? orderAnswers.deliveryAddress?.postTown || ""
+      : "",
   );
   const [postcode, setPostcode] = useState(
-    orderAnswers.addressEntryMethod === 'manual' ? (orderAnswers.deliveryAddress?.postcode || "") : ""
+    orderAnswers.addressEntryMethod === "manual"
+      ? orderAnswers.deliveryAddress?.postcode || ""
+      : "",
   );
 
   const [addressLine1Error, setAddressLine1Error] = useState<string | null>(null);

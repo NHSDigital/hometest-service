@@ -1,5 +1,5 @@
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
-import type { ValidationMessages } from "@/content/schema";
+import type { ValidationMessages } from "@/content";
 
 const mockValidationMessages: ValidationMessages = {
   postcode: {

@@ -2,7 +2,7 @@ import { APIResponse, expect } from '@playwright/test';
 import { BaseApiClient } from './BaseApiClient';
 import { API_ENDPOINTS } from '../Endpoints';
 import { OrderPayload } from '../../test-data/OrderTestData';
-import { ApiHeaders } from '../../utils/ApiRequestHelper';
+import type { ApiHeaders } from '../../utils';
 import { OrderStatusCode } from '../../models/TestOrder';
 
 export class OrderApiResource extends BaseApiClient {

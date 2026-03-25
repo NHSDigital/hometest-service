@@ -1,11 +1,11 @@
-import { CredentialsHelper } from './utils/CredentialsHelper';
-import { UserManagerFactory } from './utils/users/UserManagerFactory';
+import { CredentialsHelper } from './utils';
+import { UserManagerFactory } from './utils/users';
 
 async function globalSetup() {
   console.log('🚀 Global setup started');
   console.log(`Tests will run on environment: ${process.env.ENV ?? 'local'}`);
 
-    // Add user credentials to env variable
+  // Add user credentials to env variable
   await new CredentialsHelper().addCredentialsToEnvVariable();
   await new UserManagerFactory().getUserManager().loginWorkerUsers();
 }
