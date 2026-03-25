@@ -126,13 +126,27 @@ After running `npm start`, use targeted commands instead of restarting everythin
   npm run local:backend:start
   ```
 
-  To switch local integrations between WireMock and real upstreams, pass Terraform variables when applying.
+  To switch local integrations between WireMock and real upstreams, pass Terraform variables when applying - some examples below.
+
+  To only use wiremock everywhere (default mode - only needed to switch over):
 
   ```shell
-  TF_VAR_local_service_mode=wiremock npm run local:terraform:apply
+  TF_VAR_local_service_mode=wiremock npm run local:terraform:apply # this is the default mode, only needed to switch over
+  ```
 
-  TF_VAR_local_service_mode=real \
-  TF_VAR_local_supplier_service_url_override=https://supplier.example.com \
+  To not use wiremock anywhere (real downstream APIs):
+
+  ```shell
+  TF_VAR_local_service_mode=real npm run local:terraform:apply
+  ```
+
+  To user wiremock except for specific services (run line by line - just use overrides that are relevant):
+
+  ```shell
+  TF_VAR_local_service_mode=wiremock
+  TF_VAR_local_supplier_service_url_override=https://supplier.example.com  # override supplier service API
+  TF_VAR_local_use_wiremock_auth_override=https://auth.sandpit.signin.nhs.uk # override all auth with NHS sandpit
+  TF_VAR_local_postcode_lookup_base_url_override=https://api.os.uk/search/places/v1 # override postcode lookup with OS Places
   npm run local:terraform:apply
   ```
 

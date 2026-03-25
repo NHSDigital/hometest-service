@@ -27,18 +27,6 @@ variable "local_service_mode" {
   }
 }
 
-variable "local_nhs_login_base_url_override" {
-  description = "Optional override for the lambda-facing NHS Login base URL."
-  type        = string
-  default     = null
-}
-
-variable "local_nhs_login_authorize_url_override" {
-  description = "Optional override for the browser-facing NHS Login authorize URL."
-  type        = string
-  default     = null
-}
-
 variable "local_postcode_lookup_base_url_override" {
   description = "Optional override for the postcode lookup upstream base URL."
   type        = string

@@ -65,18 +65,17 @@ locals {
 
 locals {
   wiremock_container_base_url    = "http://wiremock:8080"
-  wiremock_browser_base_url      = "http://localhost:8080"
   nhs_login_sandpit_base_url     = "https://auth.sandpit.signin.nhs.uk"
   postcode_lookup_os_places_base = "https://api.os.uk/search/places/v1"
 
   use_wiremock_mode = var.local_service_mode == "wiremock"
 
-  resolved_nhs_login_base_url = var.local_nhs_login_base_url_override != null ? var.local_nhs_login_base_url_override : (
+  resolved_nhs_login_base_url = var.local_use_wiremock_auth_override != null ? var.local_use_wiremock_auth_override : (
     local.use_wiremock_mode ? local.wiremock_container_base_url : local.nhs_login_sandpit_base_url
   )
 
-  resolved_nhs_login_authorize_url = var.local_nhs_login_authorize_url_override != null ? var.local_nhs_login_authorize_url_override : (
-    local.use_wiremock_mode ? "${local.wiremock_browser_base_url}/authorize" : "${local.nhs_login_sandpit_base_url}/authorize"
+  resolved_nhs_login_authorize_url = var.local_use_wiremock_auth_override != null ? "${var.local_use_wiremock_auth_override}/authorize" : (
+    local.use_wiremock_mode ? "${local.wiremock_container_base_url}/authorize" : "${local.nhs_login_sandpit_base_url}/authorize"
   )
 
   resolved_postcode_lookup_base_url = var.local_postcode_lookup_base_url_override != null ? var.local_postcode_lookup_base_url_override : (
