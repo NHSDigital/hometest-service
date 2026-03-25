@@ -35,3 +35,4 @@ Jira
 Hardcoded
 Monorepo
 hardcode
+Wiremock
