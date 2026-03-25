@@ -11,7 +11,7 @@ import z from "zod";
 
 const name = "order-router-lambda";
 
-const { httpClient, supplierDb, secretsClient, dbClient, kmsClient, orderStatusService } = init();
+const { httpClient, supplierDb, secretsClient, orderStatusService } = init();
 
 export interface ParsedOrderBody {
   supplier_code: string;
@@ -64,13 +64,7 @@ const getSupplierServiceConfig = async (supplierCode: string): Promise<SupplierC
 
 const getSupplierAccessToken = async (serviceConfig: SupplierConfig): Promise<string> => {
   try {
-    const tokenGenerator = getTokenGenerator(
-      httpClient,
-      secretsClient,
-      dbClient,
-      kmsClient,
-      serviceConfig,
-    );
+    const tokenGenerator = getTokenGenerator(httpClient, secretsClient, serviceConfig);
 
     return await tokenGenerator.generateToken();
   } catch (error) {
@@ -118,9 +112,6 @@ const processOrderMessage = async (messageBody: string): Promise<void> => {
     const parsedBody = parseAndValidateRequestBody(messageBody);
     const serviceConfig = await getSupplierServiceConfig(parsedBody.supplier_code);
     const accessToken = await getSupplierAccessToken(serviceConfig);
-    console.info(
-      `${name}: Successfully obtained access token for supplier ${parsedBody.supplier_code}`,
-    );
     const correlationId = parsedBody.correlation_id;
 
     const orderResult = await sendOrderToSupplier(

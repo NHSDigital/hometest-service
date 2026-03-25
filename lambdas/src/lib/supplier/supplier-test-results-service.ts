@@ -4,24 +4,12 @@ import { HttpClient } from "../http/http-client";
 import { getTokenGenerator } from "./supplier-auth-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierService } from "../db/supplier-db";
-import { DBClient } from "../db/db-client";
-import { TokenEncryptionClient } from "../kms/kms-client";
-
-export interface SupplierTestResultsServiceProperties {
-  httpClient: HttpClient;
-  secretsClient: SecretsClient;
-  supplierDb: SupplierService;
-  dbClient: DBClient;
-  encryptionClient: TokenEncryptionClient;
-}
 
 export class SupplierTestResultsService {
   constructor(
     private readonly httpClient: HttpClient,
     private readonly secretsClient: SecretsClient,
     private readonly supplierDb: SupplierService,
-    private readonly dbClient: DBClient,
-    private readonly encryptionClient: TokenEncryptionClient,
   ) {}
 
   async getResults(
@@ -35,13 +23,7 @@ export class SupplierTestResultsService {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const tokenGenerator = getTokenGenerator(
-      this.httpClient,
-      this.secretsClient,
-      this.dbClient,
-      this.encryptionClient,
-      serviceConfig,
-    );
+    const tokenGenerator = getTokenGenerator(this.httpClient, this.secretsClient, serviceConfig);
 
     const accessToken = await tokenGenerator.generateToken();
 
