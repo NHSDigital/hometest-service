@@ -29,7 +29,7 @@
     "local:terraform": "terraform -chdir=local-environment/infra",
     "local:terraform:init": "npm run local:terraform -- init",
     "local:terraform:plan": "npm run local:terraform -- plan",
-    "local:terraform:apply": "bash scripts/terraform/ensure-localstack-running.sh && npm run local:terraform -- apply -auto-approve && npm run local:terraform:env",
+    "local:terraform:apply": "bash local-environment/scripts/localstack/ensure-localstack-running.sh && npm run local:terraform -- apply -auto-approve && npm run local:terraform:env",
     "local:terraform:destroy": "npm run local:terraform -- destroy -auto-approve",
     "local:terraform:env": "bash scripts/terraform/post-apply-env-update.sh",
     "local:compose": "docker compose -f local-environment/docker-compose.yml",
