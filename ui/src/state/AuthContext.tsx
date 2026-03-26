@@ -1,7 +1,8 @@
 "use client";
 
-import sessionService from "@/lib/services/session-service";
 import { ReactNode, createContext, useCallback, useContext, useState } from "react";
+
+import sessionService from "@/lib/services/session-service";
 
 export interface AuthUser {
   sub: string;
@@ -21,20 +22,20 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<AuthUser | null>(() =>
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() =>
     sessionService.rehydrateAuthUser<AuthUser>(),
   );
 
   const setUser = useCallback((user: AuthUser | null) => {
-    setUserState(user);
+    setAuthUser(user);
     sessionService.dehydrateAuthUser<AuthUser>(user);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: authUser,
         setUser,
       }}
     >

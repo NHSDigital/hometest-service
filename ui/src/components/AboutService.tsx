@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
-import { RoutePath } from "@/lib/models/route-paths";
+
 import { useCommonContent } from "@/hooks";
+import { RoutePath } from "@/lib/models/route-paths";
 
 interface AboutServiceProps {
   supplier: string;
 }
 
-export function AboutService({ supplier }: AboutServiceProps) {
+export function AboutService({ supplier }: Readonly<AboutServiceProps>) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.aboutService;
 

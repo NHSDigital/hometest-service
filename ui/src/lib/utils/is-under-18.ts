@@ -12,7 +12,7 @@ export function isUnder18(birthdate: string): boolean {
 
   const dob = new Date(year, month - 1, day);
 
-  if (isNaN(dob.getTime())) throw new Error("Invalid birthdate");
+  if (Number.isNaN(dob.getTime())) throw new Error("Invalid birthdate");
 
   const today = new Date();
 
