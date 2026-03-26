@@ -58,7 +58,7 @@ export interface CreateOrderContextType {
 
 const CreateOrderContext = createContext<CreateOrderContextType | undefined>(undefined);
 
-export function CreateOrderProvider({ children }: { children: ReactNode }) {
+export function CreateOrderProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {

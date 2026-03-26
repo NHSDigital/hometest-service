@@ -1,14 +1,14 @@
+import { TextDecoder, TextEncoder } from "node:util";
+
 import "@testing-library/jest-dom";
 
-import { TextDecoder, TextEncoder } from "util";
-
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as typeof global.TextDecoder;
+globalThis.TextEncoder = TextEncoder;
+(globalThis as { TextDecoder: typeof TextDecoder }).TextDecoder = TextDecoder;
 
 document.body.classList.add("nhsuk-frontend-supported");
 
 // Suppress console output during tests (errors are expected in error-path tests)
-global.console = {
+globalThis.console = {
   ...console,
   log: jest.fn(),
   info: jest.fn(),

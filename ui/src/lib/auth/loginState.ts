@@ -2,10 +2,9 @@ const STATE_CSRF_KEY = "hometest:nhs-login:csr";
 
 function base64UrlEncode(input: string) {
   const bytes = new TextEncoder().encode(input);
-  let binary = "";
-  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  const binary = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join("");
   const base64 = btoa(binary);
-  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return base64.replaceAll(/\+/g, "-").replaceAll(/\//g, "_").replaceAll(/=+$/g, "");
 }
 
 function randomString(length = 32) {
@@ -27,16 +26,17 @@ interface State {
 export function generateState(url: string): RedirectState {
   const csrf = randomString(16);
 
-  const stateObj: State = {csrf, returnTo: url};
+  const stateObj: State = { csrf, returnTo: url };
   const state = base64UrlEncode(JSON.stringify(stateObj));
 
-  return {encoded: state, csrf}
+  return { encoded: state, csrf };
 }
 
 function base64UrlDecode(input: string) {
-  const base64 = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
+  const base64 =
+    input.replaceAll(/-/g, "+").replaceAll(/_/g, "/") + "===".slice((input.length + 3) % 4);
   const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  const bytes = Uint8Array.from(binary, (char) => char.codePointAt(0) ?? 0);
   return new TextDecoder().decode(bytes);
 }
 

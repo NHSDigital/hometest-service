@@ -20,17 +20,17 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<AuthUser | null>(null);
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 
   const setUser = useCallback((user: AuthUser | null) => {
-    setUserState(user);
+    setAuthUser(user);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: authUser,
         setUser,
       }}
     >

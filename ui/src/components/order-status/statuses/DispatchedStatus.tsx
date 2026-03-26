@@ -1,6 +1,8 @@
-import { HelpLinks } from "./HelpLinks";
 import { Tag } from "nhsuk-react-components";
+
 import { useCommonContent } from "@/hooks";
+
+import { HelpLinks } from "./HelpLinks";
 
 interface DispatchedStatusProps {
   maxDeliveryDays?: number;
@@ -12,7 +14,7 @@ export function DispatchedStatus({
   maxDeliveryDays,
   supplier,
   dispatchedDate,
-}: DispatchedStatusProps) {
+}: Readonly<DispatchedStatusProps>) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.statuses.dispatched;
   const maxDays = maxDeliveryDays || 5;

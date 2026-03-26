@@ -1,13 +1,13 @@
 "use client";
 
 import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
+import { Link } from "react-router-dom";
+
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
+import { useContent } from "@/hooks";
+import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
-import FormPageLayout from "@/layouts/FormPageLayout";
-import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
-import { Link } from "react-router-dom";
-import { useContent } from "@/hooks";
 
 export default function GetSelfTestKitPage() {
   const { updateOrderAnswers } = useCreateOrderContext();

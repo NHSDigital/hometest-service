@@ -1,8 +1,9 @@
 "use client";
 
-import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 
 type Step = JourneyStepNames | RoutePath.GetSelfTestKitPage;
 
@@ -26,7 +27,7 @@ export const JourneyNavigationContext = createContext<JourneyNavigationContextTy
   undefined,
 );
 
-export function JourneyNavigationProvider({ children }: { children: ReactNode }) {
+export function JourneyNavigationProvider({ children }: Readonly<{ children: ReactNode }>) {
   const navigate = useNavigate();
   const location = useLocation();
 

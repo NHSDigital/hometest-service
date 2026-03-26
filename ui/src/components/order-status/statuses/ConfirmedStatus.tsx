@@ -1,13 +1,15 @@
-import { HelpLinks } from "./HelpLinks";
 import { Tag } from "nhsuk-react-components";
+
 import { useCommonContent } from "@/hooks";
+
+import { HelpLinks } from "./HelpLinks";
 
 interface ConfirmedStatusProps {
   maxDeliveryDays?: number;
   supplier: string;
 }
 
-export function ConfirmedStatus({ maxDeliveryDays, supplier }: ConfirmedStatusProps) {
+export function ConfirmedStatus({ maxDeliveryDays, supplier }: Readonly<ConfirmedStatusProps>) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.statuses.confirmed;
   const maxDays = maxDeliveryDays || 5;
