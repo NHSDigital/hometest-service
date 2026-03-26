@@ -1,4 +1,5 @@
 import { BackLink } from "nhsuk-react-components";
+
 import { useJourneyNavigationContext } from "../state";
 
 interface FormBackLinkProps {
@@ -6,8 +7,8 @@ interface FormBackLinkProps {
   onClick?: () => void;
 }
 
-export function FormBackLink({ text = "Back", onClick }: FormBackLinkProps) {
-  const { goBack, canGoBack, currentStep, stepHistory } = useJourneyNavigationContext();
+export function FormBackLink({ text = "Back", onClick }: Readonly<FormBackLinkProps>) {
+  const { goBack, canGoBack } = useJourneyNavigationContext();
 
   const handleClick = () => {
     if (onClick) {
@@ -23,9 +24,5 @@ export function FormBackLink({ text = "Back", onClick }: FormBackLinkProps) {
     return null;
   }
 
-  return (
-    <BackLink onClick={handleClick}>
-      {text}
-    </BackLink>
-  );
+  return <BackLink onClick={handleClick}>{text}</BackLink>;
 }

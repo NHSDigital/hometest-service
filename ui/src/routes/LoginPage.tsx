@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { getAuthorizeLoginHintFragment } from "@/lib/auth/loginHint";
 import { generateState, persistLoginCsrf } from "@/lib/auth/loginState";
 import { nhsLoginAuthorizeUrl } from "@/settings";
-import { useEffect } from "react";
 
 export default function RedirectPage() {
   useEffect(() => {

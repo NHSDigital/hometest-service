@@ -1,4 +1,3 @@
-
 // This ErrorBoundary is a global safety net for any unhandled client-side errors.
 // It catches errors during hydration, dynamic import, or anywhere in the React tree,
 // including before React Router's own error handling (ErrorRedirect) is mounted.
@@ -6,8 +5,9 @@
 // error handling fails to mount or an unexpected error occurs outside the router.
 "use client";
 
-import React from "react";
 import dynamic from "next/dynamic";
+import React from "react";
+
 import { RoutePath } from "@/lib/models/route-paths";
 
 const App = dynamic(async () => import("../../app"), { ssr: false });
@@ -26,7 +26,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, Error
 
   componentDidCatch(error: unknown) {
     console.error("Unhandled application error:", error);
-    window.location.replace(RoutePath.ServiceErrorPage);
+    globalThis.location.replace(RoutePath.ServiceErrorPage);
   }
 
   render() {

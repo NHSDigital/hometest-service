@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import PageLayout from "@/layouts/PageLayout";
@@ -19,7 +19,7 @@ function getReturnTo(location: ReturnType<typeof useLocation>): string {
   return `${location.pathname}${location.search}${location.hash}`;
 }
 
-export function AuthLoader({ children }: Readonly<{ children?: React.ReactNode }>) {
+export function AuthLoader({ children }: Readonly<{ children?: ReactNode }>) {
   const { setUser, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();

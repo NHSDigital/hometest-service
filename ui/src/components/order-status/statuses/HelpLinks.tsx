@@ -1,14 +1,15 @@
-import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { Link } from "react-router-dom";
+
+import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
-import supplierService from "@/lib/services/supplier-service";
 import { useCommonContent } from "@/hooks";
+import supplierService from "@/lib/services/supplier-service";
 
 interface HelpLinksProps {
   supplier: string;
 }
 
-export function HelpLinks({ supplier }: HelpLinksProps) {
+export function HelpLinks({ supplier }: Readonly<HelpLinksProps>) {
   const commonContent = useCommonContent();
   const content = commonContent.orderStatus.helpLinks;
   const supplierLinks = supplierService.getLinksBySupplierName(supplier);
