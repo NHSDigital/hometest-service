@@ -1,17 +1,19 @@
 "use client";
 
-import PageLayout from "@/layouts/PageLayout";
-import { useContent } from "@/hooks";
-import { useNavigate } from "react-router-dom";
-import { renderTextWithLinks, cleanListItems, getListClass } from "@/utils/renderTextWithLinks";
 import "@/styles/lists.css";
+
+import { useNavigate } from "react-router-dom";
+
+import { useContent } from "@/hooks";
+import PageLayout from "@/layouts/PageLayout";
+import { cleanListItems, getListClass, renderTextWithLinks } from "@/utils/renderTextWithLinks";
 
 export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
   const { "home-test-privacy-policy": content } = useContent();
 
   const renderHeading = (text: string) => {
-    const numberMatch = text.match(/^(\d+\.\s+)/);
+    const numberMatch = /^(\d+\.\s+)/.exec(text);
     if (numberMatch) {
       return (
         <>

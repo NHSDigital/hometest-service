@@ -33,7 +33,7 @@ const renderTableRow = (row: string[], rowIdx: number) => (
  */
 const renderParagraphs = (paragraphs: string[]) =>
   paragraphs.map((paragraph, index) => {
-    const numberMatch = paragraph.match(/^(\d+\.\d+\.?\s+)/);
+    const numberMatch = /^(\d+\.\d+\.?\s+)/.exec(paragraph);
     if (numberMatch) {
       const number = numberMatch[1];
       const rest = paragraph.slice(number.length);

@@ -73,7 +73,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
 
     const stepHistory =
       persistedState.stepHistory.length > 0 ? persistedState.stepHistory : [currentStep];
-    const lastStep = stepHistory[stepHistory.length - 1];
+    const lastStep = stepHistory.at(-1);
 
     return {
       stepHistory: lastStep === currentStep ? stepHistory : [...stepHistory, currentStep],
@@ -82,7 +82,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
   });
 
   const stepHistory = useMemo(() => {
-    const lastStep = navigation.stepHistory[navigation.stepHistory.length - 1];
+    const lastStep = navigation.stepHistory.at(-1);
 
     return lastStep === currentStep
       ? navigation.stepHistory
