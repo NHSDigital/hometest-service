@@ -1,17 +1,17 @@
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
+import z from "zod";
 
-import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
-import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { SupplierConfig } from "../lib/db/supplier-db";
+import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
+import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
 import {
+  type SupplierTokenGenerator,
   buildTokenGeneratorCacheKey,
   createTokenGenerator,
-  type SupplierTokenGenerator,
 } from "../lib/supplier/supplier-auth-client";
-import { init } from "./init";
 import { isUUID } from "../lib/utils/utils";
-import z from "zod";
+import { init } from "./init";
 
 const name = "order-router-lambda";
 

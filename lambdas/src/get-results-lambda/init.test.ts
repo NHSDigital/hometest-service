@@ -1,14 +1,13 @@
-import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
-
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { FetchHttpClient } from "../lib/http/http-client";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { SupplierService } from "../lib/db/supplier-db";
-import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
-import { TestResultDbClient } from "../lib/db/test-result-db-client";
-import { init } from "./init";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { SupplierService } from "../lib/db/supplier-db";
+import { TestResultDbClient } from "../lib/db/test-result-db-client";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { init } from "./init";
 
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");

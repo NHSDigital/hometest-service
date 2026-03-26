@@ -1,7 +1,4 @@
-import {
-  createTokenGenerator,
-  OAuthSupplierAuthClient,
-} from "./supplier-auth-client";
+import { OAuthSupplierAuthClient, createTokenGenerator } from "./supplier-auth-client";
 
 describe("OAuthSupplierAuthClient", () => {
   it("returns access token when successful", async () => {
