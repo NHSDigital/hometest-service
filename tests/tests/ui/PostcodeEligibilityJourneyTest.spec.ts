@@ -1,6 +1,7 @@
 import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
-import type { WireMockMapping } from "../../api/clients/WireMockClient";
+import { createOSPlacesSuccessMapping } from "../../utils/wireMockMappings/OSPlacesWireMockMappings";
+
 
 /**
  * Postcode / Eligibility Journey Test
@@ -20,60 +21,6 @@ import type { WireMockMapping } from "../../api/clients/WireMockClient";
  */
 
 const TEST_POSTCODE = "TN37 7PT";
-const TEST_POSTCODE_NO_SPACES = "TN377PT";
-
-const osPlacesStub: WireMockMapping = {
-  priority: 1,
-  request: {
-    method: "GET",
-    urlPathPattern: "/find",
-    queryParameters: {
-      query: { equalTo: TEST_POSTCODE_NO_SPACES },
-    },
-  },
-  response: {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-    jsonBody: {
-      header: {
-        uri: `http://localhost/find?query=${TEST_POSTCODE_NO_SPACES}`,
-        query: `query=${TEST_POSTCODE_NO_SPACES}`,
-        offset: 0,
-        totalresults: 2,
-        format: "JSON",
-        dataset: "DPA",
-        lr: "EN",
-        maxresults: 100,
-        epoch: "95",
-        output_srs: "EPSG:27700",
-      },
-      results: [
-        {
-          DPA: {
-            UPRN: "100060113370",
-            UDPRN: "200000000001",
-            ADDRESS: "775 THE RIDGE, SAINT LEONARDS-ON-SEA, TN37 7PT",
-            BUILDING_NUMBER: "775",
-            THOROUGHFARE_NAME: "THE RIDGE",
-            POST_TOWN: "SAINT LEONARDS-ON-SEA",
-            POSTCODE: "TN37 7PT",
-          },
-        },
-        {
-          DPA: {
-            UPRN: "100060113371",
-            UDPRN: "200000000002",
-            ADDRESS: "777 THE RIDGE, SAINT LEONARDS-ON-SEA, TN37 7PT",
-            BUILDING_NUMBER: "777",
-            THOROUGHFARE_NAME: "THE RIDGE",
-            POST_TOWN: "SAINT LEONARDS-ON-SEA",
-            POSTCODE: "TN37 7PT",
-          },
-        },
-      ],
-    },
-  },
-};
 
 test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
   test("should look up a postcode, select an address and reach the pricking-finger page", async ({
@@ -83,8 +30,31 @@ test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
     howComfortablePrickingFingerPage,
     wiremock,
   }) => {
-    // --- Arrange: create dynamic WireMock stub for OS Places /find ---
-    await wiremock.createMapping(osPlacesStub);
+    const osPlacesMapping = createOSPlacesSuccessMapping({
+      postcode: TEST_POSTCODE,
+      addresses: [
+        {
+          UPRN: "100060113370",
+          UDPRN: "200000000001",
+          ADDRESS: "775 THE RIDGE, SAINT LEONARDS-ON-SEA, TN37 7PT",
+          BUILDING_NUMBER: "775",
+          THOROUGHFARE_NAME: "THE RIDGE",
+          POST_TOWN: "SAINT LEONARDS-ON-SEA",
+          POSTCODE: "TN37 7PT",
+        },
+        {
+          UPRN: "100060113371",
+          UDPRN: "200000000002",
+          ADDRESS: "777 THE RIDGE, SAINT LEONARDS-ON-SEA, TN37 7PT",
+          BUILDING_NUMBER: "777",
+          THOROUGHFARE_NAME: "THE RIDGE",
+          POST_TOWN: "SAINT LEONARDS-ON-SEA",
+          POSTCODE: "TN37 7PT",
+        },
+      ],
+      priority: 1,
+    });
+    await wiremock.createMapping(osPlacesMapping);
 
     // --- Act: navigate through the journey ---
     await homeTestStartPage.navigate();

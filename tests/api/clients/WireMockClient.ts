@@ -5,7 +5,7 @@ export interface WireMockMapping {
     urlPath?: string;
     urlPathPattern?: string;
     headers?: Record<string, Record<string, string>>;
-    bodyPatterns?: Record<string, string>[];
+    bodyPatterns?: Array<Record<string, unknown>>;
     queryParameters?: Record<string, Record<string, string>>;
   };
   response: {
