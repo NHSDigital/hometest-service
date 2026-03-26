@@ -82,7 +82,9 @@ const renderTable = (table: { caption?: string; headers: string[]; rows: string[
         ))}
       </tr>
     </thead>
-    <tbody className="nhsuk-table__body">{table.rows.map(renderTableRow)}</tbody>
+    <tbody className="nhsuk-table__body">
+      {table.rows.map((row, rowIdx) => renderTableRow(row, rowIdx))}
+    </tbody>
   </table>
 );
 
