@@ -42,6 +42,8 @@ jobs:
     with:
       build_datetime: "${{ needs.metadata.outputs.build_datetime }}"
       build_timestamp: "${{ needs.metadata.outputs.build_timestamp }}"
+      run_pre_commit: ${{ github.event_name == 'pull_request' }}
+      pre_commit_base_sha: "${{ github.event.pull_request.base.sha || '' }}"
     secrets: inherit
   test-stage: # Recommended maximum execution time is 5 minutes
     name: "Test stage"
