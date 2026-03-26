@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, createContext, useCallback, useContext, useState } from "react";
+import sessionService from "@/lib/services/session-service";
+import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
 
 // Address structure
 export interface Address {
@@ -59,7 +60,18 @@ export interface CreateOrderContextType {
 const CreateOrderContext = createContext<CreateOrderContextType | undefined>(undefined);
 
 export function CreateOrderProvider({ children }: { children: ReactNode }) {
-  const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>({});
+  const [orderAnswers, setOrderAnswers] = useState<OrderAnswers>(() =>
+    sessionService.rehydrateCreateOrderAnswers<OrderAnswers>({}),
+  );
+
+  useEffect(() => {
+    if (Object.keys(orderAnswers).length === 0) {
+      sessionService.clearCreateOrderAnswers();
+      return;
+    }
+
+    sessionService.dehydrateCreateOrderAnswers<OrderAnswers>(orderAnswers);
+  }, [orderAnswers]);
 
   const updateOrderAnswers = useCallback((updates: Partial<OrderAnswers>) => {
     setOrderAnswers((prev) => ({ ...prev, ...updates }));
@@ -67,6 +79,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(() => {
     setOrderAnswers({});
+    sessionService.clearCreateOrderAnswers();
   }, []);
 
   return (
