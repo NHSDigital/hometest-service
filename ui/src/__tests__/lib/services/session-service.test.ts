@@ -2,7 +2,7 @@ import sessionService, { SESSION_STORAGE_KEYS } from "@/lib/services/session-ser
 
 describe("SessionService", () => {
   beforeEach(() => {
-    window.sessionStorage.clear();
+    globalThis.sessionStorage.clear();
   });
 
   describe("auth user", () => {
@@ -18,21 +18,21 @@ describe("SessionService", () => {
 
       sessionService.dehydrateAuthUser(user);
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.authUser)).toBe(
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.authUser)).toBe(
         JSON.stringify(user),
       );
       expect(sessionService.rehydrateAuthUser<typeof user>()).toEqual(user);
     });
 
     it("clears auth user when null is provided", () => {
-      window.sessionStorage.setItem(
+      globalThis.sessionStorage.setItem(
         SESSION_STORAGE_KEYS.authUser,
         JSON.stringify({ sub: "existing" }),
       );
 
       sessionService.dehydrateAuthUser(null);
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.authUser)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.authUser)).toBeNull();
     });
   });
 
@@ -54,13 +54,13 @@ describe("SessionService", () => {
 
       sessionService.dehydrateJourneyNavigation(navigation);
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBe(
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBe(
         JSON.stringify(navigation),
       );
 
       sessionService.clearJourneyNavigation();
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBeNull();
     });
   });
 
@@ -79,13 +79,13 @@ describe("SessionService", () => {
 
       sessionService.dehydrateCreateOrderAnswers(answers);
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBe(
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBe(
         JSON.stringify(answers),
       );
 
       sessionService.clearCreateOrderAnswers();
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBeNull();
     });
   });
 
@@ -118,13 +118,13 @@ describe("SessionService", () => {
 
       sessionService.dehydratePostcodeLookup(postcodeLookup);
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).toBe(
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).toBe(
         JSON.stringify(postcodeLookup),
       );
 
       sessionService.clearPostcodeLookup();
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).toBeNull();
     });
   });
 });
