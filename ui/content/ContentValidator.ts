@@ -5,7 +5,6 @@
  * structure defined in the schema. It provides early detection of missing or
  * malformed content during development.
  */
-
 import type {
   CommonContent,
   HomeTestPrivacyPolicyContent,
@@ -114,16 +113,16 @@ export const validateContent = (content: unknown): ValidationResult => {
     };
   }
 
-  if (!("commonContent" in content)) {
-    errors.push("Content is missing required key: commonContent");
-  } else {
+  if ("commonContent" in content) {
     validateCommonContent(content.commonContent, errors);
+  } else {
+    errors.push("Content is missing required key: commonContent");
   }
 
-  if (!("pages" in content)) {
-    errors.push("Content is missing required key: pages");
-  } else {
+  if ("pages" in content) {
     validatePagesContent(content.pages, errors);
+  } else {
+    errors.push("Content is missing required key: pages");
   }
 
   return {

@@ -1,12 +1,12 @@
 "use client";
 
-import { Outlet } from "react-router-dom";
-import type { SessionData } from "./requireAuth";
-import { useAuth } from "@/state";
 import { useEffect } from "react";
-import { useLoaderData } from "react-router-dom";
+import { Outlet, useLoaderData } from "react-router-dom";
 
-export function AuthLoader({ children }: { children?: React.ReactNode }) {
+import type { SessionData } from "@/lib/auth/requireAuth";
+import { useAuth } from "@/state";
+
+export function AuthLoader({ children }: Readonly<{ children?: React.ReactNode }>) {
   const loaderData = useLoaderData() as SessionData;
   const { setUser, user } = useAuth();
 

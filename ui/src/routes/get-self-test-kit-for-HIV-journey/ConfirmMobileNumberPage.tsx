@@ -1,13 +1,13 @@
 "use client";
 
 import { Button, ErrorSummary, Radios, TextInput } from "nhsuk-react-components";
-import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useState } from "react";
 
+import { useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
-import { useContent } from "@/hooks";
-import { useState } from "react";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function ConfirmMobileNumberPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
@@ -61,9 +61,7 @@ export default function ConfirmMobileNumberPage() {
       const mobileNumberSchema = createMobileNumberSchema(commonContent.validation);
       const result = mobileNumberSchema.safeParse(alternativeNumber);
 
-      if (!result.success) {
-        setError(result.error.issues[0].message);
-      } else {
+      if (result.success) {
         setError(null);
         updateOrderAnswers({
           mobileNumber: result.data,
@@ -71,6 +69,8 @@ export default function ConfirmMobileNumberPage() {
         });
 
         goToStep(JourneyStepNames.CheckYourAnswers);
+      } else {
+        setError(result.error.issues[0].message);
       }
     }
   };

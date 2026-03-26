@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Checkboxes, ErrorSummary, Fieldset, SummaryList } from "nhsuk-react-components";
+import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
+import { useState } from "react";
+
+import { useAsyncErrorHandler, useContent } from "@/hooks";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { JourneyStepNames } from "@/lib/models/route-paths";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-import FormPageLayout from "@/layouts/FormPageLayout";
-import { useState } from "react";
-import { useAsyncErrorHandler, useContent } from "@/hooks";
-import { JourneyStepNames } from "@/lib/models/route-paths";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
 // TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
