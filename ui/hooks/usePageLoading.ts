@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 /**
  * Hook for managing page-level loading state and messaging.
@@ -14,25 +14,28 @@ export interface UsePageLoadingReturn {
   setLoadingMessage: (message: string) => void;
 }
 
-export function usePageLoading(defaultMessage = "Submitting your order"): UsePageLoadingReturn {
+export function usePageLoading(defaultMessage: string): UsePageLoadingReturn {
   const [isLoading, setIsLoadingState] = useState(false);
   const [loadingMessage, setLoadingMessageState] = useState(defaultMessage);
 
-  const setLoading = (loading: boolean, message?: string) => {
+  const setLoading = useCallback((loading: boolean, message?: string) => {
     setIsLoadingState(loading);
     if (message !== undefined) {
       setLoadingMessageState(message);
     }
-  };
+  }, []);
 
-  const setLoadingMessage = (message: string) => {
+  const setLoadingMessage = useCallback((message: string) => {
     setLoadingMessageState(message);
-  };
+  }, []);
 
-  return {
-    isLoading,
-    loadingMessage,
-    setLoading,
-    setLoadingMessage,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      loadingMessage,
+      setLoading,
+      setLoadingMessage,
+    }),
+    [isLoading, loadingMessage, setLoading, setLoadingMessage],
+  );
 }

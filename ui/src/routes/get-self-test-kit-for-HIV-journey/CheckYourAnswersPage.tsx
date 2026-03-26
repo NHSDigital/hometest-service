@@ -129,7 +129,6 @@ export default function CheckYourAnswersPage() {
 
     try {
       const orderResponse = await orderService.submitOrder(orderRequest);
-      console.log("Order router response:", orderResponse);
 
       updateOrderAnswers({
         orderReferenceNumber: orderResponse.orderReference,

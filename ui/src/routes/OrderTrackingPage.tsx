@@ -20,7 +20,7 @@ function OrderContent({ orderId, patient }: { orderId: string; patient: Patient 
   } = useOrderStatusQuery(orderId, patient);
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading" />;
+    return <LoadingSpinner variant="inline" message="Loading your order..." />;
   }
 
   if (orderError) {
