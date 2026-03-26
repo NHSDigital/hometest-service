@@ -1,0 +1,11 @@
+{
+  "name": "@hometest-service/mock-service",
+  "version": "1.0.0",
+  "description": "WireMock-compatible stub runner for AWS Lambda using stubr (Rust)",
+  "private": true,
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "package": "bash scripts/package.sh",
+    "clean": "cargo clean && rm -rf dist"
+  }
+}

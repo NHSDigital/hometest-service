@@ -65,7 +65,7 @@ output "postcode_lookup_endpoint" {
 
 output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
-  description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
+  description = "The supplier_id of the seeded supplier (service_url points at mock-service Lambda on LocalStack)"
 }
 
 output "order_placement_queue_url" {
@@ -86,4 +86,33 @@ output "order_service_endpoint" {
 output "order_status_endpoint" {
   description = "Order Status Lambda endpoint"
   value       = module.order_status_lambda.localstack_endpoint_url
+}
+
+################################################################################
+# Mock Service Outputs
+################################################################################
+
+output "mock_api_base_url" {
+  description = "Base URL for the mock API on LocalStack"
+  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.mock_api.id}/${var.environment}"
+}
+
+output "mock_supplier_base_url" {
+  description = "Supplier mock base URL (use as service_url in supplier table)"
+  value       = "http://localstack-main:4566/_aws/execute-api/${aws_api_gateway_rest_api.mock_api.id}/${var.environment}/mock/supplier"
+}
+
+output "mock_supplier_base_url_host" {
+  description = "Supplier mock base URL accessible from host machine"
+  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.mock_api.id}/${var.environment}/mock/supplier"
+}
+
+output "mock_cognito_jwks_url" {
+  description = "Mock Cognito JWKS URL"
+  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.mock_api.id}/${var.environment}/mock/cognito/.well-known/jwks.json"
+}
+
+output "mock_postcode_base_url" {
+  description = "Mock postcode lookup base URL"
+  value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.mock_api.id}/${var.environment}/mock/postcode"
 }

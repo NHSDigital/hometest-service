@@ -538,3 +538,108 @@ resource "aws_api_gateway_stage" "api_stage" {
 data "external" "supplier_id" {
   program = ["bash", "${path.module}/../scripts/localstack/get_supplier_id.sh"]
 }
+
+################################################################################
+# Mock Service — replaces WireMock container
+# Runs as a Lambda on LocalStack with its own API Gateway (proxy integration)
+################################################################################
+
+resource "aws_api_gateway_rest_api" "mock_api" {
+  name        = "${var.project_name}-mock-api"
+  description = "Mock API for supplier, Cognito JWKS, postcode lookup"
+}
+
+resource "aws_lambda_function" "mock_service" {
+  filename         = "${path.module}/../../mock-service/dist/mock-service-lambda.zip"
+  function_name    = "${var.project_name}-mock-service"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "bootstrap"
+  runtime          = "provided.al2023"
+  architectures    = ["arm64"]
+  source_code_hash = filebase64sha256("${path.module}/../../mock-service/dist/mock-service-lambda.zip")
+  timeout          = 30
+
+  environment {
+    variables = {
+      ENVIRONMENT = var.environment
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.lambda_basic]
+}
+
+# Proxy resource: {proxy+}
+resource "aws_api_gateway_resource" "mock_proxy" {
+  rest_api_id = aws_api_gateway_rest_api.mock_api.id
+  parent_id   = aws_api_gateway_rest_api.mock_api.root_resource_id
+  path_part   = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "mock_proxy_any" {
+  rest_api_id   = aws_api_gateway_rest_api.mock_api.id
+  resource_id   = aws_api_gateway_resource.mock_proxy.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "mock_proxy" {
+  rest_api_id             = aws_api_gateway_rest_api.mock_api.id
+  resource_id             = aws_api_gateway_resource.mock_proxy.id
+  http_method             = aws_api_gateway_method.mock_proxy_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.mock_service.arn}/invocations"
+}
+
+resource "aws_api_gateway_method" "mock_root" {
+  rest_api_id   = aws_api_gateway_rest_api.mock_api.id
+  resource_id   = aws_api_gateway_rest_api.mock_api.root_resource_id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "mock_root" {
+  rest_api_id             = aws_api_gateway_rest_api.mock_api.id
+  resource_id             = aws_api_gateway_rest_api.mock_api.root_resource_id
+  http_method             = aws_api_gateway_method.mock_root.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.mock_service.arn}/invocations"
+}
+
+resource "aws_lambda_permission" "mock_api_gateway" {
+  statement_id  = "AllowMockAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.mock_service.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.mock_api.execution_arn}/*/*"
+}
+
+resource "aws_api_gateway_deployment" "mock_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.mock_api.id
+
+  depends_on = [
+    aws_api_gateway_integration.mock_proxy,
+    aws_api_gateway_integration.mock_root,
+  ]
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.mock_proxy.id,
+      aws_api_gateway_method.mock_proxy_any.id,
+      aws_api_gateway_integration.mock_proxy.id,
+      aws_api_gateway_method.mock_root.id,
+      aws_api_gateway_integration.mock_root.id,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "mock_stage" {
+  deployment_id = aws_api_gateway_deployment.mock_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.mock_api.id
+  stage_name    = var.environment
+}

@@ -23,7 +23,7 @@ INSERT INTO supplier (
 VALUES (
   'c1a2b3c4-1234-4def-8abc-123456789abc',
   'Preventx',
-  'http://wiremock:8080',
+  'http://mock-service-placeholder',
   'https://www.preventx.com/',
   'test_supplier_client_secret',
   'preventx-client-id',
@@ -49,7 +49,7 @@ INSERT INTO supplier (
 VALUES (
   'd2b3c4d5-2345-4abc-8def-23456789abcd',
   'SH:24',
-  'http://wiremock:8080',
+  'http://mock-service-placeholder',
   'https://sh24.org.uk/',
   'test_supplier_client_secret',
   'sh24-client-id',
