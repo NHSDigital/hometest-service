@@ -15,11 +15,12 @@ import { init } from "./init";
 import middy from "@middy/core";
 import { securityHeaders } from "../lib/http/security-headers";
 
+const { testResultDbClient, supplierTestResultsService } = init();
+
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   const correlationId = getCorrelationIdFromEventHeaders(event);
-  const { testResultDbClient, supplierTestResultsService } = init();
 
   const validationResult = getResultsQueryParamsSchema.safeParse(
     event.queryStringParameters,
