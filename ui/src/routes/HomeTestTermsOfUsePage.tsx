@@ -16,7 +16,7 @@ const renderTableCellLines = (cell: string, rowIdx: number, cellIdx: number) =>
     </p>
   ));
 
-const renderTableCell = (cell: string, cellIdx: number, rowIdx: number) => (
+const renderTableCell = (cell: string, rowIdx: number, cellIdx: number) => (
   <td key={cellIdx} className="nhsuk-table__cell">
     {renderTableCellLines(cell, rowIdx, cellIdx)}
   </td>
@@ -24,7 +24,7 @@ const renderTableCell = (cell: string, cellIdx: number, rowIdx: number) => (
 
 const renderTableRow = (row: string[], rowIdx: number) => (
   <tr key={rowIdx} className="nhsuk-table__row">
-    {row.map((cell, cellIdx) => renderTableCell(cell, cellIdx, rowIdx))}
+    {row.map((cell, cellIdx) => renderTableCell(cell, rowIdx, cellIdx))}
   </tr>
 );
 
