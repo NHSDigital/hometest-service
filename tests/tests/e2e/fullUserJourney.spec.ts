@@ -1,12 +1,14 @@
-import { test } from "../../fixtures/CombinedTestFixture";
-import { expect, APIResponse } from "@playwright/test";
-import { AddressModel } from "../../models/Address";
+import { randomUUID } from "crypto";
+
+import { APIResponse, expect } from "@playwright/test";
+
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { buildHeaders, headersTestResults, orderStatusPayload } from "../../utils/ApiRequestHelper";
+import { TestResultDbClient } from "../../db/TestResultDbClient";
+import { test } from "../../fixtures/CombinedTestFixture";
+import { AddressModel } from "../../models/Address";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import { ResultsObservationData } from "../../test-data/ResultsObservationData";
-import { randomUUID } from "crypto";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
+import { buildHeaders, headersTestResults, orderStatusPayload } from "../../utils/ApiRequestHelper";
 
 const randomAddress = AddressModel.getRandomAddress();
 const dbClient = new TestOrderDbClient();
@@ -21,7 +23,6 @@ const EXPECTED_TEXTS = {
   HIV_RESULT_HEADER: "HIV self-test result",
   NEGATIVE_RESULT: "Negative",
 } as const;
-
 
 const ORDER_STATUS_POLL_TIMEOUT = 10000;
 
@@ -51,7 +52,9 @@ test.describe("Home test E2E tests", () => {
     await context.homeTestStartPage.clickStartNowButton();
     await context.enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await context.selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(context.homeTestStartPage.headerText).toHaveText(EXPECTED_TEXTS.BLOOD_SAMPLE_HEADER);
+    await expect(context.homeTestStartPage.headerText).toHaveText(
+      EXPECTED_TEXTS.BLOOD_SAMPLE_HEADER,
+    );
     await context.howComfortablePrickingFingerPage.selectYesOptionAndContinue();
     await context.confirmMobileNumberPage.selectConfirmMobileNumberAndContinue();
     await context.checkYourAnswersPage.checkConsentCheckbox();
@@ -64,7 +67,9 @@ test.describe("Home test E2E tests", () => {
     const order = await dbClient.getOrderByPatientUid(patientId!);
 
     await expect
-      .poll(() => dbClient.hasOrderStatusCode(order!.order_uid, "SUBMITTED"), { timeout: ORDER_STATUS_POLL_TIMEOUT })
+      .poll(() => dbClient.hasOrderStatusCode(order!.order_uid, "SUBMITTED"), {
+        timeout: ORDER_STATUS_POLL_TIMEOUT,
+      })
       .toBe(true);
 
     return {
@@ -79,7 +84,7 @@ test.describe("Home test E2E tests", () => {
     orderStatusPage: any,
     orderData: OrderData,
     businessStatusText: string,
-    expectedDisplayStatus: string
+    expectedDisplayStatus: string,
   ): Promise<void> {
     const response = await orderStatusApi.updateOrderStatus(
       orderStatusPayload(
@@ -87,9 +92,9 @@ test.describe("Home test E2E tests", () => {
         orderData.patientId,
         OrderStatusTestData.DEFAULT_STATUS,
         OrderStatusTestData.DEFAULT_INTENT,
-        { businessStatus: { text: businessStatusText } }
+        { businessStatus: { text: businessStatusText } },
       ),
-      buildHeaders(randomUUID())
+      buildHeaders(randomUUID()),
     );
     orderStatusApi.validateResponse(response, 201);
 
@@ -97,15 +102,22 @@ test.describe("Home test E2E tests", () => {
     await expect(orderStatusPage.statusTag).toHaveText(expectedDisplayStatus);
   }
 
-
   async function submitTestResults(
     hivResultsApi: any,
     orderData: OrderData,
-    isNormal: boolean
+    isNormal: boolean,
   ): Promise<APIResponse> {
     const observation = isNormal
-      ? ResultsObservationData.buildNormalObservation(orderData.orderId, orderData.patientId, orderData.supplierId)
-      : ResultsObservationData.buildAbnormalObservation(orderData.orderId, orderData.patientId, orderData.supplierId);
+      ? ResultsObservationData.buildNormalObservation(
+          orderData.orderId,
+          orderData.patientId,
+          orderData.supplierId,
+        )
+      : ResultsObservationData.buildAbnormalObservation(
+          orderData.orderId,
+          orderData.patientId,
+          orderData.supplierId,
+        );
 
     return await hivResultsApi.submitTestResults(observation, headersTestResults(randomUUID()));
   }
@@ -120,7 +132,6 @@ test.describe("Home test E2E tests", () => {
       await dbClient.deleteConsentByPatientUid(patientId);
       await dbClient.deleteOrderStatusByPatientUid(patientId);
       await dbClient.deleteOrderByPatientUid(patientId);
-
     }
     await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
   });
@@ -145,7 +156,7 @@ test.describe("Home test E2E tests", () => {
       confirmMobileNumberPage,
       checkYourAnswersPage,
       orderSubmittedPage,
-      orderStatusPage
+      orderStatusPage,
     }) => {
       await completeOrderJourney({
         homeTestStartPage,
@@ -164,7 +175,7 @@ test.describe("Home test E2E tests", () => {
         orderStatusPage,
         orderData,
         OrderStatusTestData.BUSINESS_STATUS_DISPATCHED,
-        EXPECTED_TEXTS.DISPATCHED
+        EXPECTED_TEXTS.DISPATCHED,
       );
 
       await updateOrderStatusAndVerify(
@@ -172,9 +183,8 @@ test.describe("Home test E2E tests", () => {
         orderStatusPage,
         orderData,
         OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB,
-        EXPECTED_TEXTS.TEST_RECEIVED
+        EXPECTED_TEXTS.TEST_RECEIVED,
       );
-
 
       const resultsResponse = await submitTestResults(hivResultsApi, orderData, true);
       expect(resultsResponse.status()).toBe(201);
@@ -219,7 +229,7 @@ test.describe("Home test E2E tests", () => {
         orderStatusPage,
         orderData,
         OrderStatusTestData.BUSINESS_STATUS_DISPATCHED,
-        EXPECTED_TEXTS.DISPATCHED
+        EXPECTED_TEXTS.DISPATCHED,
       );
 
       await updateOrderStatusAndVerify(
@@ -227,7 +237,7 @@ test.describe("Home test E2E tests", () => {
         orderStatusPage,
         orderData,
         OrderStatusTestData.BUSINESS_STATUS_RECEIVED_AT_LAB,
-        EXPECTED_TEXTS.TEST_RECEIVED
+        EXPECTED_TEXTS.TEST_RECEIVED,
       );
 
       const resultsResponse = await submitTestResults(hivResultsApi, orderData, false);

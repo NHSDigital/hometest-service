@@ -1,9 +1,13 @@
-import { AuthType, ConfigFactory, type ConfigInterface } from "../../configuration/EnvironmentConfiguration";
+import {
+  AuthType,
+  ConfigFactory,
+  type ConfigInterface,
+} from "../../configuration/EnvironmentConfiguration";
 import { getNumberOfWorkers } from "../../playwright.config";
-import { SandBoxUserManager as SandboxUserManager } from "./SandBoxUserManager";
-import { WireMockUserManager } from "./WireMockUserManager";
 import type { BaseTestUser } from "./BaseUser";
 import type { BaseUserManager } from "./BaseUserManager";
+import { SandBoxUserManager as SandboxUserManager } from "./SandBoxUserManager";
+import { WireMockUserManager } from "./WireMockUserManager";
 
 export class UserManagerFactory {
   private readonly config: ConfigInterface = ConfigFactory.getConfig();

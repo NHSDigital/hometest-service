@@ -1,7 +1,9 @@
-import * as dotenv from "dotenv";
-import * as path from "path";
 import * as fs from "fs";
-import { EnvironmentVariables, availableEnvironments, Environment } from "./EnvironmentVariables";
+import * as path from "path";
+
+import * as dotenv from "dotenv";
+
+import { Environment, EnvironmentVariables, availableEnvironments } from "./EnvironmentVariables";
 
 export { EnvironmentVariables };
 export type { Environment };

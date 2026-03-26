@@ -32,7 +32,6 @@ interface PostcodeLookupMappingOptions {
   priority?: number;
 }
 
-
 export function createOSPlacesSuccessMapping(
   options: PostcodeLookupMappingOptions,
 ): WireMockMapping {
@@ -73,7 +72,6 @@ export function createOSPlacesSuccessMapping(
   };
 }
 
-
 export function createOSPlacesNotFoundMapping(
   postcode: string,
   options: { priority?: number } = {},
@@ -103,7 +101,6 @@ export function createOSPlacesNotFoundMapping(
     },
   };
 }
-
 
 export function createDefaultTestAddresses(postcode: string): PostcodeAddress[] {
   return [

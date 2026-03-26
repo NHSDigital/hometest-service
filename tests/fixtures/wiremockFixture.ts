@@ -1,4 +1,5 @@
 import { test as base } from "@playwright/test";
+
 import { WireMockClient } from "../api/clients/WireMockClient";
 import { ConfigFactory } from "../configuration/EnvironmentConfiguration";
 

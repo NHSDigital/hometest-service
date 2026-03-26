@@ -1,7 +1,8 @@
 import { expect } from "@playwright/test";
-import { test } from "../../fixtures/CombinedTestFixture";
 import { type Result } from "axe-core";
+
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
+import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 

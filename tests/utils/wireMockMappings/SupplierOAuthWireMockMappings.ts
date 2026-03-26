@@ -6,7 +6,6 @@ interface SupplierOAuthMappingOptions {
   expiresIn?: number;
 }
 
-
 export function createSupplierOAuthTokenMapping(
   options: Partial<SupplierOAuthMappingOptions> = {},
 ): WireMockMapping {
@@ -50,7 +49,6 @@ export function createSupplierOAuthTokenMapping(
     },
   };
 }
-
 
 export function createSupplierOAuthInvalidCredentialsMapping(
   options: { priority?: number } = {},

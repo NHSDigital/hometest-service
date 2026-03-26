@@ -70,8 +70,8 @@ Located in `OSPlacesWireMockMappings.ts`:
 
 ```typescript
 import {
+  createDefaultTestAddresses,
   createOSPlacesSuccessMapping,
-  createDefaultTestAddresses
 } from "../../utils/wireMockMappings";
 
 // Create a successful postcode lookup
@@ -144,7 +144,9 @@ const mapping: WireMockMapping = {
   response: {
     status: 404,
     headers: { "Content-Type": "application/fhir+json" },
-    jsonBody: { /* 30 lines of FHIR OperationOutcome */ },
+    jsonBody: {
+      /* 30 lines of FHIR OperationOutcome */
+    },
   },
 };
 ```

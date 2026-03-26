@@ -1,6 +1,6 @@
 import { mapAuthUser } from "@/lib/auth/mapAuthUser";
-import type { AuthUser } from "@/state/AuthContext";
 import { backendUrl } from "@/settings";
+import type { AuthUser } from "@/state/AuthContext";
 
 export class SessionUnauthenticatedError extends Error {
   constructor() {

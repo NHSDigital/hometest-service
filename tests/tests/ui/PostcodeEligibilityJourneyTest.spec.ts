@@ -1,7 +1,7 @@
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
-import { createOSPlacesSuccessMapping } from "../../utils/wireMockMappings/OSPlacesWireMockMappings";
 
+import { test } from "../../fixtures/CombinedTestFixture";
+import { createOSPlacesSuccessMapping } from "../../utils/wireMockMappings/OSPlacesWireMockMappings";
 
 /**
  * Postcode / Eligibility Journey Test

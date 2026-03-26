@@ -1,25 +1,27 @@
+import { randomUUID } from "node:crypto";
+
 import { expect } from "@playwright/test";
-import { test } from "../../fixtures/CombinedTestFixture";
+
+import type { HIVResultsApiResource } from "../../api/clients/HIVResultsApiResource";
+import type { OrderApiResource } from "../../api/clients/OrderApiResource";
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { ResultsObservationData } from "../../test-data/ResultsObservationData";
-import {
-  createHeaders,
-  headersTestResults,
-  orderStatusPayload,
-  buildHeaders,
-} from "../../utils/ApiRequestHelper";
-import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
+import { test } from "../../fixtures/CombinedTestFixture";
+import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
+import type { OrderStatusCode } from "../../models/TestOrder";
 import {
   createGetResultHeaders,
   createGetResultParams,
 } from "../../test-data/GetResultRequestParams";
+import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import { OrderTestData } from "../../test-data/OrderTestData";
-import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
-import { randomUUID } from "node:crypto";
-import type { OrderApiResource } from "../../api/clients/OrderApiResource";
-import type { HIVResultsApiResource } from "../../api/clients/HIVResultsApiResource";
-import type { OrderStatusCode } from "../../models/TestOrder";
+import { ResultsObservationData } from "../../test-data/ResultsObservationData";
+import {
+  buildHeaders,
+  createHeaders,
+  headersTestResults,
+  orderStatusPayload,
+} from "../../utils/ApiRequestHelper";
 
 let orderId: string;
 let patientId: string;

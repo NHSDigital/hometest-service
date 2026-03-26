@@ -1,7 +1,8 @@
 import { Locator, Page } from "@playwright/test";
-import { AuthenticatedPage } from "./AuthenticatedPage";
+
 import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
 import { type Supplier } from "../models/TestOrder";
+import { AuthenticatedPage } from "./AuthenticatedPage";
 
 export class SuppliersTermsOfUsePage extends AuthenticatedPage {
   readonly config: ConfigInterface;

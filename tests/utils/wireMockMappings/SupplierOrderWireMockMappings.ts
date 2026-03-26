@@ -30,7 +30,6 @@ interface ServiceRequest {
   }>;
 }
 
-
 export function createSupplierOrderSuccessMapping(
   options: Partial<SupplierOrderMappingOptions> = {},
 ): WireMockMapping {
@@ -44,9 +43,7 @@ export function createSupplierOrderSuccessMapping(
           contains: "application/fhir+json",
         },
         "X-Correlation-ID": {
-          ...(options.correlationId
-            ? { equalTo: options.correlationId }
-            : { matches: ".*" }),
+          ...(options.correlationId ? { equalTo: options.correlationId } : { matches: ".*" }),
         },
       },
     },
@@ -124,7 +121,6 @@ export function createSupplierOrderSuccessMapping(
   };
 }
 
-
 export function createSupplierOrderNotFoundMapping(
   nhsNumber?: string,
   dateOfBirth?: string,
@@ -140,11 +136,16 @@ export function createSupplierOrderNotFoundMapping(
         ...(nhsNumber && { nhs_number: { equalTo: nhsNumber } }),
         ...(dateOfBirth && { date_of_birth: { equalTo: dateOfBirth } }),
         ...(orderId && { order_id: { equalTo: orderId } }),
-        ...(!nhsNumber && !dateOfBirth && !orderId && {
-          nhs_number: { matches: "^(\\d{3}\\s?\\d{3}\\s?\\d{4})$" },
-          date_of_birth: { matches: "^(19|20)\\d\\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$" },
-          order_id: { matches: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" },
-        }),
+        ...(!nhsNumber &&
+          !dateOfBirth &&
+          !orderId && {
+            nhs_number: { matches: "^(\\d{3}\\s?\\d{3}\\s?\\d{4})$" },
+            date_of_birth: { matches: "^(19|20)\\d\\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$" },
+            order_id: {
+              matches:
+                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            },
+          }),
       },
     },
     response: {
@@ -183,9 +184,7 @@ export function createSupplierOrderUnprocessableMapping(
           contains: "application/fhir+json",
         },
         "X-Correlation-ID": {
-          ...(options.correlationId
-            ? { equalTo: options.correlationId }
-            : { matches: ".*" }),
+          ...(options.correlationId ? { equalTo: options.correlationId } : { matches: ".*" }),
         },
       },
       bodyPatterns: [
