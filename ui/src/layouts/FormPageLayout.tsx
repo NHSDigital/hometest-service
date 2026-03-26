@@ -16,7 +16,7 @@ export default function FormPageLayout({
   backButtonText,
   onBackButtonClick,
   isLoading = false,
-  loadingMessage = "Submitting your order",
+  loadingMessage,
 }: Readonly<FormPageLayoutProps>) {
   if (isLoading) {
     return (

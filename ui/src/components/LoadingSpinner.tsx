@@ -1,15 +1,21 @@
 interface LoadingSpinnerProps {
   message?: string;
+  variant?: "overlay" | "inline";
 }
 
-export function LoadingSpinner({ message = "Loading" }: Readonly<LoadingSpinnerProps>) {
+export function LoadingSpinner({
+  message = "Loading",
+  variant = "overlay",
+}: Readonly<LoadingSpinnerProps>) {
+  const containerClass =
+    variant === "inline" ? "loading-spinner-inline" : "loading-spinner-background";
+
   return (
-    <div className="loading-spinner-background">
+    <div className={containerClass}>
       <div aria-hidden="true" className="loading-spinner" />
-      <span className="nhsuk-u-visually-hidden" aria-live="polite">
+      <h2 className="nhsuk-heading-m" role="status" aria-live="polite">
         {message}
-      </span>
-      <h2 className="nhsuk-heading-m">{message}</h2>
+      </h2>
     </div>
   );
 }

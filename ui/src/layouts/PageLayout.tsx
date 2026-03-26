@@ -12,7 +12,7 @@ export default function PageLayout({
   children,
   onBackButtonClick,
   isLoading = false,
-  loadingMessage = "Submitting your order",
+  loadingMessage,
 }: Readonly<PageLayoutProps>) {
   if (isLoading) {
     return (
