@@ -8,6 +8,19 @@ export interface AwsClientOptions {
   };
 }
 
+/**
+ * Builds shared AWS SDK client options for lambda-side AWS clients.
+ *
+ * Behavior by environment:
+ * - Production AWS Lambda: returns region-only options so the SDK uses its
+ *   default credential provider chain (for example, execution role and
+ *   refreshable temporary credentials).
+ * - Local development with LocalStack: when AWS_ENDPOINT_URL is set, includes
+ *   the custom endpoint and optionally explicit credentials from env vars.
+ *
+ * Use this helper when constructing AWS SDK clients that should follow the
+ * same endpoint and credential-resolution rules across the codebase.
+ */
 export function getAwsClientOptions(region: string): AwsClientOptions {
   const endpoint = process.env.AWS_ENDPOINT_URL;
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -16,7 +29,7 @@ export function getAwsClientOptions(region: string): AwsClientOptions {
 
   const options: AwsClientOptions = endpoint ? { region, endpoint } : { region };
 
-  if (accessKeyId && secretAccessKey) {
+  if (endpoint && accessKeyId && secretAccessKey) {
     options.credentials = {
       accessKeyId,
       secretAccessKey,

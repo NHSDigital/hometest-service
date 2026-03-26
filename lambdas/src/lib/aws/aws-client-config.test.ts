@@ -21,6 +21,16 @@ describe("getAwsClientOptions", () => {
     });
   });
 
+  it("does not inject credentials when AWS_ENDPOINT_URL is not set", () => {
+    process.env.AWS_ACCESS_KEY_ID = "abc";
+    process.env.AWS_SECRET_ACCESS_KEY = "xyz";
+    process.env.AWS_SESSION_TOKEN = "session-token";
+
+    expect(getAwsClientOptions("eu-west-2")).toEqual({
+      region: "eu-west-2",
+    });
+  });
+
   it("returns endpoint and credentials when AWS_ENDPOINT_URL is set", () => {
     process.env.AWS_ENDPOINT_URL = "http://localhost:4566";
     process.env.AWS_ACCESS_KEY_ID = "abc";
