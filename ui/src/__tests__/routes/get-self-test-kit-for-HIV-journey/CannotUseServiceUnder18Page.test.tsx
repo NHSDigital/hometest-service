@@ -1,6 +1,10 @@
 import "@testing-library/jest-dom";
+import { fireEvent, render, screen } from "@testing-library/react";
+import React, { ReactNode } from "react";
+import { MemoryRouter } from "react-router-dom";
 
 import { CannotUseServiceUnder18Content, CommonContent } from "@/content";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import CannotUseServiceUnder18Page, {
   HARD_CODED_CLINIC_DATA,
   NHS_LINKS,
@@ -8,14 +12,9 @@ import CannotUseServiceUnder18Page, {
 import {
   CreateOrderProvider,
   JourneyNavigationContext,
-  JourneyNavigationProvider,
   OrderAnswers,
   useCreateOrderContext,
 } from "@/state";
-import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
-import React, { ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 
 const mockedContent: CannotUseServiceUnder18Content = {
   title: "some-mocked-title",

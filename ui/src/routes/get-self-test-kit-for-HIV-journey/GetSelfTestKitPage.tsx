@@ -34,8 +34,9 @@ export default function GetSelfTestKitPage() {
         </ActionLink>
 
         <p>
-          {content.urgentCard.aeAdvice}{" "}
-          <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>.
+          {`${content.urgentCard.aeAdvice} `}
+          <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>
+          {"."}
         </p>
       </Card>
 
@@ -70,21 +71,23 @@ export default function GetSelfTestKitPage() {
 
       <h2>{content.aboutService.heading}</h2>
       <p>
-        {content.aboutService.text}{" "}
-        <Link to={RoutePath.HomeTestTermsOfUsePage}>{content.aboutService.termsLink}</Link> and{" "}
-        <Link to={RoutePath.HomeTestPrivacyPolicyPage}>{content.aboutService.privacyLink}</Link>.
+        {`${content.aboutService.text} `}
+        <Link to={RoutePath.HomeTestTermsOfUsePage}>{content.aboutService.termsLink}</Link>
+        {` and `}
+        <Link to={RoutePath.HomeTestPrivacyPolicyPage}>{content.aboutService.privacyLink}</Link>
+        {"."}
       </p>
 
       <h2>{content.otherOptions.heading}</h2>
       <p>
-        {content.otherOptions.clinicText}{" "}
+        {`${content.otherOptions.clinicText} `}
         <a href={commonContent.links.sexualHealthClinic.href}>
           {content.otherOptions.clinicLinkText}
-        </a>{" "}
-        {content.otherOptions.clinicTextEnd}
+        </a>
+        {` ${content.otherOptions.clinicTextEnd}`}
       </p>
       <p>
-        {content.otherOptions.sexualHealthText}{" "}
+        {`${content.otherOptions.sexualHealthText} `}
         <a href={content.otherOptions.sexualHealthLink.href}>
           {content.otherOptions.sexualHealthLink.text}
         </a>
