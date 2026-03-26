@@ -27,6 +27,11 @@ export interface SupplierTokenGenerator {
   generateToken(): Promise<string>;
 }
 
+// Refresh slightly before expiry to avoid edge-of-expiry failures during downstream calls.
+// This fixed 30s buffer is based on the current supplier token profile for this flow:
+// tokens are expected to be long-lived (24h / 86,400s), not short-lived.
+// If a supplier starts returning short-lived tokens (<= 30s), they may be treated as stale
+// immediately and refetched more often.
 const TOKEN_REFRESH_BUFFER_MS = 30_000;
 const DEFAULT_TOKEN_TTL_SECONDS = 60;
 const MAX_TOKEN_TTL_SECONDS = 86_399;
