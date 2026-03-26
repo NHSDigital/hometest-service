@@ -1,11 +1,12 @@
-import { chromium, type Browser, type BrowserContext, type Page } from "@playwright/test";
-import type { BaseTestUser } from "./BaseUser";
-import { defaultUserAgent } from "../../playwright.config";
-
-import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
-import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs";
 import * as path from "path";
+
+import { type Browser, type BrowserContext, type Page, chromium } from "@playwright/test";
+import { v4 as uuidv4 } from "uuid";
+
+import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import { defaultUserAgent } from "../../playwright.config";
+import type { BaseTestUser } from "./BaseUser";
 import { SpecialUserKey } from "./SpecialUserKey";
 
 interface NetworkError {
@@ -41,6 +42,10 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
         `numberOfWorkerUsers (${numberOfWorkerUsers}) exceeds available worker users (${this.workerUsers.length})`,
       );
     }
+  }
+
+  protected getNumberOfWorkerUsers(): number {
+    return this.numberOfWorkerUsers;
   }
 
   getWorkerUser(index: number): TUser {
@@ -161,7 +166,7 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     return JSON.parse(Buffer.from(base64, "base64").toString("utf8")) as Record<string, unknown>;
   }
 
-  private isSessionValid(sessionFilePath: string): boolean {
+  protected isSessionJwtValid(sessionFilePath: string): boolean {
     try {
       const content = fs.readFileSync(sessionFilePath, "utf8");
       const session = JSON.parse(content) as {
@@ -187,6 +192,29 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
     }
   }
 
+  protected async isSessionValid(sessionFilePath: string): Promise<boolean> {
+    // Quick JWT expiry check first
+    if (!this.isSessionJwtValid(sessionFilePath)) {
+      return false;
+    }
+    // Verify the session is accepted by the live session endpoint.
+    // This catches environment restarts where the signing key has changed.
+    try {
+      const content = fs.readFileSync(sessionFilePath, "utf8");
+      const session = JSON.parse(content) as {
+        cookies: Array<{ name: string; value: string }>;
+      };
+      const cookieHeader = session.cookies.map((c) => `${c.name}=${c.value}`).join("; ");
+      const response = await fetch(`${this.config.apiBaseUrl}/session`, {
+        method: "GET",
+        headers: { Cookie: cookieHeader },
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
   async loginWorkerUsers(): Promise<void> {
     process.env.GLOBAL_START_TIME = new Date().toISOString();
     console.log(`Tests will run on environment: ${process.env.ENV ?? "local"}`);
@@ -203,7 +231,11 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
       console.log(sessionFilePath);
 
       const isLocal = (process.env.ENV ?? "local") === "local";
-      if (isLocal && fs.existsSync(sessionFilePath) && this.isSessionValid(sessionFilePath)) {
+      if (
+        isLocal &&
+        fs.existsSync(sessionFilePath) &&
+        (await this.isSessionValid(sessionFilePath))
+      ) {
         console.log(`✅ Reusing existing valid session for worker user at index ${i}`);
         continue;
       }
@@ -224,7 +256,6 @@ export abstract class BaseUserManager<TUser extends BaseTestUser> {
 
       try {
         await this.loginWorkerUser(user, page);
-
         await page.context().storageState({
           path: sessionFilePath,
         });

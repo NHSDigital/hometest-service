@@ -1,7 +1,16 @@
-import { test as baseTest } from '@playwright/test';
-import { UserManagerFactory, type BaseUserManager, type BaseTestUser } from '../utils/users';
+import { test as baseTest } from "@playwright/test";
 
-const userManager = new UserManagerFactory().getUserManager();
+import { type BaseTestUser, type BaseUserManager, UserManagerFactory } from "../utils/users";
+
+let _userManager: BaseUserManager<BaseTestUser> | undefined;
+function getUserManager(): BaseUserManager<BaseTestUser> {
+  _userManager ??= new UserManagerFactory().getUserManager();
+  return _userManager;
+}
+
+function getWorkerIndex(): number {
+  return storageStateFixture.info().parallelIndex ?? 0;
+}
 
 export const storageStateFixture = baseTest.extend<
   object,
@@ -13,47 +22,45 @@ export const storageStateFixture = baseTest.extend<
 >({
   // Use the same storage state for all tests in this worker.
   storageState: async ({ testedUser, workerStorageState }, use) => {
-    console.log(`Test using user with nhsNumber: ${testedUser.nhsNumber}`);
-    console.log(`Test start date : ${new Date().toISOString()}`);
+    const worker = `Worker-${getWorkerIndex() + 1}`;
+    const testTitle = storageStateFixture.info().title;
+    console.log(
+      `[${worker}] "${testTitle}" | nhsNumber: ${testedUser.nhsNumber} | started: ${new Date().toISOString()}`,
+    );
     await use(workerStorageState);
   },
   // Authenticate once per worker with a worker-scoped fixture.
   workerStorageState: [
-    async ({ }, use) => {
-      console.log(
-        `Creating new worker with index: ${storageStateFixture.info().parallelIndex}`
-      );
+    async ({}, use) => {
+      const workerIndex = getWorkerIndex();
+      console.log(`Creating new worker with index: ${workerIndex}`);
 
-      const fileName: string = userManager.getWorkerUserSessionFilePath(
-        storageStateFixture.info().parallelIndex
-      );
+      const fileName: string = getUserManager().getWorkerUserSessionFilePath(workerIndex);
       console.log(`Test using session: ${fileName}`);
       await use(fileName);
     },
-    { scope: 'worker' }
+    { scope: "worker" },
   ],
   userManager: [
-    async ({ }, use) => {
-      await use(userManager);
+    async ({}, use) => {
+      await use(getUserManager());
     },
-    { scope: 'worker' }
+    { scope: "worker" },
   ],
   testedUser: [
-    async ({ }, use) => {
-      const user: BaseTestUser = userManager.getWorkerUser(
-        storageStateFixture.info().parallelIndex
-      );
+    async ({}, use) => {
+      const user: BaseTestUser = getUserManager().getWorkerUser(getWorkerIndex());
 
       // Validate that required user properties exist
       if (!user.nhsNumber || !user.dob) {
         throw new Error(
-          `Test user is missing required properties. nhsNumber: ${user.nhsNumber}, dob: ${user.dob}. User: ${JSON.stringify(user)}`
+          `Test user is missing required properties. nhsNumber: ${user.nhsNumber}, dob: ${user.dob}. User: ${JSON.stringify(user)}`,
         );
       }
 
       console.log(`Using user with nhsNumber: ${user.nhsNumber}`);
       await use(user);
     },
-    { scope: 'worker' }
-  ]
+    { scope: "worker" },
+  ],
 });

@@ -1,9 +1,8 @@
 import { Locator, Page } from "@playwright/test";
-import { BasePage } from "./BasePage";
-import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
 
-export class OrderStatusPage extends BasePage {
-  readonly config: ConfigInterface;
+import { AuthenticatedPage } from "./AuthenticatedPage";
+
+export class OrderStatusPage extends AuthenticatedPage {
   readonly statusTag: Locator;
   readonly orderedDate: Locator;
   readonly referenceNumber: Locator;
@@ -14,11 +13,9 @@ export class OrderStatusPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.pageHeader = page.locator("h1.nhsuk-heading-l", { hasText: "HIV self-test" });
     this.statusTag = page.locator("#order-status-tag");
     this.orderedDate = page.getByLabel(/Order date/);
     this.referenceNumber = page.locator("#reference-number");
-    this.config = ConfigFactory.getConfig();
     this.orderReference = page.getByLabel(/^Reference number:/);
     this.suppliersTermsOfUseLink = page.locator('a[href*="suppliers-terms-conditions"]');
     this.suppliersPrivacyPolicyLink = page.locator('a[href*="suppliers-privacy-policy"]');
@@ -26,6 +23,18 @@ export class OrderStatusPage extends BasePage {
   }
 
   async navigateToOrder(orderId: string): Promise<void> {
+    await this.navigateToProtectedPath(`/orders/${orderId}/tracking`, this.pageHeader);
+  }
+
+  async navigateToOrderExpectingPath(
+    orderId: string,
+    readyLocator: Locator,
+    expectedPath: string,
+  ): Promise<void> {
+    await this.navigateToProtectedPath(`/orders/${orderId}/tracking`, readyLocator, [expectedPath]);
+  }
+
+  async openOrderDirect(orderId: string): Promise<void> {
     await this.page.goto(`${this.config.uiBaseUrl}/orders/${orderId}/tracking`);
   }
 

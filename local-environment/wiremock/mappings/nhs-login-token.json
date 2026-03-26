@@ -1,0 +1,36 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "urlPath": "/token",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/x-www-form-urlencoded"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matches": ".*grant_type=authorization_code.*"
+      },
+      {
+        "matches": ".*code=.*"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      "Pragma": "no-cache"
+    },
+    "jsonBody": {
+      "access_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IndpcmVtb2NrLWtleS0xIn0.eyJzdWIiOiJ0ZXN0LXN1Yi0xMjMiLCJpc3MiOiJodHRwOi8vd2lyZW1vY2s6ODA4MCIsImF1ZCI6ImhvbWV0ZXN0IiwiZXhwIjoyMDg5MTIzNzQ3LCJpYXQiOjE3NzM3NjM3NDcsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgcGhvbmUgbmhzX251bWJlciJ9.a8bxL-oyPMcKEsZyzu9Dd2jEdIi2nkq67rwqJnXX5TsXc-myO8a2BGZ7Hx7lLc78x16ijwTIim0Ps7Hnmyxf2mT0kt7trseIAZkbfDjS949dVxjsthW3Ck1JG-iqKZlt8h0X1BUvXH15wFEQoV-9H23ObfgqsmaVYO8Hc57KjTHZsjwoPI5UfB3_nTCCYPIoT1k5MW4zhwrgkWoI58d6YE1Erjua-DYmNjMdC6UjNMChSxI7UvSOeVpWs1tOYyRgi9w3zyKccF1uQuu-GJDFJHpB_hMVZyONO5ZNEAPCTHXY2VNWxSP27CBAi1h09pX1YaCE8Z4_qkBC3zTsvDe_Ig",
+      "id_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IndpcmVtb2NrLWtleS0xIn0.eyJzdWIiOiJ0ZXN0LXN1Yi0xMjMiLCJpc3MiOiJodHRwOi8vd2lyZW1vY2s6ODA4MCIsImF1ZCI6ImhvbWV0ZXN0IiwiZXhwIjoyMDg5MTIzNzQ3LCJpYXQiOjE3NzM3NjM3NDcsImF1dGhfdGltZSI6MTc3Mzc2Mzc0N30.Ir3IMsl6oua0uoJ_a-tR-CvMI69K9zsL9Ofg1kQ1496vb7MG4kIdQ1sM6O039BhvAk2MiGKP7plR4iMHnSFQ4c3yYqnHE_H0H5YyCxehNbkAhl7AZkESmxOuBqMbFVHz4t02v5RE89jLkDjwFFmgryUI7gF3rMVU2lkASBKZtEq4wfp74jhD2jrEH2GJAkYjunSQmHa1yNLgAbFvS7iMyXnczH03EaxI6ztHIG90WpcPrqlOlig4nMeOJ8t-ChUsRLbGaujtIA9k5o86N4oOqkNFXRRM7P_GBuD_M0Skdkh_jc0RGIEMgWnL-KR_UKtDgveG__jmC6sqkyPo9V_Cjw",
+      "refresh_token": "mock-refresh-token",
+      "token_type": "Bearer",
+      "expires_in": "3600",
+      "scope": "openid profile email phone nhs_number"
+    }
+  }
+}
