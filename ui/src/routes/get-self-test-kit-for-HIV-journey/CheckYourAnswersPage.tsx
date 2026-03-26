@@ -252,7 +252,7 @@ export default function CheckYourAnswersPage() {
           error={consentError || undefined}
         >
           <Checkboxes.Item value="consent" checked={consentChecked} onChange={handleConsentChange}>
-            {content.consent.label.replace("{supplier}", supplierName)}{" "}
+            {`${content.consent.label.replace("{supplier}", supplierName)} `}
             <a
               href={JourneyStepNames.SuppliersTermsConditions}
               onClick={(e) => {
@@ -261,8 +261,8 @@ export default function CheckYourAnswersPage() {
               }}
             >
               {content.consent.termsOfUseText}
-            </a>{" "}
-            {content.consent.labelAnd}{" "}
+            </a>
+            {` ${content.consent.labelAnd} `}
             <a
               href={JourneyStepNames.SuppliersPrivacyPolicy}
               onClick={(e) => {
@@ -272,7 +272,7 @@ export default function CheckYourAnswersPage() {
             >
               {content.consent.privacyPolicyText}
             </a>
-            .
+            {"."}
           </Checkboxes.Item>
         </Checkboxes>
         <Button type="submit">{content.submitButton}</Button>
