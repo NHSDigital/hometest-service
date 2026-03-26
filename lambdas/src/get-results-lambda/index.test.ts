@@ -2,7 +2,6 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { Bundle, Observation } from "fhir/r4";
 
 import { TestResult } from "../lib/db/test-result-db-client";
-import { lambdaHandler } from "./index";
 
 jest.mock("../lib/db/test-result-db-client");
 
@@ -26,6 +25,8 @@ jest.mock("../lib/utils/utils", () => ({
   getCorrelationIdFromEventHeaders: () =>
     mockGetCorrelationIdFromEventHeaders(),
 }));
+
+import { lambdaHandler } from "./index";
 
 describe("Get Results Lambda Handler", () => {
   let mockEvent: Partial<APIGatewayProxyEvent>;
