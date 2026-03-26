@@ -2,6 +2,8 @@
 
 import { ReactNode, createContext, useCallback, useContext, useState } from "react";
 
+import sessionService from "@/lib/services/session-service";
+
 export interface AuthUser {
   sub: string;
   nhsNumber: string;
@@ -21,10 +23,13 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() =>
+    sessionService.rehydrateAuthUser<AuthUser>(),
+  );
 
   const setUser = useCallback((user: AuthUser | null) => {
     setAuthUser(user);
+    sessionService.dehydrateAuthUser<AuthUser>(user);
   }, []);
 
   return (
