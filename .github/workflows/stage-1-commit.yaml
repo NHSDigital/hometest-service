@@ -12,6 +12,16 @@ on:
         description: "Build timestamp, set by the CI/CD pipeline workflow"
         required: true
         type: string
+      run_pre_commit:
+        description: "Whether to run pre-commit checks in this stage"
+        required: false
+        default: false
+        type: boolean
+      pre_commit_base_sha:
+        description: "Base commit SHA used for pre-commit diff range"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   scan-secrets:
@@ -57,10 +67,15 @@ jobs:
           idp_aws_report_upload_bucket_endpoint: "${{ secrets.IDP_AWS_REPORT_UPLOAD_BUCKET_ENDPOINT }}"
   pre-commit:
     runs-on: ubuntu-latest
+    if: inputs.run_pre_commit
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Initialize mise
         uses: ./.github/actions/init-mise
       - name: Run pre-commit checks
         uses: ./.github/actions/perform-pre-commit
+        with:
+          base_sha: "${{ inputs.pre_commit_base_sha }}"
