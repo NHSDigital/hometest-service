@@ -1,6 +1,6 @@
+import type { SupplierConfig } from "../db/supplier-db";
 import { HttpClient } from "../http/http-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
-import type { SupplierConfig } from "../db/supplier-db";
 
 interface CachedSupplierToken {
   accessToken: string;

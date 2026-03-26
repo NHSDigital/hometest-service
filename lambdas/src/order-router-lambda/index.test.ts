@@ -1,6 +1,9 @@
+// sort-imports-ignore
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
+
 import { HttpError } from "../lib/http/http-client";
 
 // Setup mocks
@@ -38,7 +41,6 @@ jest.mock("../lib/supplier/supplier-auth-client", () => {
   };
 });
 
-// Import handler after mocking
 import { handler } from "./index";
 
 describe("order-router-lambda", () => {

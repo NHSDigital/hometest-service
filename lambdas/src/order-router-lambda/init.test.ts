@@ -1,11 +1,11 @@
-import { init } from "./init";
-import { FetchHttpClient } from "../lib/http/http-client";
-import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { SupplierService } from "../lib/db/supplier-db";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { init } from "./init";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
@@ -60,11 +60,9 @@ describe("init", () => {
       expect(result).toHaveProperty("httpClient");
       expect(result).toHaveProperty("supplierDb");
       expect(result).toHaveProperty("secretsClient");
-      expect(result).toHaveProperty("dbClient");
       expect(result).toHaveProperty("orderStatusService");
       expect(result.httpClient).toBeInstanceOf(FetchHttpClient);
       expect(result.secretsClient).toBeInstanceOf(AwsSecretsClient);
-      expect(result.dbClient).toBeInstanceOf(PostgresDbClient);
       expect(result.supplierDb).toBeInstanceOf(SupplierService);
       expect(result.orderStatusService).toBeInstanceOf(OrderStatusService);
     });
@@ -124,7 +122,6 @@ describe("init", () => {
         httpClient: expect.any(FetchHttpClient),
         supplierDb: expect.any(SupplierService),
         secretsClient: expect.any(AwsSecretsClient),
-        dbClient: expect.any(PostgresDbClient),
         orderStatusService: expect.any(OrderStatusService),
       });
     });

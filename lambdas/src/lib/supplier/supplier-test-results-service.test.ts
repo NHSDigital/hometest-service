@@ -1,6 +1,6 @@
 import { Bundle, Observation } from "fhir/r4";
-import { SupplierConfig, SupplierService } from "../db/supplier-db";
 
+import { SupplierConfig, SupplierService } from "../db/supplier-db";
 import { HttpClient } from "../http/http-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierTestResultsService } from "./supplier-test-results-service";

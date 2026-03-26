@@ -1,3 +1,4 @@
+// sort-imports-ignore
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { Bundle, Observation } from "fhir/r4";
 
@@ -22,8 +23,7 @@ jest.mock("./init", () => ({
 
 jest.mock("../lib/utils/utils", () => ({
   ...jest.requireActual("../lib/utils/utils"),
-  getCorrelationIdFromEventHeaders: () =>
-    mockGetCorrelationIdFromEventHeaders(),
+  getCorrelationIdFromEventHeaders: () => mockGetCorrelationIdFromEventHeaders(),
 }));
 
 import { lambdaHandler } from "./index";
@@ -98,8 +98,7 @@ describe("Get Results Lambda Handler", () => {
         {
           coding: [
             {
-              system:
-                "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
               code: "N",
               display: "Normal",
             },
@@ -211,9 +210,7 @@ describe("Get Results Lambda Handler", () => {
         );
       });
 
-      await expect(
-        lambdaHandler(mockEvent as APIGatewayProxyEvent),
-      ).rejects.toThrow(
+      await expect(lambdaHandler(mockEvent as APIGatewayProxyEvent)).rejects.toThrow(
         "Correlation ID is missing or invalid in the event headers",
       );
     });
@@ -233,8 +230,7 @@ describe("Get Results Lambda Handler", () => {
     });
 
     test("should use correlation ID from x-correlation-id header (lowercase)", async () => {
-      const customCorrelationId =
-        "lowercase-550e8400-e29b-41d4-a716-446655440099";
+      const customCorrelationId = "lowercase-550e8400-e29b-41d4-a716-446655440099";
       mockGetCorrelationIdFromEventHeaders.mockReturnValue(customCorrelationId);
       mockGetResult.mockResolvedValue(mockTestResult);
 
@@ -309,8 +305,7 @@ describe("Get Results Lambda Handler", () => {
                 {
                   coding: [
                     {
-                      system:
-                        "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                      system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                       code: "A", // Abnormal
                       display: "Abnormal",
                     },

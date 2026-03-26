@@ -2,6 +2,7 @@ import {
   SecretsManagerClient as AwsSecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
+
 import { getAwsClientOptions } from "../aws/aws-client-config";
 
 export interface SecretsClient {

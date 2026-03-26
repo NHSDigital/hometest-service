@@ -1,13 +1,13 @@
 import { Bundle, Observation } from "fhir/r4";
 
+import { SupplierService } from "../db/supplier-db";
 import { HttpClient } from "../http/http-client";
+import { SecretsClient } from "../secrets/secrets-manager-client";
 import {
+  type SupplierTokenGenerator,
   buildTokenGeneratorCacheKey,
   createTokenGenerator,
-  type SupplierTokenGenerator,
 } from "./supplier-auth-client";
-import { SecretsClient } from "../secrets/secrets-manager-client";
-import { SupplierService } from "../db/supplier-db";
 
 export class SupplierTestResultsService {
   private readonly tokenGenerators = new Map<string, SupplierTokenGenerator>();
