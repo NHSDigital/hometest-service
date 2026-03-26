@@ -5,7 +5,6 @@ import {
   TestOrderModel,
   UUID,
 } from "../models/TestOrder";
-
 import { BaseDbClient } from "./BaseDbClient";
 
 export class TestOrderDbClient extends BaseDbClient {

@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+
 import { AuthenticatedPage } from "./AuthenticatedPage";
 
 export class OrderStatusPage extends AuthenticatedPage {

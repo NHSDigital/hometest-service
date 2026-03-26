@@ -1,6 +1,7 @@
 import { Locator, Page } from "@playwright/test";
-import { BasePage } from "./BasePage";
+
 import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
+import { BasePage } from "./BasePage";
 
 export abstract class AuthenticatedPage extends BasePage {
   private static readonly loginPath = "/login";

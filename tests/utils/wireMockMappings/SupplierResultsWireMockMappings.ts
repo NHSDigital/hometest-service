@@ -1,5 +1,8 @@
 import type { WireMockMapping } from "../../api/clients/WireMockClient";
-import { ResultsObservationData, type HIVObservation } from "../../test-data/ResultsObservationData";
+import {
+  type HIVObservation,
+  ResultsObservationData,
+} from "../../test-data/ResultsObservationData";
 
 interface SupplierResultMappingOptions {
   orderId: string;
@@ -24,7 +27,6 @@ interface OperationOutcome {
     diagnostics?: string;
   }>;
 }
-
 
 export function createSupplierResultSuccessMapping(
   orderId: string,
@@ -53,9 +55,7 @@ export function createSupplierResultSuccessMapping(
       },
       headers: {
         "X-Correlation-ID": {
-          ...(options.correlationId
-            ? { equalTo: options.correlationId }
-            : { matches: ".*" }),
+          ...(options.correlationId ? { equalTo: options.correlationId } : { matches: ".*" }),
         },
       },
     },
@@ -68,7 +68,6 @@ export function createSupplierResultSuccessMapping(
     },
   };
 }
-
 
 export function createSupplierResultNotFoundMapping(
   orderId: string,
@@ -98,9 +97,7 @@ export function createSupplierResultNotFoundMapping(
       },
       headers: {
         "X-Correlation-ID": {
-          ...(options.correlationId
-            ? { equalTo: options.correlationId }
-            : { matches: ".*" }),
+          ...(options.correlationId ? { equalTo: options.correlationId } : { matches: ".*" }),
         },
       },
     },
@@ -113,7 +110,6 @@ export function createSupplierResultNotFoundMapping(
     },
   };
 }
-
 
 export function createSupplierResultServerErrorMapping(
   orderId: string,
@@ -143,9 +139,7 @@ export function createSupplierResultServerErrorMapping(
       },
       headers: {
         "X-Correlation-ID": {
-          ...(options.correlationId
-            ? { equalTo: options.correlationId }
-            : { matches: ".*" }),
+          ...(options.correlationId ? { equalTo: options.correlationId } : { matches: ".*" }),
         },
       },
     },
@@ -159,14 +153,17 @@ export function createSupplierResultServerErrorMapping(
   };
 }
 
-
 export function createSupplierResultAbnormalMapping(
   orderId: string,
   patientId: string,
   supplierId: string,
   options: Partial<SupplierResultMappingOptions> = {},
 ): WireMockMapping {
-  const observation = ResultsObservationData.buildAbnormalObservation(orderId, patientId, supplierId);
+  const observation = ResultsObservationData.buildAbnormalObservation(
+    orderId,
+    patientId,
+    supplierId,
+  );
   const bundle: Bundle<HIVObservation> = {
     resourceType: "Bundle",
     type: "searchset",
@@ -187,9 +184,7 @@ export function createSupplierResultAbnormalMapping(
       },
       headers: {
         "X-Correlation-ID": {
-          ...(options.correlationId
-            ? { equalTo: options.correlationId }
-            : { matches: ".*" }),
+          ...(options.correlationId ? { equalTo: options.correlationId } : { matches: ".*" }),
         },
       },
     },

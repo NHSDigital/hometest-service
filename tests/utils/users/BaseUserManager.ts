@@ -1,11 +1,12 @@
-import { chromium, type Browser, type BrowserContext, type Page } from "@playwright/test";
-import type { BaseTestUser } from "./BaseUser";
-import { defaultUserAgent } from "../../playwright.config";
-
-import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
-import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs";
 import * as path from "path";
+
+import { type Browser, type BrowserContext, type Page, chromium } from "@playwright/test";
+import { v4 as uuidv4 } from "uuid";
+
+import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import { defaultUserAgent } from "../../playwright.config";
+import type { BaseTestUser } from "./BaseUser";
 import { SpecialUserKey } from "./SpecialUserKey";
 
 interface NetworkError {

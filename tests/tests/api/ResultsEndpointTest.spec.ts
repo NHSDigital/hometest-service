@@ -1,13 +1,14 @@
+import { randomUUID } from "crypto";
+
+import { expect } from "@playwright/test";
+
+import { TestOrderDbClient } from "../../db/TestOrderDbClient";
+import { TestResultDbClient } from "../../db/TestResultDbClient";
+import { test } from "../../fixtures/CombinedTestFixture";
 import {
   createGetResultHeaders,
   createGetResultParams,
 } from "../../test-data/GetResultRequestParams";
-
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { expect } from "@playwright/test";
-import { test } from "../../fixtures/CombinedTestFixture";
-import { randomUUID } from "crypto";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 import { createSupplierResultNotFoundMapping } from "../../utils/wireMockMappings/SupplierResultsWireMockMappings";
 
@@ -23,7 +24,6 @@ test.describe("GET Result API", () => {
     async ({ testedUser }) => {
       await dbClient.connect();
       await resultDbClient.connect();
-
 
       const result = await dbClient.createOrderWithPatientAndStatus(
         new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),

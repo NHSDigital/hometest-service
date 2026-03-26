@@ -6,8 +6,8 @@ import {
   cleanupWireMockAuthState,
   configureWireMockAuthMappings,
   createWireMockAuthManifest,
-} from "./utils/users/WiremockAuthMappings";
-import { createWireMockUserInfoMapping } from "./utils/users/WiremockUserInfoMapping";
+} from "./utils/users/wiremockAuthMappings";
+import { createWireMockUserInfoMapping } from "./utils/users/wiremockUserInfoMapping";
 
 async function globalSetup() {
   console.log("🚀 Global setup started");

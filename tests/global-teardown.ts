@@ -2,7 +2,7 @@ import { FullConfig } from "@playwright/test";
 
 import { WireMockClient } from "./api/clients/WireMockClient";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
-import { cleanupWireMockAuthState } from "./utils/users/WiremockAuthMappings";
+import { cleanupWireMockAuthState } from "./utils/users/wiremockAuthMappings";
 
 async function globalTeardown(config: FullConfig) {
   console.log("🧹 Global teardown started");
