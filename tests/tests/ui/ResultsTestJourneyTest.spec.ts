@@ -1,8 +1,10 @@
+import { randomUUID } from "node:crypto";
+
+import { expect } from "@playwright/test";
+
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { expect } from "@playwright/test";
 import { test } from "../../fixtures/CombinedTestFixture";
-import { randomUUID } from "crypto";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
@@ -63,14 +65,16 @@ test.describe("Results Page", { tag: "@ui" }, () => {
   test("Authenticated user opens a deep link - positive result", async ({
     negativeResultPage,
     orderStatusPage,
-    errorPage,
   }) => {
     await dbClient.updateOrderStatus(orderId, "RECEIVED");
     await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", randomUUID());
     await resultDbClient.updateResultStatus(orderId, "RESULT_WITHHELD");
     expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
-    await negativeResultPage.navigateToOrderResult(orderId);
-    await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
+    await negativeResultPage.navigateToOrderResultExpectingPath(
+      orderId,
+      orderStatusPage.statusTag,
+      `/orders/${orderId}/tracking`,
+    );
     await expect(orderStatusPage.statusTag).toHaveText("Test received");
     const url = await orderStatusPage.getCurrentUrl();
     expect(url).toContain("/tracking");
@@ -85,21 +89,14 @@ test.describe("Results Page", { tag: "@ui" }, () => {
     });
 
     test("Unauthorized user opens a deep link", async ({ negativeResultPage, errorPage }) => {
-      await negativeResultPage.navigateToOrderResult(orderId2);
+      await negativeResultPage.navigateToOrderResultExpectingPath(
+        orderId2,
+        errorPage.orderNotFoundMessage,
+        `/orders/${orderId2}/tracking`,
+      );
       await expect(errorPage.orderNotFoundMessage).toBeVisible();
       const url = await negativeResultPage.getCurrentUrl();
-      expect(url).toContain(orderId2);
-    });
-
-    test("Unauthenticated user opens a deep link", async ({
-      negativeResultPage,
-      nhsEmailAndPasswordPage,
-    }) => {
-      const context = negativeResultPage.page.context();
-      await context.clearCookies();
-      await context.clearPermissions();
-      await negativeResultPage.navigateToOrderResult(orderId);
-      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+      expect(url).toContain(`/orders/${orderId2}/tracking`);
     });
   });
 

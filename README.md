@@ -118,13 +118,49 @@ After running `npm start`, use targeted commands instead of restarting everythin
 
   ```shell
   npm run local:terraform:apply
-  npm run local:terraform:env
+  ```
+
+  This expects the backend containers, including LocalStack, to already be running. If they are not, start them first:
+
+  ```shell
+  npm run local:backend:start
+  ```
+
+  To switch local integrations between WireMock and real upstreams, pass Terraform variables when applying - some examples below.
+
+  To only use WireMock everywhere (default mode - only needed to switch over):
+
+  ```shell
+  TF_VAR_local_service_mode=wiremock npm run local:terraform:apply # this is the default mode, only needed to switch over
+  ```
+
+  To not use WireMock anywhere (real downstream APIs):
+
+  ```shell
+  TF_VAR_local_service_mode=real npm run local:terraform:apply
+  ```
+
+  To use WireMock except for specific services, pass only the overrides you need:
+
+  ```shell
+  TF_VAR_local_service_mode=wiremock \
+  TF_VAR_local_supplier_service_url_override=https://supplier.example.com \
+  TF_VAR_local_use_ui_auth_url_override=https://auth.sandpit.signin.nhs.uk \
+  TF_VAR_local_postcode_lookup_base_url_override=https://api.os.uk/search/places/v1 \
+  npm run local:terraform:apply # npm run local:frontend:restart - if overriding UI auth
+  ```
+
+  If you change UI-facing auth settings, restart the frontend so it picks up the updated `ui/.env.local` values:
+
+  ```shell
+  npm run local:frontend:restart
   ```
 
 - **Restart backend containers only** (Postgres, LocalStack, WireMock, db-migrate):
 
   ```shell
-  npm run local:backend:restart
+  npm run local:compose -- stop postgres-db localstack wiremock
+  npm run local:backend:start
   ```
 
 - **Restart frontend only**:
@@ -137,14 +173,14 @@ After running `npm start`, use targeted commands instead of restarting everythin
 
   ```shell
   npm run local:backend:start
-  npm run local:backend:stop
+  npm run local:compose -- stop postgres-db localstack wiremock
   ```
 
 - **Start/stop frontend only**:
 
   ```shell
   npm run local:frontend:start
-  npm run local:frontend:stop
+  npm run local:compose -- stop ui
   ```
 
 - **Start/stop specified lambda**

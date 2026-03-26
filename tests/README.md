@@ -31,37 +31,19 @@ This directory contains the Playwright test framework for the hometest-service p
 - Run all tests:
 
   ```bash
-  npm test
+  ENV=local npx playwright test
   ```
 
 - Run tests in headed mode (with browser UI):
 
   ```bash
-  npm run test:headed
+  ENV=local npx playwright test:headed
   ```
 
 - Run tests in debug mode:
 
   ```bash
-  npm run test:debug
-  ```
-
-- Run tests with UI mode:
-
-  ```bash
-  npm run test:ui
-  ```
-
-- Show test report:
-
-  ```bash
-  npm run test:report
-  ```
-
-- Generate test code:
-
-  ```bash
-  npm run test:codegen
+  ENV=local npx playwright test:debug
   ```
 
 ## Project Structure
@@ -83,11 +65,11 @@ Tests should be placed in the `tests/` directory with the `.spec.ts` extension.
 Example test structure:
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test.describe('My Test Suite', () => {
-  test('my test case', async ({ page }) => {
-    await page.goto('https://example.com');
+test.describe("My Test Suite", () => {
+  test("my test case", async ({ page }) => {
+    await page.goto("https://example.com");
     await expect(page).toHaveTitle(/Example/);
   });
 });
@@ -98,11 +80,6 @@ test.describe('My Test Suite', () => {
 ### Environment Configuration
 
 The framework uses environment-based configuration management. You **must** set the `ENV` environment variable before running tests.
-
-#### Available Environments
-
-- `dev` - Development environment
-- `staging` - Staging environment
 
 #### Required Environment Variable
 
@@ -128,26 +105,27 @@ npm test
 Environment-specific configuration is stored in `configuration/.env.<environment>`:
 
 - `.env.dev` - Development configuration
-- `.env.staging` - Staging configuration
-- `.env.production` - Production configuration
+- `.env.local` - Local configuration
 
 Each file contains:
 
 - `UI_BASE_URL` - Base URL for UI tests
 - `API_BASE_URL` - Base URL for API tests
 - `HEADLESS` - Run browser in headless mode (true/false)
+- `WIREMOCK_BASE_URL` - Base WireMock URL
 - `TIMEOUT` - Default timeout in milliseconds
 - `SLOW_MO` - Slow down operations by specified milliseconds
+- `AUTH_TYPE` - Authentication type: `wiremock` or `sandpit`
 
 #### Using Configuration in Tests
 
 Configuration is available through fixtures:
 
 ```typescript
-import { test, expect } from '../fixtures';
-import { EnvironmentVariables } from '../configuration';
+import { EnvironmentVariables } from "../configuration";
+import { expect, test } from "../fixtures";
 
-test('example test', async ({ config }) => {
+test("example test", async ({ config }) => {
   const baseUrl = config.get(EnvironmentVariables.UI_BASE_URL);
   const headless = config.getBoolean(EnvironmentVariables.HEADLESS);
   const timeout = config.getNumber(EnvironmentVariables.TIMEOUT);
@@ -182,17 +160,17 @@ When running tests locally (`ENV=local`), you need to configure your test user c
    The `users.ts` file should already exist in the tests directory. If not, create it with the following structure:
 
    ```typescript
-   import type { NHSLoginUser } from './utils/users/BaseUser';
+   import type { NHSLoginUser } from "./utils/users/BaseUser";
 
    export const localUser: NHSLoginUser = {
-     email: 'your-email@example.com',
-     nhsNumber: '9999999999',
-     odsCode: 'YOUR_ODS_CODE',
+     email: "your-email@example.com",
+     nhsNumber: "9999999999",
+     odsCode: "YOUR_ODS_CODE",
      age: 49,
      otp: process.env.OTP as unknown as string,
      password: process.env.GENERIC_PASS as unknown as string,
-     description: 'eligible user - local environment',
-     patientId: 'your-patient-id-here'
+     description: "eligible user - local environment",
+     patientId: "your-patient-id-here",
    };
    ```
 
@@ -210,10 +188,10 @@ When running tests locally (`ENV=local`), you need to configure your test user c
 
    Set the required authentication environment variables by creating a `credentials.ts` file:
 
-  ```typescript
-  export OTP="your-otp-secret"
-  export GENERIC_PASS="your-password"
-  ```
+```typescript
+export OTP="your-otp-secret"
+export GENERIC_PASS="your-password"
+```
 
 #### How It Works
 
@@ -221,9 +199,9 @@ The `SandBoxUserManager` class automatically detects the environment:
 
 ```typescript
 // From SandBoxUserManager.ts
-if (env === 'local') {
-  const { localUser } = require('../../users');
-  console.log('Using local environment user from users.ts');
+if (env === "local") {
+  const { localUser } = require("../../users");
+  console.log("Using local environment user from users.ts");
   return [localUser];
 }
 ```
@@ -248,6 +226,71 @@ If you encounter the error: `"users.ts file not found. Please create it based on
 #### dev/Staging User Management
 
 For dev and staging environments, the framework uses preconfigured NHS Login sandbox users. These are managed internally and don't require local configuration.
+
+## Running Local Environment
+
+The test framework supports two authentication modes for local development:
+
+1. **WireMock** (Recommended for local development) - Fast, isolated testing with mocked authentication
+2. **Sandpit** - Real NHS Login authentication flow using sandbox credentials
+
+### Authentication Types
+
+#### WireMock Authentication
+
+WireMock provides a mock authentication server that simulates NHS Login without requiring real credentials or network calls. This is ideal for:
+
+- Fast local development and testing
+- Offline development
+- Parallel test execution (supports 4 workers)
+- Consistent test data
+
+**Configuration:**
+
+Run
+
+npm start - as default it will build env with wiremocks
+
+Set `AUTH_TYPE=wiremock` in `configuration/.env.local`:
+
+**How It Works:**
+
+- Test users are automatically generated with mocked authentication tokens
+- Authentication state is stubbed in WireMock
+- All NHS Login API calls are intercepted and mocked
+- 4 parallel test workers can run simultaneously
+
+#### Sandpit Authentication
+
+Sandpit mode uses real NHS Login sandbox credentials for authentication. This is useful for:
+
+- Testing the actual NHS Login integration
+- Verifying real authentication flows
+- End-to-end validation before deployment
+
+**Configuration:**
+
+Set `AUTH_TYPE=sandpit` in `configuration/.env.local`:
+
+Run
+
+npm start
+
+when it finishes
+
+```shell
+cd hometest-service
+TF_VAR_local_service_mode=wiremock \
+TF_VAR_local_use_ui_auth_url_override=<https://auth.sandpit.signin.nhs.uk> \
+npm run local:terraform:apply
+```
+
+**Prerequisites:**
+
+1. Valid NHS Login sandbox credentials
+2. Configured `users.ts` file with your test user
+3. `credentials.ts` file with OTP and password environment variables
+4. Internet connection for NHS Login API calls
 
 ### Playwright Configuration
 
