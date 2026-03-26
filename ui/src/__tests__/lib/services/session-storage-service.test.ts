@@ -9,10 +9,11 @@ describe("SessionStorageService", () => {
     it("returns fallback when sessionStorage is unavailable", () => {
       const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
       Object.defineProperty(globalThis, "sessionStorage", { value: undefined, configurable: true });
-
-      expect(sessionStorageService.rehydrate("key", "fallback")).toBe("fallback");
-
-      Object.defineProperty(globalThis, "sessionStorage", original!);
+      try {
+        expect(sessionStorageService.rehydrate("key", "fallback")).toBe("fallback");
+      } finally {
+        Object.defineProperty(globalThis, "sessionStorage", original!);
+      }
     });
 
     it("returns fallback when key does not exist", () => {
@@ -37,10 +38,11 @@ describe("SessionStorageService", () => {
     it("does nothing when sessionStorage is unavailable", () => {
       const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
       Object.defineProperty(globalThis, "sessionStorage", { value: undefined, configurable: true });
-
-      expect(() => sessionStorageService.dehydrate("key", { x: 1 })).not.toThrow();
-
-      Object.defineProperty(globalThis, "sessionStorage", original!);
+      try {
+        expect(() => sessionStorageService.dehydrate("key", { x: 1 })).not.toThrow();
+      } finally {
+        Object.defineProperty(globalThis, "sessionStorage", original!);
+      }
     });
 
     it("stores value as JSON string", () => {
@@ -54,10 +56,11 @@ describe("SessionStorageService", () => {
     it("does nothing when sessionStorage is unavailable", () => {
       const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
       Object.defineProperty(globalThis, "sessionStorage", { value: undefined, configurable: true });
-
-      expect(() => sessionStorageService.remove("key")).not.toThrow();
-
-      Object.defineProperty(globalThis, "sessionStorage", original!);
+      try {
+        expect(() => sessionStorageService.remove("key")).not.toThrow();
+      } finally {
+        Object.defineProperty(globalThis, "sessionStorage", original!);
+      }
     });
 
     it("removes the key from sessionStorage", () => {
