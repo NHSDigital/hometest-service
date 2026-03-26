@@ -1,4 +1,3 @@
-import "./globals.css";
 import "nhsuk-frontend/dist/nhsuk/nhsuk-frontend.css";
 
 import type { Metadata } from "next";

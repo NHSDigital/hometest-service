@@ -1,6 +1,6 @@
 class SessionStorageService {
   private isAvailable(): boolean {
-    return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";
+    return globalThis.sessionStorage !== undefined;
   }
 
   rehydrate<T>(key: string, fallback: T): T {
@@ -8,7 +8,7 @@ class SessionStorageService {
       return fallback;
     }
 
-    const rawValue = window.sessionStorage.getItem(key);
+    const rawValue = globalThis.sessionStorage.getItem(key);
     if (!rawValue) {
       return fallback;
     }
@@ -26,7 +26,7 @@ class SessionStorageService {
       return;
     }
 
-    window.sessionStorage.setItem(key, JSON.stringify(value));
+    globalThis.sessionStorage.setItem(key, JSON.stringify(value));
   }
 
   remove(key: string): void {
@@ -34,7 +34,7 @@ class SessionStorageService {
       return;
     }
 
-    window.sessionStorage.removeItem(key);
+    globalThis.sessionStorage.removeItem(key);
   }
 }
 
