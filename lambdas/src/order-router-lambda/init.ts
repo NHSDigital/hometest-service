@@ -9,7 +9,6 @@ export interface Environment {
   httpClient: FetchHttpClient;
   supplierDb: SupplierService;
   secretsClient: AwsSecretsClient;
-  dbClient: PostgresDbClient;
   orderStatusService: OrderStatusService;
 }
 
@@ -26,7 +25,6 @@ export function init(): Environment {
     httpClient,
     supplierDb,
     secretsClient,
-    dbClient,
     orderStatusService,
   };
 }
