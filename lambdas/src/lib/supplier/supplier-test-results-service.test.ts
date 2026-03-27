@@ -1,15 +1,27 @@
 import { Bundle, Observation } from "fhir/r4";
-import { SupplierConfig, SupplierService } from "../db/supplier-db";
 
+import { DBClient } from "../db/db-client";
+import { SupplierConfig, SupplierService } from "../db/supplier-db";
 import { HttpClient } from "../http/http-client";
+import { TokenEncryptionClient } from "../kms/kms-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierTestResultsService } from "./supplier-test-results-service";
+
+const mockGenerateToken = jest.fn();
+
+jest.mock("./supplier-auth-client", () => ({
+  getTokenGenerator: jest.fn().mockImplementation(() => ({
+    generateToken: mockGenerateToken,
+  })),
+}));
 
 describe("SupplierTestResultsService", () => {
   let service: SupplierTestResultsService;
   let mockHttpClient: jest.Mocked<HttpClient>;
   let mockSecretsClient: jest.Mocked<SecretsClient>;
   let mockSupplierDb: jest.Mocked<SupplierService>;
+  let mockDbClient: jest.Mocked<DBClient>;
+  let mockEncryptionClient: jest.Mocked<TokenEncryptionClient>;
 
   beforeEach(() => {
     mockHttpClient = {
@@ -27,7 +39,26 @@ describe("SupplierTestResultsService", () => {
       getSupplierConfigBySupplierId: jest.fn(),
     } as unknown as jest.Mocked<SupplierService>;
 
-    service = new SupplierTestResultsService(mockHttpClient, mockSecretsClient, mockSupplierDb);
+    mockDbClient = {
+      query: jest.fn(),
+      withTransaction: jest.fn(),
+      close: jest.fn(),
+    } as unknown as jest.Mocked<DBClient>;
+
+    mockEncryptionClient = {
+      encrypt: jest.fn(),
+      decrypt: jest.fn(),
+    } as jest.Mocked<TokenEncryptionClient>;
+
+    service = new SupplierTestResultsService(
+      mockHttpClient,
+      mockSecretsClient,
+      mockSupplierDb,
+      mockDbClient,
+      mockEncryptionClient,
+    );
+
+    mockGenerateToken.mockReset();
   });
 
   describe("getResults", () => {
@@ -70,12 +101,7 @@ describe("SupplierTestResultsService", () => {
     };
 
     beforeEach(() => {
-      mockSecretsClient.getSecretValue.mockResolvedValue("test-secret-value");
-      mockHttpClient.post.mockResolvedValue({
-        access_token: "test-access-token",
-        token_type: "Bearer",
-        expires_in: 3600,
-      });
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockSupplierDb.getSupplierConfigBySupplierId.mockResolvedValue(serviceConfig);
     });
 
@@ -86,13 +112,6 @@ describe("SupplierTestResultsService", () => {
 
       expect(result).toEqual(mockBundle);
       expect(mockSupplierDb.getSupplierConfigBySupplierId).toHaveBeenCalledWith(supplierId);
-      expect(mockSecretsClient.getSecretValue).toHaveBeenCalledWith("test-secret");
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        "https://supplier-api.example.com/oauth/token",
-        expect.stringContaining("grant_type=client_credentials"),
-        { Accept: "application/json" },
-        "application/x-www-form-urlencoded",
-      );
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         "https://supplier-api.example.com/api/results?order_uid=test-order-123",
         {

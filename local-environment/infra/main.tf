@@ -22,6 +22,7 @@ provider "aws" {
   endpoints {
     apigateway     = "http://localhost:4566"
     iam            = "http://localhost:4566"
+    kms            = "http://localhost:4566"
     lambda         = "http://localhost:4566"
     s3             = "http://localhost:4566"
     secretsmanager = "http://localhost:4566"
@@ -117,6 +118,16 @@ resource "aws_secretsmanager_secret_version" "secrets" {
   secret_string = file("${local.secrets_dir}/${each.value}")
 }
 
+resource "aws_kms_key" "supplier_token_cache" {
+  description             = "KMS key for supplier token cache encryption"
+  deletion_window_in_days = 7
+}
+
+resource "aws_kms_alias" "supplier_token_cache" {
+  name          = "alias/supplier-token-cache"
+  target_key_id = aws_kms_key.supplier_token_cache.key_id
+}
+
 # IAM role for Lambda execution
 resource "aws_iam_role" "lambda_role" {
   name = "${var.project_name}-lambda-role"
@@ -154,6 +165,14 @@ resource "aws_iam_role_policy" "lambda_secrets_read" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt"
+        ]
+        Resource = aws_kms_key.supplier_token_cache.arn
       }
     ]
   })
@@ -214,6 +233,7 @@ module "eligibility_lookup_lambda" {
     DB_SCHEMA      = "hometest"
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
+
   }
 }
 
@@ -361,6 +381,7 @@ module "order_router_lambda" {
     DB_SCHEMA      = "hometest"
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
+    KMS_KEY_ID     = aws_kms_alias.supplier_token_cache.name
   }
 }
 
@@ -496,6 +517,7 @@ module "get_results_lambda" {
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
     ALLOW_ORIGIN   = "http://localhost:3000"
+    KMS_KEY_ID     = aws_kms_alias.supplier_token_cache.name
   }
 }
 

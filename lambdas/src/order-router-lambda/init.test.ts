@@ -1,11 +1,12 @@
-import { init } from "./init";
-import { FetchHttpClient } from "../lib/http/http-client";
-import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { SupplierService } from "../lib/db/supplier-db";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsKmsTokenEncryptionClient } from "../lib/kms/kms-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { init } from "./init";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
@@ -14,6 +15,7 @@ jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/db/order-status-db");
+jest.mock("../lib/kms/kms-client");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -25,6 +27,7 @@ describe("init", () => {
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
+    KMS_KEY_ID: "alias/test-key",
   };
 
   // This represents the return value of postgresConfigFromEnv(secretsClient)
@@ -60,9 +63,13 @@ describe("init", () => {
       expect(result).toHaveProperty("httpClient");
       expect(result).toHaveProperty("supplierDb");
       expect(result).toHaveProperty("secretsClient");
+      expect(result).toHaveProperty("dbClient");
+      expect(result).toHaveProperty("kmsClient");
       expect(result).toHaveProperty("orderStatusService");
       expect(result.httpClient).toBeInstanceOf(FetchHttpClient);
       expect(result.secretsClient).toBeInstanceOf(AwsSecretsClient);
+      expect(result.dbClient).toBeInstanceOf(PostgresDbClient);
+      expect(result.kmsClient).toBeInstanceOf(AwsKmsTokenEncryptionClient);
       expect(result.supplierDb).toBeInstanceOf(SupplierService);
       expect(result.orderStatusService).toBeInstanceOf(OrderStatusService);
     });
@@ -101,6 +108,15 @@ describe("init", () => {
       expect(PostgresDbClient).toHaveBeenCalledWith(mockPostgresConfig);
     });
 
+    it("should create AwsKmsTokenEncryptionClient using configured KMS key", () => {
+      process.env.AWS_REGION = "eu-west-2";
+      process.env.KMS_KEY_ID = "alias/test-key";
+
+      init();
+
+      expect(AwsKmsTokenEncryptionClient).toHaveBeenCalledWith("alias/test-key", "eu-west-2");
+    });
+
     it("should create SupplierService with PostgresDbClient instance", () => {
       init();
 
@@ -122,6 +138,8 @@ describe("init", () => {
         httpClient: expect.any(FetchHttpClient),
         supplierDb: expect.any(SupplierService),
         secretsClient: expect.any(AwsSecretsClient),
+        dbClient: expect.any(PostgresDbClient),
+        kmsClient: expect.any(AwsKmsTokenEncryptionClient),
         orderStatusService: expect.any(OrderStatusService),
       });
     });
@@ -151,6 +169,10 @@ describe("init", () => {
         components: [
           {
             mock: AwsSecretsClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: AwsKmsTokenEncryptionClient as jest.Mock,
             times: 1,
           },
           {

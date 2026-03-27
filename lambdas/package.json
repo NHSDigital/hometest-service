@@ -20,6 +20,7 @@
     "check-typescript": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-kms": "^3.1018.0",
     "@aws-sdk/client-secrets-manager": "^3.1015.0",
     "@aws-sdk/client-sqs": "^3.1015.0",
     "@aws-sdk/rds-signer": "^3.1015.0",
