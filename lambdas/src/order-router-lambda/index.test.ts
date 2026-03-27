@@ -1,11 +1,14 @@
+// sort-imports-ignore
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
+
 import { HttpError } from "../lib/http/http-client";
 
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
-const mockSupplierAuthGetAccessToken = jest.fn();
+const mockGenerateToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
 
@@ -28,16 +31,16 @@ jest.mock("./init", () => ({
   })),
 }));
 
-// Mock OAuthSupplierAuthClient
+// Mock token generator
 jest.mock("../lib/supplier/supplier-auth-client", () => {
   return {
-    OAuthSupplierAuthClient: jest.fn().mockImplementation(() => ({
-      getAccessToken: mockSupplierAuthGetAccessToken,
+    buildTokenGeneratorCacheKey: jest.fn(() => "supplier-cache-key"),
+    createTokenGenerator: jest.fn().mockImplementation(() => ({
+      generateToken: mockGenerateToken,
     })),
   };
 });
 
-// Import handler after mocking
 import { handler } from "./index";
 
 describe("order-router-lambda", () => {
@@ -82,7 +85,7 @@ describe("order-router-lambda", () => {
 
     // Reset mocks
     mockHttpClientPostRaw.mockReset();
-    mockSupplierAuthGetAccessToken.mockReset();
+    mockGenerateToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
     mockAddOrderStatusUpdate.mockReset();
 
@@ -106,7 +109,7 @@ describe("order-router-lambda", () => {
   describe("successful order processing", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
@@ -129,7 +132,7 @@ describe("order-router-lambda", () => {
 
       expect(result.batchItemFailures).toEqual([]);
       expect(mockGetSupplierConfigBySupplierId).toHaveBeenCalledWith(validUUID);
-      expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
+      expect(mockGenerateToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
         JSON.stringify(supplierOrderBody),
@@ -349,7 +352,7 @@ describe("order-router-lambda", () => {
 
     it("should fail for missing order_body.id", async () => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
 
       const orderBodyWithoutId = { ...supplierOrderBody };
@@ -412,7 +415,7 @@ describe("order-router-lambda", () => {
     it("should fail when OAuth token request fails", async () => {
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
 
-      mockSupplierAuthGetAccessToken.mockRejectedValue(
+      mockGenerateToken.mockRejectedValue(
         new HttpError("HTTP POST request failed with status: 401", 401, mockErrorResponse),
       );
 
@@ -427,14 +430,14 @@ describe("order-router-lambda", () => {
       const result = await handler(sqsEvent, mockContext as Context);
 
       expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
-      expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
+      expect(mockGenerateToken).toHaveBeenCalled();
     });
   });
 
   describe("supplier order submission errors", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
@@ -543,7 +546,7 @@ describe("order-router-lambda", () => {
   describe("partial batch failures", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 

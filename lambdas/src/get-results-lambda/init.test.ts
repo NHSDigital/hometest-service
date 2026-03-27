@@ -1,17 +1,13 @@
-import {
-  restoreEnvironment,
-  setupEnvironment,
-} from "../lib/test-utils/environment-test-helpers";
-
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { FetchHttpClient } from "../lib/http/http-client";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { SupplierService } from "../lib/db/supplier-db";
-import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
-import { TestResultDbClient } from "../lib/db/test-result-db-client";
-import { init } from "./init";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { SupplierService } from "../lib/db/supplier-db";
+import { TestResultDbClient } from "../lib/db/test-result-db-client";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { init } from "./init";
 
 jest.mock("../lib/http/http-client");
 jest.mock("../lib/db/supplier-db");
@@ -62,9 +58,7 @@ describe("init", () => {
       expect(result).toHaveProperty("testResultDbClient");
       expect(result).toHaveProperty("supplierTestResultsService");
       expect(result.testResultDbClient).toBeInstanceOf(TestResultDbClient);
-      expect(result.supplierTestResultsService).toBeInstanceOf(
-        SupplierTestResultsService,
-      );
+      expect(result.supplierTestResultsService).toBeInstanceOf(SupplierTestResultsService);
     });
 
     it("should create AwsSecretsClient with AWS_REGION when set", () => {
@@ -104,9 +98,7 @@ describe("init", () => {
     it("should create TestResultDbClient with PostgresDbClient instance", () => {
       init();
 
-      expect(TestResultDbClient).toHaveBeenCalledWith(
-        expect.any(PostgresDbClient),
-      );
+      expect(TestResultDbClient).toHaveBeenCalledWith(expect.any(PostgresDbClient));
     });
 
     it("should create SupplierService with PostgresDbClient instance", () => {
@@ -147,8 +139,7 @@ describe("init", () => {
     it("should pass a PostgresDbClient instance to TestResultDbClient", () => {
       init();
 
-      const testResultDbClientCalls = (TestResultDbClient as jest.Mock).mock
-        .calls;
+      const testResultDbClientCalls = (TestResultDbClient as jest.Mock).mock.calls;
       expect(testResultDbClientCalls[0][0]).toBeInstanceOf(PostgresDbClient);
     });
 
@@ -156,17 +147,13 @@ describe("init", () => {
       init();
 
       const supplierServiceCalls = (SupplierService as jest.Mock).mock.calls;
-      expect(supplierServiceCalls[0][0].dbClient).toBeInstanceOf(
-        PostgresDbClient,
-      );
+      expect(supplierServiceCalls[0][0].dbClient).toBeInstanceOf(PostgresDbClient);
     });
 
     it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
       init();
 
-      expect(postgresConfigFromEnv).toHaveBeenCalledWith(
-        expect.any(AwsSecretsClient),
-      );
+      expect(postgresConfigFromEnv).toHaveBeenCalledWith(expect.any(AwsSecretsClient));
     });
 
     it("should create components in the correct order", () => {

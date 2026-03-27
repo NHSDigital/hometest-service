@@ -1,11 +1,11 @@
-import { init } from "./init";
-import { FetchHttpClient } from "../lib/http/http-client";
-import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { SupplierService } from "../lib/db/supplier-db";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { init } from "./init";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
@@ -156,7 +156,7 @@ describe("init", () => {
           {
             mock: PostgresDbClient as jest.Mock,
             times: 1,
-            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+            calledWith: mockPostgresConfig,
           },
           {
             mock: SupplierService as jest.Mock,

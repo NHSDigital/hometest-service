@@ -1,17 +1,50 @@
+import type { SupplierConfig } from "../db/supplier-db";
 import { HttpClient } from "../http/http-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
-import type { SupplierConfig } from "../db/supplier-db";
+
+interface CachedSupplierToken {
+  accessToken: string;
+  expiresAtMs: number;
+}
 
 interface OAuthTokenResponse {
   access_token: string;
   token_type: string;
-  expires_in: number;
+  expires_in?: number | string;
   scope?: string;
 }
 
 export interface SupplierAuthClient {
   getAccessToken(): Promise<string>;
 }
+
+export interface SupplierToken {
+  accessToken: string;
+  expiresInSeconds: number;
+}
+
+export interface SupplierTokenGenerator {
+  generateToken(): Promise<string>;
+}
+
+// Refresh slightly before expiry to avoid edge-of-expiry failures during downstream calls.
+// This fixed 30s buffer is based on the current supplier token profile for this flow:
+// tokens are expected to be long-lived (24h / 86,400s), not short-lived.
+// If a supplier starts returning short-lived tokens (<= 30s), they may be treated as stale
+// immediately and refetched more often.
+const TOKEN_REFRESH_BUFFER_MS = 30_000;
+const DEFAULT_TOKEN_TTL_SECONDS = 60;
+const MAX_TOKEN_TTL_SECONDS = 86_399;
+
+const normalizeExpiresInSeconds = (expiresIn: number | string | undefined): number => {
+  const parsedExpiresIn = Number(expiresIn);
+
+  if (!Number.isFinite(parsedExpiresIn) || parsedExpiresIn <= 0) {
+    return DEFAULT_TOKEN_TTL_SECONDS;
+  }
+
+  return parsedExpiresIn;
+};
 
 export class OAuthSupplierAuthClient implements SupplierAuthClient {
   constructor(
@@ -40,7 +73,7 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
     );
   }
 
-  async getAccessToken(): Promise<string> {
+  async getToken(): Promise<SupplierToken> {
     const clientSecret = await this.secretsClient.getSecretValue(this.secretName);
 
     const tokenUrl = `${this.baseUrl.replace(/\/$/, "")}${this.tokenPath}`;
@@ -58,6 +91,85 @@ export class OAuthSupplierAuthClient implements SupplierAuthClient {
       "application/x-www-form-urlencoded",
     );
 
-    return tokenData.access_token;
+    return {
+      accessToken: tokenData.access_token,
+      expiresInSeconds: normalizeExpiresInSeconds(tokenData.expires_in),
+    };
+  }
+
+  async getAccessToken(): Promise<string> {
+    const token = await this.getToken();
+    return token.accessToken;
   }
 }
+
+class CachedSupplierTokenGenerator implements SupplierTokenGenerator {
+  private cachedToken: CachedSupplierToken | null = null;
+  private inFlightTokenRequest: Promise<string> | null = null;
+
+  constructor(
+    private readonly authClient: OAuthSupplierAuthClient,
+    private readonly now: () => number = Date.now,
+  ) {}
+
+  async generateToken(): Promise<string> {
+    if (this.hasValidCachedToken()) {
+      return this.cachedToken!.accessToken;
+    }
+
+    if (this.inFlightTokenRequest) {
+      return this.inFlightTokenRequest;
+    }
+
+    this.inFlightTokenRequest = this.fetchAndCacheToken();
+
+    try {
+      return await this.inFlightTokenRequest;
+    } finally {
+      this.inFlightTokenRequest = null;
+    }
+  }
+
+  private hasValidCachedToken(): boolean {
+    return !!(this.cachedToken && this.isTokenValid(this.cachedToken.expiresAtMs));
+  }
+
+  private isTokenValid(expiresAtMs: number): boolean {
+    return this.now() < expiresAtMs - TOKEN_REFRESH_BUFFER_MS;
+  }
+
+  private async fetchAndCacheToken(): Promise<string> {
+    const token = await this.authClient.getToken();
+    const ttlSeconds = Math.min(Math.max(token.expiresInSeconds, 0), MAX_TOKEN_TTL_SECONDS);
+    this.cachedToken = {
+      accessToken: token.accessToken,
+      expiresAtMs: this.now() + ttlSeconds * 1000,
+    };
+
+    return token.accessToken;
+  }
+}
+
+export const buildTokenGeneratorCacheKey = (supplierConfig: SupplierConfig): string => {
+  return [
+    supplierConfig.serviceUrl,
+    supplierConfig.oauthTokenPath,
+    supplierConfig.clientId,
+    supplierConfig.clientSecretName,
+    supplierConfig.oauthScope,
+  ].join("|");
+};
+
+export const createTokenGenerator = (
+  httpClient: HttpClient,
+  secretsClient: SecretsClient,
+  supplierConfig: SupplierConfig,
+): SupplierTokenGenerator => {
+  const authClient = OAuthSupplierAuthClient.fromSupplierConfig(
+    httpClient,
+    secretsClient,
+    supplierConfig,
+  );
+
+  return new CachedSupplierTokenGenerator(authClient);
+};
