@@ -141,19 +141,31 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
     }));
   }, []);
 
+  const contextValue = useMemo(
+    () => ({
+      currentStep,
+      stepHistory,
+      returnToStep: navigation.returnToStep,
+      goToStep,
+      goBack,
+      canGoBack,
+      clearHistory,
+      setReturnToStep,
+    }),
+    [
+      currentStep,
+      stepHistory,
+      navigation.returnToStep,
+      goToStep,
+      goBack,
+      canGoBack,
+      clearHistory,
+      setReturnToStep,
+    ],
+  );
+
   return (
-    <JourneyNavigationContext.Provider
-      value={{
-        currentStep,
-        stepHistory,
-        returnToStep: navigation.returnToStep,
-        goToStep,
-        goBack,
-        canGoBack,
-        clearHistory,
-        setReturnToStep,
-      }}
-    >
+    <JourneyNavigationContext.Provider value={contextValue}>
       {children}
     </JourneyNavigationContext.Provider>
   );
