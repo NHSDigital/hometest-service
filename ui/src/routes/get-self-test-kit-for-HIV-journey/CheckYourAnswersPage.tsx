@@ -185,7 +185,7 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Key>{content.summaryLabels.deliveryAddress}</SummaryList.Key>
           <SummaryList.Value id="delivery-address-value">
             {addressLines.map((line, index) => (
-              <React.Fragment key={line}>
+              <React.Fragment key={`${index}-${line}`}>
                 {line}
                 {index < addressLines.length - 1 && <br />}
               </React.Fragment>
