@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -107,7 +108,7 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
     });
   }, [hasHydrated, postcode, addresses, selectedAddress, lookupResultsStatus, error]);
 
-  const lookupPostcode = async (postcodeValue: string): Promise<void> => {
+  const lookupPostcode = useCallback(async (postcodeValue: string): Promise<void> => {
     setIsLoading(true);
     setError(null);
     setAddresses([]);
@@ -133,7 +134,7 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const clearAddresses = useCallback((): void => {
     setAddresses([]);
@@ -144,17 +145,30 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
     sessionService.clearPostcodeLookup();
   }, []);
 
-  const value: PostcodeLookupContextType = {
-    postcode,
-    addresses,
-    selectedAddress,
-    isLoading,
-    lookupResultsStatus,
-    error,
-    lookupPostcode,
-    setSelectedAddress,
-    clearAddresses,
-  };
+  const value: PostcodeLookupContextType = useMemo(
+    () => ({
+      postcode,
+      addresses,
+      selectedAddress,
+      isLoading,
+      lookupResultsStatus,
+      error,
+      lookupPostcode,
+      setSelectedAddress,
+      clearAddresses,
+    }),
+    [
+      postcode,
+      addresses,
+      selectedAddress,
+      isLoading,
+      lookupResultsStatus,
+      error,
+      lookupPostcode,
+      setSelectedAddress,
+      clearAddresses,
+    ],
+  );
 
   return <PostcodeLookupContext.Provider value={value}>{children}</PostcodeLookupContext.Provider>;
 };
