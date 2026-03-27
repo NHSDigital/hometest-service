@@ -69,7 +69,9 @@ Below are three progressively more capable approaches:
 - Messages are written to an `outbox` DB table _inside the originating transaction_ (alongside the order record). A separate process polls the outbox and enqueues to SQS. The DB row is the source of truth; the queue is the delivery mechanism.
 - Failed/DLQ'd messages are always traceable to a DB row. Non-retryable failures update the row status rather than being discarded silently. Reprocessing is a targeted DB update.
 - Pro: eliminates the enqueue/QUEUED race; indefinite retention; unified state model; supports both retryable and non-retryable failure paths cleanly.
-- Con: higher implementation complexity; requires a reliable outbox poller (e.g. a scheduled Lambda or event bridge pipe reading the outbox table).
+- Con: higher implementation complexity; requires a reliable outbox poller (e.g. a scheduled Lambda or EventBridge Pipes reading the outbox table).
+
+**Bulk reprocessing after an outage:** each outbox row carries a `status` field (e.g. `pending`, `enqueued`, `failed`, `non_retryable`). During an outage, affected rows accumulate in `failed`. To reprocess, run a targeted SQL update — filtered by time window, supplier, error type, or any combination — flipping those rows back to `pending`. The outbox poller then picks them up and re-enqueues automatically; no manual DLQ interaction is needed. This also makes it straightforward to exclude specific messages (poison pills, non-retryable failures) from a bulk retry by leaving their status unchanged.
 
 Regardless of which option is chosen, a triage runbook must document: how to inspect failed messages, how to distinguish transient from permanent failures, how to redrive safely (throttled), and who is accountable given the patient data involved.
 
