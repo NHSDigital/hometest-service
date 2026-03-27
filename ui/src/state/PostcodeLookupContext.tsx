@@ -6,8 +6,11 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
 import sessionService from "@/lib/services/session-service";
 import { backendUrl } from "@/settings";
+
+export type LookupResultsStatus = "idle" | "found" | "not_found" | "error";
 
 export interface AddressResult {
   id: string;
@@ -25,7 +28,7 @@ export interface PostcodeLookupContextType {
   addresses: AddressResult[];
   selectedAddress: AddressResult | null;
   isLoading: boolean;
-  lookupResultsStatus: "idle" | "found" | "not_found" | "error";
+  lookupResultsStatus: LookupResultsStatus;
   error: string | null;
   lookupPostcode: (postcode: string) => Promise<void>;
   setSelectedAddress: (address: AddressResult | null) => void;
@@ -44,7 +47,7 @@ interface PersistedPostcodeLookupState {
   postcode: string;
   addresses: AddressResult[];
   selectedAddress: AddressResult | null;
-  lookupResultsStatus: "idle" | "found" | "not_found" | "error";
+  lookupResultsStatus: LookupResultsStatus;
   error: string | null;
 }
 
@@ -61,9 +64,7 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
   const [addresses, setAddresses] = useState<AddressResult[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [lookupResultsStatus, setLookupResultsStatus] = useState<
-    "idle" | "found" | "not_found" | "error"
-  >("idle");
+  const [lookupResultsStatus, setLookupResultsStatus] = useState<LookupResultsStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [hasHydrated, setHasHydrated] = useState<boolean>(false);
 
