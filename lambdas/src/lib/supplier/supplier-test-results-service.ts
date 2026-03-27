@@ -1,14 +1,18 @@
 import { Bundle, Observation } from "fhir/r4";
 
-import { HttpClient } from "../http/http-client";
-import { OAuthSupplierAuthClient } from "./supplier-auth-client";
-import { SecretsClient } from "../secrets/secrets-manager-client";
+import { DBClient } from "../db/db-client";
 import { SupplierService } from "../db/supplier-db";
+import { HttpClient } from "../http/http-client";
+import { TokenEncryptionClient } from "../kms/kms-client";
+import { SecretsClient } from "../secrets/secrets-manager-client";
+import { getTokenGenerator } from "./supplier-auth-client";
 
 export interface SupplierTestResultsServiceProperties {
   httpClient: HttpClient;
   secretsClient: SecretsClient;
   supplierDb: SupplierService;
+  dbClient: DBClient;
+  encryptionClient: TokenEncryptionClient;
 }
 
 export class SupplierTestResultsService {
@@ -16,6 +20,8 @@ export class SupplierTestResultsService {
     private readonly httpClient: HttpClient,
     private readonly secretsClient: SecretsClient,
     private readonly supplierDb: SupplierService,
+    private readonly dbClient: DBClient,
+    private readonly encryptionClient: TokenEncryptionClient,
   ) {}
 
   async getResults(
@@ -29,13 +35,15 @@ export class SupplierTestResultsService {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const supplierAuthClient = OAuthSupplierAuthClient.fromSupplierConfig(
+    const tokenGenerator = getTokenGenerator(
       this.httpClient,
       this.secretsClient,
+      this.dbClient,
+      this.encryptionClient,
       serviceConfig,
     );
 
-    const accessToken = await supplierAuthClient.getAccessToken();
+    const accessToken = await tokenGenerator.generateToken();
 
     const resultsUrl = `${serviceConfig.serviceUrl}${serviceConfig.resultsPath}`;
     const url = new URL(resultsUrl);
