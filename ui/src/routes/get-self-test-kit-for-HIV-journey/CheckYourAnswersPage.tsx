@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
@@ -185,10 +185,10 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Key>{content.summaryLabels.deliveryAddress}</SummaryList.Key>
           <SummaryList.Value id="delivery-address-value">
             {addressLines.map((line, index) => (
-              <span key={index}>
+              <React.Fragment key={`${index}-${line}`}>
                 {line}
                 {index < addressLines.length - 1 && <br />}
-              </span>
+              </React.Fragment>
             ))}
           </SummaryList.Value>
           <SummaryList.Action
