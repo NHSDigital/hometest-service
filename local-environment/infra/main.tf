@@ -86,9 +86,7 @@ locals {
     local.use_wiremock_mode ? local.wiremock_container_base_url : local.postcode_lookup_os_places_base
   )
 
-  resolved_supplier_service_url = var.local_supplier_service_url_override != null ? var.local_supplier_service_url_override : (
-    local.use_wiremock_mode ? local.wiremock_container_base_url : null
-  )
+  resolved_supplier_service_url = var.local_supplier_service_url_override != null ? var.local_supplier_service_url_override : local.wiremock_container_base_url
 
   resolved_use_wiremock_auth = local.resolved_nhs_login_override_container_base_url != null ? length(regexall("wiremock", lower(local.resolved_nhs_login_override_container_base_url))) > 0 : local.use_wiremock_mode
 }
@@ -106,14 +104,7 @@ resource "null_resource" "validate_secrets" {
   }
 }
 
-resource "null_resource" "validate_local_service_config" {
-  lifecycle {
-    precondition {
-      condition     = local.resolved_supplier_service_url != null
-      error_message = "local_supplier_service_url_override must be set when local_service_mode is real."
-    }
-  }
-}
+
 
 resource "aws_secretsmanager_secret" "secrets" {
   for_each = local.secret_file_map
@@ -215,6 +206,7 @@ module "eligibility_lookup_lambda" {
 
   environment_variables = {
     NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
     DB_USERNAME    = "app_user"
     DB_ADDRESS     = "postgres-db"
     DB_PORT        = "5432"
@@ -250,6 +242,7 @@ module "login_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                               = "--enable-source-maps",
+    ALLOW_ORIGIN                               = "http://localhost:3000",
     NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url,
     NHS_LOGIN_CLIENT_ID                        = "hometest",
     NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
@@ -285,6 +278,7 @@ module "session_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                       = "--enable-source-maps"
+    ALLOW_ORIGIN                       = "http://localhost:3000"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
     NHS_LOGIN_BASE_ENDPOINT_URL        = local.resolved_nhs_login_base_url,
@@ -309,6 +303,7 @@ module "postcode_lookup_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                            = "--enable-source-maps",
+    ALLOW_ORIGIN                            = "http://localhost:3000",
     POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME = "os-places-creds",
     POSTCODE_LOOKUP_BASE_URL                = local.resolved_postcode_lookup_base_url,
     POSTCODE_LOOKUP_TIMEOUT_MS              = "5000",
@@ -576,8 +571,4 @@ resource "aws_api_gateway_stage" "api_stage" {
 
 data "external" "supplier_id" {
   program = ["bash", "${path.module}/../scripts/localstack/get_supplier_id.sh"]
-
-  depends_on = [
-    null_resource.validate_local_service_config
-  ]
 }
