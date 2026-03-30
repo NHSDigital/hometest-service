@@ -7,7 +7,7 @@ import { OrderStatusCodes } from "../lib/db/order-status-db";
 import type { ParsedOrderBody } from "../order-router-lambda";
 import { buildFhirServiceRequest } from "./fhir-mapper";
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { generateReadableError } from "../lib/utils/validation-utils";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
@@ -152,5 +152,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

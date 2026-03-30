@@ -6,7 +6,7 @@ import {
 
 import { OrderBundleBuilder } from "./order-bundle-builder";
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { getOrderQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
@@ -54,5 +54,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

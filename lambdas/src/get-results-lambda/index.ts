@@ -6,7 +6,7 @@ import {
 
 import { ObservationValidation } from "../lib/validators/observation-validation";
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { getResultsQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
@@ -74,5 +74,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

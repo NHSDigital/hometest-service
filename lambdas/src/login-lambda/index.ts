@@ -1,5 +1,5 @@
 import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
-import { defaultCorsOptions } from "./cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 import middy from "@middy/core";
 import cors from "@middy/http-cors";
@@ -68,5 +68,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());
