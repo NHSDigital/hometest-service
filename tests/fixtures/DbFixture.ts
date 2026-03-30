@@ -8,17 +8,24 @@ type DbFixtures = {
   testResultDb: TestResultDbClient;
 };
 
-export const dbFixture = base.extend<DbFixtures>({
-  testOrderDb: async ({}, use) => {
-    const client = new TestOrderDbClient();
-    await client.connect();
-    await use(client);
-    await client.disconnect();
-  },
-  testResultDb: async ({}, use) => {
-    const client = new TestResultDbClient();
-    await client.connect();
-    await use(client);
-    await client.disconnect();
-  },
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export const dbFixture = base.extend<{}, DbFixtures>({
+  testOrderDb: [
+    async ({}, use) => {
+      const client = new TestOrderDbClient();
+      await client.connect();
+      await use(client);
+      await client.disconnect();
+    },
+    { scope: "worker" },
+  ],
+  testResultDb: [
+    async ({}, use) => {
+      const client = new TestResultDbClient();
+      await client.connect();
+      await use(client);
+      await client.disconnect();
+    },
+    { scope: "worker" },
+  ],
 });
