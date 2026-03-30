@@ -1,3 +1,6 @@
+import { execFileSync } from "node:child_process";
+import * as path from "node:path";
+
 import { WireMockClient } from "./api/clients/WireMockClient";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 import { CredentialsHelper } from "./utils";
@@ -27,6 +30,8 @@ async function globalSetup() {
         createWireMockUserInfoMapping(user, user.authContext.accessToken, user.authContext.sub),
       );
     }
+
+    resetLoginLambdaCache();
   } else {
     // Only load NHS Login credentials when using the real login flow
     await new CredentialsHelper().addCredentialsToEnvVariable();
@@ -36,3 +41,12 @@ async function globalSetup() {
 }
 
 export default globalSetup;
+
+function resetLoginLambdaCache(): void {
+  const scriptPath = path.resolve(__dirname, "../scripts/tests/reset-login-lambda-cache.sh");
+  try {
+    execFileSync("bash", [scriptPath], { stdio: "inherit" });
+  } catch {
+    console.warn("⚠️  Could not reset login Lambda cache — continuing anyway");
+  }
+}
