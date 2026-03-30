@@ -58,6 +58,26 @@ output "backend_base_url" {
   value       = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/${var.environment}"
 }
 
+output "nhs_login_authorize_url" {
+  description = "NHS Login authorize URL (WireMock stub for local development)"
+  value       = local.resolved_nhs_login_authorize_url
+}
+
+output "local_service_mode" {
+  description = "Resolved local integration mode"
+  value       = var.local_service_mode
+}
+
+output "use_wiremock_auth" {
+  description = "Whether local UI/tests should use WireMock-specific auth behavior"
+  value       = tostring(local.resolved_use_wiremock_auth)
+}
+
+output "supplier_service_url" {
+  description = "Resolved supplier service URL used for local seeded suppliers"
+  value       = local.resolved_supplier_service_url
+}
+
 output "postcode_lookup_endpoint" {
   description = "Postcode Lookup Lambda endpoint"
   value       = module.postcode_lookup_lambda.localstack_endpoint_url
@@ -65,7 +85,7 @@ output "postcode_lookup_endpoint" {
 
 output "seed_supplier_id" {
   value       = data.external.supplier_id.result["supplier_id"]
-  description = "The supplier_id of the seeded supplier with service_url http://wiremock:8080"
+  description = "The supplier_id of the seeded supplier updated by the local bootstrap flow"
 }
 
 output "order_placement_queue_url" {

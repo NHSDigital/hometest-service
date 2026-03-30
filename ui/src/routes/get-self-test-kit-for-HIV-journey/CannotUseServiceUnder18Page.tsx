@@ -1,12 +1,13 @@
 "use client";
 
-import { useContent } from "@/hooks";
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 import { ActionLink } from "nhsuk-react-components";
-import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
-import { RoutePath } from "@/lib/models/route-paths";
-import FormPageLayout from "@/layouts/FormPageLayout";
+
 import { FeedbackSection } from "@/components/FeedbackSection";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
+import { useContent } from "@/hooks";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { RoutePath } from "@/lib/models/route-paths";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export const HARD_CODED_CLINIC_DATA = {
   name: "Sexual Health Clinic - Kendal",
@@ -70,7 +71,7 @@ export default function CannotUseServiceUnder18Page() {
 
         <p className="nhsuk-body">
           {content.phoneLabel}{" "}
-          <a href={`tel:${HARD_CODED_CLINIC_DATA.phone.replace(/\s+/g, "")}`}>
+          <a href={`tel:${HARD_CODED_CLINIC_DATA.phone.replaceAll(/\s+/g, "")}`}>
             {HARD_CODED_CLINIC_DATA.phone}
           </a>
         </p>

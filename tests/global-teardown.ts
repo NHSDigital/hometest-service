@@ -1,13 +1,29 @@
-import { FullConfig } from '@playwright/test';
+import { FullConfig } from "@playwright/test";
+
+import { WireMockClient } from "./api/clients/WireMockClient";
+import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
+import { cleanupWireMockAuthState } from "./utils/users/wiremockAuthMappings";
 
 async function globalTeardown(config: FullConfig) {
-  console.log('🧹 Global teardown started');
+  console.log("🧹 Global teardown started");
   console.log(`Completed tests in ${config.projects.length} project(s)`);
 
-  // Add any global teardown logic here
-  // Example: stop test server, close database connections, cleanup resources, etc.
+  const testConfig = ConfigFactory.getConfig();
 
-  console.log('✅ Global teardown completed');
+  if (testConfig.authType === AuthType.WIREMOCK) {
+    const wiremock = new WireMockClient(testConfig.wiremockBaseUrl);
+
+    try {
+      await wiremock.resetAllMappings();
+      cleanupWireMockAuthState();
+      console.log("✅ Restored static WireMock mappings");
+    } catch (error) {
+      console.error("❌ Failed to restore static WireMock mappings", error);
+      throw error;
+    }
+  }
+
+  console.log("✅ Global teardown completed");
 }
 
 export default globalTeardown;

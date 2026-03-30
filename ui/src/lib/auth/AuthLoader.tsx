@@ -1,26 +1,82 @@
 "use client";
 
-import { Outlet } from "react-router-dom";
-import type { SessionData } from "./requireAuth";
-import { useAuth } from "@/state";
-import { useEffect } from "react";
-import { useLoaderData } from "react-router-dom";
+import { type ReactNode, useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-export function AuthLoader({ children }: { children?: React.ReactNode }) {
-  const loaderData = useLoaderData() as SessionData;
+import PageLayout from "@/layouts/PageLayout";
+import { RoutePath } from "@/lib/models/route-paths";
+import { useAuth } from "@/state";
+
+import { SessionUnauthenticatedError, fetchSessionUser } from "./fetchSessionUser";
+
+const publicRoutes = new Set<string>([
+  RoutePath.LoginPage,
+  RoutePath.CallbackPage,
+  RoutePath.ServiceErrorPage,
+]);
+
+function getReturnTo(location: ReturnType<typeof useLocation>): string {
+  return `${location.pathname}${location.search}${location.hash}`;
+}
+
+export function AuthLoader({ children }: Readonly<{ children?: ReactNode }>) {
   const { setUser, user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [authError, setAuthError] = useState<Error | null>(null);
+  const isPublicRoute = publicRoutes.has(location.pathname);
 
   useEffect(() => {
-    if (user || !loaderData) {
+    if (isPublicRoute || user) {
       return;
     }
 
-    setUser(loaderData.user);
-  }, [loaderData, setUser, user]);
+    let isCancelled = false;
 
-  if (loaderData && !user) {
-    return null;
+    const checkSession = async () => {
+      try {
+        const sessionUser = await fetchSessionUser();
+        if (!isCancelled) {
+          setUser(sessionUser);
+        }
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (error instanceof SessionUnauthenticatedError) {
+          const returnTo = getReturnTo(location);
+          navigate(`${RoutePath.LoginPage}?returnTo=${encodeURIComponent(returnTo)}`, {
+            replace: true,
+          });
+          return;
+        }
+
+        setAuthError(error instanceof Error ? error : new Error(String(error)));
+      }
+    };
+
+    void checkSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isPublicRoute, location, navigate, setUser, user]);
+
+  if (authError) {
+    throw authError;
   }
 
-  return <>{children ?? <Outlet />}</>;
+  if (isPublicRoute || user) {
+    return <>{children ?? <Outlet />}</>;
+  }
+
+  return (
+    <PageLayout>
+      <div role="status" aria-live="polite">
+        <h1 className="nhsuk-heading-l">Loading page</h1>
+        <p className="nhsuk-body">Please wait while we prepare the page.</p>
+      </div>
+    </PageLayout>
+  );
 }

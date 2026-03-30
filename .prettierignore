@@ -1,5 +1,6 @@
 # Dependency directories
 node_modules/
+package-lock.json
 
 # Environment & runtime files
 .env
@@ -11,3 +12,19 @@ node_modules/
 # Ignore editor stuff
 .vscode/
 .idea/
+
+# ui
+ui/.next
+ui/build
+ui/coverage
+ui/test-results
+
+# lambda
+lambdas/.coverage
+lambdas/dist
+lambdas/coverage
+lambdas/test-results
+
+# local env & postman
+postman/
+local-environment/

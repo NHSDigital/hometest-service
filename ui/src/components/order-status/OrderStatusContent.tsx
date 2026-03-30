@@ -1,3 +1,5 @@
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
+
 import {
   ConfirmedStatus,
   DispatchedStatus,
@@ -5,13 +7,12 @@ import {
   ReadyStatus,
   ReceivedStatus,
 } from "./statuses";
-import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 interface OrderStatusContentProps {
   order: OrderDetails;
 }
 
-export function OrderStatusContent({ order }: OrderStatusContentProps) {
+export function OrderStatusContent({ order }: Readonly<OrderStatusContentProps>) {
   const renderStatus = () => {
     switch (order.status) {
       case OrderStatus.GENERATED:
@@ -40,13 +41,12 @@ export function OrderStatusContent({ order }: OrderStatusContentProps) {
   };
 
   return (
-    <div
+    <section
       className="nhsuk-u-margin-bottom-5"
-      role="region"
       aria-live="polite"
       aria-label={`Order status: ${order.status}`}
     >
       {renderStatus()}
-    </div>
+    </section>
   );
 }

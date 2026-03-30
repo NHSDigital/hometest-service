@@ -1,9 +1,11 @@
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { expect } from "@playwright/test";
+
+import { AuthType, ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
-import { NHSLoginUser } from "../../utils/users";
+import { type NHSLoginUser } from "../../utils/users";
 
 let orderId: string;
 let patientId: string;
@@ -13,6 +15,7 @@ let orderReference: number;
 const dbClient = new TestOrderDbClient();
 const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
+const config = ConfigFactory.getConfig();
 
 test.describe("Order Status Page", () => {
   test.beforeAll(
@@ -90,8 +93,14 @@ test.describe("Order Status Page", () => {
     });
 
     test("Unauthorized user opens a deep link", async ({ orderStatusPage, errorPage }) => {
-      await orderStatusPage.navigateToOrder(orderId2);
+      await orderStatusPage.navigateToOrderExpectingPath(
+        orderId2,
+        errorPage.orderNotFoundMessage,
+        `/orders/${orderId2}/tracking`,
+      );
       await expect(errorPage.orderNotFoundMessage).toBeVisible();
+      const url = await orderStatusPage.getCurrentUrl();
+      expect(url).toContain(`/orders/${orderId2}/tracking`);
     });
 
     test("Unauthenticated user opens a deep link", async ({
@@ -105,18 +114,25 @@ test.describe("Order Status Page", () => {
       const context = orderStatusPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
-      await orderStatusPage.navigateToOrder(orderId);
-      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
-        testedUser as NHSLoginUser,
-      );
-      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
-        (testedUser as NHSLoginUser).otp!,
-      );
+
+      await orderStatusPage.openOrderDirect(orderId);
+
+      if (config.authType === AuthType.WIREMOCK) {
+        await orderStatusPage.waitForOrderToLoad();
+      } else {
+        await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+        await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
+          testedUser as NHSLoginUser,
+        );
+        await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
+          (testedUser as NHSLoginUser).otp,
+        );
+      }
+
       await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
       await expect(orderStatusPage.statusTag).toHaveText("Test received");
       const url = await orderStatusPage.getCurrentUrl();
-      expect(url).toContain(orderId);
+      expect(url).toContain(`/orders/${orderId}/tracking`);
     });
   });
 

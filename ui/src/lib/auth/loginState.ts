@@ -1,12 +1,6 @@
-const STATE_CSRF_KEY = "hometest:nhs-login:csr";
+import { base64UrlDecode, base64UrlEncode } from "@/lib/utils/base64url";
 
-function base64UrlEncode(input: string) {
-  const bytes = new TextEncoder().encode(input);
-  let binary = "";
-  bytes.forEach((b) => (binary += String.fromCharCode(b)));
-  const base64 = btoa(binary);
-  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
+const STATE_CSRF_KEY = "hometest:nhs-login:csr";
 
 function randomString(length = 32) {
   const bytes = new Uint8Array(length);
@@ -27,17 +21,10 @@ interface State {
 export function generateState(url: string): RedirectState {
   const csrf = randomString(16);
 
-  const stateObj: State = {csrf, returnTo: url};
+  const stateObj: State = { csrf, returnTo: url };
   const state = base64UrlEncode(JSON.stringify(stateObj));
 
-  return {encoded: state, csrf}
-}
-
-function base64UrlDecode(input: string) {
-  const base64 = input.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((input.length + 3) % 4);
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  return { encoded: state, csrf };
 }
 
 export function verifyState(given: RedirectState): string | null {

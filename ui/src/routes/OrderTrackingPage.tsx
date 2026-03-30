@@ -1,16 +1,17 @@
 "use client";
 
-import { AboutService } from "@/components/AboutService";
-import { OrderStatus } from "@/components/order-status";
-import PageLayout from "@/layouts/PageLayout";
-import { Patient } from "@/lib/models/patient";
-import { isValidGuid } from "@/lib/utils/guid";
-import { useAuth } from "@/state";
-import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
-import { usePageContent } from "@/hooks";
 import { useParams } from "react-router-dom";
 
-function OrderContent({ orderId, patient }: { orderId: string; patient: Patient }) {
+import { AboutService } from "@/components/AboutService";
+import { OrderStatus } from "@/components/order-status";
+import { usePageContent } from "@/hooks";
+import PageLayout from "@/layouts/PageLayout";
+import { Patient } from "@/lib/models/patient";
+import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
+import { isValidGuid } from "@/lib/utils/guid";
+import { useAuth } from "@/state";
+
+function OrderContent({ orderId, patient }: Readonly<{ orderId: string; patient: Patient }>) {
   const content = usePageContent("order-tracking");
   const {
     data: order,

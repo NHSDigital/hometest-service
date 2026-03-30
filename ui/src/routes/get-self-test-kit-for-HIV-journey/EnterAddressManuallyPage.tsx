@@ -1,14 +1,15 @@
 "use client";
 
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
-import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useState } from "react";
+
+import type { ValidationMessages } from "@/content";
+import { useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import type { ValidationMessages } from "@/content";
 import laLookupService from "@/lib/services/la-lookup-service";
-import { useContent } from "@/hooks";
-import { useState } from "react";
 import { isUnder18 } from "@/lib/utils/is-under-18";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
 const MAX_POSTCODE_LENGTH = 8;
@@ -211,7 +212,7 @@ export default function EnterAddressManuallyPage() {
       try {
         const postcode = postcodeValidation.value;
         const laResponse = await laLookupService.getByPostcode(postcode);
-        if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+        if (!laResponse?.suppliers?.length) {
           updateOrderAnswers({ postcodeSearch: postcode });
           goToStep(JourneyStepNames.KitNotAvailableInArea);
           return;

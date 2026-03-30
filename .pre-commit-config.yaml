@@ -30,6 +30,11 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: prettier-formatting
+        name: prettier-formatting
+        entry: npm run format:pre-commit --
+        language: system
+
       - id: eslint-ui
         name: ESLint (UI)
         entry: npm --prefix ui run lint -- --fix
