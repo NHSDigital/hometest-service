@@ -1,9 +1,9 @@
-import { FetchHttpClient } from "../lib/http/http-client";
-import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { SupplierService } from "../lib/db/supplier-db";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 
 export interface Environment {
   httpClient: FetchHttpClient;
@@ -12,7 +12,7 @@ export interface Environment {
   orderStatusService: OrderStatusService;
 }
 
-export function init(): Environment {
+export function buildEnvironment(): Environment {
   const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
 
   const httpClient = new FetchHttpClient();
@@ -27,4 +27,11 @@ export function init(): Environment {
     secretsClient,
     orderStatusService,
   };
+}
+
+let _env: Environment | undefined;
+
+export function init(): Environment {
+  _env ??= buildEnvironment();
+  return _env;
 }
