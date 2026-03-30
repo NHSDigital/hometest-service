@@ -1,5 +1,6 @@
 import { DBClient } from "../db/db-client";
 import { TokenEncryptionClient } from "../kms/kms-client";
+import { TOKEN_REFRESH_BUFFER_MS } from "./supplier-token-constants";
 
 export interface CachedSupplierToken {
   accessToken: string;
@@ -32,16 +33,17 @@ export class PostgresTokenStore implements TokenStore {
   constructor(
     private readonly dbClient: DBClient,
     private readonly encryptionClient: TokenEncryptionClient,
+    private readonly refreshBufferMs: number = TOKEN_REFRESH_BUFFER_MS,
   ) {}
 
   async get(key: string): Promise<CachedSupplierToken | null> {
     try {
-      const result = await this.dbClient.query<SupplierTokenCacheRow, [string]>(
+      const result = await this.dbClient.query<SupplierTokenCacheRow, [string, number]>(
         `SELECT access_token, expires_at
          FROM supplier_token_cache
          WHERE cache_key = $1
-           AND expires_at > NOW() + INTERVAL '30 seconds'`,
-        [key],
+           AND expires_at > NOW() + ($2 * INTERVAL '1 millisecond')`,
+        [key, this.refreshBufferMs],
       );
 
       if (!result.rowCount || result.rowCount < 1) {
