@@ -1,12 +1,12 @@
 import "@testing-library/jest-dom";
-
-import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
-import { SESSION_STORAGE_KEYS } from "@/lib/services/session-service";
 import { act, renderHook } from "@testing-library/react";
+
+import { SESSION_STORAGE_KEYS } from "@/lib/services/session-service";
+import { CreateOrderProvider, useCreateOrderContext } from "@/state/OrderContext";
 
 describe("OrderContext", () => {
   beforeEach(() => {
-    window.sessionStorage.clear();
+    globalThis.sessionStorage.clear();
   });
 
   describe("CreateOrderProvider", () => {
@@ -24,7 +24,7 @@ describe("OrderContext", () => {
         mobileNumber: "07700900123",
       };
 
-      window.sessionStorage.setItem(
+      globalThis.sessionStorage.setItem(
         SESSION_STORAGE_KEYS.createOrderAnswers,
         JSON.stringify(persistedAnswers),
       );
@@ -52,7 +52,7 @@ describe("OrderContext", () => {
         postcodeSearch: "SW1A 1AA",
         mobileNumber: "07700900123",
       });
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBe(
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBe(
         JSON.stringify({
           postcodeSearch: "SW1A 1AA",
           mobileNumber: "07700900123",
@@ -69,14 +69,16 @@ describe("OrderContext", () => {
         result.current.updateOrderAnswers({ postcodeSearch: "SW1A 1AA" });
       });
 
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).not.toBeNull();
+      expect(
+        globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers),
+      ).not.toBeNull();
 
       act(() => {
         result.current.reset();
       });
 
       expect(result.current.orderAnswers).toEqual({});
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.createOrderAnswers)).toBeNull();
     });
   });
 

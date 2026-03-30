@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
+
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 
 const BOLD = /\*\*([^*]+)\*\*/; // **bold text**
@@ -27,11 +28,7 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
       );
     }
 
-    if (boldText !== undefined) {
-      // **bold** text — recurse to support bold+link combos
-      const innerParts = renderTextWithLinks(boldText, `${keyPrefix}b${match.index}-`);
-      parts.push(<strong key={`${keyPrefix}bold-${match.index}`}>{innerParts}</strong>);
-    } else {
+    if (boldText === undefined) {
       // Markdown-style link [display text](href)
       const isExternal = href.startsWith("http");
 
@@ -50,6 +47,10 @@ export const renderTextWithLinks = (text: string, keyPrefix = ""): ReactNode[] =
           </Link>,
         );
       }
+    } else {
+      // **bold** text — recurse to support bold+link combos
+      const innerParts = renderTextWithLinks(boldText, `${keyPrefix}b${match.index}-`);
+      parts.push(<strong key={`${keyPrefix}bold-${match.index}`}>{innerParts}</strong>);
     }
 
     lastIndex = match.index + fullMatch.length;

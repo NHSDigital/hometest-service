@@ -1,3 +1,6 @@
+// import remains here to avoid hoisting issues with jest.mock
+import { init } from "./init";
+
 const mockPostgresDbClient = jest.fn();
 const mockSupplierService = jest.fn();
 const mockLaLookupService = jest.fn();
@@ -29,8 +32,6 @@ jest.mock("../lib/db/db-config", () => ({
   postgresConfigFromEnv: mockPostgresConfigFromEnv,
 }));
 
-// import remains here to avoid hoisting issues with jest.mock
-import { init } from "./init";
 describe("eligibility-lookup-lambda init", () => {
   beforeEach(() => {
     mockPostgresDbClient.mockReset();
@@ -62,7 +63,6 @@ describe("eligibility-lookup-lambda init", () => {
       getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
     };
 
-
     process.env.AWS_REGION = "eu-west-2";
     process.env.DB_USERNAME = "app_user";
     process.env.DB_ADDRESS = "postgres-db";
@@ -89,9 +89,7 @@ describe("eligibility-lookup-lambda init", () => {
     const result = init();
 
     expect(mockConsoleCommons).toHaveBeenCalled();
-    expect(mockPostgresDbClient).toHaveBeenCalledWith(
-      mockConfig
-    );
+    expect(mockPostgresDbClient).toHaveBeenCalledWith(mockConfig);
     expect(mockSupplierService).toHaveBeenCalledWith({ dbClient: dbClientInstance });
     expect(mockLaLookupService).toHaveBeenCalled();
 
@@ -99,6 +97,21 @@ describe("eligibility-lookup-lambda init", () => {
       commons: commonsInstance,
       supplierDb: supplierServiceInstance,
       laLookupService: laLookupServiceInstance,
+    });
+  });
+
+  describe("singleton protection", () => {
+    it("should only construct dependencies once no matter how many times init() is called", () => {
+      jest.isolateModules(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        const env1 = singletonInit();
+        const env2 = singletonInit();
+
+        expect(mockPostgresDbClient).toHaveBeenCalledTimes(1);
+        expect(env1).toBe(env2);
+      });
     });
   });
 });

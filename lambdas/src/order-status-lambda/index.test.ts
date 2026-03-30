@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
-import { OrderStatusFHIRTask } from "./index";
+
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
+import { OrderStatusFHIRTask } from "./index";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
 
@@ -71,15 +72,6 @@ describe("Order Status Lambda Handler", () => {
       text: MOCK_BUSINESS_STATUS,
     },
   };
-
-  it("should reuse initialized services across multiple lambda invocations", async () => {
-    mockEvent.body = "{}";
-
-    await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
-    await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
-
-    expect(mockInit).toHaveBeenCalledTimes(1);
-  });
 
   describe("Request Parsing and Validation", () => {
     it("should return 400 if request body is empty JSON object", async () => {

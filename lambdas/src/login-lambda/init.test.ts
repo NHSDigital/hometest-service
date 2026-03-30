@@ -180,4 +180,15 @@ describe("login-lambda init", () => {
     const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
     expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
   });
+
+  it("should only construct dependencies once no matter how many times init() is called", async () => {
+    const { init: singletonInit } = await import("./init");
+
+    const promise1 = singletonInit();
+    const promise2 = singletonInit();
+
+    const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
+    expect(AwsSecretsClient).toHaveBeenCalledTimes(1);
+    expect(promise1).toBe(promise2);
+  });
 });
