@@ -1,21 +1,21 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
-
+import middy from "@middy/core";
 import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
-import { init } from "./init";
-import middy from "@middy/core";
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+
 import { securityHeaders } from "../lib/http/security-headers";
+import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { init } from "./init";
 import { validatePostcodeFormat } from "./postcode-validator";
 
 const name = "eligibility-lookup-lambda";
-const { laLookupService, supplierDb, commons } = init();
 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> => {
+  const { laLookupService, supplierDb, commons } = init();
   context.callbackWaitsForEmptyEventLoop = false;
 
   const postcode = event.queryStringParameters?.postcode;

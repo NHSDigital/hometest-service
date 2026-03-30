@@ -1,15 +1,12 @@
-import {
-  retrieveMandatoryEnvVariable,
-  retrieveOptionalEnvVariable,
-} from "../lib/utils/utils";
+import { JwksClient } from "jwks-rsa";
+import { HttpClient } from "src/lib/http/login-http-client";
+import { NhsLoginClient } from "src/lib/login/nhs-login-client";
+import { NhsLoginJwtHelper } from "src/lib/login/nhs-login-jwt-helper";
+import { INhsLoginConfig } from "src/lib/models/nhs-login/nhs-login-config";
 
 import { AuthTokenVerifier } from "../lib/auth/auth-token-verifier";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { HttpClient } from "src/lib/http/login-http-client";
-import { INhsLoginConfig } from "src/lib/models/nhs-login/nhs-login-config";
-import { JwksClient } from "jwks-rsa";
-import { NhsLoginClient } from "src/lib/login/nhs-login-client";
-import { NhsLoginJwtHelper } from "src/lib/login/nhs-login-jwt-helper";
+import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
 
 interface SessionEnvVariables {
   authCookieKeyId: string;
@@ -25,17 +22,13 @@ interface SessionLambdaDependencies {
 const envVars: SessionEnvVariables = {
   authCookieKeyId: retrieveOptionalEnvVariable("AUTH_COOKIE_KEY_ID", "key"),
 
-  authCookiePublicKeySecretName: retrieveMandatoryEnvVariable(
-    "AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME",
-  ),
+  authCookiePublicKeySecretName: retrieveMandatoryEnvVariable("AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME"),
 
   // todo needs be removed after Alpha phase
-  nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable(
-    "NHS_LOGIN_BASE_ENDPOINT_URL",
-  ),
+  nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_BASE_ENDPOINT_URL"),
 };
 
-export async function init(): Promise<SessionLambdaDependencies> {
+async function buildEnvironment(): Promise<SessionLambdaDependencies> {
   const secretManagerClient = new AwsSecretsClient(
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
   );
@@ -63,4 +56,11 @@ export async function init(): Promise<SessionLambdaDependencies> {
   );
 
   return { authTokenVerifier, nhsLoginClient };
+}
+
+let _env: Promise<SessionLambdaDependencies> | undefined;
+
+export function init(): Promise<SessionLambdaDependencies> {
+  _env ??= buildEnvironment();
+  return _env;
 }

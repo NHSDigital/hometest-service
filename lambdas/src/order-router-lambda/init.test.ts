@@ -1,11 +1,11 @@
-import { init } from "./init";
-import { FetchHttpClient } from "../lib/http/http-client";
-import { SupplierService } from "../lib/db/supplier-db";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { SupplierService } from "../lib/db/supplier-db";
+import { FetchHttpClient } from "../lib/http/http-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { buildEnvironment as init } from "./init";
 
 // Mock all external dependencies
 jest.mock("../lib/http/http-client");
@@ -171,6 +171,22 @@ describe("init", () => {
             calledWith: expect.any(PostgresDbClient),
           },
         ],
+      });
+    });
+  });
+
+  describe("singleton protection", () => {
+    it("should only construct dependencies once no matter how many times init() is called", () => {
+      jest.isolateModules(() => {
+        jest.clearAllMocks();
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        const env1 = singletonInit();
+        const env2 = singletonInit();
+
+        expect(PostgresDbClient).toHaveBeenCalledTimes(1);
+        expect(env1).toBe(env2);
       });
     });
   });
