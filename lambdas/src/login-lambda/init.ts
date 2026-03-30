@@ -44,13 +44,13 @@ interface LoginEnvVariables {
   authRefreshTokenExpiryDurationMinutes: number;
 }
 
-interface LoginLambdaDependencies {
+export interface LoginLambdaDependencies {
   loginService: ILoginService;
   authTokenService: AuthTokenService;
 }
 
 // ALPHA: Removed commons temporarily.
-async function buildEnvironment(): Promise<LoginLambdaDependencies> {
+export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
   const secretManagerClient = new AwsSecretsClient(
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
   );
@@ -116,6 +116,10 @@ async function buildEnvironment(): Promise<LoginLambdaDependencies> {
 let _env: Promise<LoginLambdaDependencies> | undefined;
 
 export function init(): Promise<LoginLambdaDependencies> {
-  _env ??= buildEnvironment();
+  _env ??= buildEnvironment().catch((error) => {
+    // Clear cached environment on failure so subsequent calls can retry
+    _env = undefined;
+    throw error;
+  });
   return _env;
 }

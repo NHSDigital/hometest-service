@@ -209,4 +209,23 @@ describe("init", () => {
       });
     });
   });
+
+  describe("rejection retry", () => {
+    it("should allow retry after buildEnvironment throws", () => {
+      jest.isolateModules(() => {
+        jest.clearAllMocks();
+        (PostgresDbClient as jest.Mock).mockImplementationOnce(() => {
+          throw new Error("DB connection failed");
+        });
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        expect(() => singletonInit()).toThrow("DB connection failed");
+
+        // _env was never assigned (??= only assigns if the expression completes)
+        const result = singletonInit();
+        expect(result).toBeTruthy();
+      });
+    });
+  });
 });
