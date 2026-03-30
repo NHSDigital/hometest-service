@@ -3,6 +3,7 @@ import type { SupplierConfig } from "../db/supplier-db";
 import { HttpClient } from "../http/http-client";
 import { TokenEncryptionClient } from "../kms/kms-client";
 import { SecretsClient } from "../secrets/secrets-manager-client";
+import { TOKEN_REFRESH_BUFFER_MS } from "./supplier-token-constants";
 import { CachedSupplierToken, PostgresTokenStore, TokenStore } from "./supplier-token-store";
 
 interface OAuthTokenResponse {
@@ -25,7 +26,6 @@ export interface SupplierTokenGenerator {
   generateToken(): Promise<string>;
 }
 
-const TOKEN_REFRESH_BUFFER_MS = 30_000;
 const MAX_TOKEN_TTL_SECONDS = 86_399;
 
 export class OAuthSupplierAuthClient implements SupplierAuthClient {
@@ -187,7 +187,7 @@ export const getTokenGenerator = (
     supplierConfig,
   );
 
-  const tokenStore = new PostgresTokenStore(dbClient, encryptionClient);
+  const tokenStore = new PostgresTokenStore(dbClient, encryptionClient, TOKEN_REFRESH_BUFFER_MS);
   const tokenGenerator = new CachedSupplierTokenGenerator(authClient, cacheKey, tokenStore);
 
   tokenGeneratorCache[cacheKey] = tokenGenerator;
