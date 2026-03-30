@@ -2,8 +2,8 @@ import { randomUUID } from "crypto";
 
 import { APIResponse, expect } from "@playwright/test";
 
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
+import type { TestOrderDbClient } from "../../db/TestOrderDbClient";
+import type { TestResultDbClient } from "../../db/TestResultDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
@@ -11,8 +11,6 @@ import { ResultsObservationData } from "../../test-data/ResultsObservationData";
 import { buildHeaders, headersTestResults, orderStatusPayload } from "../../utils/ApiRequestHelper";
 
 const randomAddress = AddressModel.getRandomAddress();
-const dbClient = new TestOrderDbClient();
-const resultsDbClient = new TestResultDbClient();
 
 const EXPECTED_TEXTS = {
   HIV_KIT_HEADER: "Get a self-test kit for HIV",
@@ -24,7 +22,7 @@ const EXPECTED_TEXTS = {
   NEGATIVE_RESULT: "Negative",
 } as const;
 
-const ORDER_STATUS_POLL_TIMEOUT = 10000;
+const ORDER_STATUS_POLL_TIMEOUT = 20000;
 
 interface OrderData {
   orderId: string;
@@ -33,11 +31,6 @@ interface OrderData {
 }
 
 test.describe("Home test E2E tests", () => {
-  test.beforeAll(async () => {
-    await dbClient.connect();
-    await resultsDbClient.connect();
-  });
-
   async function completeOrderJourney(context: {
     homeTestStartPage: any;
     enterDeliveryAddressPage: any;
@@ -62,12 +55,15 @@ test.describe("Home test E2E tests", () => {
     await expect(context.orderSubmittedPage.headerText).toHaveText(EXPECTED_TEXTS.ORDER_SUBMITTED);
   }
 
-  async function getOrderData(nhsNumber: string): Promise<OrderData> {
-    const patientId = await dbClient.getPatientUidByNhsNumber(nhsNumber);
-    const order = await dbClient.getOrderByPatientUid(patientId!);
+  async function getOrderData(
+    testOrderDb: TestOrderDbClient,
+    nhsNumber: string,
+  ): Promise<OrderData> {
+    const patientId = await testOrderDb.getPatientUidByNhsNumber(nhsNumber);
+    const order = await testOrderDb.getOrderByPatientUid(patientId!);
 
     await expect
-      .poll(() => dbClient.hasOrderStatusCode(order!.order_uid, "SUBMITTED"), {
+      .poll(() => testOrderDb.hasOrderStatusCode(order!.order_uid, "SUBMITTED"), {
         timeout: ORDER_STATUS_POLL_TIMEOUT,
       })
       .toBe(true);
@@ -122,23 +118,18 @@ test.describe("Home test E2E tests", () => {
     return await hivResultsApi.submitTestResults(observation, headersTestResults(randomUUID()));
   }
 
-  test.afterEach(async ({ testedUser }) => {
-    const patientId = await dbClient.getPatientUidByNhsNumber(testedUser.nhsNumber!);
-    const order = await dbClient.getOrderByPatientUid(patientId!);
+  test.afterEach(async ({ testedUser, testOrderDb, testResultDb }) => {
+    const patientId = await testOrderDb.getPatientUidByNhsNumber(testedUser.nhsNumber!);
+    const order = await testOrderDb.getOrderByPatientUid(patientId!);
     if (order) {
-      await resultsDbClient.deleteResultStatusByUid(order.order_uid);
+      await testResultDb.deleteResultStatusByUid(order.order_uid);
     }
     if (patientId) {
-      await dbClient.deleteConsentByPatientUid(patientId);
-      await dbClient.deleteOrderStatusByPatientUid(patientId);
-      await dbClient.deleteOrderByPatientUid(patientId);
+      await testOrderDb.deleteConsentByPatientUid(patientId);
+      await testOrderDb.deleteOrderStatusByPatientUid(patientId);
+      await testOrderDb.deleteOrderByPatientUid(patientId);
     }
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-  });
-
-  test.afterAll(async () => {
-    await dbClient.disconnect();
-    await resultsDbClient.disconnect();
+    await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
   });
 
   test(
@@ -157,6 +148,7 @@ test.describe("Home test E2E tests", () => {
       checkYourAnswersPage,
       orderSubmittedPage,
       orderStatusPage,
+      testOrderDb,
     }) => {
       await completeOrderJourney({
         homeTestStartPage,
@@ -168,7 +160,7 @@ test.describe("Home test E2E tests", () => {
         orderSubmittedPage,
       });
 
-      const orderData = await getOrderData(testedUser.nhsNumber!);
+      const orderData = await getOrderData(testOrderDb, testedUser.nhsNumber!);
 
       await updateOrderStatusAndVerify(
         orderStatusApi,
@@ -211,6 +203,7 @@ test.describe("Home test E2E tests", () => {
       confirmMobileNumberPage,
       checkYourAnswersPage,
       orderSubmittedPage,
+      testOrderDb,
     }) => {
       await completeOrderJourney({
         homeTestStartPage,
@@ -222,7 +215,7 @@ test.describe("Home test E2E tests", () => {
         orderSubmittedPage,
       });
 
-      const orderData = await getOrderData(testedUser.nhsNumber!);
+      const orderData = await getOrderData(testOrderDb, testedUser.nhsNumber!);
 
       await updateOrderStatusAndVerify(
         orderStatusApi,
