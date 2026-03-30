@@ -7,7 +7,7 @@ import { INhsUserInfoResponseModel } from "src/lib/models/nhs-login/nhs-login-us
 
 import { getAuthCookieFromRequest } from "../lib/auth/auth-utils";
 import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../login-lambda/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 
 const className = "session-handler";
@@ -45,7 +45,7 @@ export const lambdaHandler = async (
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);
     const errorStack = e instanceof Error ? e.stack : undefined;
-    const errorCause = (e as any)?.cause;
+    const errorCause = e instanceof Error ? (e as Error & { cause?: unknown }).cause : undefined;
 
     console.error(`${className} - Authentication failed:`, {
       message: errorMessage,
@@ -59,5 +59,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

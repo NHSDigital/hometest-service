@@ -15,8 +15,8 @@ import {
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
@@ -172,5 +172,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

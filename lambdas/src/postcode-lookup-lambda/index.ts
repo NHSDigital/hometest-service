@@ -5,7 +5,7 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
 
 import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 
 const className = "handler";
@@ -42,5 +42,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());
