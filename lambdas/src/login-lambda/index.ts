@@ -1,12 +1,13 @@
-import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
-import { corsOptions } from "./cors-configuration";
-import { init } from "./init";
 import middy from "@middy/core";
 import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
+import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
+
 import { securityHeaders } from "../lib/http/security-headers";
 import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
+import { corsOptions } from "./cors-configuration";
+import { init } from "./init";
 
 // ALPHA: This file will need revisiting.
 const authCookieSameSite = retrieveMandatoryEnvVariable("AUTH_COOKIE_SAME_SITE");

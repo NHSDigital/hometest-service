@@ -1,19 +1,16 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  createFhirErrorResponse,
-  createFhirResponse,
-} from "../lib/fhir-response";
-
-import { ObservationValidation } from "../lib/validators/observation-validation";
+import middy from "@middy/core";
 import cors from "@middy/http-cors";
-import { corsOptions } from "./cors-configuration";
-import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
-import { getResultsQueryParamsSchema } from "./schemas";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
-import { init } from "./init";
-import middy from "@middy/core";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
+import { ObservationValidation } from "../lib/validators/observation-validation";
+import { corsOptions } from "./cors-configuration";
+import { init } from "./init";
+import { getResultsQueryParamsSchema } from "./schemas";
 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
@@ -21,9 +18,7 @@ export const lambdaHandler = async (
   const correlationId = getCorrelationIdFromEventHeaders(event);
   const { testResultDbClient, supplierTestResultsService } = init();
 
-  const validationResult = getResultsQueryParamsSchema.safeParse(
-    event.queryStringParameters,
-  );
+  const validationResult = getResultsQueryParamsSchema.safeParse(event.queryStringParameters);
 
   if (!validationResult.success) {
     const errorDetails = validationResult.error.issues
@@ -39,18 +34,10 @@ export const lambdaHandler = async (
     date_of_birth: dateOfBirth,
   } = validationResult.data;
 
-  const testResult = await testResultDbClient.getResult(
-    orderId,
-    nhsNumber,
-    dateOfBirth,
-  );
+  const testResult = await testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth);
 
   if (testResult?.status !== "RESULT_AVAILABLE") {
-    return createFhirErrorResponse(
-      404,
-      "not-found",
-      "The requested resource could not be found",
-    );
+    return createFhirErrorResponse(404, "not-found", "The requested resource could not be found");
   }
 
   const bundle = await supplierTestResultsService.getResults(
@@ -62,11 +49,7 @@ export const lambdaHandler = async (
   const observation = bundle.entry?.[0]?.resource;
 
   if (!observation || !ObservationValidation.isNormalResult(observation)) {
-    return createFhirErrorResponse(
-      404,
-      "not-found",
-      "The requested resource could not be found",
-    );
+    return createFhirErrorResponse(404, "not-found", "The requested resource could not be found");
   }
 
   return createFhirResponse(200, observation);

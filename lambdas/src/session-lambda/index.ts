@@ -1,17 +1,14 @@
-import {
-  type APIGatewayProxyEvent,
-  type APIGatewayProxyResult,
-} from "aws-lambda";
 import middy from "@middy/core";
 import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
+import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
+import { INhsUserInfoResponseModel } from "src/lib/models/nhs-login/nhs-login-user-info-response-model";
 
+import { getAuthCookieFromRequest } from "../lib/auth/auth-utils";
 import { securityHeaders } from "../lib/http/security-headers";
 import { corsOptions } from "./cors-configuration";
-import { getAuthCookieFromRequest } from "../lib/auth/auth-utils";
 import { init } from "./init";
-import { INhsUserInfoResponseModel } from "src/lib/models/nhs-login/nhs-login-user-info-response-model";
 
 const className = "session-handler";
 
@@ -30,8 +27,7 @@ function authenticated(userInfo: INhsUserInfoResponseModel) {
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const cookieHeader =
-    event.headers?.cookie ?? event.headers?.Cookie ?? undefined;
+  const cookieHeader = event.headers?.cookie ?? event.headers?.Cookie ?? undefined;
 
   const authCookie = getAuthCookieFromRequest(cookieHeader);
   if (!authCookie) {
@@ -43,9 +39,7 @@ export const lambdaHandler = async (
   try {
     const payload = await authTokenVerifier.verifyToken(authCookie);
 
-    const userInfoResponse = await nhsLoginClient.getUserInfo(
-      payload.sessionId,
-    );
+    const userInfoResponse = await nhsLoginClient.getUserInfo(payload.sessionId);
 
     return authenticated(userInfoResponse);
   } catch (e) {
