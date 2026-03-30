@@ -5,6 +5,10 @@ import { join } from "node:path";
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 
 import { HttpError } from "../lib/http/http-client";
+import {
+  buildTokenGeneratorCacheKey,
+  createTokenGenerator,
+} from "../lib/supplier/supplier-auth-client";
 
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
@@ -243,6 +247,35 @@ describe("order-router-lambda", () => {
       // Should succeed to avoid retrying and potentially duplicating the supplier order
       expect(result.batchItemFailures).toEqual([]);
       expect(mockAddOrderStatusUpdate).toHaveBeenCalled();
+    });
+
+    it("should reuse cached token generator for repeated requests with same supplier config", async () => {
+      const mockBuildTokenGeneratorCacheKey = jest.mocked(buildTokenGeneratorCacheKey);
+      const mockCreateTokenGenerator = jest.mocked(createTokenGenerator);
+
+      mockBuildTokenGeneratorCacheKey.mockReturnValue("supplier-cache-key-reuse-test");
+
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: supplierOrderBody,
+      });
+
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
+
+      const firstResult = await handler(sqsEvent, mockContext as Context);
+      const secondResult = await handler(sqsEvent, mockContext as Context);
+
+      expect(firstResult.batchItemFailures).toEqual([]);
+      expect(secondResult.batchItemFailures).toEqual([]);
+      expect(mockCreateTokenGenerator).toHaveBeenCalledTimes(1);
+      expect(mockGenerateToken).toHaveBeenCalledTimes(2);
     });
   });
 
