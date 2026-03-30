@@ -94,7 +94,7 @@ output "order_placement_queue_url" {
 }
 
 output "notify_messages_queue_url" {
-  description = "SQS Queue URL for notifiy messages"
+  description = "SQS Queue URL for notify messages"
   value       = aws_sqs_queue.notify_messages.url
 }
 
