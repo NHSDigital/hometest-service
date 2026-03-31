@@ -1,15 +1,15 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { Identifiers, InterpretationCode } from "./models";
-import { OrderStatus, ResultStatus } from "../lib/types/status";
+
+import { OrderResultSummary } from "../lib/db/order-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { OrderStatus, ResultStatus } from "../lib/types/status";
+import { init } from "./init";
+import { Identifiers, InterpretationCode } from "./models";
 import {
   extractAndValidateObservationFields,
   extractInterpretationCodeFromFHIRObservation,
   validateDBData,
 } from "./validation-service";
-
-import { OrderResultSummary } from "../lib/db/order-db";
-import { init } from "./init";
 
 const { commons, orderService } = init();
 

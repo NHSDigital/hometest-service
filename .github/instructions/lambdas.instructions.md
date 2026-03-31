@@ -34,20 +34,23 @@ lambdas/src/
 Use this as the preferred structure for new lambdas:
 
 ```typescript
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import middy from "@middy/core";
 import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
 import { securityHeaders } from "../lib/http/security-headers";
 import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { createJsonResponse, getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { init } from "./init";
 
 const name = "my-lambda";
-const { myService } = init();
 
-export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
+  const { myService } = await init();
   const correlationId = getCorrelationIdFromEventHeaders(event);
   // parse + validate request with Zod
   // call services
@@ -67,7 +70,7 @@ Key rules:
 - The Middy-wrapped export is always `handler` (the actual Lambda entrypoint).
 - Middy middleware order is always: `httpSecurityHeaders` → `cors` → `httpErrorHandler`.
 - Always pass the shared config objects: `httpSecurityHeaders(securityHeaders)` and `cors(defaultCorsOptions)` — never inline options.
-- Call `init()` at module scope (outside the handler) so dependencies are constructed once on cold start, not on every invocation. Exception: lambdas where this causes test-isolation problems may call `init()` inside the handler.
+- Import `init` at module scope, but call `init()` inside `lambdaHandler`. `init()` must be singleton-cached, so dependencies are still constructed once per cold start.
 - Echo `X-Correlation-ID` in the response header for all JSON responses. FHIR-response lambdas (using `createFhirResponse`) do not set this header — that is an accepted divergence.
 - Use `createJsonResponse(statusCode, body, extraHeaders?)` for all JSON responses — never construct the response object manually.
 - For lambdas that return FHIR resources, use `createFhirResponse` / `createFhirErrorResponse` from `../lib/fhir-response` instead of `createJsonResponse`.
@@ -75,27 +78,56 @@ Key rules:
 ## Dependency Injection via `init()`
 
 Each lambda has its own `init.ts` that constructs and returns all dependencies. This keeps the
-handler pure and testable. Always export a typed `Environment` interface as the return type.
+handler pure and testable. `buildEnvironment()` constructs dependencies; `init()` is the cached
+public entrypoint used by handlers.
 
 ```typescript
 // init.ts
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 
 export interface Environment {
   orderDbClient: OrderDbClient;
 }
 
-export function init(): Environment {
+export function buildEnvironment(): Environment {
   const awsRegion = process.env.AWS_REGION ?? "eu-west-2";
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderDbClient = new OrderDbClient(dbClient);
   return { orderDbClient };
 }
+
+let _env: Environment | undefined;
+
+export function init(): Environment {
+  _env ??= buildEnvironment();
+  return _env;
+}
 ```
+
+For async dependency construction, cache the Promise and clear it on rejection so later calls can
+retry:
+
+```typescript
+let _env: Promise<Environment> | undefined;
+
+export function init(): Promise<Environment> {
+  _env ??= buildEnvironment().catch((error) => {
+    _env = undefined;
+    throw error;
+  });
+  return _env;
+}
+```
+
+Rules:
+
+- Handlers must call `init()`, not `buildEnvironment()`.
+- Keep `buildEnvironment()` exported for focused `init.test.ts` coverage.
+- Use `??=` for singleton caching.
 
 ## Request Validation
 
@@ -208,16 +240,32 @@ Every lambda must have:
 
 Every `lib/` module must have a co-located unit test (`*.test.ts`).
 
+Each `init.ts` should also have an `init.test.ts` covering:
+
+- dependency wiring/configuration
+- AWS region precedence
+- singleton protection
+- rejection retry when async `init()` caches a Promise
+
+Test pattern:
+
+- Sync singleton init modules: use `jest.isolateModules()` where a fresh module instance is needed.
+- Async init modules that read env vars at module load: use `jest.resetModules()` in `beforeEach` and import `./init` inside each test after env and mocks are configured.
+
 ```typescript
 // Unit test pattern
-import { lambdaHandler } from "./index";
 import { OrderDbClient } from "../lib/db/order-db-client";
+import { lambdaHandler } from "./index";
 
 jest.mock("./init");
 
 describe("myLambda", () => {
   it("returns 200 for a valid request", async () => {
-    const mockEvent = { body: JSON.stringify({ /* ... */ }) } as APIGatewayProxyEvent;
+    const mockEvent = {
+      body: JSON.stringify({
+        /* ... */
+      }),
+    } as APIGatewayProxyEvent;
     const result = await lambdaHandler(mockEvent);
     expect(result.statusCode).toBe(200);
   });

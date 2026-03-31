@@ -65,10 +65,7 @@ describe("login-lambda init", () => {
   };
 
   function setMandatoryEnvVariableMock(overrides: Record<string, string> = {}): void {
-    const values = {
-      ...baseEnvValues,
-      ...overrides,
-    };
+    const values = { ...baseEnvValues, ...overrides };
 
     mockRetrieveMandatoryEnvVariable.mockImplementation((key: string) => {
       const value = values[key];
@@ -91,7 +88,7 @@ describe("login-lambda init", () => {
   });
 
   it("initializes and wires all dependencies with expected configuration", async () => {
-    const { init } = await import("./init");
+    const { buildEnvironment: init } = await import("./init");
     const result = await init();
 
     const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
@@ -152,7 +149,7 @@ describe("login-lambda init", () => {
     process.env.AWS_REGION = "eu-central-1";
     process.env.AWS_DEFAULT_REGION = "us-east-1";
 
-    const { init } = await import("./init");
+    const { buildEnvironment: init } = await import("./init");
     await init();
 
     const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
@@ -163,7 +160,7 @@ describe("login-lambda init", () => {
     delete process.env.AWS_REGION;
     process.env.AWS_DEFAULT_REGION = "ap-southeast-2";
 
-    const { init } = await import("./init");
+    const { buildEnvironment: init } = await import("./init");
     await init();
 
     const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
@@ -174,10 +171,40 @@ describe("login-lambda init", () => {
     delete process.env.AWS_REGION;
     delete process.env.AWS_DEFAULT_REGION;
 
-    const { init } = await import("./init");
+    const { buildEnvironment: init } = await import("./init");
     await init();
 
     const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
     expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+  });
+
+  describe("singleton protection", () => {
+    it("should only construct dependencies once no matter how many times init() is called", async () => {
+      const { init: singletonInit } = await import("./init");
+
+      const promise1 = singletonInit();
+      const promise2 = singletonInit();
+
+      const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
+      expect(AwsSecretsClient).toHaveBeenCalledTimes(1);
+      expect(promise1).toBe(promise2);
+    });
+  });
+
+  describe("rejection retry", () => {
+    it("should clear the cached environment on rejection so subsequent calls can retry", async () => {
+      mockGetSecretValue
+        .mockRejectedValueOnce(new Error("Secrets Manager unavailable"))
+        .mockResolvedValue("nhs-private-key");
+
+      const { init: singletonInit } = await import("./init");
+
+      await expect(singletonInit()).rejects.toThrow("Secrets Manager unavailable");
+
+      // Second call should retry — not return the cached rejected Promise
+      const result = await singletonInit();
+      expect(result).toHaveProperty("loginService");
+      expect(result).toHaveProperty("authTokenService");
+    });
   });
 });
