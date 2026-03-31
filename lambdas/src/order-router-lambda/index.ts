@@ -10,7 +10,6 @@ import {
   buildTokenGeneratorCacheKey,
   createTokenGenerator,
 } from "../lib/supplier/supplier-auth-client";
-import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
 import { isUUID } from "../lib/utils/utils";
 import { init } from "./init";
 
