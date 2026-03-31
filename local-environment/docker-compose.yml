@@ -45,7 +45,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db-data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d local_hometest_db"]
       interval: 2s
@@ -80,3 +80,4 @@ services:
 
 volumes:
   ui_node_modules:
+  postgres_data:
