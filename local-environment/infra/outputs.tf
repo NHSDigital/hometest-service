@@ -93,6 +93,11 @@ output "order_placement_queue_url" {
   value       = aws_sqs_queue.order_placement.url
 }
 
+output "notify_messages_queue_url" {
+  description = "SQS Queue URL for notify messages"
+  value       = aws_sqs_queue.notify_messages.url
+}
+
 output "ui_url" {
   description = "URL of the UI application"
   value       = "http://localhost:3000"
