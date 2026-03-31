@@ -110,20 +110,18 @@ VALUES (
 )
 ON CONFLICT (order_uid) DO NOTHING;
 
-INSERT INTO order_status (status_id, order_uid, order_reference, status_code)
+INSERT INTO order_status (status_id, order_uid, status_code)
 VALUES (
   'abc2d3e4-1234-4def-8abc-12abcdefabcd',
   'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
-  NULL,
   'CONFIRMED'
 )
 ON CONFLICT (status_id) DO NOTHING;
 
-INSERT INTO order_status (status_id, order_uid, order_reference, status_code)
+INSERT INTO order_status (status_id, order_uid, status_code)
 VALUES (
   'bcd3e4f5-2345-4abc-8def-23abcdefabcd',
   'fab1c2d3-0123-4cde-8fab-01abcdefabcd',
-  NULL,
   'CONFIRMED'
 )
 ON CONFLICT (status_id) DO NOTHING;
