@@ -49,7 +49,6 @@ entity "status_type" as status_type {
 entity "order_status" as order_status {
   **status_id : uuid**
   *order_uid : uuid*
-  order_reference : bigint
   *status_code : varchar(50)*
   created_at : timestamp
 }
@@ -62,7 +61,6 @@ entity "result_type" as result_type {
 entity "result_status" as result_status {
   **result_id : uuid**
   *order_uid : uuid*
-  order_reference : bigint
   *status : varchar(50)*
   created_at : timestamp
   correlation_id : uuid
