@@ -1,25 +1,19 @@
 import { expect } from "@playwright/test";
+
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 
 const randomAddress = AddressModel.getRandomAddress();
-const dbClient = new TestOrderDbClient();
 
 test.describe("Accessibility Testing @accessibility", () => {
-  test.beforeEach(async () => {
-    await dbClient.connect();
-  });
-
-  test.afterEach(async ({ testedUser }) => {
-    const patientId = await dbClient.getPatientUidByNhsNumber(testedUser.nhsNumber!);
+  test.afterAll(async ({ testedUser, testOrderDb }) => {
+    const patientId = await testOrderDb.getPatientUidByNhsNumber(testedUser.nhsNumber!);
     if (patientId) {
-      await dbClient.deleteConsentByPatientUid(patientId);
-      await dbClient.deleteOrderStatusByPatientUid(patientId);
-      await dbClient.deleteOrderByPatientUid(patientId);
+      await testOrderDb.deleteConsentByPatientUid(patientId);
+      await testOrderDb.deleteOrderStatusByPatientUid(patientId);
+      await testOrderDb.deleteOrderByPatientUid(patientId);
     }
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-    await dbClient.disconnect();
+    await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
   });
 
   test(

@@ -1,28 +1,42 @@
-import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from '../lib/utils/utils';
-import { PostcodeLookupService } from '../lib/postcode-lookup/postcode-lookup-service';
-import { OSPlacesClient } from '../lib/postcode-lookup/osplaces/osplaces-client';
-import { StubPostcodeLookupClient } from '../lib/postcode-lookup/stub/stub-client';
-import { PostcodeLookupClient } from '../lib/postcode-lookup/postcode-lookup-client-interface';
-import { PostcodeLookupEnvVariables } from './postcode-lookup-env-variables';
-import { PostcodeLookupDependencies } from './postcode-lookup-dependencies';
-import { AwsSecretsClient } from '../lib/secrets/secrets-manager-client';
-import { PostcodeLookupClientConfig } from '../lib/models/postcode-lookup-client-config';
+import { PostcodeLookupClientConfig } from "../lib/models/postcode-lookup-client-config";
+import { OSPlacesClient } from "../lib/postcode-lookup/osplaces/osplaces-client";
+import { PostcodeLookupClient } from "../lib/postcode-lookup/postcode-lookup-client-interface";
+import { PostcodeLookupService } from "../lib/postcode-lookup/postcode-lookup-service";
+import { StubPostcodeLookupClient } from "../lib/postcode-lookup/stub/stub-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
+import { PostcodeLookupDependencies } from "./postcode-lookup-dependencies";
+import { PostcodeLookupEnvVariables } from "./postcode-lookup-env-variables";
 
 const envVars: PostcodeLookupEnvVariables = {
-  postcodeLookupCredentialsSecretName: retrieveMandatoryEnvVariable('POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME'),
-  postcodeLookupBaseUrl: retrieveMandatoryEnvVariable('POSTCODE_LOOKUP_BASE_URL'),
-  postcodeLookupTimeoutMs: Number(retrieveOptionalEnvVariable('POSTCODE_LOOKUP_TIMEOUT_MS') ?? '5000'),
-  postcodeLookupMaxRetries: Number(retrieveOptionalEnvVariable('POSTCODE_LOOKUP_MAX_RETRIES') ?? '3'),
-  postcodeLookupRetryDelayMs: Number(retrieveOptionalEnvVariable('POSTCODE_LOOKUP_RETRY_DELAY_MS') ?? '1000'),
-  postcodeLookupRetryBackoffFactor: Number(retrieveOptionalEnvVariable('POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR') ?? '2'),
-  useStubClient: retrieveOptionalEnvVariable('USE_STUB_POSTCODE_CLIENT') === 'true',
-  rejectUnauthorized: retrieveOptionalEnvVariable('POSTCODE_LOOKUP_REJECT_UNAUTHORIZED') === 'true',
+  postcodeLookupCredentialsSecretName: retrieveMandatoryEnvVariable(
+    "POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME",
+  ),
+  postcodeLookupBaseUrl: retrieveMandatoryEnvVariable("POSTCODE_LOOKUP_BASE_URL"),
+  postcodeLookupTimeoutMs: Number(
+    retrieveOptionalEnvVariable("POSTCODE_LOOKUP_TIMEOUT_MS") ?? "5000",
+  ),
+  postcodeLookupMaxRetries: Number(
+    retrieveOptionalEnvVariable("POSTCODE_LOOKUP_MAX_RETRIES") ?? "3",
+  ),
+  postcodeLookupRetryDelayMs: Number(
+    retrieveOptionalEnvVariable("POSTCODE_LOOKUP_RETRY_DELAY_MS") ?? "1000",
+  ),
+  postcodeLookupRetryBackoffFactor: Number(
+    retrieveOptionalEnvVariable("POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR") ?? "2",
+  ),
+  useStubClient: retrieveOptionalEnvVariable("USE_STUB_POSTCODE_CLIENT") === "true",
+  rejectUnauthorized: retrieveOptionalEnvVariable("POSTCODE_LOOKUP_REJECT_UNAUTHORIZED") === "true",
 };
 
-export async function init(): Promise<PostcodeLookupDependencies> {
-  const secretManagerClient = new AwsSecretsClient(process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2");
-  const credentialsSecret = await secretManagerClient.getSecretValue(envVars.postcodeLookupCredentialsSecretName);
-  const credentials = JSON.parse(credentialsSecret) as { apiKey: string; };
+export async function buildEnvironment(): Promise<PostcodeLookupDependencies> {
+  const secretManagerClient = new AwsSecretsClient(
+    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
+  );
+  const credentialsSecret = await secretManagerClient.getSecretValue(
+    envVars.postcodeLookupCredentialsSecretName,
+  );
+  const credentials = JSON.parse(credentialsSecret) as { apiKey: string };
 
   const postcodeLookupClientConfig: PostcodeLookupClientConfig = {
     credentials: credentials,
@@ -47,4 +61,15 @@ export async function init(): Promise<PostcodeLookupDependencies> {
   return {
     postcodeLookupService,
   };
+}
+
+let _env: Promise<PostcodeLookupDependencies> | undefined;
+
+export function init(): Promise<PostcodeLookupDependencies> {
+  _env ??= buildEnvironment().catch((error) => {
+    // Clear cached environment on failure so subsequent calls can retry
+    _env = undefined;
+    throw error;
+  });
+  return _env;
 }

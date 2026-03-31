@@ -1,5 +1,6 @@
 import { mergeTests } from "@playwright/test";
 
+import { dbFixture } from "./DbFixture";
 import { accessibilityFixture } from "./accessibilityFixture";
 import { apiFixture } from "./apiFixture";
 import { configurationFixture } from "./configurationFixture";
@@ -12,6 +13,7 @@ export const test = mergeTests(
   pageObjectFixture,
   configurationFixture,
   apiFixture,
+  dbFixture,
   accessibilityFixture,
   storageStateFixture,
   consoleErrorFixture,

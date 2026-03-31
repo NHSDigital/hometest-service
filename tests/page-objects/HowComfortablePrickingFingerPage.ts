@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+
 import { BasePage } from "./BasePage";
 
 export class HowComfortablePrickingFingerPage extends BasePage {
@@ -14,7 +15,9 @@ export class HowComfortablePrickingFingerPage extends BasePage {
     this.noOption = page.locator("#comfortable-2");
     this.continueButton = page.getByRole("button", { name: "Continue" });
     this.bloodSampleGuideLink = page.getByRole("link", { name: "Blood sample step-by-step guide" });
-    this.pageHeader = page.locator("h1", { hasText: "This is what you'll need to do to give a blood sample" });
+    this.pageHeader = page.locator("h1", {
+      hasText: "This is what you'll need to do to give a blood sample",
+    });
   }
 
   async waitUntilPageLoaded(): Promise<void> {
@@ -26,12 +29,12 @@ export class HowComfortablePrickingFingerPage extends BasePage {
   }
 
   async selectYesOptionAndContinue(): Promise<void> {
-    await this.yesOption.check();
+    await this.yesOption.click();
     await this.continueButton.click();
   }
 
   async selectNoOptionAndContinue(): Promise<void> {
-    await this.noOption.check();
+    await this.noOption.click();
     await this.continueButton.click();
   }
 
