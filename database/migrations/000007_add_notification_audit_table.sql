@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE notification_audit
+CREATE TABLE IF NOT EXISTS notification_audit
 (
   audit_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   message_reference uuid NOT NULL,
@@ -13,10 +13,10 @@ CREATE TABLE notification_audit
   UNIQUE (message_reference, status)
 );
 
-CREATE INDEX idx_notification_audit_message_reference_created_at
+CREATE INDEX IF NOT EXISTS idx_notification_audit_message_reference_created_at
 ON notification_audit (message_reference, created_at);
 
 
 -- +goose Down
-DROP INDEX idx_notification_audit_message_reference_created_at;
-DROP TABLE notification_audit;
+DROP INDEX IF EXISTS idx_notification_audit_message_reference_created_at;
+DROP TABLE IF EXISTS notification_audit;
