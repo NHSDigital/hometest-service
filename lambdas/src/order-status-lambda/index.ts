@@ -22,7 +22,6 @@ import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
 
 const commons = new ConsoleCommons();
-const { orderStatusDb } = init();
 const name = "order-status-lambda";
 
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
@@ -43,6 +42,7 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  const { orderStatusDb } = init();
   commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,

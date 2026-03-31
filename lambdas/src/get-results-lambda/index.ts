@@ -12,11 +12,10 @@ import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 import { getResultsQueryParamsSchema } from "./schemas";
 
-const { testResultDbClient, supplierTestResultsService } = init();
-
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  const { testResultDbClient, supplierTestResultsService } = init();
   const correlationId = getCorrelationIdFromEventHeaders(event);
 
   const validationResult = getResultsQueryParamsSchema.safeParse(event.queryStringParameters);

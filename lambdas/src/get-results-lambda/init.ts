@@ -11,7 +11,7 @@ export interface Environment {
   supplierTestResultsService: SupplierTestResultsService;
 }
 
-export function init(): Environment {
+export function buildEnvironment(): Environment {
   const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
 
   const httpClient = new FetchHttpClient();
@@ -31,4 +31,11 @@ export function init(): Environment {
     testResultDbClient,
     supplierTestResultsService,
   };
+}
+
+let _env: Environment | undefined;
+
+export function init(): Environment {
+  _env ??= buildEnvironment();
+  return _env;
 }
