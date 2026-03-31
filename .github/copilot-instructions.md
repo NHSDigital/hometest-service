@@ -3,15 +3,17 @@
 ## About the Project
 
 <!-- vale Vale.Terms = NO -->
+
 `hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `npm --prefix` — this is **not** an npm workspaces setup.
+
 <!-- vale Vale.Terms = YES -->
 
-| Package | Purpose |
-|---|---|
-| `ui/` | Next.js 16 static-export shell wrapping a React Router SPA |
-| `lambdas/` | AWS Lambda handlers (Node.js ESM, middy middleware) |
-| `tests/` | Playwright end-to-end, API, integration, and accessibility tests |
-| `database/` | PostgreSQL schema, seed data, and numbered migration scripts |
+| Package     | Purpose                                                          |
+| ----------- | ---------------------------------------------------------------- |
+| `ui/`       | Next.js 16 static-export shell wrapping a React Router SPA       |
+| `lambdas/`  | AWS Lambda handlers (Node.js ESM, middy middleware)              |
+| `tests/`    | Playwright end-to-end, API, integration, and accessibility tests |
+| `database/` | PostgreSQL schema, seed data, and numbered migration scripts     |
 
 The application is deployed on AWS (Lambda, API Gateway, RDS, SQS, Secrets Manager, CloudFront/S3). Local development uses Docker Compose with LocalStack.
 
@@ -76,13 +78,13 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 
 ## Testing Expectations
 
-| Layer | Required tests |
-|---|---|
-| Lambda handler | Jest unit test (`*.test.ts`) + integration test (`*.integration.test.ts`) using `@testcontainers/postgresql` (optional, confirm with developer) |
-| Lambda lib module | Jest unit test |
-| UI React component | Jest + React Testing Library unit test |
-| UI page/route | Jest + React Testing Library unit test |
-| E2E / accessibility | Written by the test engineering team — do not generate these without being asked |
+| Layer               | Required tests                                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lambda handler      | Jest unit test (`*.test.ts`) + integration test (`*.integration.test.ts`) using `@testcontainers/postgresql` (optional, confirm with developer) |
+| Lambda lib module   | Jest unit test                                                                                                                                  |
+| UI React component  | Jest + React Testing Library unit test                                                                                                          |
+| UI page/route       | Jest + React Testing Library unit test                                                                                                          |
+| E2E / accessibility | Written by the test engineering team — do not generate these without being asked                                                                |
 
 ---
 
@@ -107,7 +109,7 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 
 ```bash
 # Install all workspace dependencies (also installs ui/, lambdas/, tests/ via postinstall)
-npm install
+npm ci
 
 # Build and package lambdas (required before first start or after lambda changes)
 npm run build:lambdas
