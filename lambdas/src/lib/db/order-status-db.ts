@@ -12,15 +12,6 @@ export const OrderStatusCodes = {
 
 export type OrderStatusCode = (typeof OrderStatusCodes)[keyof typeof OrderStatusCodes];
 
-export interface OrderStatusRow {
-  status_id: string;
-  order_uid: string;
-  order_reference: number;
-  status_code: OrderStatusCode;
-  created_at: string;
-  correlation_id: string;
-}
-
 export interface OrderRow {
   order_uid: string;
   patient_uid: string;
