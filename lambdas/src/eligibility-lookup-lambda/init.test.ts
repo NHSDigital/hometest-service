@@ -32,7 +32,7 @@ describe("eligibility-lookup-lambda init", () => {
     host: "test-host",
     port: 5432,
     database: "test-db",
-    password: jest.fn().mockResolvedValue("test-password"),
+    password: () => "test-password",
   };
 
   beforeEach(() => {
