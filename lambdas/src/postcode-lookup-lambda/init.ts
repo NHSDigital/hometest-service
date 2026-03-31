@@ -29,7 +29,7 @@ const envVars: PostcodeLookupEnvVariables = {
   rejectUnauthorized: retrieveOptionalEnvVariable("POSTCODE_LOOKUP_REJECT_UNAUTHORIZED") === "true",
 };
 
-async function buildEnvironment(): Promise<PostcodeLookupDependencies> {
+export async function buildEnvironment(): Promise<PostcodeLookupDependencies> {
   const secretManagerClient = new AwsSecretsClient(
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
   );
@@ -66,6 +66,10 @@ async function buildEnvironment(): Promise<PostcodeLookupDependencies> {
 let _env: Promise<PostcodeLookupDependencies> | undefined;
 
 export function init(): Promise<PostcodeLookupDependencies> {
-  _env ??= buildEnvironment();
+  _env ??= buildEnvironment().catch((error) => {
+    // Clear cached environment on failure so subsequent calls can retry
+    _env = undefined;
+    throw error;
+  });
   return _env;
 }

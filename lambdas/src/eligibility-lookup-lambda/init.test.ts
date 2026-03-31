@@ -1,116 +1,140 @@
-// import remains here to avoid hoisting issues with jest.mock
-import { init } from "./init";
+import { ConsoleCommons } from "../lib/commons";
+import { PostgresDbClient } from "../lib/db/db-client";
+import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { SupplierService } from "../lib/db/supplier-db";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { buildEnvironment as init } from "./init";
+import { LaLookupService } from "./la-lookup";
 
-const mockPostgresDbClient = jest.fn();
-const mockSupplierService = jest.fn();
-const mockLaLookupService = jest.fn();
-const mockConsoleCommons = jest.fn();
-const mockAwsSecretsClient = jest.fn();
-const mockPostgresConfigFromEnv = jest.fn();
-
-jest.mock("../lib/db/db-client", () => ({
-  PostgresDbClient: mockPostgresDbClient,
-}));
-
-jest.mock("../lib/db/supplier-db", () => ({
-  SupplierService: mockSupplierService,
-}));
-
-jest.mock("../lib/secrets/secrets-manager-client", () => ({
-  AwsSecretsClient: mockAwsSecretsClient,
-}));
-
-jest.mock("./la-lookup", () => ({
-  LaLookupService: mockLaLookupService,
-}));
-
-jest.mock("../lib/commons", () => ({
-  ConsoleCommons: mockConsoleCommons,
-}));
-
-jest.mock("../lib/db/db-config", () => ({
-  postgresConfigFromEnv: mockPostgresConfigFromEnv,
-}));
+jest.mock("../lib/db/db-client");
+jest.mock("../lib/db/supplier-db");
+jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("./la-lookup");
+jest.mock("../lib/commons");
+jest.mock("../lib/db/db-config");
 
 describe("eligibility-lookup-lambda init", () => {
-  beforeEach(() => {
-    mockPostgresDbClient.mockReset();
-    mockSupplierService.mockReset();
-    mockLaLookupService.mockReset();
-    mockConsoleCommons.mockReset();
-    mockAwsSecretsClient.mockReset();
+  const originalEnv = process.env;
 
-    delete process.env.DB_USERNAME;
-    delete process.env.DB_ADDRESS;
-    delete process.env.DB_PORT;
-    delete process.env.DB_NAME;
-    delete process.env.DB_SCHEMA;
-    delete process.env.DB_SECRET_NAME;
-    delete process.env.AWS_REGION;
+  const mockEnvVariables = {
+    DB_USERNAME: "app_user",
+    DB_ADDRESS: "postgres-db",
+    DB_PORT: "5432",
+    DB_NAME: "local_hometest_db",
+    DB_SCHEMA: "hometest",
+    DB_SECRET_NAME: "postgres-db-password",
+    AWS_REGION: "eu-west-2",
+  };
+
+  const mockPostgresConfig = {
+    user: "test-user",
+    host: "test-host",
+    port: 5432,
+    database: "test-db",
+    password: () => "test-password",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setupEnvironment(mockEnvVariables);
+    (postgresConfigFromEnv as jest.Mock).mockReturnValue(mockPostgresConfig);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    restoreEnvironment(originalEnv);
   });
 
-  it("should construct all services and return the environment object", () => {
-    const dbClientInstance = { query: jest.fn(), close: jest.fn() };
-    const supplierServiceInstance = { getSupplier: jest.fn() };
-    const laLookupServiceInstance = { getByPostcode: jest.fn() };
-    const commonsInstance = { log: jest.fn() };
-    const secretsClientInstance = { getSecretValue: jest.fn() };
-    const mockConnectionStringProvider = {
-      getConnectionString: jest.fn().mockResolvedValue("postgresql://test-connection-string"),
-    };
-
-    process.env.AWS_REGION = "eu-west-2";
-    process.env.DB_USERNAME = "app_user";
-    process.env.DB_ADDRESS = "postgres-db";
-    process.env.DB_PORT = "5432";
-    process.env.DB_NAME = "local_hometest_db";
-    process.env.DB_SCHEMA = "hometest";
-    process.env.DB_SECRET_NAME = "postgres-db-password";
-
-    const mockConfig = {
-      user: "test-user",
-      host: "test-host",
-      port: 5432,
-      database: "test-db",
-      password: jest.fn().mockResolvedValue("test-password"),
-    };
-
-    mockPostgresDbClient.mockImplementation(() => dbClientInstance);
-    mockSupplierService.mockImplementation(() => supplierServiceInstance);
-    mockLaLookupService.mockImplementation(() => laLookupServiceInstance);
-    mockConsoleCommons.mockImplementation(() => commonsInstance);
-    mockAwsSecretsClient.mockImplementation(() => secretsClientInstance);
-    mockPostgresConfigFromEnv.mockReturnValue(mockConfig);
-
+  it("should initialize all components with correct configuration", () => {
     const result = init();
 
-    expect(mockConsoleCommons).toHaveBeenCalled();
-    expect(mockPostgresDbClient).toHaveBeenCalledWith(mockConfig);
-    expect(mockSupplierService).toHaveBeenCalledWith({ dbClient: dbClientInstance });
-    expect(mockLaLookupService).toHaveBeenCalled();
+    expect(result).toHaveProperty("commons");
+    expect(result).toHaveProperty("supplierDb");
+    expect(result).toHaveProperty("laLookupService");
+    expect(result.commons).toBeInstanceOf(ConsoleCommons);
+    expect(result.supplierDb).toBeInstanceOf(SupplierService);
+    expect(result.laLookupService).toBeInstanceOf(LaLookupService);
+  });
+
+  it("should create AwsSecretsClient with AWS_REGION when set", () => {
+    process.env.AWS_REGION = "us-east-1";
+
+    init();
+
+    expect(AwsSecretsClient).toHaveBeenCalledWith("us-east-1");
+  });
+
+  it("should create AwsSecretsClient with AWS_DEFAULT_REGION when AWS_REGION is not set", () => {
+    delete process.env.AWS_REGION;
+    process.env.AWS_DEFAULT_REGION = "us-west-2";
+
+    init();
+
+    expect(AwsSecretsClient).toHaveBeenCalledWith("us-west-2");
+  });
+
+  it("should default to eu-west-2 when neither AWS_REGION nor AWS_DEFAULT_REGION is set", () => {
+    delete process.env.AWS_REGION;
+    delete process.env.AWS_DEFAULT_REGION;
+
+    init();
+
+    expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+  });
+
+  it("should create PostgresDbClient with correct configuration", () => {
+    init();
+
+    expect(PostgresDbClient).toHaveBeenCalledWith(mockPostgresConfig);
+  });
+
+  it("should create SupplierService with PostgresDbClient instance", () => {
+    init();
+
+    expect(SupplierService).toHaveBeenCalledWith({ dbClient: expect.any(PostgresDbClient) });
+  });
+
+  it("should return an Environment object with all required properties", () => {
+    const result = init();
 
     expect(result).toEqual({
-      commons: commonsInstance,
-      supplierDb: supplierServiceInstance,
-      laLookupService: laLookupServiceInstance,
+      commons: expect.any(ConsoleCommons),
+      supplierDb: expect.any(SupplierService),
+      laLookupService: expect.any(LaLookupService),
     });
   });
 
   describe("singleton protection", () => {
     it("should only construct dependencies once no matter how many times init() is called", () => {
       jest.isolateModules(() => {
+        jest.clearAllMocks();
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { init: singletonInit } = require("./init");
 
         const env1 = singletonInit();
         const env2 = singletonInit();
 
-        expect(mockPostgresDbClient).toHaveBeenCalledTimes(1);
+        expect(PostgresDbClient).toHaveBeenCalledTimes(1);
         expect(env1).toBe(env2);
+      });
+    });
+  });
+
+  describe("rejection retry", () => {
+    it("should allow retry after buildEnvironment throws", () => {
+      jest.isolateModules(() => {
+        jest.clearAllMocks();
+        (PostgresDbClient as jest.Mock).mockImplementationOnce(() => {
+          throw new Error("DB connection failed");
+        });
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        expect(() => singletonInit()).toThrow("DB connection failed");
+
+        // _env was never assigned (??= only assigns if the expression completes)
+        const result = singletonInit();
+        expect(result).toBeTruthy();
       });
     });
   });
