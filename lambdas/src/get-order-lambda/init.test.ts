@@ -1,14 +1,10 @@
-import {
-  restoreEnvironment,
-  setupEnvironment,
-} from "../lib/test-utils/environment-test-helpers";
-
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { OrderDbClient } from "../lib/db/order-db-client";
 import { PostgresDbClient } from "../lib/db/db-client";
-import { init } from "./init";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { OrderDbClient } from "../lib/db/order-db-client";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
+import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { buildEnvironment as init } from "./init";
 
 jest.mock("../lib/db/order-db-client");
 jest.mock("../lib/db/db-client");
@@ -116,9 +112,7 @@ describe("init", () => {
     it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
       init();
 
-      expect(postgresConfigFromEnv).toHaveBeenCalledWith(
-        expect.any(AwsSecretsClient),
-      );
+      expect(postgresConfigFromEnv).toHaveBeenCalledWith(expect.any(AwsSecretsClient));
     });
 
     it("should create components in the correct order", () => {
@@ -140,6 +134,41 @@ describe("init", () => {
             calledWith: expect.any(PostgresDbClient),
           },
         ],
+      });
+    });
+  });
+
+  describe("singleton protection", () => {
+    it("should only construct dependencies once no matter how many times init() is called", () => {
+      jest.isolateModules(() => {
+        jest.clearAllMocks();
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        const env1 = singletonInit();
+        const env2 = singletonInit();
+
+        expect(PostgresDbClient).toHaveBeenCalledTimes(1);
+        expect(env1).toBe(env2);
+      });
+    });
+  });
+
+  describe("rejection retry", () => {
+    it("should allow retry after buildEnvironment throws", () => {
+      jest.isolateModules(() => {
+        jest.clearAllMocks();
+        (PostgresDbClient as jest.Mock).mockImplementationOnce(() => {
+          throw new Error("DB connection failed");
+        });
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        expect(() => singletonInit()).toThrow("DB connection failed");
+
+        // _env was never assigned (??= only assigns if the expression completes)
+        const result = singletonInit();
+        expect(result).toBeTruthy();
       });
     });
   });

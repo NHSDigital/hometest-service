@@ -1,13 +1,14 @@
-import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { JwksClient } from "jwks-rsa";
+
+import { AuthTokenService } from "../lib/auth/auth-token-service";
+import { HttpClient } from "../lib/http/login-http-client";
 import { NhsLoginClient } from "../lib/login/nhs-login-client";
+import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { TokenService } from "../lib/login/token-service";
 import { type INhsLoginConfig } from "../lib/models/nhs-login/nhs-login-config";
-import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
-import { HttpClient } from "../lib/http/login-http-client";
-import { AuthTokenService } from "../lib/auth/auth-token-service";
 import { type ILoginService, LoginService, type LoginServiceParams } from "./login-service";
-import { JwksClient } from "jwks-rsa";
 
 // ALPHA: This file will need revisiting.
 const envVars: LoginEnvVariables = {
@@ -43,13 +44,13 @@ interface LoginEnvVariables {
   authRefreshTokenExpiryDurationMinutes: number;
 }
 
-interface LoginLambdaDependencies {
+export interface LoginLambdaDependencies {
   loginService: ILoginService;
   authTokenService: AuthTokenService;
 }
 
 // ALPHA: Removed commons temporarily.
-export async function init(): Promise<LoginLambdaDependencies> {
+export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
   const secretManagerClient = new AwsSecretsClient(
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
   );
@@ -110,4 +111,15 @@ export async function init(): Promise<LoginLambdaDependencies> {
     loginService,
     authTokenService,
   };
+}
+
+let _env: Promise<LoginLambdaDependencies> | undefined;
+
+export function init(): Promise<LoginLambdaDependencies> {
+  _env ??= buildEnvironment().catch((error) => {
+    // Clear cached environment on failure so subsequent calls can retry
+    _env = undefined;
+    throw error;
+  });
+  return _env;
 }
