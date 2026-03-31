@@ -4,7 +4,7 @@
   "description": "NHS Home Test Service",
   "private": true,
   "scripts": {
-    "postinstall": "npm --prefix ui install && npm --prefix lambdas install && npm --prefix tests install",
+    "postinstall": "npm --prefix ui ci && npm --prefix lambdas ci && npm --prefix tests ci",
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
     "test:playwright": "UI_BASE_URL=$(terraform -chdir=local-environment/infra output -raw ui_url) API_BASE_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url) npm --prefix tests run test:chrome",
     "format": "(git diff --name-only --diff-filter=ACMR -z; git diff --name-only --cached --diff-filter=ACMR -z) | sort -zu | xargs -0 sh -c '[ \"$#\" -gt 0 ] && npm run format:pre-commit -- \"$@\"' sh",
