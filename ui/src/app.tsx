@@ -1,10 +1,21 @@
 import * as React from "react";
-
-import { JourneyStepNames, RoutePath } from "./lib/models/route-paths";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
+import ErrorRedirect from "./components/ErrorRedirect";
+import JourneyLayout from "./layouts/JourneyLayout";
+import MainLayout from "./layouts/MainLayout";
+import { JourneyStepNames, RoutePath } from "./lib/models/route-paths";
 import CallbackPage from "./routes/CallbackPage";
+import HomePage from "./routes/HomePage";
+import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
+import HomeTestTermsOfUsePage from "./routes/HomeTestTermsOfUsePage";
+import LoginPage from "./routes/LoginPage";
+import OrderTrackingPage from "./routes/OrderTrackingPage";
+import ServiceErrorPage from "./routes/ServiceErrorPage";
+import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
+import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
+import TestResultsPage from "./routes/TestResultsPage";
+import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import ConfirmMobileNumberPage from "./routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
@@ -15,24 +26,11 @@ import FormSuppliersPrivacyPolicyPage from "./routes/get-self-test-kit-for-HIV-j
 import FormSuppliersTermsConditionsPage from "./routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";
 import GetSelfTestKitPage from "./routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import GoToClinicPage from "./routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
-import HomePage from "./routes/HomePage";
-import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HowComfortablePrickingFingerPage from "./routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
-import JourneyLayout from "./layouts/JourneyLayout";
 import KitNotAvailableInAreaPage from "./routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
-import LoginPage from "./routes/LoginPage";
-import MainLayout from "./layouts/MainLayout";
 import NoAddressFoundPage from "./routes/get-self-test-kit-for-HIV-journey/NoAddressFoundPage";
 import OrderSubmittedPage from "./routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
-import OrderTrackingPage from "./routes/OrderTrackingPage";
 import SelectDeliveryAddressPage from "./routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
-import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
-import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
-import TestResultsPage from "./routes/TestResultsPage";
-import HomeTestTermsOfUsePage from "./routes/HomeTestTermsOfUsePage";
-import { requireAuth } from "@/lib/auth/requireAuth";
-import ServiceErrorPage from "./routes/ServiceErrorPage";
-import ErrorRedirect from "./components/ErrorRedirect";
 
 const router = createBrowserRouter([
   // Public routes (must NOT be guarded)
@@ -73,7 +71,6 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    loader: requireAuth,
     errorElement: <ErrorRedirect />,
     children: [
       {

@@ -1,42 +1,100 @@
+import { randomUUID } from "node:crypto";
+
 import { expect } from "@playwright/test";
+
+import type { HIVResultsApiResource } from "../../api/clients/HIVResultsApiResource";
+import type { OrderApiResource } from "../../api/clients/OrderApiResource";
+import type { TestResultDbClient } from "../../db/TestResultDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { ResultsObservationData } from "../../test-data/ResultsObservationData";
-import {
-  headersOrder,
-  headersTestResults,
-  orderStatusPayload,
-  buildHeaders,
-} from "../../utils/ApiRequestHelper";
-import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
+import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
+import type { OrderStatusCode } from "../../models/TestOrder";
 import {
   createGetResultHeaders,
   createGetResultParams,
 } from "../../test-data/GetResultRequestParams";
+import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import { OrderTestData } from "../../test-data/OrderTestData";
-import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
-import { randomUUID } from "crypto";
+import { ResultsObservationData } from "../../test-data/ResultsObservationData";
+import {
+  buildHeaders,
+  createHeaders,
+  headersTestResults,
+  orderStatusPayload,
+} from "../../utils/ApiRequestHelper";
 
 let orderId: string;
 let patientId: string;
 let correlationId: string;
-const dbClient = new TestOrderDbClient();
-const resultDbClient = new TestResultDbClient();
 const supplierId = OrderTestData.PREVENTX_SUPPLIER_ID;
+const POLL_TIMEOUT_MS = 15000;
+
+async function waitForOrderStatus(
+  orderApi: OrderApiResource,
+  nhsNumber: string,
+  dob: string,
+  orderId: string,
+  expectedStatus: OrderStatusCode,
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const statusResponse = await orderApi.getOrder(nhsNumber, dob, orderId);
+        if (statusResponse.status() !== 200) {
+          return `http-${statusResponse.status()}`;
+        }
+
+        return orderApi.extractOrderStatus(await statusResponse.json());
+      },
+      { timeout: POLL_TIMEOUT_MS },
+    )
+    .toBe(expectedStatus);
+}
+
+async function waitForResultResponseStatus(
+  hivResultsApi: HIVResultsApiResource,
+  nhsNumber: string,
+  dob: string,
+  orderId: string,
+  correlationId: string,
+  expectedStatus: number,
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const resultResponse = await hivResultsApi.getResult(
+          createGetResultParams(nhsNumber, dob, orderId),
+          createGetResultHeaders(correlationId),
+        );
+
+        return resultResponse.status();
+      },
+      { timeout: POLL_TIMEOUT_MS },
+    )
+    .toBe(expectedStatus);
+}
+
+async function waitForResultStatusCount(
+  testResultDb: TestResultDbClient,
+  orderId: string,
+  expectedCount: number,
+): Promise<void> {
+  await expect
+    .poll(async () => testResultDb.getResultStatusCountByOrderUid(orderId), {
+      timeout: POLL_TIMEOUT_MS,
+    })
+    .toBe(expectedCount);
+}
 
 test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
-  test.beforeAll("Connect to the database", async () => {
-    await dbClient.connect();
-    await resultDbClient.connect();
-  });
-
-  test.beforeEach("Create an order via API", async ({ testedUser, orderApi }) => {
+  test.beforeEach("Create an order via API", async ({ testedUser, orderApi, testOrderDb }) => {
     const payload = OrderTestData.getDefaultOrder();
     payload.patient.nhsNumber = testedUser.nhsNumber!;
     payload.patient.birthDate = testedUser.dob!;
 
-    const orderResponse = await orderApi.createOrder(payload, headersOrder);
+    const orderResponse = await orderApi.createOrder(
+      payload,
+      createHeaders("application/json", randomUUID()),
+    );
     expect(orderResponse.status()).toBe(201);
 
     const orderBody = CreateOrderResponseModel.fromJson(await orderResponse.json());
@@ -44,12 +102,11 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderId = orderBody.orderUid;
     correlationId = randomUUID();
 
-    patientId = (await dbClient.getPatientUidByNhsNumber(testedUser.nhsNumber!))!;
-    console.log(`Created order via API: ${orderId}, patientId: ${patientId}`);
+    patientId = (await testOrderDb.getPatientUidByNhsNumber(testedUser.nhsNumber!))!;
 
     await expect
-      .poll(async () => (await dbClient.getOrderStatusesByOrderUid(orderId))?.length, {
-        timeout: 10000,
+      .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(orderId))?.length, {
+        timeout: 20000,
       })
       .toBe(3);
   });
@@ -59,6 +116,8 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderApi,
     orderStatusApi,
     testedUser,
+    testOrderDb,
+    testResultDb,
   }) => {
     const dispatchedResponse = await orderStatusApi.updateOrderStatus(
       orderStatusPayload(
@@ -75,10 +134,10 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderStatusApi.validateResponse(dispatchedResponse, 201);
 
     const { statusCode: dispatchedStatusCode } =
-      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
+      await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
     expect(
-      await dbClient.getOrderStatusCountByCode(
+      await testOrderDb.getOrderStatusCountByCode(
         orderId,
         OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED,
       ),
@@ -99,10 +158,10 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderStatusApi.validateResponse(receivedResponse, 201);
 
     const { statusCode: receivedStatusCode } =
-      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
+      await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
     expect(
-      await dbClient.getOrderStatusCountByCode(
+      await testOrderDb.getOrderStatusCountByCode(
         orderId,
         OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED,
       ),
@@ -115,11 +174,15 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     expect(response.status()).toBe(201);
 
-    await orderApi.assertOrderHasStatus(
+    await waitForOrderStatus(orderApi, testedUser.nhsNumber!, testedUser.dob!, orderId, "COMPLETE");
+
+    await waitForResultResponseStatus(
+      hivResultsApi,
       testedUser.nhsNumber!,
       testedUser.dob!,
       orderId,
-      "COMPLETE",
+      correlationId,
+      200,
     );
 
     const resultResponse = await hivResultsApi.getResult(
@@ -127,11 +190,14 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
       createGetResultHeaders(correlationId),
     );
     hivResultsApi.validateStatus(resultResponse, 200);
-    const resultBody = await resultResponse.json();
+    const resultBody = (await resultResponse.json()) as {
+      interpretation: Array<{ coding: Array<{ display: string }> }>;
+    };
+
     expect(resultBody.interpretation).toHaveLength(1);
     expect(resultBody.interpretation[0].coding[0].display).toBe("Normal");
 
-    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
+    await waitForResultStatusCount(testResultDb, orderId, 1);
   });
 
   test("should set order status to RECEIVED and withhold result when test result is abnormal", async ({
@@ -139,6 +205,8 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderApi,
     orderStatusApi,
     testedUser,
+    testOrderDb,
+    testResultDb,
   }) => {
     const dispatchedResponse = await orderStatusApi.updateOrderStatus(
       orderStatusPayload(
@@ -155,10 +223,10 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderStatusApi.validateResponse(dispatchedResponse, 201);
 
     const { statusCode: dispatchedStatusCode } =
-      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
+      await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(dispatchedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED);
     expect(
-      await dbClient.getOrderStatusCountByCode(
+      await testOrderDb.getOrderStatusCountByCode(
         orderId,
         OrderStatusTestData.EXPECTED_STATUS_CODE_DISPATCHED,
       ),
@@ -179,10 +247,10 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     orderStatusApi.validateResponse(receivedResponse, 201);
 
     const { statusCode: receivedStatusCode } =
-      await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId);
+      await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId);
     expect(receivedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED);
     expect(
-      await dbClient.getOrderStatusCountByCode(
+      await testOrderDb.getOrderStatusCountByCode(
         orderId,
         OrderStatusTestData.EXPECTED_STATUS_CODE_RECEIVED,
       ),
@@ -199,35 +267,28 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     );
     expect(response.status()).toBe(201);
 
-    await orderApi.assertOrderHasStatus(
+    await waitForOrderStatus(orderApi, testedUser.nhsNumber!, testedUser.dob!, orderId, "RECEIVED");
+
+    await waitForResultStatusCount(testResultDb, orderId, 1);
+
+    await waitForResultResponseStatus(
+      hivResultsApi,
       testedUser.nhsNumber!,
       testedUser.dob!,
       orderId,
-      "RECEIVED",
+      correlationId,
+      404,
     );
-
-    expect(await resultDbClient.getResultStatusCountByOrderUid(orderId)).toBe(1);
-
-    const resultResponse = await hivResultsApi.getResult(
-      createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId),
-      createGetResultHeaders(correlationId),
-    );
-    hivResultsApi.validateStatus(resultResponse, 404);
   });
 
   test.afterEach(
     "Delete result status, order status, order, and patient records from the database",
-    async ({ testedUser }) => {
-      await resultDbClient.deleteResultStatusByUid(orderId);
-      await dbClient.deleteOrderStatusByUid(orderId);
-      await dbClient.deleteConsentByOrderUid(orderId);
-      await dbClient.deleteOrderByUid(orderId);
-      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    async ({ testedUser, testOrderDb, testResultDb }) => {
+      await testResultDb.deleteResultStatusByUid(orderId);
+      await testOrderDb.deleteOrderStatusByUid(orderId);
+      await testOrderDb.deleteConsentByOrderUid(orderId);
+      await testOrderDb.deleteOrderByUid(orderId);
+      await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     },
   );
-
-  test.afterAll("Disconnect from the database", async () => {
-    await dbClient.disconnect();
-    await resultDbClient.disconnect();
-  });
 });

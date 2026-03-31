@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom";
-
-import { PostcodeLookupProvider, usePostcodeLookup } from "@/state/PostcodeLookupContext";
-import { SESSION_STORAGE_KEYS } from "@/lib/services/session-service";
 import { act, renderHook, waitFor } from "@testing-library/react";
+
+import { SESSION_STORAGE_KEYS } from "@/lib/services/session-service";
+import { PostcodeLookupProvider, usePostcodeLookup } from "@/state/PostcodeLookupContext";
 
 jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
 
@@ -11,7 +11,7 @@ globalThis.fetch = mockFetch as typeof fetch;
 
 describe("PostcodeLookupContext", () => {
   beforeEach(() => {
-    window.sessionStorage.clear();
+    globalThis.sessionStorage.clear();
     jest.clearAllMocks();
   });
 
@@ -51,7 +51,7 @@ describe("PostcodeLookupContext", () => {
         error: null,
       };
 
-      window.sessionStorage.setItem(
+      globalThis.sessionStorage.setItem(
         SESSION_STORAGE_KEYS.postcodeLookup,
         JSON.stringify(persistedState),
       );
@@ -98,7 +98,9 @@ describe("PostcodeLookupContext", () => {
       expect(result.current.error).toBeNull();
 
       await waitFor(() => {
-        expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).not.toBeNull();
+        expect(
+          globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup),
+        ).not.toBeNull();
       });
     });
 
@@ -164,7 +166,9 @@ describe("PostcodeLookupContext", () => {
       });
 
       await waitFor(() => {
-        expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).not.toBeNull();
+        expect(
+          globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup),
+        ).not.toBeNull();
       });
 
       act(() => {
@@ -176,7 +180,7 @@ describe("PostcodeLookupContext", () => {
       expect(result.current.selectedAddress).toBeNull();
       expect(result.current.lookupResultsStatus).toBe("idle");
       expect(result.current.error).toBeNull();
-      expect(window.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.postcodeLookup)).toBeNull();
     });
   });
 

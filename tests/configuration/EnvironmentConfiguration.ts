@@ -1,17 +1,16 @@
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-import * as fs from 'fs';
-import {
-  EnvironmentVariables,
-  availableEnvironments,
-  Environment
-} from './EnvironmentVariables';
+import * as fs from "fs";
+import * as path from "path";
+
+import * as dotenv from "dotenv";
+
+import { Environment, EnvironmentVariables, availableEnvironments } from "./EnvironmentVariables";
 
 export { EnvironmentVariables };
 export type { Environment };
 
 export enum AuthType {
-  SANDBOX = 'sandbox'
+  SANDPIT = "sandpit",
+  WIREMOCK = "wiremock",
 }
 
 export interface Config {
@@ -24,21 +23,21 @@ export interface Config {
   accessibilityStandards: string;
   reportingOutputDirectory: string;
   enableTracingOnGlobalSetup: boolean;
+  wiremockBaseUrl: string;
 }
 
 export type ConfigInterface = Config;
 
 export class ConfigFactory {
   private static cachedConfig: Config | undefined;
-  private static envName: Environment =
-    (process.env.ENV as Environment) || 'local';
+  private static envName: Environment = (process.env.ENV as Environment) || "local";
 
   public static getConfig(): Config {
-    this.envName = (process.env.ENV as Environment) || 'local';
+    this.envName = (process.env.ENV as Environment) || "local";
 
     if (!availableEnvironments.includes(this.envName)) {
       throw new Error(
-        `Invalid environment: ${this.envName}. Available environments: ${availableEnvironments.join(', ')}`
+        `Invalid environment: ${this.envName}. Available environments: ${availableEnvironments.join(", ")}`,
       );
     }
 
@@ -48,7 +47,7 @@ export class ConfigFactory {
   }
 
   private static loadConfiguration(): Config {
-    console.log('Loading configuration for the tests...');
+    console.log("Loading configuration for the tests...");
 
     const defaultConfig = this.loadDefaultConfiguration();
     const envConfig = this.readConfigurationFromEnvFile();
@@ -57,21 +56,22 @@ export class ConfigFactory {
     return {
       ...defaultConfig,
       ...envConfig,
-      ...localConfig
+      ...localConfig,
     };
   }
 
   private static loadDefaultConfiguration(): Config {
     return {
-      uiBaseUrl: 'http://localhost:3000',
-      apiBaseUrl: 'http://localhost:4000/api',
+      uiBaseUrl: "http://localhost:3000",
+      apiBaseUrl: "http://localhost:4000/api",
       headless: true,
       timeout: 30000,
       slowMo: 0,
-      authType: AuthType.SANDBOX,
-      accessibilityStandards: 'wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa',
-      reportingOutputDirectory: 'tests/testResults',
-      enableTracingOnGlobalSetup: false
+      authType: (process.env.ENV ?? "local") === "local" ? AuthType.WIREMOCK : AuthType.SANDPIT,
+      accessibilityStandards: "wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa",
+      reportingOutputDirectory: "tests/testResults",
+      enableTracingOnGlobalSetup: false,
+      wiremockBaseUrl: "http://localhost:8080",
     };
   }
 
@@ -82,35 +82,43 @@ export class ConfigFactory {
 
     if (result.error) {
       console.log(
-        `No .env file found for environment: ${this.envName}. Using default configuration.`
+        `No .env file found for environment: ${this.envName}. Using default configuration.`,
       );
       return {};
     }
 
     console.log(`✅ Loaded configuration from .env.${this.envName}`);
 
-    return {
-      uiBaseUrl: process.env[EnvironmentVariables.UI_BASE_URL],
-      apiBaseUrl: process.env[EnvironmentVariables.API_BASE_URL],
-      headless: process.env[EnvironmentVariables.HEADLESS] === 'true',
-      timeout: process.env[EnvironmentVariables.TIMEOUT]
-        ? parseInt(process.env[EnvironmentVariables.TIMEOUT], 10)
-        : undefined,
-      slowMo: process.env[EnvironmentVariables.SLOW_MO]
-        ? parseInt(process.env[EnvironmentVariables.SLOW_MO], 10)
-        : undefined,
-      accessibilityStandards:
-        process.env[EnvironmentVariables.ACCESSIBILITY_STANDARDS],
-      reportingOutputDirectory:
-        process.env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY]
-    };
+    const partial: Partial<Config> = {};
+    const env = process.env;
+
+    if (env[EnvironmentVariables.UI_BASE_URL])
+      partial.uiBaseUrl = env[EnvironmentVariables.UI_BASE_URL];
+    if (env[EnvironmentVariables.API_BASE_URL])
+      partial.apiBaseUrl = env[EnvironmentVariables.API_BASE_URL];
+    if (env[EnvironmentVariables.HEADLESS] !== undefined)
+      partial.headless = env[EnvironmentVariables.HEADLESS] === "true";
+    if (env[EnvironmentVariables.TIMEOUT])
+      partial.timeout = parseInt(env[EnvironmentVariables.TIMEOUT], 10);
+    if (env[EnvironmentVariables.SLOW_MO])
+      partial.slowMo = parseInt(env[EnvironmentVariables.SLOW_MO], 10);
+    if (env[EnvironmentVariables.ACCESSIBILITY_STANDARDS])
+      partial.accessibilityStandards = env[EnvironmentVariables.ACCESSIBILITY_STANDARDS];
+    if (env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY])
+      partial.reportingOutputDirectory = env[EnvironmentVariables.REPORTING_OUTPUT_DIRECTORY];
+    if (env[EnvironmentVariables.AUTH_TYPE])
+      partial.authType = env[EnvironmentVariables.AUTH_TYPE] as AuthType;
+    if (env[EnvironmentVariables.WIREMOCK_BASE_URL])
+      partial.wiremockBaseUrl = env[EnvironmentVariables.WIREMOCK_BASE_URL];
+
+    return partial;
   }
 
   private static readConfigurationFromLocalFile(): Partial<Config> {
     const localFilePath = path.join(__dirname, `./local.json`);
 
     if (!fs.existsSync(localFilePath)) {
-      console.log('No local configuration file found');
+      console.log("No local configuration file found");
       return {};
     }
 
@@ -119,7 +127,7 @@ export class ConfigFactory {
 
   private static readConfigurationFromFile(filePath: string): Partial<Config> {
     try {
-      const configurationFileContent = fs.readFileSync(filePath, 'utf8');
+      const configurationFileContent = fs.readFileSync(filePath, "utf8");
       return JSON.parse(configurationFileContent) as Partial<Config>;
     } catch (e) {
       console.log(`Error reading configuration file: ${filePath}`, e);

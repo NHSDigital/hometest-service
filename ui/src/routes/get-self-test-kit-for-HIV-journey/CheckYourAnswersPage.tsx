@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
@@ -185,10 +185,10 @@ export default function CheckYourAnswersPage() {
           <SummaryList.Key>{content.summaryLabels.deliveryAddress}</SummaryList.Key>
           <SummaryList.Value id="delivery-address-value">
             {addressLines.map((line, index) => (
-              <span key={index}>
+              <React.Fragment key={`${index}-${line}`}>
                 {line}
                 {index < addressLines.length - 1 && <br />}
-              </span>
+              </React.Fragment>
             ))}
           </SummaryList.Value>
           <SummaryList.Action
@@ -252,7 +252,7 @@ export default function CheckYourAnswersPage() {
           error={consentError || undefined}
         >
           <Checkboxes.Item value="consent" checked={consentChecked} onChange={handleConsentChange}>
-            {content.consent.label.replace("{supplier}", supplierName)}{" "}
+            {`${content.consent.label.replace("{supplier}", supplierName)} `}
             <a
               href={JourneyStepNames.SuppliersTermsConditions}
               onClick={(e) => {
@@ -261,8 +261,8 @@ export default function CheckYourAnswersPage() {
               }}
             >
               {content.consent.termsOfUseText}
-            </a>{" "}
-            {content.consent.labelAnd}{" "}
+            </a>
+            {` ${content.consent.labelAnd} `}
             <a
               href={JourneyStepNames.SuppliersPrivacyPolicy}
               onClick={(e) => {
@@ -272,7 +272,7 @@ export default function CheckYourAnswersPage() {
             >
               {content.consent.privacyPolicyText}
             </a>
-            .
+            {"."}
           </Checkboxes.Item>
         </Checkboxes>
         <Button type="submit">{content.submitButton}</Button>

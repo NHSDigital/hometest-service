@@ -1,7 +1,8 @@
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
-import { SpecialUserKey } from "../../utils/users";
+import { type NHSLoginMockedUser, SpecialUserKey } from "../../utils/users";
 
 const randomAddress = AddressModel.getRandomAddress();
 
@@ -17,7 +18,8 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await context.clearCookies();
     await context.clearPermissions();
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18);
+    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
+
     await userManager.login(user, page);
     await homeTestStartPage.navigate();
     await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
@@ -32,7 +34,8 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await enterDeliveryAddressPage.fillPostCodeAndContinue(randomAddress);
     await selectDeliveryAddressPage.clickContinueButton();
     await selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
+    await cannotUseServiceUnder18Page.waitUntilPageLoaded();
+    await expect(cannotUseServiceUnder18Page.pageHeader).toHaveText(
       "You cannot use this service as you are under 18",
     );
     await cannotUseServiceUnder18Page.expectPostcodeInFindAnotherClinicLink(randomAddress.postCode);
@@ -46,7 +49,8 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     await enterDeliveryAddressPage.clickEnterAddressManuallyLink();
     await enterAddressManuallyPage.fillDeliveryAddressFields(randomAddress);
     await enterAddressManuallyPage.clickContinue();
-    await expect(cannotUseServiceUnder18Page.headerText).toHaveText(
+    await cannotUseServiceUnder18Page.waitUntilPageLoaded();
+    await expect(cannotUseServiceUnder18Page.pageHeader).toHaveText(
       "You cannot use this service as you are under 18",
     );
     await cannotUseServiceUnder18Page.expectPostcodeInFindAnotherClinicLink(randomAddress.postCode);

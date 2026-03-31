@@ -1,0 +1,14 @@
+{
+  "name": "NHS Login - Mock Authorize Endpoint",
+  "request": {
+    "method": "GET",
+    "urlPath": "/authorize"
+  },
+  "response": {
+    "status": 302,
+    "headers": {
+      "Location": "{{request.query.redirect_uri}}?code=wiremock-auth-code&state={{request.query.state}}"
+    },
+    "transformers": ["response-template"]
+  }
+}

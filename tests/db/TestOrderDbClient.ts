@@ -5,7 +5,6 @@ import {
   TestOrderModel,
   UUID,
 } from "../models/TestOrder";
-
 import { BaseDbClient } from "./BaseDbClient";
 
 export class TestOrderDbClient extends BaseDbClient {
@@ -204,5 +203,25 @@ export class TestOrderDbClient extends BaseDbClient {
       [orderUid, statusCode],
     );
     return Number(rows[0].count);
+  }
+
+  async hasOrderStatusCode(orderUid: UUID, statusCode: OrderStatusCode): Promise<boolean> {
+    return (await this.getOrderStatusCountByCode(orderUid, statusCode)) > 0;
+  }
+
+  async getOrderByPatientUid(patientUid: UUID): Promise<TestOrderModel | undefined> {
+    const rows = await this.query<TestOrderModel>(
+      `SELECT t.order_uid, t.order_reference, t.supplier_id, t.patient_uid,
+              t.test_code, t.originator, t.created_at,
+              s.supplier_name, p.nhs_number, p.birth_date
+       FROM test_order t
+       JOIN supplier s ON s.supplier_id = t.supplier_id
+       JOIN patient_mapping p ON p.patient_uid = t.patient_uid
+       WHERE t.patient_uid = $1::uuid
+       ORDER BY t.created_at DESC
+       LIMIT 1`,
+      [patientUid],
+    );
+    return rows[0];
   }
 }

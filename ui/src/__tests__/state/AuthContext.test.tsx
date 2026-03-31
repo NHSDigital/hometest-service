@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
+import { act, render, renderHook, screen } from "@testing-library/react";
 
 import { AuthProvider, AuthUser, useAuth } from "@/state";
-import { act, render, renderHook, screen } from "@testing-library/react";
 
 const AUTH_STORAGE_KEY = "hometest:auth:user";
 
@@ -18,7 +18,7 @@ describe("AuthContext", () => {
   };
 
   beforeEach(() => {
-    window.sessionStorage.clear();
+    globalThis.sessionStorage.clear();
   });
 
   describe("AuthProvider", () => {
@@ -42,7 +42,7 @@ describe("AuthContext", () => {
     });
 
     it("rehydrates user state from session storage", () => {
-      window.sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(mockUser));
+      globalThis.sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(mockUser));
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -94,7 +94,7 @@ describe("AuthContext", () => {
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.user?.nhsNumber).toBe("9876543210");
       expect(result.current.user?.birthdate).toBe("1985-05-15");
-      expect(window.sessionStorage.getItem(AUTH_STORAGE_KEY)).toBe(JSON.stringify(mockUser));
+      expect(globalThis.sessionStorage.getItem(AUTH_STORAGE_KEY)).toBe(JSON.stringify(mockUser));
     });
 
     it("clears user state when setUser is called with null", () => {
@@ -115,7 +115,7 @@ describe("AuthContext", () => {
       });
 
       expect(result.current.user).toBeNull();
-      expect(window.sessionStorage.getItem(AUTH_STORAGE_KEY)).toBeNull();
+      expect(globalThis.sessionStorage.getItem(AUTH_STORAGE_KEY)).toBeNull();
     });
 
     it("updates user correctly when setUser is called multiple times", () => {

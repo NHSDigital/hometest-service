@@ -1,0 +1,35 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPath": "/userinfo",
+    "headers": {
+      "Authorization": {
+        "matches": "Bearer .*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "iss": "http://wiremock:8080",
+      "aud": "hometest",
+      "sub": "test-sub-123",
+      "family_name": "MILLAR",
+      "given_name": "Mona",
+      "identity_proofing_level": "P9",
+      "email": "mona.millar@example.com",
+      "email_verified": "true",
+      "phone_number": "+447700900000",
+      "phone_number_verified": "true",
+      "birthdate": "1990-01-01",
+      "nhs_number": "9912003071",
+      "gp_registration_details": {
+        "gp_ods_code": "Y12345"
+      }
+    }
+  }
+}

@@ -1,28 +1,27 @@
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
+import z from "zod";
+
+import { ConsoleCommons } from "../lib/commons";
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { securityHeaders } from "../lib/http/security-headers";
 import {
   FHIRCodeableConceptSchema,
   FHIRIdentifierSchema,
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
-import { businessStatusMapping, extractIdFromReference } from "./utils";
-import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
-
-import { ConsoleCommons } from "../lib/commons";
-import { IncomingBusinessStatus } from "./types";
-import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
-import cors from "@middy/http-cors";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
-import httpErrorHandler from "@middy/http-error-handler";
-import httpSecurityHeaders from "@middy/http-security-headers";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
-import middy from "@middy/core";
-import { securityHeaders } from "../lib/http/security-headers";
-import z from "zod";
+import { IncomingBusinessStatus } from "./types";
+import { businessStatusMapping, extractIdFromReference } from "./utils";
 
 const commons = new ConsoleCommons();
-const { orderStatusDb } = init();
 const name = "order-status-lambda";
 
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
@@ -43,6 +42,7 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  const { orderStatusDb } = init();
   commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
@@ -172,5 +172,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());
