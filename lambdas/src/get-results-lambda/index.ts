@@ -15,8 +15,8 @@ import { getResultsQueryParamsSchema } from "./schemas";
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const correlationId = getCorrelationIdFromEventHeaders(event);
   const { testResultDbClient, supplierTestResultsService } = init();
+  const correlationId = getCorrelationIdFromEventHeaders(event);
 
   const validationResult = getResultsQueryParamsSchema.safeParse(event.queryStringParameters);
 
