@@ -20,13 +20,29 @@ Beyond the static timeout, SQS does not natively back off between retries — ev
 
 This is more targeted than simply raising `max_receive_count` (see item 7) — backoff controls _when_ retries happen; receive count controls _how many_. Both should be set together.
 
-## 3. Classify errors as retryable or non-retryable in `order-router-lambda`
+## 3. Classify errors as auto-retryable or not in `order-router-lambda`
 
-Currently all failures are treated as retryable — any exception pushes the message ID into `batchItemFailures`, which causes SQS to re-deliver. A 400 from the supplier API (malformed FHIR payload, invalid correlation ID, etc.) will never succeed on retry; retrying it wastes `max_receive_count` attempts and eventually sends a legitimate patient order to the DLQ unnecessarily.
+Currently all failures are treated as retryable — any exception pushes the message ID into `batchItemFailures`, causing SQS to re-deliver until `max_receive_count` is exhausted. This wastes retry attempts on failures that will never self-heal, and sends legitimate patient orders to the DLQ unnecessarily.
 
-The fix is to return a 4xx error silently from `batchItemFailures` — i.e., **not** add the message to `batchItemFailures`, causing Lambda to treat it as success and delete it from the queue. It must not simply be discarded, however — the failure must be persisted to a durable store (see item 5) and the order status updated accordingly so the record is not lost.
+**The right question at the SQS loop level is not "is this error permanent?" but "will waiting and retrying automatically fix this?"** That is a narrower, more answerable question.
 
-A `isRetryable(error)` helper can classify based on HTTP status (4xx = non-retryable, 5xx/network = retryable) and known error types (schema/validation failures = non-retryable).
+Errors that belong in the SQS retry loop (add to `batchItemFailures`, apply backoff):
+
+- 5xx from supplier — transient server error
+- 429 from supplier — rate limited; back off and retry
+- Network/timeout failures — transient infrastructure
+
+Errors that should leave the SQS loop (do **not** add to `batchItemFailures`):
+
+- 4xx from supplier (other than 429) — includes 400 (bad payload), 401 (auth config), 404 (wrong endpoint), etc.
+- Schema/validation failures on the message body — payload is malformed and won't change on retry
+- Supplier not found in DB — config issue
+
+This second group is not necessarily _permanently_ broken — a 401 might be fixed by rotating credentials, a 404 by correcting a config value, a 400 by identifying a mapping bug. But none of these fix themselves with time; they require a deliberate action before the message can succeed. **Crucially, if a DB persistence mechanism is in place (see item 6), every message in this group remains retryable** — the SQS loop is simply not the right place to hold them while waiting for a fix.
+
+Messages removed from the SQS loop must not be silently discarded. They must be persisted to a durable store (see item 6) and the order status updated to reflect the failure, so they can be reprocessed once the underlying issue is resolved.
+
+An `isTransient(error)` helper (note: _transient_, not _retryable_ — the distinction matters) can classify based on HTTP status and known error types. When in doubt, treat as transient and let the DLQ act as the final backstop.
 
 ## 4. Enable `bisect_batch_on_function_error`
 
