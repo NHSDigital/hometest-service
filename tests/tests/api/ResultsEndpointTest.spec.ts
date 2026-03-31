@@ -25,7 +25,6 @@ test.describe("GET Result API", () => {
       orderId = result.order_uid;
       patientId = result.patient_uid;
       correlationId = randomUUID();
-      console.log(`Created test order with ID: ${orderId}`);
 
       await testResultDb.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
     },
@@ -42,7 +41,6 @@ test.describe("GET Result API", () => {
       hivResultsApi.validateStatus(response, 200);
       expect(await testResultDb.getResultStatusCountByOrderUid(orderId)).toBe(1);
       const responseBody = await response.json();
-      console.log("The response received: " + JSON.stringify(responseBody, null, 2));
       const resultStatus = responseBody.interpretation[0].coding[0].display;
       expect(resultStatus).toBe("Normal");
       console.log("Confirmed status: Normal");

@@ -103,7 +103,6 @@ test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
     correlationId = randomUUID();
 
     patientId = (await testOrderDb.getPatientUidByNhsNumber(testedUser.nhsNumber!))!;
-    console.log(`Created order via API: ${orderId}, patientId: ${patientId}`);
 
     await expect
       .poll(async () => (await testOrderDb.getOrderStatusesByOrderUid(orderId))?.length, {

@@ -5,9 +5,6 @@
 # reset and new RSA key pairs are generated, the warm Lambda container still
 # holds the old keys causing JWT verification failures (~5 min until cold start).
 #
-# Forcing a cold start: set reserved concurrency to 0 (kills warm containers),
-# then delete reserved concurrency (restores unrestricted execution).
-#
 # Usage:
 #   bash scripts/tests/reset-login-lambda-cache.sh
 #   bash scripts/tests/reset-login-lambda-cache.sh my-custom-function-name
