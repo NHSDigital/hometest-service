@@ -1,30 +1,23 @@
-import { expect } from "@playwright/test";
-import { test } from "../../fixtures/CombinedTestFixture";
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { ResultsObservationData } from "../../test-data/ResultsObservationData";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { headersTestResults } from "../../utils";
 import { randomUUID } from "crypto";
+
+import { expect } from "@playwright/test";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
+import { ResultsObservationData } from "../../test-data/ResultsObservationData";
+import { headersTestResults } from "../../utils";
 
 let orderId: string;
 let patientId: string;
 let correlationId: string;
-const dbClient = new TestOrderDbClient();
-const resultDbClient = new TestResultDbClient();
 const supplierName = "Preventx";
 let supplierId: string;
 
 test.describe("Results Flow - Update Order Results Logic", () => {
-  test.beforeAll("Connect to the database", async () => {
-    await dbClient.connect();
-    await resultDbClient.connect();
-  });
-
-  test.beforeEach("Create a patient, order, order status", async ({ testedUser }) => {
+  test.beforeEach("Create a patient, order, order status", async ({ testedUser, testOrderDb }) => {
     console.log("Tested user:", JSON.stringify(testedUser, null, 2));
 
-    const result = await dbClient.createOrderWithPatientAndStatus(
+    const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder()
         .withUser(testedUser)
         .withSupplier(supplierName)
@@ -37,11 +30,13 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     correlationId = randomUUID();
     console.log(`Created test order with ID: ${orderId}`);
 
-    supplierId = await dbClient.getSupplierIdByName(supplierName);
+    supplierId = await testOrderDb.getSupplierIdByName(supplierName);
   });
 
   test("Update the order status and result status when test result is normal", async ({
     hivResultsApi,
+    testOrderDb,
+    testResultDb,
   }) => {
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
     const response = await hivResultsApi.submitTestResults(
@@ -50,15 +45,17 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     );
     expect(response.status()).toBe(201);
 
-    expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).statusCode).toEqual(
+    expect((await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId)).statusCode).toEqual(
       "COMPLETE",
     );
-    expect(await resultDbClient.getLatestResultStatusByOrderUid(orderId)).toEqual(
-      "RESULT_AVAILABLE",
-    );
+    expect(await testResultDb.getLatestResultStatusByOrderUid(orderId)).toEqual("RESULT_AVAILABLE");
   });
 
-  test("Update the result status when test result is abnormal", async ({ hivResultsApi }) => {
+  test("Update the result status when test result is abnormal", async ({
+    hivResultsApi,
+    testOrderDb,
+    testResultDb,
+  }) => {
     const testData = ResultsObservationData.buildAbnormalObservation(
       orderId,
       patientId,
@@ -71,27 +68,20 @@ test.describe("Results Flow - Update Order Results Logic", () => {
     );
     expect(response.status()).toBe(201);
 
-    expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).statusCode).toEqual(
+    expect((await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId)).statusCode).toEqual(
       "RECEIVED",
     );
-    expect(await resultDbClient.getLatestResultStatusByOrderUid(orderId)).toEqual(
-      "RESULT_WITHHELD",
-    );
+    expect(await testResultDb.getLatestResultStatusByOrderUid(orderId)).toEqual("RESULT_WITHHELD");
   });
 
   test.afterEach(
     "Delete result status, order status, order, and patient records from the database",
-    async ({ testedUser }) => {
-      await resultDbClient.deleteResultStatusByUid(orderId);
-      await dbClient.deleteOrderStatusByUid(orderId);
-      await dbClient.deleteConsentByPatientUid(patientId);
-      await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+    async ({ testedUser, testOrderDb, testResultDb }) => {
+      await testResultDb.deleteResultStatusByUid(orderId);
+      await testOrderDb.deleteOrderStatusByUid(orderId);
+      await testOrderDb.deleteConsentByPatientUid(patientId);
+      await testOrderDb.deleteOrderByPatientUid(patientId);
+      await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     },
   );
-
-  test.afterAll("Disconnect from the database", async () => {
-    await dbClient.disconnect();
-    await resultDbClient.disconnect();
-  });
 });

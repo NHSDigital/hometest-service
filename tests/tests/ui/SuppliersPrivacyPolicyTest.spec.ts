@@ -1,27 +1,24 @@
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { expect } from "@playwright/test";
+
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
 let patientId: string;
 let orderId2: string;
-const dbClient = new TestOrderDbClient();
 
 test.describe("Suppliers Privacy Policy Page", () => {
   test.beforeAll(
     "Connect to the database and create a patient and orders with different suppliers",
-    async ({ testedUser }) => {
-      await dbClient.connect();
-
-      const result = await dbClient.createOrderWithPatientAndStatus(
+    async ({ testedUser, testOrderDb }) => {
+      const result = await testOrderDb.createOrderWithPatientAndStatus(
         new OrderBuilder().withUser(testedUser).build(),
       );
 
       orderId = result.order_uid;
       patientId = result.patient_uid;
 
-      const order2 = await dbClient.createOrderWithPatientAndStatus(
+      const order2 = await testOrderDb.createOrderWithPatientAndStatus(
         new OrderBuilder()
           .withUser(testedUser)
           .withStatus("RECEIVED")
@@ -52,13 +49,12 @@ test.describe("Suppliers Privacy Policy Page", () => {
 
   test.afterAll(
     "Delete order status, order, and patient records from the database and disconnect",
-    async ({ testedUser }) => {
-       await dbClient.deleteConsentByPatientUid(patientId);
-      await dbClient.deleteOrderStatusByUid(orderId);
-      await dbClient.deleteOrderStatusByUid(orderId2);
-      await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-      await dbClient.disconnect();
+    async ({ testedUser, testOrderDb }) => {
+      await testOrderDb.deleteConsentByPatientUid(patientId);
+      await testOrderDb.deleteOrderStatusByUid(orderId);
+      await testOrderDb.deleteOrderStatusByUid(orderId2);
+      await testOrderDb.deleteOrderByPatientUid(patientId);
+      await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
     },
   );
 });

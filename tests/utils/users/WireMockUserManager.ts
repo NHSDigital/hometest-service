@@ -81,14 +81,50 @@ export class WireMockUserManager extends BaseUserManager<WireMockAuthUser> {
 
   protected async loginWorkerUser(user: WireMockAuthUser, page: Page): Promise<Page> {
     const loginHint = encodeURIComponent(user.nhsNumber ?? user.authContext.sub);
+    const isFirefox = page.context().browser()?.browserType().name() === "firefox";
 
-    await page.goto(`${this.config.uiBaseUrl}/login?login_hint=${loginHint}`);
-    // Wait until the OAuth redirect chain completes:
-    // /login → WireMock /authorize → /callback → post-login page
-    await page.waitForURL(
-      (url) => !url.pathname.includes("/login") && !url.pathname.includes("/callback"),
-      { timeout: 30000 },
-    );
+    await page.goto(`${this.config.uiBaseUrl}/login?login_hint=${loginHint}`, {
+      waitUntil: isFirefox ? "domcontentloaded" : "commit",
+    });
+
+    // Firefox-specific: NS_BINDING_ABORTED errors during rapid OAuth redirects
+    // Wait for the redirect chain to settle using a more reliable approach
+    if (isFirefox) {
+      // Poll until URL changes and settles on a non-intermediate page
+      let lastUrl = "";
+      let stableCount = 0;
+      const maxAttempts = 150; // 15 seconds with 100ms intervals
+
+      for (let i = 0; i < maxAttempts; i++) {
+        await page.waitForTimeout(100);
+        const currentUrl = page.url();
+
+        if (currentUrl === lastUrl) {
+          stableCount++;
+          // URL stable for 3 checks (300ms) and not on intermediate page
+          if (
+            stableCount >= 3 &&
+            !currentUrl.includes("/login") &&
+            !currentUrl.includes("/callback")
+          ) {
+            return page;
+          }
+        } else {
+          stableCount = 0;
+          lastUrl = currentUrl;
+        }
+      }
+
+      // Timeout: still on intermediate page
+      throw new Error(`Firefox login timeout: still on ${page.url()} after ${maxAttempts * 100}ms`);
+    } else {
+      // Other browsers: standard waitForURL
+      await page.waitForURL(
+        (url) => !url.pathname.includes("/login") && !url.pathname.includes("/callback"),
+        { timeout: 30000 },
+      );
+    }
+
     return page;
   }
 
