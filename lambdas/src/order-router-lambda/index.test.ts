@@ -47,6 +47,9 @@ jest.mock("../lib/supplier/supplier-auth-client", () => {
 
 import { handler } from "./index";
 
+const mockBuildTokenGeneratorCacheKey = jest.mocked(buildTokenGeneratorCacheKey);
+const mockCreateTokenGenerator = jest.mocked(createTokenGenerator);
+
 describe("order-router-lambda", () => {
   let mockContext: Partial<Context>;
   const validUUID = "123e4567-e89b-12d3-a456-426614174000";
@@ -92,6 +95,12 @@ describe("order-router-lambda", () => {
     mockGenerateToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
     mockAddOrderStatusUpdate.mockReset();
+    mockBuildTokenGeneratorCacheKey.mockReset();
+    mockBuildTokenGeneratorCacheKey.mockReturnValue("supplier-cache-key");
+    mockCreateTokenGenerator.mockReset();
+    mockCreateTokenGenerator.mockImplementation(() => ({
+      generateToken: mockGenerateToken,
+    }));
 
     process.env.AWS_REGION = "eu-west-2";
   });
@@ -250,9 +259,6 @@ describe("order-router-lambda", () => {
     });
 
     it("should reuse cached token generator for repeated requests with same supplier config", async () => {
-      const mockBuildTokenGeneratorCacheKey = jest.mocked(buildTokenGeneratorCacheKey);
-      const mockCreateTokenGenerator = jest.mocked(createTokenGenerator);
-
       mockBuildTokenGeneratorCacheKey.mockReturnValue("supplier-cache-key-reuse-test");
 
       mockHttpClientPostRaw.mockResolvedValue({
