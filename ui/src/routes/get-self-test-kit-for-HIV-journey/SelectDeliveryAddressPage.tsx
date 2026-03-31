@@ -1,5 +1,13 @@
 "use client";
 
+import { Button, ErrorSummary, Radios } from "nhsuk-react-components";
+import { useState } from "react";
+
+import { useAsyncErrorHandler, useContent } from "@/hooks";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import laLookupService from "@/lib/services/la-lookup-service";
+import { isUnder18 } from "@/lib/utils/is-under-18";
 import {
   AddressResult,
   useAuth,
@@ -7,13 +15,6 @@ import {
   useJourneyNavigationContext,
   usePostcodeLookup,
 } from "@/state";
-import FormPageLayout from "@/layouts/FormPageLayout";
-import { useContent, useAsyncErrorHandler } from "@/hooks";
-import { Radios, Button, ErrorSummary } from "nhsuk-react-components";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import laLookupService from "@/lib/services/la-lookup-service";
-import { useState } from "react";
-import { isUnder18 } from "@/lib/utils/is-under-18";
 
 export default function SelectDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
@@ -47,7 +48,7 @@ export default function SelectDeliveryAddressPage() {
 
     const postcode = selected.postcode;
     const laResponse = await laLookupService.getByPostcode(postcode);
-    if (!laResponse || !laResponse.suppliers || laResponse.suppliers.length === 0) {
+    if (!laResponse?.suppliers?.length) {
       updateOrderAnswers({ postcodeSearch: postcode });
       goToStep(JourneyStepNames.KitNotAvailableInArea);
       return;

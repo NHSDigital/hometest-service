@@ -1,9 +1,10 @@
 import { Locator, Page } from "@playwright/test";
-import { BasePage } from "./BasePage";
+
 import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
 import { type Supplier } from "../models/TestOrder";
+import { AuthenticatedPage } from "./AuthenticatedPage";
 
-export class SuppliersPrivacyPolicyPage extends BasePage {
+export class SuppliersPrivacyPolicyPage extends AuthenticatedPage {
   readonly config: ConfigInterface;
   readonly pageHeader: Locator;
 
@@ -18,8 +19,10 @@ export class SuppliersPrivacyPolicyPage extends BasePage {
   }
 
   async navigate(supplierInput: Supplier["supplier_name"]): Promise<void> {
-    const url = `${this.config.uiBaseUrl}/suppliers-privacy-policy?supplier=${encodeURIComponent(supplierInput)}`;
-    await this.page.goto(url);
+    await this.navigateToProtectedPath(
+      `/suppliers-privacy-policy?supplier=${encodeURIComponent(supplierInput)}`,
+      this.pageHeader,
+    );
   }
 
   async getHeaderText(): Promise<string> {

@@ -1,0 +1,25 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPath": "/.well-known/jwks.json"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "keys": [
+        {
+          "kty": "RSA",
+          "n": "3dtNLBcNxZRhvSOxcDMfu-rKKcnBJFUcV_U_UxURhIYcbtcier0ikUbsSlD80sc-oGYOmAaZYGBmP5oT1L7lGLn2GAC3m-FBi_oiwszjeFv-RHAE8RmVTxNCBVwntbAQPbCrSeXDYsoDR8uu1qI2SAR7eEdbPO7_LjCwRYyqaH_FMhAYubC4AysCOpu_0FcuR2MDvoo3xKtJ7y7lGXKO11B1GkTdTRbWBbX8qEdHvLmkFQ73iJZW3KtxwzMiGyvRq6LVC8VB7pLHwkdyNJubPIj5KTAnOFmdgbGGFGZRdjjTHmr6EYDwAAa-ptEMaYheBASFCd3RlnSPOJVacSVKxQ",
+          "e": "AQAB",
+          "kid": "wiremock-key-1",
+          "use": "sig",
+          "alg": "RS512"
+        }
+      ]
+    }
+  }
+}

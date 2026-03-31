@@ -63,6 +63,34 @@ locals {
   secret_file_map = merge(local.secret_json_map, local.secret_txt_map, local.secret_key_map)
 }
 
+locals {
+  wiremock_container_base_url    = "http://wiremock:8080"
+  wiremock_browser_base_url      = "http://localhost:8080"
+  nhs_login_sandpit_base_url     = "https://auth.sandpit.signin.nhs.uk"
+  postcode_lookup_os_places_base = "https://api.os.uk/search/places/v1"
+
+  use_wiremock_mode = var.local_service_mode == "wiremock"
+
+  resolved_nhs_login_override_container_base_url = var.local_use_ui_auth_url_override != null ? replace(var.local_use_ui_auth_url_override, "localhost", "wiremock") : null
+  resolved_nhs_login_override_browser_base_url   = var.local_use_ui_auth_url_override != null ? replace(var.local_use_ui_auth_url_override, "wiremock", "localhost") : null
+
+  resolved_nhs_login_base_url = local.resolved_nhs_login_override_container_base_url != null ? local.resolved_nhs_login_override_container_base_url : (
+    local.use_wiremock_mode ? local.wiremock_container_base_url : local.nhs_login_sandpit_base_url
+  )
+
+  resolved_nhs_login_authorize_url = local.resolved_nhs_login_override_browser_base_url != null ? "${local.resolved_nhs_login_override_browser_base_url}/authorize" : (
+    local.use_wiremock_mode ? "${local.wiremock_browser_base_url}/authorize" : "${local.nhs_login_sandpit_base_url}/authorize"
+  )
+
+  resolved_postcode_lookup_base_url = var.local_postcode_lookup_base_url_override != null ? var.local_postcode_lookup_base_url_override : (
+    local.use_wiremock_mode ? local.wiremock_container_base_url : local.postcode_lookup_os_places_base
+  )
+
+  resolved_supplier_service_url = var.local_supplier_service_url_override != null ? var.local_supplier_service_url_override : local.wiremock_container_base_url
+
+  resolved_use_wiremock_auth = local.resolved_nhs_login_override_container_base_url != null ? length(regexall("wiremock", lower(local.resolved_nhs_login_override_container_base_url))) > 0 : local.use_wiremock_mode
+}
+
 # Fail early if required secrets are missing
 resource "null_resource" "validate_secrets" {
   lifecycle {
@@ -75,6 +103,8 @@ resource "null_resource" "validate_secrets" {
     }
   }
 }
+
+
 
 resource "aws_secretsmanager_secret" "secrets" {
   for_each = local.secret_file_map
@@ -176,6 +206,7 @@ module "eligibility_lookup_lambda" {
 
   environment_variables = {
     NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
     DB_USERNAME    = "app_user"
     DB_ADDRESS     = "postgres-db"
     DB_PORT        = "5432"
@@ -211,7 +242,8 @@ module "login_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                               = "--enable-source-maps",
-    NHS_LOGIN_BASE_ENDPOINT_URL                = "https://auth.sandpit.signin.nhs.uk",
+    ALLOW_ORIGIN                               = "http://localhost:3000",
+    NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url,
     NHS_LOGIN_CLIENT_ID                        = "hometest",
     NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
     NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
@@ -246,9 +278,10 @@ module "session_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                       = "--enable-source-maps"
+    ALLOW_ORIGIN                       = "http://localhost:3000"
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
-    NHS_LOGIN_BASE_ENDPOINT_URL        = "https://auth.sandpit.signin.nhs.uk",
+    NHS_LOGIN_BASE_ENDPOINT_URL        = local.resolved_nhs_login_base_url,
   }
 }
 
@@ -270,8 +303,9 @@ module "postcode_lookup_lambda" {
 
   environment_variables = {
     NODE_OPTIONS                            = "--enable-source-maps",
+    ALLOW_ORIGIN                            = "http://localhost:3000",
     POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME = "os-places-creds",
-    POSTCODE_LOOKUP_BASE_URL                = "https://api.os.uk/search/places/v1",
+    POSTCODE_LOOKUP_BASE_URL                = local.resolved_postcode_lookup_base_url,
     POSTCODE_LOOKUP_TIMEOUT_MS              = "5000",
     POSTCODE_LOOKUP_MAX_RETRIES             = "3",
     POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",

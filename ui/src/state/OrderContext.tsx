@@ -1,6 +1,14 @@
 "use client";
 
-import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import sessionService from "@/lib/services/session-service";
 
@@ -83,17 +91,16 @@ export function CreateOrderProvider({ children }: Readonly<{ children: ReactNode
     sessionService.clearCreateOrderAnswers();
   }, []);
 
-  return (
-    <CreateOrderContext.Provider
-      value={{
-        orderAnswers,
-        updateOrderAnswers,
-        reset,
-      }}
-    >
-      {children}
-    </CreateOrderContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      orderAnswers,
+      updateOrderAnswers,
+      reset,
+    }),
+    [orderAnswers, updateOrderAnswers, reset],
   );
+
+  return <CreateOrderContext.Provider value={contextValue}>{children}</CreateOrderContext.Provider>;
 }
 
 export function useCreateOrderContext() {

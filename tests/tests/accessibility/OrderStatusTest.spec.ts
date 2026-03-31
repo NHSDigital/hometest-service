@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
-import { test } from "../../fixtures/CombinedTestFixture";
 import { type Result } from "axe-core";
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
@@ -19,13 +19,10 @@ const ORDER_STATUS_STEPS: OrderStatusStep[] = [
 
 let orderId: string;
 let patientId: string;
-const dbClient = new TestOrderDbClient();
 
 test.describe("Accessibility Testing @accessibility", () => {
-  test.beforeAll(async ({ testedUser }) => {
-    await dbClient.connect();
-
-    const result = await dbClient.createOrderWithPatientAndStatus(
+  test.beforeEach(async ({ testedUser, testOrderDb }) => {
+    const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(testedUser).build(),
     );
 
@@ -33,35 +30,32 @@ test.describe("Accessibility Testing @accessibility", () => {
     patientId = result.patient_uid;
   });
 
-  test("Home Test - Status Order Accessibility", async ({ orderStatusPage, accessibility }) => {
-    const accessErrors: Result[] = [];
+  for (const { statusCode, stepName } of ORDER_STATUS_STEPS) {
+    test(`Home Test - Status Order Accessibility: ${stepName}`, async ({
+      orderStatusPage,
+      accessibility,
+      testOrderDb,
+    }) => {
+      if (statusCode) {
+        await testOrderDb.updateOrderStatus(orderId, statusCode);
+      }
 
-    for (const { statusCode, stepName } of ORDER_STATUS_STEPS) {
-      await test.step(`Accessibility check: ${stepName}`, async () => {
-        if (statusCode) {
-          await dbClient.updateOrderStatus(orderId, statusCode);
-        }
+      await orderStatusPage.navigateToOrder(orderId);
+      await orderStatusPage.waitForOrderToLoad();
+      const accessErrors: Result[] = await accessibility.runAccessibilityCheck(
+        orderStatusPage,
+        stepName,
+        "Order Tracking Page",
+      );
 
-        await orderStatusPage.navigateToOrder(orderId);
-        await orderStatusPage.waitForOrderToLoad();
-        accessErrors.push(
-          ...(await accessibility.runAccessibilityCheck(
-            orderStatusPage,
-            stepName,
-            "Order Tracking Page",
-          )),
-        );
-      });
-    }
+      expect(accessErrors).toHaveLength(0);
+    });
+  }
 
-    expect(accessErrors).toHaveLength(0);
-  });
-
-  test.afterAll(async ({ testedUser }) => {
-    await dbClient.deleteOrderStatusByUid(orderId);
-    await dbClient.deleteConsentByPatientUid(patientId);
-    await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-    await dbClient.disconnect();
+  test.afterEach(async ({ testedUser, testOrderDb }) => {
+    await testOrderDb.deleteOrderStatusByUid(orderId);
+    await testOrderDb.deleteConsentByPatientUid(patientId);
+    await testOrderDb.deleteOrderByPatientUid(patientId);
+    await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
   });
 });

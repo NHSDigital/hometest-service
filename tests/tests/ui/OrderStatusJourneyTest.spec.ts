@@ -1,30 +1,29 @@
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { expect } from "@playwright/test";
+
+import { AuthType, ConfigFactory } from "../../configuration/EnvironmentConfiguration";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
-import { NHSLoginUser } from "../../utils/users";
+import { type NHSLoginUser } from "../../utils/users";
 
 let orderId: string;
 let patientId: string;
 let orderId2: string;
 let patientId2: string;
 let orderReference: number;
-const dbClient = new TestOrderDbClient();
 const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
+const config = ConfigFactory.getConfig();
 
 test.describe("Order Status Page", () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
-    async ({ testedUser }) => {
-      await dbClient.connect();
-
-      const result = await dbClient.createOrderWithPatientAndStatus(
+    async ({ testedUser, testOrderDb }) => {
+      const result = await testOrderDb.createOrderWithPatientAndStatus(
         new OrderBuilder().withUser(testedUser).build(),
       );
 
-      const resultSecondPatient = await dbClient.createOrderWithPatientAndStatus(
+      const resultSecondPatient = await testOrderDb.createOrderWithPatientAndStatus(
         new OrderBuilder()
           .withNhsNumber(nhsNumber2)
           .withBirthDate(birthDate2)
@@ -57,8 +56,9 @@ test.describe("Order Status Page", () => {
   test("Authenticated user opens a deep link - Order confirmed", async ({
     orderStatusPage,
     errorPage,
+    testOrderDb,
   }) => {
-    expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
+    expect((await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
     await orderStatusPage.navigateToOrder(orderId);
     await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
     await expect(orderStatusPage.statusTag).toHaveText("Confirmed");
@@ -70,9 +70,10 @@ test.describe("Order Status Page", () => {
     test(`Authenticated user opens a deep link - Order status is ${status}`, async ({
       orderStatusPage,
       errorPage,
+      testOrderDb,
     }) => {
-      await dbClient.updateOrderStatus(orderId, status);
-      expect((await dbClient.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
+      await testOrderDb.updateOrderStatus(orderId, status);
+      expect((await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
       await orderStatusPage.navigateToOrder(orderId);
       await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
       await expect(orderStatusPage.statusTag).toHaveText(tag);
@@ -90,8 +91,14 @@ test.describe("Order Status Page", () => {
     });
 
     test("Unauthorized user opens a deep link", async ({ orderStatusPage, errorPage }) => {
-      await orderStatusPage.navigateToOrder(orderId2);
+      await orderStatusPage.navigateToOrderExpectingPath(
+        orderId2,
+        errorPage.orderNotFoundMessage,
+        `/orders/${orderId2}/tracking`,
+      );
       await expect(errorPage.orderNotFoundMessage).toBeVisible();
+      const url = await orderStatusPage.getCurrentUrl();
+      expect(url).toContain(`/orders/${orderId2}/tracking`);
     });
 
     test("Unauthenticated user opens a deep link", async ({
@@ -100,38 +107,45 @@ test.describe("Order Status Page", () => {
       codeSecurityPage,
       testedUser,
       errorPage,
+      testOrderDb,
     }) => {
-      await dbClient.updateOrderStatus(orderId, "RECEIVED");
+      await testOrderDb.updateOrderStatus(orderId, "RECEIVED");
       const context = orderStatusPage.page.context();
       await context.clearCookies();
       await context.clearPermissions();
-      await orderStatusPage.navigateToOrder(orderId);
-      await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
-      await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
-        testedUser as NHSLoginUser,
-      );
-      await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
-        (testedUser as NHSLoginUser).otp!,
-      );
+
+      await orderStatusPage.openOrderDirect(orderId);
+
+      if (config.authType === AuthType.WIREMOCK) {
+        await orderStatusPage.waitForOrderToLoad();
+      } else {
+        await expect(nhsEmailAndPasswordPage.emailInput).toBeVisible();
+        await nhsEmailAndPasswordPage.fillAuthFormWithCredentialsAndClickContinue(
+          testedUser as NHSLoginUser,
+        );
+        await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
+          (testedUser as NHSLoginUser).otp,
+        );
+      }
+
       await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
       await expect(orderStatusPage.statusTag).toHaveText("Test received");
       const url = await orderStatusPage.getCurrentUrl();
-      expect(url).toContain(orderId);
+      expect(url).toContain(`/orders/${orderId}/tracking`);
     });
   });
 
   test.afterAll(
     "Delete result status, order status, order, and patient records from the database and disconnect",
-    async ({ testedUser }) => {
-      await dbClient.deleteOrderStatusByUid(orderId);
-      await dbClient.deleteConsentByPatientUid(patientId);
-      await dbClient.deleteOrderByPatientUid(patientId);
-      await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-      await dbClient.deleteOrderStatusByUid(orderId2);
-      await dbClient.deleteConsentByPatientUid(patientId2);
-      await dbClient.deleteOrderByPatientUid(patientId2);
-      await dbClient.deletePatientMapping(nhsNumber2, birthDate2);
-      await dbClient.disconnect();
+    async ({ testedUser, testOrderDb }) => {
+      await testOrderDb.deleteOrderStatusByUid(orderId);
+      await testOrderDb.deleteConsentByPatientUid(patientId);
+      await testOrderDb.deleteOrderByPatientUid(patientId);
+      await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
+      await testOrderDb.deleteOrderStatusByUid(orderId2);
+      await testOrderDb.deleteConsentByPatientUid(patientId2);
+      await testOrderDb.deleteOrderByPatientUid(patientId2);
+      await testOrderDb.deletePatientMapping(nhsNumber2, birthDate2);
     },
   );
 });

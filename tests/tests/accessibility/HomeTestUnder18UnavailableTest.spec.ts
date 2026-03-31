@@ -1,7 +1,8 @@
 import { expect } from "@playwright/test";
+
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
-import { SpecialUserKey } from "../../utils/users";
+import { type NHSLoginMockedUser, SpecialUserKey } from "../../utils/users";
 
 const randomAddress = AddressModel.getRandomAddress();
 
@@ -17,7 +18,8 @@ test.describe("Home Test Under 18 Unavailable page", () => {
     await context.clearCookies();
     await context.clearPermissions();
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18);
+    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
+
     await userManager.login(user, page);
 
     await homeTestStartPage.navigate();

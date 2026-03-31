@@ -1,0 +1,58 @@
+{
+  "name": "OS Places - Mock Postcode Lookup (test postcodes)",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/find",
+    "queryParameters": {
+      "query": {
+        "matches": "^(TN377PT|BN108QN|M503UQ|M275AW|SW1A1AA|LS14BT)$"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "transformers": ["response-template"],
+    "jsonBody": {
+      "header": {
+        "uri": "http://localhost/find",
+        "query": "query={{request.query.query}}",
+        "offset": 0,
+        "totalresults": 2,
+        "format": "JSON",
+        "dataset": "DPA",
+        "lr": "EN",
+        "maxresults": 100,
+        "epoch": "95",
+        "output_srs": "EPSG:27700"
+      },
+      "results": [
+        {
+          "DPA": {
+            "UPRN": "100060000001",
+            "UDPRN": "200000000001",
+            "ADDRESS": "1 TEST STREET, TEST TOWN, {{request.query.query}}",
+            "BUILDING_NUMBER": "1",
+            "THOROUGHFARE_NAME": "TEST STREET",
+            "POST_TOWN": "TEST TOWN",
+            "POSTCODE": "{{request.query.query}}"
+          }
+        },
+        {
+          "DPA": {
+            "UPRN": "100060000002",
+            "UDPRN": "200000000002",
+            "ADDRESS": "2 TEST STREET, TEST TOWN, {{request.query.query}}",
+            "BUILDING_NUMBER": "2",
+            "THOROUGHFARE_NAME": "TEST STREET",
+            "POST_TOWN": "TEST TOWN",
+            "POSTCODE": "{{request.query.query}}"
+          }
+        }
+      ]
+    }
+  }
+}
