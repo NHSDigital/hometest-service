@@ -1,22 +1,17 @@
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import { TestResultDbClient } from "../../db/TestResultDbClient";
-import { expect } from "@playwright/test";
 import { randomUUID } from "crypto";
+
+import { expect } from "@playwright/test";
+
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
 let orderId: string;
 let patientId: string;
 let correlationId: string;
-const dbClient = new TestOrderDbClient();
-const resultDbClient = new TestResultDbClient();
 
 test.describe("Accessibility Testing @accessibility", () => {
-  test.beforeAll(async ({ testedUser }) => {
-    await dbClient.connect();
-    await resultDbClient.connect();
-
-    const result = await dbClient.createOrderWithPatientAndStatus(
+  test.beforeAll(async ({ testedUser, testOrderDb, testResultDb }) => {
+    const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),
     );
 
@@ -24,7 +19,7 @@ test.describe("Accessibility Testing @accessibility", () => {
     patientId = result.patient_uid;
     correlationId = randomUUID();
 
-    await resultDbClient.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
+    await testResultDb.insertStatusResult(orderId, "RESULT_AVAILABLE", correlationId);
   });
 
   test(
@@ -43,13 +38,11 @@ test.describe("Accessibility Testing @accessibility", () => {
     },
   );
 
-  test.afterAll(async ({ testedUser }) => {
-    await resultDbClient.deleteResultStatusByUid(orderId);
-    await dbClient.deleteOrderStatusByUid(orderId);
-    await dbClient.deleteConsentByPatientUid(patientId);
-    await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-    await dbClient.disconnect();
-    await resultDbClient.disconnect();
+  test.afterAll(async ({ testedUser, testOrderDb, testResultDb }) => {
+    await testResultDb.deleteResultStatusByUid(orderId);
+    await testOrderDb.deleteOrderStatusByUid(orderId);
+    await testOrderDb.deleteConsentByPatientUid(patientId);
+    await testOrderDb.deleteOrderByPatientUid(patientId);
+    await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
   });
 });

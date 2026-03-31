@@ -16,7 +16,6 @@ import { OrderServiceRequestSchema } from "./order-service-request-schema";
 import { OrderServiceRequest } from "./order-service-request-type";
 
 const name = "order-service-lambda";
-const { transactionService, orderStatusService, sqsClient, orderPlacementQueueUrl } = init();
 
 const parseAndValidateRequest = (eventBody: string | null): OrderServiceRequest => {
   let parsedBody: unknown;
@@ -39,6 +38,7 @@ const parseAndValidateRequest = (eventBody: string | null): OrderServiceRequest 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  const { transactionService, orderStatusService, sqsClient, orderPlacementQueueUrl } = init();
   let correlationId: string;
 
   try {

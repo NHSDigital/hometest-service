@@ -1,7 +1,6 @@
 import { expect } from "@playwright/test";
 import { type Result } from "axe-core";
 
-import { TestOrderDbClient } from "../../db/TestOrderDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderStatusCode } from "../../models/TestOrder";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
@@ -20,15 +19,10 @@ const ORDER_STATUS_STEPS: OrderStatusStep[] = [
 
 let orderId: string;
 let patientId: string;
-const dbClient = new TestOrderDbClient();
 
 test.describe("Accessibility Testing @accessibility", () => {
-  test.beforeAll(async () => {
-    await dbClient.connect();
-  });
-
-  test.beforeEach(async ({ testedUser }) => {
-    const result = await dbClient.createOrderWithPatientAndStatus(
+  test.beforeEach(async ({ testedUser, testOrderDb }) => {
+    const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(testedUser).build(),
     );
 
@@ -40,9 +34,10 @@ test.describe("Accessibility Testing @accessibility", () => {
     test(`Home Test - Status Order Accessibility: ${stepName}`, async ({
       orderStatusPage,
       accessibility,
+      testOrderDb,
     }) => {
       if (statusCode) {
-        await dbClient.updateOrderStatus(orderId, statusCode);
+        await testOrderDb.updateOrderStatus(orderId, statusCode);
       }
 
       await orderStatusPage.navigateToOrder(orderId);
@@ -57,14 +52,10 @@ test.describe("Accessibility Testing @accessibility", () => {
     });
   }
 
-  test.afterEach(async ({ testedUser }) => {
-    await dbClient.deleteOrderStatusByUid(orderId);
-    await dbClient.deleteConsentByPatientUid(patientId);
-    await dbClient.deleteOrderByPatientUid(patientId);
-    await dbClient.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
-  });
-
-  test.afterAll(async () => {
-    await dbClient.disconnect();
+  test.afterEach(async ({ testedUser, testOrderDb }) => {
+    await testOrderDb.deleteOrderStatusByUid(orderId);
+    await testOrderDb.deleteConsentByPatientUid(patientId);
+    await testOrderDb.deleteOrderByPatientUid(patientId);
+    await testOrderDb.deletePatientMapping(testedUser.nhsNumber!, testedUser.dob!);
   });
 });

@@ -10,12 +10,12 @@ import { init } from "./init";
 import { validatePostcodeFormat } from "./postcode-validator";
 
 const name = "eligibility-lookup-lambda";
-const { laLookupService, supplierDb, commons } = init();
 
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> => {
+  const { laLookupService, supplierDb, commons } = init();
   context.callbackWaitsForEmptyEventLoop = false;
 
   const postcode = event.queryStringParameters?.postcode;
