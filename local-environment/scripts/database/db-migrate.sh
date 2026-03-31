@@ -23,6 +23,7 @@ export PGUSER="$ADMIN_USER"
 # echo "Step 0: Dropping existing database..."
 # psql $PSQL_OPTIONS -d "postgres" -f "$SQL_DIR/00-delete.sql"
 
+echo
 echo "Step 1: Initializing database..."
 psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/01-init.sql"
 
@@ -30,8 +31,14 @@ psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/01-init.sql"
 export PGPASSWORD="$MIGRATOR_PASSWORD"
 export PGUSER="$MIGRATOR_USER"
 
-echo "Step 2: Running goose migrations..."
+echo
+echo "Step 2: Validating goose migrations..."
+goose -dir "$SQL_DIR/migrations" validate
+
+echo
+echo "Step 3: Running goose migrations..."
 goose -dir "$SQL_DIR/migrations" postgres "$DB_URL" up
 
-echo "Step 3: Loading seed data..."
+echo
+echo "Step 4: Loading seed data..."
 psql $PSQL_OPTIONS -d "$LOCAL_DB" -f "$SQL_DIR/03-seed-hometest-data.sql"

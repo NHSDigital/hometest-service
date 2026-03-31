@@ -6,7 +6,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 import { OrderBundleBuilder } from "./order-bundle-builder";
 import { getOrderQueryParamsSchema } from "./schemas";
@@ -45,5 +45,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

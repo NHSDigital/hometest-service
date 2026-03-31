@@ -1,6 +1,6 @@
-FROM golang:1.24-alpine AS goose-builder
+FROM golang:1.26.1-alpine AS goose-builder
 
-RUN go install github.com/pressly/goose/v3/cmd/goose@v3.24.1
+RUN go install github.com/pressly/goose/v3/cmd/goose@v3.27.0
 
 FROM postgres:18.1
 

@@ -6,7 +6,7 @@ import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambd
 
 import { securityHeaders } from "../lib/http/security-headers";
 import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
-import { defaultCorsOptions } from "./cors-configuration";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 
 // ALPHA: This file will need revisiting.
@@ -69,5 +69,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

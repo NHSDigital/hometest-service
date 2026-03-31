@@ -6,10 +6,10 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { securityHeaders } from "../lib/http/security-headers";
-import { defaultCorsOptions } from "../lib/security/cors-configuration";
 import { createJsonResponse, getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { generateReadableError } from "../lib/utils/validation-utils";
 import type { ParsedOrderBody } from "../order-router-lambda";
+import { corsOptions } from "./cors-configuration";
 import { buildFhirServiceRequest } from "./fhir-mapper";
 import { init } from "./init";
 import { OrderServiceRequestSchema } from "./order-service-request-schema";
@@ -152,5 +152,5 @@ export const lambdaHandler = async (
 
 export const handler = middy(lambdaHandler)
   .use(httpSecurityHeaders(securityHeaders))
-  .use(cors(defaultCorsOptions))
+  .use(cors(corsOptions))
   .use(httpErrorHandler());

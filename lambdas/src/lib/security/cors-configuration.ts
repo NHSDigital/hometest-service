@@ -1,11 +1,9 @@
-import { type Options } from '@middy/http-cors';
+import { type Options } from "@middy/http-cors";
 
-const allowOrigin =
-  process.env.ALLOW_ORIGIN ?? 'http://localhost:3000';
+const allowOrigin = process.env.ALLOW_ORIGIN;
 
 export const defaultCorsOptions: Options = {
   credentials: true,
-  headers: 'Content-Type, Authorization, X-Correlation-ID',
+  headers: "Content-Type, Authorization, X-Correlation-ID",
   origin: allowOrigin,
-  methods: 'GET, POST, PUT, DELETE, OPTIONS'
 };
