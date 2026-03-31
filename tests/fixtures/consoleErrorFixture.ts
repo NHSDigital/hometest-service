@@ -156,10 +156,5 @@ export const consoleErrorFixture = base.extend<ConsoleErrorFixture>({
         `Network errors detected:\n${netErrors.map((e, i) => `  ${i + 1}. ${e.method} ${e.url} => ${e.status} ${e.statusText}`).join("\n")}`,
       );
     }
-
-    // Fail the test if errors were captured
-    // if (failureMessages.length > 0) {
-    //   expect.soft(false, failureMessages.join("\n\n")).toBeTruthy();
-    // }
   },
 });

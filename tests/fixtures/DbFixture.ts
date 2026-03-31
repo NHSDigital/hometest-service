@@ -8,8 +8,7 @@ type DbFixtures = {
   testResultDb: TestResultDbClient;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export const dbFixture = base.extend<{}, DbFixtures>({
+export const dbFixture = base.extend<object, DbFixtures>({
   testOrderDb: [
     async ({}, use) => {
       const client = new TestOrderDbClient();
