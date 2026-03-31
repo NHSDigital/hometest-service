@@ -1,12 +1,13 @@
-import http from "k6/http";
 import { check, sleep } from "k6";
+import http from "k6/http";
+
 export const options = {
   scenarios: {
     getResults: {
-      executor: 'constant-vus',
+      executor: "constant-vus",
       vus: 1,
-      duration: '3s',
-      exec: 'getResults',
+      duration: "3s",
+      exec: "getResults",
     },
     createOrder: {
       executor: "ramping-vus",
