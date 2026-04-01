@@ -131,11 +131,11 @@ class CachedSupplierTokenGenerator implements SupplierTokenGenerator {
   }
 
   private hasValidCachedToken(): boolean {
-    return !!(this.cachedToken && this.isTokenValid(this.cachedToken.expiresAtMs));
+    return !!(this.cachedToken && !this.isExpired(this.cachedToken.expiresAtMs));
   }
 
-  private isTokenValid(expiresAtMs: number): boolean {
-    return this.now() < expiresAtMs - TOKEN_REFRESH_BUFFER_MS;
+  private isExpired(expiresAtMs: number): boolean {
+    return this.now() >= expiresAtMs - TOKEN_REFRESH_BUFFER_MS;
   }
 
   private async fetchAndCacheToken(): Promise<string> {
