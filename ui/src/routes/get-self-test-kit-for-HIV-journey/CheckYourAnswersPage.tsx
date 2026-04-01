@@ -1,16 +1,22 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
+import { useNavigate, useNavigationType } from "react-router-dom";
 
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
-import { JourneyStepNames } from "@/lib/models/route-paths";
+import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
-import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import sessionService from "@/lib/services/session-service";
+import {
+  useAuth,
+  useCreateOrderContext,
+  useJourneyNavigationContext,
+  usePostcodeLookup,
+} from "@/state";
 
 // TODO: update to dynamically render supplier based on API (probably stored in state)
-// TODO: add order reference number to state when order is submitted (orderAnswers.orderReferenceNumber)
 
 function formatAddress(address: {
   addressLine1?: string;
@@ -39,10 +45,14 @@ function formatUserName(user?: { givenName: string; familyName: string } | null)
 }
 
 export default function CheckYourAnswersPage() {
-  const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
+  const navigate = useNavigate();
+  const navigationType = useNavigationType();
+  const { orderAnswers, updateOrderAnswers, reset } = useCreateOrderContext();
   const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { clearAddresses } = usePostcodeLookup();
   const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
+  const hasSubmittedOrder = orderAnswers.orderReferenceNumber != null;
 
   const [consentChecked, setConsentChecked] = useState(
     orderAnswers.consentCheckboxChecked ?? false,
@@ -50,6 +60,17 @@ export default function CheckYourAnswersPage() {
   const [consentError, setConsentError] = useState<string | null>(null);
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+
+  useLayoutEffect(() => {
+    if (!hasSubmittedOrder || navigationType !== "POP") {
+      return;
+    }
+
+    reset();
+    clearAddresses();
+    sessionService.clearJourneyNavigation();
+    navigate(RoutePath.HomePage, { replace: true });
+  }, [clearAddresses, hasSubmittedOrder, navigate, navigationType, reset]);
 
   const handleChangeClick = (field: "address" | "mobile" | "comfort") => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
@@ -139,6 +160,10 @@ export default function CheckYourAnswersPage() {
   const addressLines = orderAnswers.deliveryAddress
     ? formatAddress(orderAnswers.deliveryAddress)
     : [];
+
+  if (hasSubmittedOrder && navigationType === "POP") {
+    return null;
+  }
 
   return (
     <FormPageLayout
