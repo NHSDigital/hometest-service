@@ -338,6 +338,10 @@ resource "aws_sqs_queue" "order_placement" {
   name = "${var.project_name}-order-placement"
 }
 
+resource "aws_sqs_queue" "notify_messages" {
+  name = "${var.project_name}-notify-messages"
+}
+
 module "order_router_lambda" {
   source = "./modules/lambda"
 
