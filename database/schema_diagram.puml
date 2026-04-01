@@ -73,6 +73,18 @@ entity "consent" as consent {
   created_at : timestamp
 }
 
+entity "notification_audit" as notification_audit {
+  **audit_id : uuid**
+  message_reference : uuid
+  notify_message_id : varchar(255)
+  event_code : varchar(50)
+  routing_plan_id : uuid
+  correlation_id : uuid
+  status : varchar(50)
+  created_at : timestamp
+  unique(message_reference, status)
+}
+
 ' Relationships
 patient ||--o{ orders : "patient_uid"
 supplier ||--o{ orders : "supplier_id"
