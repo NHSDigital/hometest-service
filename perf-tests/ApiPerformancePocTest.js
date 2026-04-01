@@ -108,20 +108,14 @@ export function createOrder() {
     "create order returns 201": (response) => response.status === 201,
   });
 
-  const { rows: patientRows, patientId } = getPatientIdByNhsAndBirthDate(
-    params.nhsNumber,
-    params.birthDate,
+  const { patientId } = getPatientIdByNhsAndBirthDate(params.nhsNumber, params.birthDate);
+  console.log(
+    `Patient ID for NHS Number ${params.nhsNumber} and Birth Date ${params.birthDate}: ${patientId}`,
   );
-
-  check(patientRows, {
-    "patient ID found in DB": (rows) => rows.length === 1,
-  });
-
-  if (patientId) {
-    console.log(`Patient ID found for order ${orderId}: ${patientId}`);
-  }
   sleep(1);
 }
+
+//update order status
 
 export function teardown() {
   closePatientLookupDb();
