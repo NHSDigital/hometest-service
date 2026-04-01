@@ -34,7 +34,7 @@ variable "local_postcode_lookup_base_url_override" {
 }
 
 variable "local_supplier_service_url_override" {
-  description = "Optional override for the seeded local supplier service URL. Required when local_service_mode is real."
+  description = "Optional override for the seeded local supplier service URL. Defaults to WireMock."
   type        = string
   default     = null
 }

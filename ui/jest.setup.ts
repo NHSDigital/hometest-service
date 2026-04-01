@@ -29,13 +29,13 @@ const createStorageMock = (): Storage => {
 
 const sessionStorageMock = createStorageMock();
 
-Object.defineProperty(window, "sessionStorage", {
+Object.defineProperty(globalThis, "sessionStorage", {
   value: sessionStorageMock,
   configurable: true,
 });
 
 beforeEach(() => {
-  window.sessionStorage.clear();
+  globalThis.sessionStorage.clear();
 });
 
 globalThis.TextEncoder = TextEncoder;

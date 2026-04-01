@@ -49,9 +49,9 @@ entity "status_type" as status_type {
 entity "order_status" as order_status {
   **status_id : uuid**
   *order_uid : uuid*
-  order_reference : bigint
   *status_code : varchar(50)*
   created_at : timestamp
+  correlation_id : uuid
 }
 
 entity "result_type" as result_type {
@@ -60,9 +60,8 @@ entity "result_type" as result_type {
 }
 
 entity "result_status" as result_status {
-  **result_id : uuid**
+  **result_id : bigint**
   *order_uid : uuid*
-  order_reference : bigint
   *status : varchar(50)*
   created_at : timestamp
   correlation_id : uuid
@@ -72,6 +71,18 @@ entity "consent" as consent {
   **consent_uid : uuid**
   *order_uid : uuid*
   created_at : timestamp
+}
+
+entity "notification_audit" as notification_audit {
+  **audit_id : uuid**
+  message_reference : uuid
+  notify_message_id : varchar(255)
+  event_code : varchar(50)
+  routing_plan_id : uuid
+  correlation_id : uuid
+  status : varchar(50)
+  created_at : timestamp
+  unique(message_reference, status)
 }
 
 ' Relationships
