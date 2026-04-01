@@ -270,3 +270,64 @@ describe("createTokenGenerator", () => {
     expect(a).not.toBe(b);
   });
 });
+
+describe("getOrCreateTokenGenerator", () => {
+  const baseConfig = {
+    serviceUrl: "https://supplier.example.com",
+    clientSecretName: "secret-name",
+    clientId: "client-id",
+    oauthTokenPath: "/oauth/token",
+    oauthScope: "orders results",
+    orderPath: "/order",
+    resultsPath: "/results",
+  };
+
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
+  });
+
+  const importModule = async () => import("./supplier-auth-client");
+
+  it("reuses cached generator for the same supplier config", async () => {
+    const module = await importModule();
+
+    const mockGenerator = { generateToken: jest.fn() };
+
+    const createTokenGeneratorSpy = jest
+      .spyOn(module, "createTokenGenerator")
+      .mockReturnValue(mockGenerator);
+
+    const httpClient = { post: jest.fn() } as any;
+    const secretsClient = { getSecretValue: jest.fn() } as any;
+
+    const first = module.getOrCreateTokenGenerator(httpClient, secretsClient, baseConfig);
+    const second = module.getOrCreateTokenGenerator(httpClient, secretsClient, baseConfig);
+
+    expect(first).toBe(second);
+    expect(createTokenGeneratorSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates a new generator for a different supplier config", async () => {
+    const module = await importModule();
+
+    const mockGeneratorA = { generateToken: jest.fn() };
+    const mockGeneratorB = { generateToken: jest.fn() };
+
+    const createTokenGeneratorSpy = jest
+      .spyOn(module, "createTokenGenerator")
+      .mockReturnValueOnce(mockGeneratorA)
+      .mockReturnValueOnce(mockGeneratorB);
+
+    const httpClient = { post: jest.fn() } as any;
+    const secretsClient = { getSecretValue: jest.fn() } as any;
+
+    const altConfig = { ...baseConfig, serviceUrl: "https://other-supplier.example.com" };
+
+    const first = module.getOrCreateTokenGenerator(httpClient, secretsClient, baseConfig);
+    const second = module.getOrCreateTokenGenerator(httpClient, secretsClient, altConfig);
+
+    expect(first).not.toBe(second);
+    expect(createTokenGeneratorSpy).toHaveBeenCalledTimes(2);
+  });
+});
