@@ -20,9 +20,9 @@
     "check-typescript": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.1015.0",
-    "@aws-sdk/client-sqs": "^3.1015.0",
-    "@aws-sdk/rds-signer": "^3.1015.0",
+    "@aws-sdk/client-secrets-manager": "^3.1021.0",
+    "@aws-sdk/client-sqs": "^3.1021.0",
+    "@aws-sdk/rds-signer": "^3.1021.0",
     "@middy/core": "^7.2.1",
     "@middy/http-cors": "^7.2.1",
     "@middy/http-error-handler": "^7.2.1",
@@ -34,7 +34,7 @@
     "jwks-rsa": "^4.0.1",
     "pg": "^8.20.0",
     "titlecase": "^1.1.3",
-    "undici": "^7.24.5",
+    "undici": "^7.24.6",
     "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
@@ -59,6 +59,6 @@
     "ts-node": "^10.9.2",
     "tsx": "4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.2"
+    "typescript-eslint": "^8.58.0"
   }
 }
