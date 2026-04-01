@@ -36,7 +36,7 @@ const supplierTokenGeneratorCache = new Map<string, SupplierTokenGenerator>();
 // immediately and refetched more often.
 const TOKEN_REFRESH_BUFFER_MS = 30_000;
 const DEFAULT_TOKEN_TTL_SECONDS = 60;
-const MAX_TOKEN_TTL_SECONDS = 86_399;
+const MAX_TOKEN_TTL_SECONDS = 86_400; // 24 hours
 
 const normalizeExpiresInSeconds = (expiresIn: number | string | undefined): number => {
   const parsedExpiresIn = Number(expiresIn);
