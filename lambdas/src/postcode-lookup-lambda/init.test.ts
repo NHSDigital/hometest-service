@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { buildEnvironment } from "./init";
 
 // Keep the file as a TS module; runtime imports must stay inside tests because
@@ -141,4 +142,149 @@ describe("postcode-lookup-lambda init", () => {
       expect(result).toHaveProperty("postcodeLookupService");
     });
   });
+=======
+import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { OSPlacesClient } from "../lib/postcode-lookup/osplaces/osplaces-client";
+import { StubPostcodeLookupClient } from "../lib/postcode-lookup/stub/stub-client";
+import { PostcodeLookupService } from "../lib/postcode-lookup/postcode-lookup-service";
+
+jest.mock("../lib/secrets/secrets-manager-client", () => ({
+  AwsSecretsClient: jest.fn().mockImplementation(() => ({
+    getSecretValue: jest.fn().mockResolvedValue(JSON.stringify({ apiKey: "test-api-key" })),
+  })),
+}));
+// are these mocks all needed?
+jest.mock("../lib/postcode-lookup/osplaces/osplaces-client");
+jest.mock("../lib/postcode-lookup/stub/stub-client");
+jest.mock("../lib/postcode-lookup/postcode-lookup-service");
+
+import { init } from "./init"; //TODO can this be at top?
+
+describe("postcode-lookup-lambda init", () => {
+
+  const originalEnv = process.env;
+
+  const mockEnvVariables = {
+    POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME: "test-secret-name",
+    POSTCODE_LOOKUP_BASE_URL: "https://api.postcode-lookup.com",
+    POSTCODE_LOOKUP_TIMEOUT_MS: "5000",
+    POSTCODE_LOOKUP_MAX_RETRIES: "3",
+    POSTCODE_LOOKUP_RETRY_DELAY_MS: "1000",
+    POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR: "2",
+    USE_STUB_POSTCODE_CLIENT: "false",
+    POSTCODE_LOOKUP_REJECT_UNAUTHORIZED: "true",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env = { ...originalEnv };
+    Object.assign(process.env, mockEnvVariables);
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  // it("should initialize all components with correct configuration", async () => {
+
+  // });
+
+  it("should initialize all components with correct configuration", async () => {
+      const mockGetSecretValue = jest.fn().mockResolvedValue(JSON.stringify({ apiKey: "test-api-key" }));
+      (AwsSecretsClient as jest.Mock).mockImplementation(() => ({
+        getSecretValue: mockGetSecretValue,
+      }));
+
+      const postcodeLookupServiceInstance = {};
+      (PostcodeLookupService as jest.Mock).mockImplementation(() => postcodeLookupServiceInstance);
+
+      const osPlacesClientInstance = {};
+      (OSPlacesClient as jest.Mock).mockImplementation(() => osPlacesClientInstance);
+
+      const result = await init();
+
+      expect(AwsSecretsClient).toHaveBeenCalledWith(expect.any(String));
+      expect(mockGetSecretValue).toHaveBeenCalledWith("test-secret-name");
+      expect(OSPlacesClient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          credentials: { apiKey: "test-api-key" },
+          baseUrl: "https://api.postcode-lookup.com",
+          timeoutMs: 5000,
+          maxRetries: 3,
+          retryDelayMs: 1000,
+          retryBackoffFactor: 2,
+          rejectUnauthorized: true,
+        })
+      );
+      expect(PostcodeLookupService).toHaveBeenCalledWith(osPlacesClientInstance);
+      expect(result).toEqual({ postcodeLookupService: postcodeLookupServiceInstance });
+    });
+
+    it("should use StubPostcodeLookupClient when USE_STUB_POSTCODE_CLIENT is true", async () => {
+      process.env.USE_STUB_POSTCODE_CLIENT = "true";
+      const mockGetSecretValue = jest.fn().mockResolvedValue(JSON.stringify({ apiKey: "stub-api-key" }));
+      (AwsSecretsClient as jest.Mock).mockImplementation(() => ({
+        getSecretValue: mockGetSecretValue,
+      }));
+
+      const stubClientInstance = {};
+      (StubPostcodeLookupClient as jest.Mock).mockImplementation(() => stubClientInstance);
+
+      const postcodeLookupServiceInstance = {};
+      (PostcodeLookupService as jest.Mock).mockImplementation(() => postcodeLookupServiceInstance);
+
+      const result = await init();
+
+      expect(StubPostcodeLookupClient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          credentials: { apiKey: "stub-api-key" },
+          baseUrl: "https://api.postcode-lookup.com",
+          timeoutMs: 5000,
+          maxRetries: 3,
+          retryDelayMs: 1000,
+          retryBackoffFactor: 2,
+          rejectUnauthorized: true,
+        })
+      );
+      expect(PostcodeLookupService).toHaveBeenCalledWith(stubClientInstance);
+      expect(result).toEqual({ postcodeLookupService: postcodeLookupServiceInstance });
+    });
+
+    it("should use default values for optional env vars if not set", async () => {
+      delete process.env.POSTCODE_LOOKUP_TIMEOUT_MS;
+      delete process.env.POSTCODE_LOOKUP_MAX_RETRIES;
+      delete process.env.POSTCODE_LOOKUP_RETRY_DELAY_MS;
+      delete process.env.POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR;
+      delete process.env.POSTCODE_LOOKUP_REJECT_UNAUTHORIZED;
+
+      const mockGetSecretValue = jest.fn().mockResolvedValue(JSON.stringify({ apiKey: "default-api-key" }));
+      (AwsSecretsClient as jest.Mock).mockImplementation(() => ({
+        getSecretValue: mockGetSecretValue,
+      }));
+
+      const osPlacesClientInstance = {};
+      (OSPlacesClient as jest.Mock).mockImplementation(() => osPlacesClientInstance);
+
+      const postcodeLookupServiceInstance = {};
+      (PostcodeLookupService as jest.Mock).mockImplementation(() => postcodeLookupServiceInstance);
+
+      const result = await init();
+
+      expect(OSPlacesClient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeoutMs: 5000,
+          maxRetries: 3,
+          retryDelayMs: 1000,
+          retryBackoffFactor: 2,
+          rejectUnauthorized: false,
+        })
+      );
+      expect(result).toEqual({ postcodeLookupService: postcodeLookupServiceInstance });
+    });
+
+
+
+  // describe("postcode-lookup-lambda init", () => {
+  // });
+>>>>>>> cd1f3331 ([HOTE-837] feat: improve test coverage)
 });

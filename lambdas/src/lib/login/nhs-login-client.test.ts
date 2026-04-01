@@ -99,3 +99,94 @@ describe("NhsLoginClient.getUserInfo", () => {
     enrichSpy.mockRestore();
   });
 });
+
+describe("NhsLoginClient.fetchPublicKeyById", () => {
+  const nhsLoginConfig: INhsLoginConfig = {
+    clientId: "client-id",
+    expiresIn: 300,
+    redirectUri: "https://example.com/callback",
+    baseUri: "https://auth.example",
+    privateKey: "private-key",
+  };
+
+  const jwtHelperMock = {
+    createClientAuthJwt: jest.fn().mockReturnValue("signed-jwt"),
+  } as unknown as NhsLoginJwtHelper;
+
+  const jwksClientMock = {
+    getSigningKey: jest.fn().mockResolvedValue({
+      getPublicKey: () => "public-key",
+    }),
+  } as unknown as JwksClient;
+
+  const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
+    getRequest: jest.fn(),
+    postRequest: jest.fn(),
+  };
+
+  it("fetches public key by key id", async () => {
+    const client = new NhsLoginClient(
+      nhsLoginConfig,
+      jwtHelperMock,
+      httpClientMock as unknown as HttpClient,
+      jwksClientMock,
+    );
+
+    const result = await client.fetchPublicKeyById("test-key-id");
+
+    expect(jwksClientMock.getSigningKey).toHaveBeenCalledWith("test-key-id");
+    expect(result).toBe("public-key");
+  });
+});
+
+describe("NhsLoginClient.getUserTokens", () => {
+  const nhsLoginConfig: INhsLoginConfig = {
+    clientId: "client-id",
+    expiresIn: 300,
+    redirectUri: "https://example.com/callback",
+    baseUri: "https://auth.example",
+    privateKey: "private-key",
+  };
+
+  const jwtHelperMock = {
+    createClientAuthJwt: jest.fn().mockReturnValue("signed-jwt"),
+  } as unknown as NhsLoginJwtHelper;
+
+  const jwksClientMock = {
+    getSigningKey: jest.fn(),
+  } as unknown as JwksClient;
+
+  const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
+    getRequest: jest.fn(),
+    postRequest: jest.fn().mockResolvedValue({
+      access_token: "user-access-token",
+      token_type: "Bearer",
+      expires_in: 3600,
+    }),
+  };
+
+  it("exchanges authorization code for user tokens", async () => {
+    const client = new NhsLoginClient(
+      nhsLoginConfig,
+      jwtHelperMock,
+      httpClientMock as unknown as HttpClient,
+      jwksClientMock,
+    );
+
+    const result = await client.getUserTokens("auth-code");
+
+    expect(jwtHelperMock.createClientAuthJwt).toHaveBeenCalled();
+    expect(httpClientMock.postRequest).toHaveBeenCalledWith(
+      "https://auth.example/token",
+      expect.any(URLSearchParams),
+      {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    );
+    expect(result).toEqual({
+      access_token: "user-access-token",
+      token_type: "Bearer",
+      expires_in: 3600,
+    });
+  });
+});
