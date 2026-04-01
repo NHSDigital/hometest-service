@@ -24,7 +24,6 @@ export function getPatientIdByNhsAndBirthDate(nhsNumber, birthDate) {
   );
 
   return {
-    rows,
     patientId: rows[0]?.patient_uid,
   };
 }
