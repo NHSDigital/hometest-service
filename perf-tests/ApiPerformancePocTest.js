@@ -3,9 +3,10 @@ import { SharedArray } from "k6/data";
 import exec from "k6/execution";
 import http from "k6/http";
 
+import { closePatientLookupDb, getPatientIdByNhsAndBirthDate } from "./db/PatientLookupK6.js";
 import { createOrderBody } from "./test-data/CreateOrder.js";
 
-const url = "http://127.0.0.1:4566/_aws/execute-api/5vxedyq1of/local/order";
+const url = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/order";
 const headers = {
   "X-Correlation-ID": "590e4ade-238c-4518-980a-16a621988cbb",
   "Content-Type": "application/json",
@@ -79,7 +80,7 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 0,
       stages: [
-        { duration: "30s", target: 5 },
+        { duration: "10s", target: 3 },
         // { duration: "1m", target: 5 },
         // { duration: "30s", target: 0 },
       ],
@@ -106,5 +107,22 @@ export function createOrder() {
   check(res, {
     "create order returns 201": (response) => response.status === 201,
   });
+
+  const { rows: patientRows, patientId } = getPatientIdByNhsAndBirthDate(
+    params.nhsNumber,
+    params.birthDate,
+  );
+
+  check(patientRows, {
+    "patient ID found in DB": (rows) => rows.length === 1,
+  });
+
+  if (patientId) {
+    console.log(`Patient ID found for order ${orderId}: ${patientId}`);
+  }
   sleep(1);
+}
+
+export function teardown() {
+  closePatientLookupDb();
 }
