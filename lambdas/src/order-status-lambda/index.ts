@@ -3,10 +3,11 @@ import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
+import { v4 as uuidv4 } from "uuid";
 import z from "zod";
 
 import { ConsoleCommons } from "../lib/commons";
+import { OrderStatusUpdateParams } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
 import {
@@ -15,6 +16,7 @@ import {
   FHIRReferenceSchema,
   FHIRTaskSchema,
 } from "../lib/models/fhir/fhir-schemas";
+import { NotifyEventCode, NotifyMessage } from "../lib/types/notify-message";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
@@ -42,7 +44,7 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderStatusDb } = init();
+  const { orderStatusDb, sqsClient, notifyMessagesQueueUrl } = init();
   commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
@@ -160,6 +162,27 @@ export const lambdaHandler = async (
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
 
     commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
+
+    //todo get user data from database
+    //todo get dispatched date
+    //todo fix status url with proper uri parts
+    //todo move the code to builder/service
+    //todo insert notification audit entry
+    const notifyMessage: NotifyMessage = {
+      correlationId: correlationId,
+      messageReference: uuidv4(),
+      eventCode: NotifyEventCode.OrderDispatched,
+      recipient: {
+        nhsNumber: "",
+        dateOfBirth: "",
+      },
+      personalisation: {
+        dispatched_date: "6 August 2026",
+        status_url:
+          "[View kit order update and see more information](https://<home-test-url>/orders/<order-ref>/tracking)",
+      },
+    };
+    await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));
 
     return createFhirResponse(201, validatedTask);
   } catch (error) {
