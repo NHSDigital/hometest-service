@@ -1,21 +1,87 @@
 import { check, sleep } from "k6";
+import { SharedArray } from "k6/data";
+import exec from "k6/execution";
 import http from "k6/http";
+
+import { createOrderBody } from "./test-data/CreateOrder.js";
+
+const url = "http://127.0.0.1:4566/_aws/execute-api/5vxedyq1of/local/order";
+const headers = {
+  "X-Correlation-ID": "590e4ade-238c-4518-980a-16a621988cbb",
+  "Content-Type": "application/json",
+};
+
+function parseCsv(csvText) {
+  const lines = csvText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  if (lines.length < 2) {
+    throw new Error("CSV file must contain a header and at least one data row");
+  }
+
+  const headersRow = lines[0].split(",").map((item) => item.trim());
+  const requiredHeaders = ["supplierId", "birthDate", "nhsNumber"];
+
+  for (const requiredHeader of requiredHeaders) {
+    if (!headersRow.includes(requiredHeader)) {
+      throw new Error(`CSV is missing required header: ${requiredHeader}`);
+    }
+  }
+
+  return lines.slice(1).map((line, index) => {
+    const values = line.split(",").map((item) => item.trim());
+    const row = Object.fromEntries(headersRow.map((header, idx) => [header, values[idx] || ""]));
+
+    for (const requiredHeader of requiredHeaders) {
+      if (!row[requiredHeader]) {
+        throw new Error(`CSV row ${index + 2} has an empty ${requiredHeader} value`);
+      }
+    }
+
+    return row;
+  });
+}
+
+const csvFilePath = __ENV.CREATE_ORDER_CSV || "./test-data/create-order-parameters.csv";
+
+const createOrderParameters = new SharedArray("create-order-parameters", function () {
+  return parseCsv(open(csvFilePath));
+});
+
+function getParametersForIteration() {
+  const iteration = exec.scenario.iterationInTest;
+  const row = createOrderParameters[iteration % createOrderParameters.length];
+
+  return {
+    supplierId: row.supplierId,
+    birthDate: row.birthDate,
+    nhsNumber: row.nhsNumber,
+  };
+}
+
+function buildCreateOrderPayload(params) {
+  return {
+    ...createOrderBody,
+    supplierId: params.supplierId,
+    patient: {
+      ...createOrderBody.patient,
+      birthDate: params.birthDate,
+      nhsNumber: params.nhsNumber,
+    },
+  };
+}
 
 export const options = {
   scenarios: {
-    getResults: {
-      executor: "constant-vus",
-      vus: 1,
-      duration: "3s",
-      exec: "getResults",
-    },
     createOrder: {
       executor: "ramping-vus",
       startVUs: 0,
       stages: [
-        { duration: "30s", target: 21 },
-        { duration: "1m", target: 21 },
-        { duration: "30s", target: 0 },
+        { duration: "30s", target: 5 },
+        // { duration: "1m", target: 5 },
+        // { duration: "30s", target: 0 },
       ],
       gracefulRampDown: "0s",
       exec: "createOrder",
@@ -28,55 +94,17 @@ export const options = {
   },
 };
 
-export function getResults() {
-  const res = http.get(
-    "http://127.0.0.1:4566/_aws/execute-api/em6tgcf0fu/local/results?nhs_number=9658219012&date_of_birth=1975-01-01&order_id=b83c0494-80bb-4db7-9426-d87c148f92b2",
-    { headers: { "X-Correlation-ID": "490e4ade-238c-4518-980a-16a621988cbb" } },
-  );
-  check(res, {
-    "status was 200": (r) => r.status === 200,
-  });
-  sleep(1);
-}
-
-const url = "http://127.0.0.1:4566/_aws/execute-api/em6tgcf0fu/local/order";
-
 export function createOrder() {
-  const headers = {
-    "X-Correlation-ID": "590e4ade-238c-4518-980a-16a621988cbb",
-    "Content-Type": "application/json",
-  };
-  const data = JSON.stringify({
-    testCode: "31676001",
-    testDescription: "HIV antigen test",
-    supplierId: "c1a2b3c4-1234-4def-8abc-123456789abc",
-    patient: {
-      family: "IntegrationTest",
-      given: ["Automated"],
-      text: "Automated IntegrationTest",
-      telecom: [
-        {
-          phone: "+447700900999",
-        },
-        {
-          email: "automated.integration@example.com",
-        },
-      ],
-      address: {
-        line: ["1 Integration Street"],
-        city: "London",
-        postalCode: "SW1A 1AA",
-        country: "United Kingdom",
-        use: "home",
-        type: "both",
-      },
-      birthDate: "1990-06-15",
-      nhsNumber: "9000000001",
-    },
-    consent: true,
-  });
+  const params = getParametersForIteration();
+  const data = JSON.stringify(buildCreateOrderPayload(params));
 
   let res = http.request("POST", url, data, { headers: headers });
-  console.log(res.json());
+  const orderId = res.json("orderUid");
+  console.log(
+    `Created order with ID: ${orderId} (Supplier: ${params.supplierId}, BirthDate: ${params.birthDate}, NHS Number: ${params.nhsNumber})`,
+  );
+  check(res, {
+    "create order returns 201": (response) => response.status === 201,
+  });
   sleep(1);
 }
