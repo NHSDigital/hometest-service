@@ -5,16 +5,16 @@ import { join } from "node:path";
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 
 import { HttpError } from "../lib/http/http-client";
-import {
-  buildTokenGeneratorCacheKey,
-  createTokenGenerator,
-} from "../lib/supplier/supplier-auth-client";
+import { getOrCreateTokenGenerator } from "../lib/supplier/supplier-auth-client";
 
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
 const mockGenerateToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
+const mockTokenGenerator = {
+  generateToken: mockGenerateToken,
+};
 
 const supplierOrderBody = JSON.parse(
   readFileSync(join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"), "utf-8"),
@@ -38,17 +38,13 @@ jest.mock("./init", () => ({
 // Mock token generator
 jest.mock("../lib/supplier/supplier-auth-client", () => {
   return {
-    buildTokenGeneratorCacheKey: jest.fn(() => "supplier-cache-key"),
-    createTokenGenerator: jest.fn().mockImplementation(() => ({
-      generateToken: mockGenerateToken,
-    })),
+    getOrCreateTokenGenerator: jest.fn(() => mockTokenGenerator),
   };
 });
 
 import { handler } from "./index";
 
-const mockBuildTokenGeneratorCacheKey = jest.mocked(buildTokenGeneratorCacheKey);
-const mockCreateTokenGenerator = jest.mocked(createTokenGenerator);
+const mockGetOrCreateTokenGenerator = jest.mocked(getOrCreateTokenGenerator);
 
 describe("order-router-lambda", () => {
   let mockContext: Partial<Context>;
@@ -95,12 +91,7 @@ describe("order-router-lambda", () => {
     mockGenerateToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
     mockAddOrderStatusUpdate.mockReset();
-    mockBuildTokenGeneratorCacheKey.mockReset();
-    mockBuildTokenGeneratorCacheKey.mockReturnValue("supplier-cache-key");
-    mockCreateTokenGenerator.mockReset();
-    mockCreateTokenGenerator.mockImplementation(() => ({
-      generateToken: mockGenerateToken,
-    }));
+    mockGetOrCreateTokenGenerator.mockClear();
 
     process.env.AWS_REGION = "eu-west-2";
   });
@@ -258,9 +249,7 @@ describe("order-router-lambda", () => {
       expect(mockAddOrderStatusUpdate).toHaveBeenCalled();
     });
 
-    it("should reuse cached token generator for repeated requests with same supplier config", async () => {
-      mockBuildTokenGeneratorCacheKey.mockReturnValue("supplier-cache-key-reuse-test");
-
+    it("should request token generation for repeated requests with same supplier config", async () => {
       mockHttpClientPostRaw.mockResolvedValue({
         status: 201,
         text: async () => JSON.stringify({ id: "order-123" }),
@@ -280,7 +269,7 @@ describe("order-router-lambda", () => {
 
       expect(firstResult.batchItemFailures).toEqual([]);
       expect(secondResult.batchItemFailures).toEqual([]);
-      expect(mockCreateTokenGenerator).toHaveBeenCalledTimes(1);
+      expect(mockGetOrCreateTokenGenerator).toHaveBeenCalledTimes(2);
       expect(mockGenerateToken).toHaveBeenCalledTimes(2);
     });
   });

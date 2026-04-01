@@ -6,18 +6,18 @@ import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierTestResultsService } from "./supplier-test-results-service";
 
 const mockGenerateToken = jest.fn();
+const mockTokenGenerator = {
+  generateToken: mockGenerateToken,
+};
 
 jest.mock("./supplier-auth-client", () => ({
-  buildTokenGeneratorCacheKey: jest.fn(() => "supplier-cache-key"),
-  createTokenGenerator: jest.fn().mockImplementation(() => ({
-    generateToken: mockGenerateToken,
-  })),
+  getOrCreateTokenGenerator: jest.fn(() => mockTokenGenerator),
 }));
 
-const { createTokenGenerator: mockCreateTokenGenerator } = jest.requireMock(
+const { getOrCreateTokenGenerator: mockGetOrCreateTokenGenerator } = jest.requireMock(
   "./supplier-auth-client",
 ) as {
-  createTokenGenerator: jest.Mock;
+  getOrCreateTokenGenerator: jest.Mock;
 };
 
 describe("SupplierTestResultsService", () => {
@@ -45,7 +45,7 @@ describe("SupplierTestResultsService", () => {
     service = new SupplierTestResultsService(mockHttpClient, mockSecretsClient, mockSupplierDb);
 
     mockGenerateToken.mockReset();
-    mockCreateTokenGenerator.mockClear();
+    mockGetOrCreateTokenGenerator.mockClear();
   });
 
   describe("getResults", () => {
@@ -99,6 +99,11 @@ describe("SupplierTestResultsService", () => {
 
       expect(result).toEqual(mockBundle);
       expect(mockSupplierDb.getSupplierConfigBySupplierId).toHaveBeenCalledWith(supplierId);
+      expect(mockGetOrCreateTokenGenerator).toHaveBeenCalledWith(
+        mockHttpClient,
+        mockSecretsClient,
+        serviceConfig,
+      );
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         "https://supplier-api.example.com/api/results?order_uid=test-order-123",
         {
@@ -142,13 +147,14 @@ describe("SupplierTestResultsService", () => {
       );
     });
 
-    it("reuses the same generator for repeated requests on one service instance", async () => {
+    it("requests token generation for repeated requests", async () => {
       mockHttpClient.get.mockResolvedValue(mockBundle);
 
       await service.getResults(orderId, supplierId, correlationId);
       await service.getResults(orderId, supplierId, correlationId);
 
-      expect(mockCreateTokenGenerator).toHaveBeenCalledTimes(1);
+      expect(mockGetOrCreateTokenGenerator).toHaveBeenCalledTimes(2);
+      expect(mockGenerateToken).toHaveBeenCalledTimes(2);
     });
   });
 });

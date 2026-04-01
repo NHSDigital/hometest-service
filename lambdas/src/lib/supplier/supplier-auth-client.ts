@@ -27,6 +27,8 @@ export interface SupplierTokenGenerator {
   generateToken(): Promise<string>;
 }
 
+const supplierTokenGeneratorCache = new Map<string, SupplierTokenGenerator>();
+
 // Refresh slightly before expiry to avoid edge-of-expiry failures during downstream calls.
 // This fixed 30s buffer is based on the current supplier token profile for this flow:
 // tokens are expected to be long-lived (24h / 86,400s), not short-lived.
@@ -172,4 +174,20 @@ export const createTokenGenerator = (
   );
 
   return new CachedSupplierTokenGenerator(authClient);
+};
+
+export const getOrCreateTokenGenerator = (
+  httpClient: HttpClient,
+  secretsClient: SecretsClient,
+  supplierConfig: SupplierConfig,
+): SupplierTokenGenerator => {
+  const cacheKey = buildTokenGeneratorCacheKey(supplierConfig);
+  let tokenGenerator = supplierTokenGeneratorCache.get(cacheKey);
+
+  if (!tokenGenerator) {
+    tokenGenerator = createTokenGenerator(httpClient, secretsClient, supplierConfig);
+    supplierTokenGeneratorCache.set(cacheKey, tokenGenerator);
+  }
+
+  return tokenGenerator;
 };
