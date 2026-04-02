@@ -3,21 +3,21 @@ import { test as base } from "@playwright/test";
 import { setTestLogContext } from "../utils/testLogContext";
 import { UserManagerFactory } from "../utils/users";
 
-let _userManagerFactory: UserManagerFactory | undefined;
+let userManagerFactory: UserManagerFactory | undefined;
 function getUserManagerFactory(): UserManagerFactory {
-  _userManagerFactory ??= new UserManagerFactory();
-  return _userManagerFactory;
+  userManagerFactory ??= new UserManagerFactory();
+  return userManagerFactory;
 }
 
 type UserManager = ReturnType<UserManagerFactory["getUserManager"]>;
-let _userManager: UserManager | undefined;
+let userManager: UserManager | undefined;
 function getUserManager(): UserManager {
-  _userManager ??= getUserManagerFactory().getUserManager();
-  return _userManager;
+  userManager ??= getUserManagerFactory().getUserManager();
+  return userManager;
 }
 
-export const logContextFixture = base.extend<{ _logContext: void }>({
-  _logContext: [
+export const logContextFixture = base.extend<{ logContext: void }>({
+  logContext: [
     async ({}, use) => {
       const info = base.info();
       const workerIndex = info.parallelIndex ?? 0;

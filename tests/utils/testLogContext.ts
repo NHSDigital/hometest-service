@@ -5,7 +5,7 @@ interface TestLogContext {
   browser: string;
 }
 
-let _context: TestLogContext = {
+let currentLogContext: TestLogContext = {
   worker: "Worker-?",
   testTitle: "unknown",
   nhsNumber: "unknown",
@@ -13,9 +13,9 @@ let _context: TestLogContext = {
 };
 
 export function setTestLogContext(context: TestLogContext): void {
-  _context = context;
+  currentLogContext = context;
 }
 
 export function getTestLogPrefix(): string {
-  return `[${_context.worker}] [${_context.browser}] [${_context.nhsNumber}] "${_context.testTitle}"`;
+  return `[${currentLogContext.worker}] [${currentLogContext.browser}] [${currentLogContext.nhsNumber}] "${currentLogContext.testTitle}"`;
 }
