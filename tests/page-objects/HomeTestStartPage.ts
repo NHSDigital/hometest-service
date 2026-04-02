@@ -32,7 +32,7 @@ export class HomeTestStartPage extends AuthenticatedPage {
     });
     this.privacyPolicyLink = page.getByRole("link", { name: "privacy policy" });
     this.termsOfUseLink = page.getByRole("link", { name: "terms of use" });
-    this.pageHeader = page.locator("h1", { hasText: "Get a self-test kit for HIV" });
+    this.pageHeader = page.getByRole("heading", { name: "Get a self-test kit for HIV", level: 1 });
   }
 
   async waitUntilPageLoaded(): Promise<void> {
@@ -65,7 +65,6 @@ export class HomeTestStartPage extends AuthenticatedPage {
 
   async clickStartNowButton(): Promise<void> {
     await this.waitUntilPageLoaded();
-    await this.startNowBtn.waitFor({ state: "visible" });
     await this.startNowBtn.click();
   }
 

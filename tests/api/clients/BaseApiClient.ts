@@ -1,5 +1,8 @@
 import { APIRequestContext, APIResponse, expect } from "@playwright/test";
+
 import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import { getTestLogPrefix } from "../../utils/testLogContext";
+
 export interface ApiRequestOptions {
   headers?: Record<string, string>;
   params?: Record<string, string | number | boolean>;
@@ -18,13 +21,13 @@ export class BaseApiClient {
   protected async get(endpoint: string, options: ApiRequestOptions = {}): Promise<APIResponse> {
     const url = this.buildUrl(endpoint, options.params);
 
-    console.log(`[API GET] ${url}`);
+    console.log(`${getTestLogPrefix()} [API GET] ${url}`);
 
     const response = await this.request.get(url, {
       headers: this.buildHeaders(options.headers),
     });
 
-    console.log(`[API Response] Status: ${response.status()}`);
+    console.log(`${getTestLogPrefix()} [API Response] Status: ${response.status()}`);
 
     return response;
   }
@@ -32,9 +35,12 @@ export class BaseApiClient {
   protected async post(endpoint: string, options: ApiRequestOptions = {}): Promise<APIResponse> {
     const url = this.buildUrl(endpoint, options.params);
 
-    console.log(`[API POST] ${url}`);
+    console.log(`${getTestLogPrefix()} [API POST] ${url}`);
     if (options.data) {
-      console.log(`[API Request Body]`, JSON.stringify(options.data, null, 2));
+      console.log(
+        `${getTestLogPrefix()} [API Request Body]`,
+        JSON.stringify(options.data, null, 2),
+      );
     }
 
     const response = await this.request.post(url, {
@@ -42,7 +48,7 @@ export class BaseApiClient {
       data: options.data,
     });
 
-    console.log(`[API Response] Status: ${response.status()}`);
+    console.log(`${getTestLogPrefix()} [API Response] Status: ${response.status()}`);
 
     return response;
   }

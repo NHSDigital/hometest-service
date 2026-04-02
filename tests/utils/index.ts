@@ -1,4 +1,5 @@
-export { Logger } from './Logger';
-export { AccessibilityModule, accessibilityModule } from './AccessibilityModule';
-export * from './ApiRequestHelper';
-export { CredentialsHelper } from './CredentialsHelper';
+export { Logger } from "./Logger";
+export { AccessibilityModule, accessibilityModule } from "./AccessibilityModule";
+export * from "./ApiRequestHelper";
+export { CredentialsHelper } from "./CredentialsHelper";
+export { setTestLogContext, getTestLogPrefix } from "./testLogContext";
