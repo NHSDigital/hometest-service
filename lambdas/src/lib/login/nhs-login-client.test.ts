@@ -1,9 +1,11 @@
-import { NhsLoginClient } from "./nhs-login-client";
+import { type JwksClient } from "jwks-rsa";
+
 import { type HttpClient } from "../http/login-http-client";
 import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
+import { NhsLoginClient } from "./nhs-login-client";
 import { type NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
-import { type JwksClient } from "jwks-rsa";
 import * as testUserMapping from "./test-user-mapping";
 
 function createUserInfo(
@@ -156,13 +158,18 @@ describe("NhsLoginClient.getUserTokens", () => {
     getSigningKey: jest.fn(),
   } as unknown as JwksClient;
 
+  const tokenResponse: INhsTokenResponseModel = {
+    access_token: "user-access-token",
+    id_token: "id-token",
+    refresh_token: "refresh-token",
+    token_type: "Bearer",
+    expires_in: "3600",
+    scope: "openid profile",
+  };
+
   const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
     getRequest: jest.fn(),
-    postRequest: jest.fn().mockResolvedValue({
-      access_token: "user-access-token",
-      token_type: "Bearer",
-      expires_in: 3600,
-    }),
+    postRequest: jest.fn().mockResolvedValue(tokenResponse),
   };
 
   it("exchanges authorization code for user tokens", async () => {
@@ -176,17 +183,24 @@ describe("NhsLoginClient.getUserTokens", () => {
     const result = await client.getUserTokens("auth-code");
 
     expect(jwtHelperMock.createClientAuthJwt).toHaveBeenCalled();
-    expect(httpClientMock.postRequest).toHaveBeenCalledWith(
-      "https://auth.example/token",
-      expect.any(URLSearchParams),
-      {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    );
-    expect(result).toEqual({
-      access_token: "user-access-token",
-      token_type: "Bearer",
-      expires_in: 3600,
+    expect(httpClientMock.postRequest).toHaveBeenCalledTimes(1);
+
+    const postRequestMock = httpClientMock.postRequest as jest.Mock;
+    const firstCallArgs = postRequestMock.mock.calls[0];
+    const [url, params, headers] = firstCallArgs;
+
+    expect(url).toBe("https://auth.example/token");
+    expect(headers).toEqual({
+      "Content-Type": "application/x-www-form-urlencoded",
     });
+    expect(params).toBeInstanceOf(URLSearchParams);
+    expect(params.get("code")).toBe("auth-code");
+    expect(params.get("client_id")).toBe(nhsLoginConfig.clientId);
+    expect(params.get("redirect_uri")).toBe(nhsLoginConfig.redirectUri);
+    expect(params.get("grant_type")).toBe("authorization_code");
+    expect(params.get("client_assertion_type")).toBe(
+      "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    );
+    expect(result).toEqual(tokenResponse);
   });
 });
