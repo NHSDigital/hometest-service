@@ -361,7 +361,7 @@ describe("CheckYourAnswersPage", () => {
       await waitFor(() => {
         expect(mockClearAddresses).toHaveBeenCalled();
         expect(clearJourneyNavigationSpy).toHaveBeenCalled();
-        expect(mockNavigate).toHaveBeenCalledWith(RoutePath.HomePage, { replace: true });
+        expect(mockNavigate).toHaveBeenCalledWith(RoutePath.GetSelfTestKitPage, { replace: true });
         expect(screen.getByTestId("order-reference")).toHaveTextContent("");
       });
     });

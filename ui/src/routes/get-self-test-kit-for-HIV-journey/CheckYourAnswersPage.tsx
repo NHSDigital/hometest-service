@@ -69,7 +69,7 @@ export default function CheckYourAnswersPage() {
     reset();
     clearAddresses();
     sessionService.clearJourneyNavigation();
-    navigate(RoutePath.HomePage, { replace: true });
+    navigate(RoutePath.GetSelfTestKitPage, { replace: true });
   }, [clearAddresses, hasSubmittedOrder, navigate, navigationType, reset]);
 
   const handleChangeClick = (field: "address" | "mobile" | "comfort") => {
