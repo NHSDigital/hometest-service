@@ -3,15 +3,16 @@ import { SharedArray } from "k6/data";
 import exec from "k6/execution";
 import http from "k6/http";
 
+import { postCreateOrder } from "./api/createOrder.js";
+import { postResult } from "./api/updateResults.js";
+import { postOrderStatusUpdate } from "./api/updateStatus.js";
+import { ORDER_STATUS_URL, ORDER_URL, RESULT_URL } from "./configuration/endpoints.js";
 import { closePatientLookupDb, getPatientIdByNhsAndBirthDate } from "./db/PatientLookupK6.js";
 import { buildFhirHeaders, buildHeaders, parseCsv } from "./helpers/k6-request-utils.js";
 import { buildCreateOrderPayload } from "./test-data/CreateOrder.js";
 import { buildNormalResultObservation } from "./test-data/NormalResultObservation.js";
 import { buildOrderStatusPayload } from "./test-data/OrderStatusTask.js";
 
-const orderUrl = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/order";
-const orderStatusUrl = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/test-order/status";
-const resultUrl = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/result";
 const csvFilePath = __ENV.CREATE_ORDER_CSV || "./test-data/create-order-parameters.csv";
 
 const createOrderParameters = new SharedArray("create-order-parameters", function () {
@@ -35,9 +36,9 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 0,
       stages: [
-        { duration: "6s", target: 2 },
-        // { duration: "1m", target: 5 },
-        // { duration: "30s", target: 0 },
+        { duration: "30s", target: 2 },
+        { duration: "1m", target: 5 },
+        { duration: "30s", target: 0 },
       ],
       gracefulRampDown: "0s",
       exec: "endToEnd",
@@ -51,10 +52,11 @@ export const options = {
 };
 
 export function endToEnd() {
+  //Create order
   const params = getParametersForIteration();
   const data = JSON.stringify(buildCreateOrderPayload(params));
 
-  let res = http.request("POST", orderUrl, data, { headers: buildHeaders() });
+  let res = postCreateOrder(data, buildHeaders());
   const orderId = res.json("orderUid");
   console.log(
     `Created order with ID: ${orderId} (Supplier: ${params.supplierId}, BirthDate: ${params.birthDate}, NHS Number: ${params.nhsNumber})`,
@@ -62,35 +64,35 @@ export function endToEnd() {
   check(res, {
     "create order returns 201": (response) => response.status === 201,
   });
+  sleep(1);
 
   const { patientId } = getPatientIdByNhsAndBirthDate(params.nhsNumber, params.birthDate);
 
+  //Update order status to dispatched
   const dispatchedPayload = JSON.stringify(
     buildOrderStatusPayload(orderId, patientId, "dispatched"),
   );
-  const dispatchedStatusRes = http.request("POST", orderStatusUrl, dispatchedPayload, {
-    headers: buildHeaders(),
-  });
+  const dispatchedStatusRes = postOrderStatusUpdate(dispatchedPayload, buildHeaders());
   check(dispatchedStatusRes, {
     "order status dispatched returns 201": (response) => response.status === 201,
   });
+  sleep(1);
 
+  //Update order status to received-at-lab
   const receivedPayload = JSON.stringify(
     buildOrderStatusPayload(orderId, patientId, "received-at-lab"),
   );
-  const receivedStatusRes = http.request("POST", orderStatusUrl, receivedPayload, {
-    headers: buildHeaders(),
-  });
+  const receivedStatusRes = postOrderStatusUpdate(receivedPayload, buildHeaders());
   check(receivedStatusRes, {
     "order status received returns 201": (response) => response.status === 201,
   });
+  sleep(1);
 
+  //Update results
   const normalResultPayload = JSON.stringify(
     buildNormalResultObservation(orderId, patientId, params.supplierId),
   );
-  const normalResultRes = http.request("POST", resultUrl, normalResultPayload, {
-    headers: buildFhirHeaders(),
-  });
+  const normalResultRes = postResult(normalResultPayload, buildFhirHeaders());
   check(normalResultRes, {
     "submit normal result returns 201": (response) => response.status === 201,
   });
