@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 
-import type { OrderStatusService } from "../lib/db/order-status-db";
+import type { PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyEventCode, NotifyMessage } from "../lib/types/notify-message";
 
 export interface BuildOrderDispatchedNotifyMessageInput {
@@ -26,7 +26,7 @@ export class NotifyMessageBuilder {
   private readonly normalizedHomeTestBaseUrl: string;
 
   constructor(
-    private readonly orderStatusDb: OrderStatusService,
+    private readonly patientDbClient: PatientDbClient,
     homeTestBaseUrl: string,
   ) {
     this.normalizedHomeTestBaseUrl = normalizeBaseUrl(homeTestBaseUrl);
@@ -36,7 +36,7 @@ export class NotifyMessageBuilder {
     input: BuildOrderDispatchedNotifyMessageInput,
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, dispatchedAt } = input;
-    const recipient = await this.orderStatusDb.getNotifyRecipientData(patientId);
+    const recipient = await this.patientDbClient.getNotifyRecipientData(patientId);
     const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
 
     return {

@@ -1,11 +1,11 @@
-import type { OrderStatusService } from "../lib/db/order-status-db";
+import type { PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyEventCode } from "../lib/types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
 
 describe("NotifyMessageBuilder", () => {
   const mockGetNotifyRecipientData = jest.fn();
 
-  const mockOrderStatusDb: Pick<OrderStatusService, "getNotifyRecipientData"> = {
+  const mockPatientDbClient: Pick<PatientDbClient, "getNotifyRecipientData"> = {
     getNotifyRecipientData: mockGetNotifyRecipientData,
   };
 
@@ -19,7 +19,7 @@ describe("NotifyMessageBuilder", () => {
     });
 
     builder = new NotifyMessageBuilder(
-      mockOrderStatusDb as OrderStatusService,
+      mockPatientDbClient as PatientDbClient,
       "https://hometest.example.nhs.uk",
     );
   });
@@ -48,7 +48,7 @@ describe("NotifyMessageBuilder", () => {
 
   it("should normalize trailing slash in base url", async () => {
     const trailingSlashBuilder = new NotifyMessageBuilder(
-      mockOrderStatusDb as OrderStatusService,
+      mockPatientDbClient as PatientDbClient,
       "https://hometest.example.nhs.uk/",
     );
 

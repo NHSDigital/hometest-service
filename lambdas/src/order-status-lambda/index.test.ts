@@ -62,6 +62,8 @@ describe("Order Status Lambda Handler", () => {
         checkIdempotency: mockCheckIdempotency,
         addOrderStatusUpdate: mockAddOrderStatusUpdate,
         isFirstStatusOccurrence: mockIsFirstStatusOccurrence,
+      },
+      notificationAuditDbClient: {
         insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       },
       sqsClient: {
@@ -71,7 +73,6 @@ describe("Order Status Lambda Handler", () => {
         buildOrderDispatchedNotifyMessage: mockBuildOrderDispatchedNotifyMessage,
       },
       notifyMessagesQueueUrl: "https://example.queue.local/notify",
-      homeTestBaseUrl: "https://hometest.example.nhs.uk",
     });
 
     const module = await import("./index");

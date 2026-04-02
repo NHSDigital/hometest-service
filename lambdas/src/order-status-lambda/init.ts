@@ -1,6 +1,8 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { PatientDbClient } from "../lib/db/patient-db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
@@ -8,6 +10,8 @@ import { NotifyMessageBuilder } from "./notify-message-builder";
 
 export interface Environment {
   orderStatusDb: OrderStatusService;
+  patientDbClient: PatientDbClient;
+  notificationAuditDbClient: NotificationAuditDbClient;
   sqsClient: AWSSQSClient;
   notifyMessageBuilder: NotifyMessageBuilder;
   notifyMessagesQueueUrl: string;
@@ -20,11 +24,15 @@ export function buildEnvironment(): Environment {
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderStatusDb = new OrderStatusService(dbClient);
+  const patientDbClient = new PatientDbClient(dbClient);
+  const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
   const sqsClient = new AWSSQSClient();
-  const notifyMessageBuilder = new NotifyMessageBuilder(orderStatusDb, homeTestBaseUrl);
+  const notifyMessageBuilder = new NotifyMessageBuilder(patientDbClient, homeTestBaseUrl);
 
   return {
     orderStatusDb,
+    patientDbClient,
+    notificationAuditDbClient,
     sqsClient,
     notifyMessageBuilder,
     notifyMessagesQueueUrl,

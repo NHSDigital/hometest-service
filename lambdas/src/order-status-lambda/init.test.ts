@@ -1,6 +1,8 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { PatientDbClient } from "../lib/db/patient-db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
@@ -9,6 +11,8 @@ import { buildEnvironment as init } from "./init";
 import { NotifyMessageBuilder } from "./notify-message-builder";
 
 jest.mock("../lib/db/order-status-db");
+jest.mock("../lib/db/patient-db-client");
+jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
@@ -103,6 +107,8 @@ describe("init", () => {
 
       expect(result).toEqual({
         orderStatusDb: expect.any(OrderStatusService),
+        patientDbClient: expect.any(PatientDbClient),
+        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
         sqsClient: expect.any(AWSSQSClient),
         notifyMessageBuilder: expect.any(NotifyMessageBuilder),
         notifyMessagesQueueUrl: "https://example.queue.local/notify",
@@ -143,6 +149,16 @@ describe("init", () => {
             calledWith: expect.any(PostgresDbClient),
           },
           {
+            mock: PatientDbClient as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: NotificationAuditDbClient as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
             mock: AWSSQSClient as jest.Mock,
             times: 1,
           },
@@ -154,11 +170,11 @@ describe("init", () => {
       });
     });
 
-    it("should create NotifyMessageBuilder with OrderStatusService and home test base url", () => {
+    it("should create NotifyMessageBuilder with PatientDbClient and home test base url", () => {
       init();
 
       expect(NotifyMessageBuilder).toHaveBeenCalledWith(
-        expect.any(OrderStatusService),
+        expect.any(PatientDbClient),
         "https://hometest.example.nhs.uk",
       );
     });
