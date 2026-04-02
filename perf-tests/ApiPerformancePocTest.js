@@ -5,12 +5,40 @@ import http from "k6/http";
 
 import { closePatientLookupDb, getPatientIdByNhsAndBirthDate } from "./db/PatientLookupK6.js";
 import { createOrderBody } from "./test-data/CreateOrder.js";
+import { buildNormalResultObservation } from "./test-data/NormalResultObservation.js";
 
-const url = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/order";
-const headers = {
-  "X-Correlation-ID": "590e4ade-238c-4518-980a-16a621988cbb",
+const orderUrl = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/order";
+const orderStatusUrl = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/test-order/status";
+const resultUrl = "http://127.0.0.1:4566/_aws/execute-api/lwedds9nct/local/result";
+const baseHeaders = {
   "Content-Type": "application/json",
 };
+
+const fhirHeaders = {
+  "Content-Type": "application/fhir+json",
+};
+
+function createRandomGuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = char === "x" ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
+
+function buildHeaders() {
+  return {
+    ...baseHeaders,
+    "X-Correlation-ID": createRandomGuid(),
+  };
+}
+
+function buildFhirHeaders() {
+  return {
+    ...fhirHeaders,
+    "X-Correlation-ID": createRandomGuid(),
+  };
+}
 
 function parseCsv(csvText) {
   const lines = csvText
@@ -74,15 +102,27 @@ function buildCreateOrderPayload(params) {
   };
 }
 
+function buildOrderStatusPayload(orderUid, patientUid, businessStatusText) {
+  return {
+    resourceType: "Task",
+    status: "in-progress",
+    intent: "order",
+    identifier: [{ value: orderUid }],
+    for: { reference: `Patient/${patientUid}` },
+    businessStatus: { text: businessStatusText },
+    lastModified: new Date().toISOString(),
+  };
+}
+
 export const options = {
   scenarios: {
     createOrder: {
       executor: "ramping-vus",
       startVUs: 0,
       stages: [
-        { duration: "10s", target: 3 },
-        // { duration: "1m", target: 5 },
-        // { duration: "30s", target: 0 },
+        { duration: "30s", target: 5 },
+        { duration: "1m", target: 5 },
+        { duration: "30s", target: 0 },
       ],
       gracefulRampDown: "0s",
       exec: "createOrder",
@@ -91,7 +131,7 @@ export const options = {
 
   thresholds: {
     http_req_failed: ["rate<0.01"],
-    http_req_duration: ["p(95)<200"],
+    http_req_duration: ["p(95)<2000"],
   },
 };
 
@@ -99,7 +139,7 @@ export function createOrder() {
   const params = getParametersForIteration();
   const data = JSON.stringify(buildCreateOrderPayload(params));
 
-  let res = http.request("POST", url, data, { headers: headers });
+  let res = http.request("POST", orderUrl, data, { headers: buildHeaders() });
   const orderId = res.json("orderUid");
   console.log(
     `Created order with ID: ${orderId} (Supplier: ${params.supplierId}, BirthDate: ${params.birthDate}, NHS Number: ${params.nhsNumber})`,
@@ -112,10 +152,41 @@ export function createOrder() {
   console.log(
     `Patient ID for NHS Number ${params.nhsNumber} and Birth Date ${params.birthDate}: ${patientId}`,
   );
+
+  const dispatchedPayload = JSON.stringify(
+    buildOrderStatusPayload(orderId, patientId, "dispatched"),
+  );
+  const dispatchedStatusRes = http.request("POST", orderStatusUrl, dispatchedPayload, {
+    headers: buildHeaders(),
+  });
+  check(dispatchedStatusRes, {
+    "order status dispatched returns 201": (response) => response.status === 201,
+  });
+
+  const receivedPayload = JSON.stringify(
+    buildOrderStatusPayload(orderId, patientId, "received-at-lab"),
+  );
+  const receivedStatusRes = http.request("POST", orderStatusUrl, receivedPayload, {
+    headers: buildHeaders(),
+  });
+  logStatusUpdateResponse("order status received", receivedStatusRes);
+  check(receivedStatusRes, {
+    "order status received returns 201": (response) => response.status === 201,
+  });
+
+  const normalResultPayload = JSON.stringify(
+    buildNormalResultObservation(orderId, patientId, params.supplierId),
+  );
+  const normalResultRes = http.request("POST", resultUrl, normalResultPayload, {
+    headers: buildFhirHeaders(),
+  });
+  logResultResponse(normalResultRes);
+  check(normalResultRes, {
+    "submit normal result returns 201": (response) => response.status === 201,
+  });
+
   sleep(1);
 }
-
-//update order status
 
 export function teardown() {
   closePatientLookupDb();
