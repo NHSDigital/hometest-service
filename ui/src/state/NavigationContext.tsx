@@ -51,6 +51,7 @@ export interface JourneyNavigationContextType {
   goBack: () => void;
   canGoBack: () => boolean;
   clearHistory: () => void;
+  resetNavigation: (step?: Step, options?: { replace?: boolean }) => void;
   setReturnToStep: (step: Step | null) => void;
 }
 
@@ -134,6 +135,22 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
     }));
   }, [currentStep]);
 
+  const resetNavigation = useCallback(
+    (step: Step = currentStep, options?: { replace?: boolean }) => {
+      setNavigation({
+        stepHistory: [step],
+        returnToStep: null,
+      });
+
+      sessionService.clearJourneyNavigation();
+
+      if (step !== currentStep || options?.replace === true) {
+        navigate(getPathForStep(step), { replace: options?.replace });
+      }
+    },
+    [currentStep, navigate],
+  );
+
   const setReturnToStep = useCallback((step: Step | null) => {
     setNavigation((previousNavigation) => ({
       ...previousNavigation,
@@ -150,6 +167,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
       goBack,
       canGoBack,
       clearHistory,
+      resetNavigation,
       setReturnToStep,
     }),
     [
@@ -160,6 +178,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
       goBack,
       canGoBack,
       clearHistory,
+      resetNavigation,
       setReturnToStep,
     ],
   );

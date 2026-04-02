@@ -4,7 +4,6 @@ import { MemoryRouter } from "react-router-dom";
 
 import { RoutePath } from "@/lib/models/route-paths";
 import orderService from "@/lib/services/order-service";
-import sessionService from "@/lib/services/session-service";
 import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
@@ -32,7 +31,7 @@ jest.mock("react-router-dom", () => {
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
 const mockGoBack = jest.fn();
-const clearJourneyNavigationSpy = jest.spyOn(sessionService, "clearJourneyNavigation");
+const mockResetNavigation = jest.fn();
 
 jest.mock("@/state", () => {
   const actual = jest.requireActual("@/state");
@@ -46,6 +45,7 @@ jest.mock("@/state", () => {
       goBack: mockGoBack,
       canGoBack: () => true,
       clearHistory: jest.fn(),
+      resetNavigation: mockResetNavigation,
       setReturnToStep: mockSetReturnToStep,
     }),
     usePostcodeLookup: () => ({
@@ -107,10 +107,10 @@ function StateSeeder({
 function AuthSeeder({
   children,
   user = defaultAuthUser,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   user?: AuthUser;
-}) {
+}>) {
   const { setUser } = useAuth();
 
   useEffect(() => {
@@ -360,8 +360,9 @@ describe("CheckYourAnswersPage", () => {
 
       await waitFor(() => {
         expect(mockClearAddresses).toHaveBeenCalled();
-        expect(clearJourneyNavigationSpy).toHaveBeenCalled();
-        expect(mockNavigate).toHaveBeenCalledWith(RoutePath.GetSelfTestKitPage, { replace: true });
+        expect(mockResetNavigation).toHaveBeenCalledWith(RoutePath.GetSelfTestKitPage, {
+          replace: true,
+        });
         expect(screen.getByTestId("order-reference")).toHaveTextContent("");
       });
     });

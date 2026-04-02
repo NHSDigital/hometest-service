@@ -1,13 +1,14 @@
-import { CreateOrderProvider, JourneyNavigationProvider, useCreateOrderContext } from "@/state";
 import { render, screen } from "@testing-library/react";
-
-import { MemoryRouter } from "react-router-dom";
-import OrderSubmittedPage from "@/routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
 import { useEffect } from "react";
+import { MemoryRouter } from "react-router-dom";
+
+import OrderSubmittedPage from "@/routes/get-self-test-kit-for-HIV-journey/OrderSubmittedPage";
+import { CreateOrderProvider, JourneyNavigationProvider, useCreateOrderContext } from "@/state";
 
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
 const mockGoBack = jest.fn();
+const mockResetNavigation = jest.fn();
 
 jest.mock("@/state", () => {
   const actual = jest.requireActual("@/state");
@@ -21,6 +22,7 @@ jest.mock("@/state", () => {
       goBack: mockGoBack,
       canGoBack: () => false,
       clearHistory: jest.fn(),
+      resetNavigation: mockResetNavigation,
       setReturnToStep: mockSetReturnToStep,
     }),
   };

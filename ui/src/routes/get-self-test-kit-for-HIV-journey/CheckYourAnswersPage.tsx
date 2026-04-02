@@ -2,13 +2,12 @@
 
 import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
 import React, { useLayoutEffect, useState } from "react";
-import { useNavigate, useNavigationType } from "react-router-dom";
+import { useNavigationType } from "react-router-dom";
 
 import { useAsyncErrorHandler, useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
-import sessionService from "@/lib/services/session-service";
 import {
   useAuth,
   useCreateOrderContext,
@@ -45,10 +44,10 @@ function formatUserName(user?: { givenName: string; familyName: string } | null)
 }
 
 export default function CheckYourAnswersPage() {
-  const navigate = useNavigate();
   const navigationType = useNavigationType();
   const { orderAnswers, updateOrderAnswers, reset } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory, setReturnToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, resetNavigation, setReturnToStep } =
+    useJourneyNavigationContext();
   const { clearAddresses } = usePostcodeLookup();
   const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
@@ -68,9 +67,8 @@ export default function CheckYourAnswersPage() {
 
     reset();
     clearAddresses();
-    sessionService.clearJourneyNavigation();
-    navigate(RoutePath.GetSelfTestKitPage, { replace: true });
-  }, [clearAddresses, hasSubmittedOrder, navigate, navigationType, reset]);
+    resetNavigation(RoutePath.GetSelfTestKitPage, { replace: true });
+  }, [clearAddresses, hasSubmittedOrder, navigationType, reset, resetNavigation]);
 
   const handleChangeClick = (field: "address" | "mobile" | "comfort") => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);

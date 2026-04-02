@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { FormBackLink } from "@/components/FormBackLink";
@@ -12,6 +11,9 @@ const mockNavigationContext = {
   goBack: jest.fn(),
   canGoBack: jest.fn(() => true),
   clearHistory: jest.fn(),
+  resetNavigation: jest.fn(),
+  returnToStep: null,
+  setReturnToStep: jest.fn(),
 };
 
 jest.mock("@/state", () => ({
@@ -109,7 +111,7 @@ describe("FormBackLink", () => {
 
       // BackLink should still be rendered but with empty text
       // Check for the back link container class
-      expect(document.querySelector('.nhsuk-back-link')).toBeInTheDocument();
+      expect(document.querySelector(".nhsuk-back-link")).toBeInTheDocument();
     });
   });
 
