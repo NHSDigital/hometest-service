@@ -1,13 +1,20 @@
+// sort-imports-ignore
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
+
 import { HttpError } from "../lib/http/http-client";
+import { getOrCreateTokenGenerator } from "../lib/supplier/supplier-auth-client";
 
 // Setup mocks
 const mockHttpClientPostRaw = jest.fn();
-const mockSupplierAuthGetAccessToken = jest.fn();
+const mockGenerateToken = jest.fn();
 const mockGetSupplierConfigBySupplierId = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
+const mockTokenGenerator = {
+  generateToken: mockGenerateToken,
+};
 
 const supplierOrderBody = JSON.parse(
   readFileSync(join(__dirname, "../__mocks__/supplier_order_placement_body_valid.json"), "utf-8"),
@@ -28,17 +35,16 @@ jest.mock("./init", () => ({
   })),
 }));
 
-// Mock OAuthSupplierAuthClient
+// Mock token generator
 jest.mock("../lib/supplier/supplier-auth-client", () => {
   return {
-    OAuthSupplierAuthClient: jest.fn().mockImplementation(() => ({
-      getAccessToken: mockSupplierAuthGetAccessToken,
-    })),
+    getOrCreateTokenGenerator: jest.fn(() => mockTokenGenerator),
   };
 });
 
-// Import handler after mocking
 import { handler } from "./index";
+
+const mockGetOrCreateTokenGenerator = jest.mocked(getOrCreateTokenGenerator);
 
 describe("order-router-lambda", () => {
   let mockContext: Partial<Context>;
@@ -82,9 +88,10 @@ describe("order-router-lambda", () => {
 
     // Reset mocks
     mockHttpClientPostRaw.mockReset();
-    mockSupplierAuthGetAccessToken.mockReset();
+    mockGenerateToken.mockReset();
     mockGetSupplierConfigBySupplierId.mockReset();
     mockAddOrderStatusUpdate.mockReset();
+    mockGetOrCreateTokenGenerator.mockClear();
 
     process.env.AWS_REGION = "eu-west-2";
   });
@@ -106,7 +113,7 @@ describe("order-router-lambda", () => {
   describe("successful order processing", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
@@ -129,7 +136,7 @@ describe("order-router-lambda", () => {
 
       expect(result.batchItemFailures).toEqual([]);
       expect(mockGetSupplierConfigBySupplierId).toHaveBeenCalledWith(validUUID);
-      expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
+      expect(mockGenerateToken).toHaveBeenCalled();
       expect(mockHttpClientPostRaw).toHaveBeenCalledWith(
         `${mockServiceUrl}/order`,
         JSON.stringify(supplierOrderBody),
@@ -241,6 +248,30 @@ describe("order-router-lambda", () => {
       expect(result.batchItemFailures).toEqual([]);
       expect(mockAddOrderStatusUpdate).toHaveBeenCalled();
     });
+
+    it("should request token generation for repeated requests with same supplier config", async () => {
+      mockHttpClientPostRaw.mockResolvedValue({
+        status: 201,
+        text: async () => JSON.stringify({ id: "order-123" }),
+        headers: { get: () => "application/fhir+json" },
+      });
+
+      const messageBody = JSON.stringify({
+        supplier_code: validUUID,
+        correlation_id: validCorrelationId,
+        order_body: supplierOrderBody,
+      });
+
+      const sqsEvent = createSQSEvent([{ messageId: "msg-1", body: messageBody }]);
+
+      const firstResult = await handler(sqsEvent, mockContext as Context);
+      const secondResult = await handler(sqsEvent, mockContext as Context);
+
+      expect(firstResult.batchItemFailures).toEqual([]);
+      expect(secondResult.batchItemFailures).toEqual([]);
+      expect(mockGetOrCreateTokenGenerator).toHaveBeenCalledTimes(2);
+      expect(mockGenerateToken).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe("message validation errors", () => {
@@ -349,7 +380,7 @@ describe("order-router-lambda", () => {
 
     it("should fail for missing order_body.id", async () => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
 
       const orderBodyWithoutId = { ...supplierOrderBody };
@@ -412,7 +443,7 @@ describe("order-router-lambda", () => {
     it("should fail when OAuth token request fails", async () => {
       const mockErrorResponse = JSON.stringify({ error: "invalid_client" });
 
-      mockSupplierAuthGetAccessToken.mockRejectedValue(
+      mockGenerateToken.mockRejectedValue(
         new HttpError("HTTP POST request failed with status: 401", 401, mockErrorResponse),
       );
 
@@ -427,14 +458,14 @@ describe("order-router-lambda", () => {
       const result = await handler(sqsEvent, mockContext as Context);
 
       expect(result.batchItemFailures).toEqual([{ itemIdentifier: "msg-1" }]);
-      expect(mockSupplierAuthGetAccessToken).toHaveBeenCalled();
+      expect(mockGenerateToken).toHaveBeenCalled();
     });
   });
 
   describe("supplier order submission errors", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
@@ -543,7 +574,7 @@ describe("order-router-lambda", () => {
   describe("partial batch failures", () => {
     beforeEach(() => {
       mockDefaultSupplierConfig();
-      mockSupplierAuthGetAccessToken.mockResolvedValue("test-access-token");
+      mockGenerateToken.mockResolvedValue("test-access-token");
       mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     });
 
