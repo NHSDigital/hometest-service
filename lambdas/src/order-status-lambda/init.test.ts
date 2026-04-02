@@ -2,14 +2,18 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
 import { buildEnvironment as init } from "./init";
+import { NotifyMessageBuilder } from "./notify-message-builder";
 
 jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
+jest.mock("./notify-message-builder");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -21,6 +25,8 @@ describe("init", () => {
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
+    NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
+    HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
   };
 
   const mockPostgresConfig = {
@@ -97,6 +103,9 @@ describe("init", () => {
 
       expect(result).toEqual({
         orderStatusDb: expect.any(OrderStatusService),
+        sqsClient: expect.any(AWSSQSClient),
+        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
+        notifyMessagesQueueUrl: "https://example.queue.local/notify",
       });
     });
   });
@@ -133,8 +142,25 @@ describe("init", () => {
             times: 1,
             calledWith: expect.any(PostgresDbClient),
           },
+          {
+            mock: AWSSQSClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: NotifyMessageBuilder as jest.Mock,
+            times: 1,
+          },
         ],
       });
+    });
+
+    it("should create NotifyMessageBuilder with OrderStatusService and home test base url", () => {
+      init();
+
+      expect(NotifyMessageBuilder).toHaveBeenCalledWith(
+        expect.any(OrderStatusService),
+        "https://hometest.example.nhs.uk",
+      );
     });
   });
 

@@ -10,6 +10,10 @@ const mockInit = jest.fn();
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
+const mockIsFirstStatusOccurrence = jest.fn();
+const mockBuildOrderDispatchedNotifyMessage = jest.fn();
+const mockInsertNotificationAuditEntry = jest.fn();
+const mockSendMessage = jest.fn();
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
@@ -41,13 +45,33 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
+    mockIsFirstStatusOccurrence.mockResolvedValue(true);
+    mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
+      messageReference: "123e4567-e89b-12d3-a456-426614174099",
+      eventCode: "ORDER_DISPATCHED",
+      correlationId: MOCK_CORRELATION_ID,
+      nhsNumber: "1234567890",
+      dateOfBirth: "1990-01-02",
+    });
+    mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
+    mockSendMessage.mockResolvedValue(undefined);
 
     mockInit.mockReturnValue({
       orderStatusDb: {
         getPatientIdFromOrder: mockGetPatientIdFromOrder,
         checkIdempotency: mockCheckIdempotency,
         addOrderStatusUpdate: mockAddOrderStatusUpdate,
+        isFirstStatusOccurrence: mockIsFirstStatusOccurrence,
+        insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       },
+      sqsClient: {
+        sendMessage: mockSendMessage,
+      },
+      notifyMessageBuilder: {
+        buildOrderDispatchedNotifyMessage: mockBuildOrderDispatchedNotifyMessage,
+      },
+      notifyMessagesQueueUrl: "https://example.queue.local/notify",
+      homeTestBaseUrl: "https://hometest.example.nhs.uk",
     });
 
     const module = await import("./index");
@@ -272,6 +296,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
+      expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
     it("should process new updates with different correlation ID", async () => {
@@ -396,6 +421,73 @@ describe("Order Status Lambda Handler", () => {
           createdAt: validTaskBody.lastModified,
           correlationId: MOCK_CORRELATION_ID,
         }),
+      );
+    });
+
+    it("should send dispatched notification for first DISPATCHED status", async () => {
+      mockIsFirstStatusOccurrence.mockResolvedValueOnce(true);
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockBuildOrderDispatchedNotifyMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patientId: MOCK_PATIENT_UID,
+          correlationId: MOCK_CORRELATION_ID,
+          orderId: MOCK_ORDER_UID,
+          dispatchedAt: validTaskBody.lastModified,
+        }),
+      );
+      expect(mockSendMessage).toHaveBeenCalledWith(
+        "https://example.queue.local/notify",
+        expect.any(String),
+      );
+      expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventCode: "ORDER_DISPATCHED",
+          correlationId: MOCK_CORRELATION_ID,
+          status: "SENT",
+        }),
+      );
+    });
+
+    it("should not send notification for non-DISPATCHED status", async () => {
+      mockEvent.body = JSON.stringify({
+        ...validTaskBody,
+        businessStatus: {
+          text: IncomingBusinessStatus.RECEIVED_AT_LAB,
+        },
+      } satisfies Partial<OrderStatusFHIRTask>);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockIsFirstStatusOccurrence).not.toHaveBeenCalled();
+      expect(mockSendMessage).not.toHaveBeenCalled();
+    });
+
+    it("should not send notification when DISPATCHED is not first occurrence", async () => {
+      mockIsFirstStatusOccurrence.mockResolvedValueOnce(false);
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockIsFirstStatusOccurrence).toHaveBeenCalledWith(MOCK_ORDER_UID, "DISPATCHED");
+      expect(mockSendMessage).not.toHaveBeenCalled();
+      expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
+    });
+
+    it("should return 500 when sending notify message fails", async () => {
+      mockSendMessage.mockRejectedValueOnce(new Error("SQS unavailable"));
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(500);
+      expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: "FAILED" }),
       );
     });
   });

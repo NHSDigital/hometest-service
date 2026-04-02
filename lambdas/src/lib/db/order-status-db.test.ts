@@ -1,4 +1,7 @@
+import { DBClient } from "./db-client";
 import {
+  NotificationAuditEntryParams,
+  NotifyRecipientData,
   OrderRow,
   OrderStatusCodes,
   OrderStatusService,
@@ -18,11 +21,12 @@ describe("OrderStatusService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    const mockDbClient = {
+    const mockDbClient: DBClient = {
       query: mockQuery,
-      close: jest.fn(),
+      close: jest.fn().mockResolvedValue(undefined),
+      withTransaction: jest.fn(),
     };
-    service = new OrderStatusService(mockDbClient as any);
+    service = new OrderStatusService(mockDbClient);
   });
 
   describe("getPatientIdFromOrder", () => {
@@ -151,6 +155,118 @@ describe("OrderStatusService", () => {
           correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
+    });
+  });
+
+  describe("getNotifyRecipientData", () => {
+    it("should return notify recipient data", async () => {
+      const mockRecipientRow = {
+        nhs_number: "1234567890",
+        birth_date: "1990-04-20",
+      };
+
+      mockQuery.mockResolvedValue({
+        rows: [mockRecipientRow],
+        rowCount: 1,
+      });
+
+      const result = await service.getNotifyRecipientData("some-mocked-patient-id");
+
+      expect(result).toEqual({
+        nhsNumber: mockRecipientRow.nhs_number,
+        dateOfBirth: mockRecipientRow.birth_date,
+      } satisfies NotifyRecipientData);
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("patient_mapping"), [
+        "some-mocked-patient-id",
+      ]);
+    });
+
+    it("should throw when patient record does not exist", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [],
+        rowCount: 0,
+      });
+
+      await expect(service.getNotifyRecipientData("missing-patient-id")).rejects.toThrow(
+        "Failed to fetch notify recipient data",
+      );
+    });
+  });
+
+  describe("isFirstStatusOccurrence", () => {
+    it("should return true for first occurrence", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [{ count: 1 }],
+        rowCount: 1,
+      });
+
+      const result = await service.isFirstStatusOccurrence(
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      );
+
+      expect(result).toBe(true);
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("COUNT(*)::int"), [
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      ]);
+    });
+
+    it("should return false when status already exists", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [{ count: 2 }],
+        rowCount: 1,
+      });
+
+      const result = await service.isFirstStatusOccurrence(
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("insertNotificationAuditEntry", () => {
+    it("should insert notification audit entry", async () => {
+      const params: NotificationAuditEntryParams = {
+        messageReference: "123e4567-e89b-12d3-a456-426614174000",
+        eventCode: "ORDER_DISPATCHED",
+        correlationId: "123e4567-e89b-12d3-a456-426614174001",
+        status: "SENT",
+      };
+
+      mockQuery.mockResolvedValue({
+        rows: [],
+        rowCount: 1,
+      });
+
+      await expect(service.insertNotificationAuditEntry(params)).resolves.toBeUndefined();
+
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("notification_audit"), [
+        params.messageReference,
+        null,
+        params.eventCode,
+        null,
+        params.correlationId,
+        params.status,
+      ]);
+    });
+
+    it("should throw when notification audit insert affects no rows", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [],
+        rowCount: 0,
+      });
+
+      await expect(
+        service.insertNotificationAuditEntry({
+          messageReference: "123e4567-e89b-12d3-a456-426614174000",
+          eventCode: "ORDER_DISPATCHED",
+          correlationId: "123e4567-e89b-12d3-a456-426614174001",
+          status: "SENT",
+        } satisfies NotificationAuditEntryParams),
+      ).rejects.toThrow("Failed to insert notification audit entry");
     });
   });
 });

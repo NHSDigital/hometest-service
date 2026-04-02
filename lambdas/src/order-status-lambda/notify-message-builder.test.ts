@@ -1,0 +1,81 @@
+import type { OrderStatusService } from "../lib/db/order-status-db";
+import { NotifyEventCode } from "../lib/types/notify-message";
+import { NotifyMessageBuilder } from "./notify-message-builder";
+
+describe("NotifyMessageBuilder", () => {
+  const mockGetNotifyRecipientData = jest.fn();
+
+  const mockOrderStatusDb: Pick<OrderStatusService, "getNotifyRecipientData"> = {
+    getNotifyRecipientData: mockGetNotifyRecipientData,
+  };
+
+  let builder: NotifyMessageBuilder;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetNotifyRecipientData.mockResolvedValue({
+      nhsNumber: "1234567890",
+      dateOfBirth: "1990-01-02",
+    });
+
+    builder = new NotifyMessageBuilder(
+      mockOrderStatusDb as OrderStatusService,
+      "https://hometest.example.nhs.uk",
+    );
+  });
+
+  it("should build dispatched notify message with formatted date and tracking url", async () => {
+    const result = await builder.buildOrderDispatchedNotifyMessage({
+      patientId: "550e8400-e29b-41d4-a716-446655440111",
+      correlationId: "123e4567-e89b-12d3-a456-426614174000",
+      orderId: "550e8400-e29b-41d4-a716-446655440000",
+      dispatchedAt: "2026-08-06T10:00:00Z",
+    });
+
+    expect(result.correlationId).toBe("123e4567-e89b-12d3-a456-426614174000");
+    expect(result.eventCode).toBe(NotifyEventCode.OrderDispatched);
+    expect(result.recipient).toEqual({
+      nhsNumber: "1234567890",
+      dateOfBirth: "1990-01-02",
+    });
+
+    expect(result.personalisation).toEqual({
+      dispatched_date: "6 August 2026",
+      status_url:
+        "[View kit order update and see more information](https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking)",
+    });
+  });
+
+  it("should normalize trailing slash in base url", async () => {
+    const trailingSlashBuilder = new NotifyMessageBuilder(
+      mockOrderStatusDb as OrderStatusService,
+      "https://hometest.example.nhs.uk/",
+    );
+
+    const result = await trailingSlashBuilder.buildOrderDispatchedNotifyMessage({
+      patientId: "550e8400-e29b-41d4-a716-446655440111",
+      correlationId: "123e4567-e89b-12d3-a456-426614174000",
+      orderId: "550e8400-e29b-41d4-a716-446655440000",
+      dispatchedAt: "2026-08-06T10:00:00Z",
+    });
+
+    const statusUrl = result.personalisation?.status_url;
+
+    expect(typeof statusUrl).toBe("string");
+    expect(statusUrl).toContain(
+      "https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking",
+    );
+    expect(statusUrl).not.toContain(".uk//orders");
+  });
+
+  it("should call recipient lookup with patient id", async () => {
+    await builder.buildOrderDispatchedNotifyMessage({
+      patientId: "550e8400-e29b-41d4-a716-446655440111",
+      correlationId: "123e4567-e89b-12d3-a456-426614174000",
+      orderId: "550e8400-e29b-41d4-a716-446655440000",
+      dispatchedAt: "2026-08-06T10:00:00Z",
+    });
+
+    expect(mockGetNotifyRecipientData).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440111");
+  });
+});
