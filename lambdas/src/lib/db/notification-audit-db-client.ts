@@ -1,10 +1,17 @@
+import { type NotifyEventCode } from "../types/notify-message";
 import { type DBClient } from "./db-client";
+
+export enum NotificationAuditStatus {
+  QUEUED = "QUEUED",
+  SENT = "SENT",
+  FAILED = "FAILED",
+}
 
 export interface NotificationAuditEntryParams {
   messageReference: string;
-  eventCode: string;
+  eventCode: NotifyEventCode;
   correlationId: string;
-  status: string;
+  status: NotificationAuditStatus;
   notifyMessageId?: string | null;
   routingPlanId?: string | null;
 }

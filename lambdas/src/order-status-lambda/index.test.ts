@@ -1,6 +1,8 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
+import { NotificationAuditStatus } from "../lib/db/notification-audit-db-client";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
+import { NotifyEventCode } from "../lib/types/notify-message";
 import { OrderStatusFHIRTask } from "./index";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
@@ -48,7 +50,7 @@ describe("Order Status Lambda Handler", () => {
     mockIsFirstStatusOccurrence.mockResolvedValue(true);
     mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
-      eventCode: "ORDER_DISPATCHED",
+      eventCode: NotifyEventCode.OrderDispatched,
       correlationId: MOCK_CORRELATION_ID,
       nhsNumber: "1234567890",
       dateOfBirth: "1990-01-02",
@@ -446,9 +448,9 @@ describe("Order Status Lambda Handler", () => {
       );
       expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith(
         expect.objectContaining({
-          eventCode: "ORDER_DISPATCHED",
+          eventCode: NotifyEventCode.OrderDispatched,
           correlationId: MOCK_CORRELATION_ID,
-          status: "SENT",
+          status: NotificationAuditStatus.SENT,
         }),
       );
     });
@@ -488,7 +490,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(500);
       expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalledWith(
-        expect.objectContaining({ status: "FAILED" }),
+        expect.objectContaining({ status: NotificationAuditStatus.FAILED }),
       );
     });
   });

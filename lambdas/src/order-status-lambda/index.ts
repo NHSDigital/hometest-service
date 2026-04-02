@@ -6,6 +6,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import z from "zod";
 
 import { ConsoleCommons } from "../lib/commons";
+import { NotificationAuditStatus } from "../lib/db/notification-audit-db-client";
 import { OrderStatusCodes, OrderStatusUpdateParams } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
@@ -187,7 +188,7 @@ export const lambdaHandler = async (
           messageReference: notifyMessage.messageReference,
           eventCode: notifyMessage.eventCode,
           correlationId,
-          status: "SENT",
+          status: NotificationAuditStatus.SENT,
         });
       }
     }

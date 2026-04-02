@@ -1,7 +1,9 @@
+import { NotifyEventCode } from "../types/notify-message";
 import { type DBClient } from "./db-client";
 import {
   NotificationAuditDbClient,
   type NotificationAuditEntryParams,
+  NotificationAuditStatus,
 } from "./notification-audit-db-client";
 
 const mockQuery = jest.fn();
@@ -24,9 +26,9 @@ describe("NotificationAuditDbClient", () => {
   it("should insert notification audit entry", async () => {
     const params: NotificationAuditEntryParams = {
       messageReference: "123e4567-e89b-12d3-a456-426614174000",
-      eventCode: "ORDER_DISPATCHED",
+      eventCode: NotifyEventCode.OrderDispatched,
       correlationId: "123e4567-e89b-12d3-a456-426614174001",
-      status: "SENT",
+      status: NotificationAuditStatus.SENT,
     };
 
     mockQuery.mockResolvedValue({
@@ -55,9 +57,9 @@ describe("NotificationAuditDbClient", () => {
     await expect(
       client.insertNotificationAuditEntry({
         messageReference: "123e4567-e89b-12d3-a456-426614174000",
-        eventCode: "ORDER_DISPATCHED",
+        eventCode: NotifyEventCode.OrderDispatched,
         correlationId: "123e4567-e89b-12d3-a456-426614174001",
-        status: "SENT",
+        status: NotificationAuditStatus.SENT,
       }),
     ).rejects.toThrow("Failed to insert notification audit entry");
   });
