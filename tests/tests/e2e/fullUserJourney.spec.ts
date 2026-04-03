@@ -3,7 +3,6 @@ import { randomUUID } from "crypto";
 import { APIResponse, expect } from "@playwright/test";
 
 import type { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import type { TestResultDbClient } from "../../db/TestResultDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
