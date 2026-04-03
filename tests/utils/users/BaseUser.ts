@@ -9,6 +9,12 @@ export class BaseTestUser {
 
 export interface NHSLoginMockedUser extends BaseTestUser {
   code: string;
+  familyName?: string;
+  givenName?: string;
+  identityProofingLevel?: string;
+  email?: string;
+  phoneNumber?: string;
+  gpOdsCode?: string;
 }
 
 export interface NHSLoginUser extends BaseTestUser {
