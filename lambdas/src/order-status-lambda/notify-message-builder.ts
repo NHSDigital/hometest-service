@@ -10,9 +10,16 @@ export interface BuildOrderDispatchedNotifyMessageInput {
   dispatchedAt: string;
 }
 
+export interface BuildOrderReceivedNotifyMessageInput {
+  patientId: string;
+  correlationId: string;
+  orderId: string;
+  receivedAt: string;
+}
+
 const ORDER_TRACKING_LINK_TEXT = "View kit order update and see more information";
 
-const formatDispatchedDate = (isoDateTime: string): string =>
+const formatStatusDate = (isoDateTime: string): string =>
   new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "long",
@@ -35,6 +42,42 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, dispatchedAt } = input;
 
+    return this.buildOrderStatusNotifyMessage({
+      patientId,
+      correlationId,
+      orderId,
+      eventCode: NotifyEventCode.OrderDispatched,
+      personalisation: {
+        dispatchedDate: formatStatusDate(dispatchedAt),
+      },
+    });
+  }
+
+  async buildOrderReceivedNotifyMessage(
+    input: BuildOrderReceivedNotifyMessageInput,
+  ): Promise<NotifyMessage> {
+    const { patientId, correlationId, orderId, receivedAt } = input;
+
+    return this.buildOrderStatusNotifyMessage({
+      patientId,
+      correlationId,
+      orderId,
+      eventCode: NotifyEventCode.OrderReceived,
+      personalisation: {
+        receivedDate: formatStatusDate(receivedAt),
+      },
+    });
+  }
+
+  private async buildOrderStatusNotifyMessage(input: {
+    patientId: string;
+    correlationId: string;
+    orderId: string;
+    eventCode: NotifyEventCode;
+    personalisation: Record<string, string>;
+  }): Promise<NotifyMessage> {
+    const { patientId, correlationId, orderId, eventCode, personalisation } = input;
+
     const patient = await this.patientDbClient.get(patientId);
     const recipient: NotifyRecipient = {
       nhsNumber: patient.nhsNumber,
@@ -46,10 +89,10 @@ export class NotifyMessageBuilder {
     return {
       correlationId,
       messageReference: uuidv4(),
-      eventCode: NotifyEventCode.OrderDispatched,
+      eventCode,
       recipient,
       personalisation: {
-        dispatchedDate: formatDispatchedDate(dispatchedAt),
+        ...personalisation,
         statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
       },
     };
