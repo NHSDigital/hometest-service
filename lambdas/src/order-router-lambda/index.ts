@@ -5,7 +5,7 @@ import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { SupplierConfig } from "../lib/db/supplier-db";
 import { FHIRServiceRequestSchema } from "../lib/models/fhir/fhir-schemas";
 import { FHIRServiceRequest } from "../lib/models/fhir/fhir-service-request-type";
-import { OAuthSupplierAuthClient } from "../lib/supplier/supplier-auth-client";
+import { getOrCreateTokenGenerator } from "../lib/supplier/supplier-auth-client";
 import { isUUID } from "../lib/utils/utils";
 import { init } from "./init";
 
@@ -64,17 +64,9 @@ const getSupplierServiceConfig = async (supplierCode: string): Promise<SupplierC
 
 const getSupplierAccessToken = async (serviceConfig: SupplierConfig): Promise<string> => {
   try {
-    const supplierAuthClient = new OAuthSupplierAuthClient(
-      httpClient,
-      secretsClient,
-      serviceConfig.serviceUrl,
-      serviceConfig.oauthTokenPath,
-      serviceConfig.clientId,
-      serviceConfig.clientSecretName,
-      serviceConfig.oauthScope,
-    );
+    const tokenGenerator = getOrCreateTokenGenerator(httpClient, secretsClient, serviceConfig);
 
-    return await supplierAuthClient.getAccessToken();
+    return await tokenGenerator.generateToken();
   } catch (error) {
     throw new Error(`${name}: Failed to get supplier access token`, {
       cause: error,

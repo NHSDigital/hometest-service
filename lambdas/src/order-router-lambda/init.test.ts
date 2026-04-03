@@ -156,7 +156,7 @@ describe("init", () => {
           {
             mock: PostgresDbClient as jest.Mock,
             times: 1,
-            calledWith: mockPostgresConfig, // Result of postgresConfigFromEnv(secretsClient)
+            calledWith: mockPostgresConfig,
           },
           {
             mock: SupplierService as jest.Mock,
