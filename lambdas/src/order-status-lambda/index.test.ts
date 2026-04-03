@@ -450,7 +450,7 @@ describe("Order Status Lambda Handler", () => {
         expect.objectContaining({
           eventCode: NotifyEventCode.OrderDispatched,
           correlationId: MOCK_CORRELATION_ID,
-          status: NotificationAuditStatus.SENT,
+          status: NotificationAuditStatus.QUEUED,
         }),
       );
     });
@@ -482,16 +482,29 @@ describe("Order Status Lambda Handler", () => {
       expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
     });
 
-    it("should return 500 when sending notify message fails", async () => {
+    it("should return 201 when sending notify message fails", async () => {
       mockSendMessage.mockRejectedValueOnce(new Error("SQS unavailable"));
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(201);
       expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalledWith(
         expect.objectContaining({ status: NotificationAuditStatus.FAILED }),
       );
+    });
+
+    it("should return 201 when building notify message fails", async () => {
+      mockBuildOrderDispatchedNotifyMessage.mockRejectedValueOnce(
+        new Error("Notify payload build failed"),
+      );
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockSendMessage).not.toHaveBeenCalled();
+      expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
     });
   });
 

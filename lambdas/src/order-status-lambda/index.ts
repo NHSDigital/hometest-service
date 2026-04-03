@@ -175,21 +175,29 @@ export const lambdaHandler = async (
       );
 
       if (isFirstDispatched) {
-        const notifyMessage = await notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
-          patientId: orderPatientId,
-          correlationId,
-          orderId,
-          dispatchedAt: statusOrderUpdateParams.createdAt,
-        });
+        try {
+          const notifyMessage = await notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
+            patientId: orderPatientId,
+            correlationId,
+            orderId,
+            dispatchedAt: statusOrderUpdateParams.createdAt,
+          });
 
-        await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));
+          await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));
 
-        await notificationAuditDbClient.insertNotificationAuditEntry({
-          messageReference: notifyMessage.messageReference,
-          eventCode: notifyMessage.eventCode,
-          correlationId,
-          status: NotificationAuditStatus.SENT,
-        });
+          await notificationAuditDbClient.insertNotificationAuditEntry({
+            messageReference: notifyMessage.messageReference,
+            eventCode: notifyMessage.eventCode,
+            correlationId,
+            status: NotificationAuditStatus.QUEUED,
+          });
+        } catch (error) {
+          commons.logError(name, "Failed to send dispatched notification", {
+            correlationId,
+            orderId,
+            error,
+          });
+        }
       }
     }
 
