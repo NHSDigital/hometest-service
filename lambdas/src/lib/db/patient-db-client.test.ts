@@ -18,7 +18,7 @@ describe("PatientDbClient", () => {
     patientDbClient = new PatientDbClient(dbClient);
   });
 
-  describe("getNotifyRecipientData", () => {
+  describe("get", () => {
     it("should return notify recipient data", async () => {
       mockQuery.mockResolvedValue({
         rows: [

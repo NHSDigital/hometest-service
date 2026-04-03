@@ -2,8 +2,9 @@ import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { NotificationAuditStatus } from "../lib/db/notification-audit-db-client";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
-import { NotifyEventCode } from "../lib/types/notify-message";
+import { NotifyEventCode, NotifyMessage } from "../lib/types/notify-message";
 import { OrderStatusFHIRTask } from "./index";
+import { BuildOrderDispatchedNotifyMessageInput } from "./notify-message-builder";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
 
@@ -13,7 +14,10 @@ const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
 const mockIsFirstStatusOccurrence = jest.fn();
-const mockBuildOrderDispatchedNotifyMessage = jest.fn();
+const mockBuildOrderDispatchedNotifyMessage = jest.fn<
+  Promise<NotifyMessage>,
+  [BuildOrderDispatchedNotifyMessageInput]
+>();
 const mockInsertNotificationAuditEntry = jest.fn();
 const mockSendMessage = jest.fn();
 
@@ -52,8 +56,11 @@ describe("Order Status Lambda Handler", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
       eventCode: NotifyEventCode.OrderDispatched,
       correlationId: MOCK_CORRELATION_ID,
-      nhsNumber: "1234567890",
-      dateOfBirth: "1990-01-02",
+      recipient: {
+        nhsNumber: "1234567890",
+        dateOfBirth: "1990-01-02",
+      },
+      personalisation: {},
     });
     mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
     mockSendMessage.mockResolvedValue(undefined);
