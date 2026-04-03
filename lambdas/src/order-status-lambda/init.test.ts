@@ -9,6 +9,7 @@ import { testComponentCreationOrder } from "../lib/test-utils/component-integrat
 import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
 import { buildEnvironment as init } from "./init";
 import { NotifyMessageBuilder } from "./notify-message-builder";
+import { OrderStatusNotifyService } from "./notify-service";
 
 jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/patient-db-client");
@@ -18,6 +19,7 @@ jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
 jest.mock("./notify-message-builder");
+jest.mock("./notify-service");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -107,11 +109,7 @@ describe("init", () => {
 
       expect(result).toEqual({
         orderStatusDb: expect.any(OrderStatusService),
-        patientDbClient: expect.any(PatientDbClient),
-        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
-        sqsClient: expect.any(AWSSQSClient),
-        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
-        notifyMessagesQueueUrl: "https://example.queue.local/notify",
+        orderStatusNotifyService: expect.any(OrderStatusNotifyService),
       });
     });
   });
@@ -166,6 +164,10 @@ describe("init", () => {
             mock: NotifyMessageBuilder as jest.Mock,
             times: 1,
           },
+          {
+            mock: OrderStatusNotifyService as jest.Mock,
+            times: 1,
+          },
         ],
       });
     });
@@ -177,6 +179,18 @@ describe("init", () => {
         expect.any(PatientDbClient),
         "https://hometest.example.nhs.uk",
       );
+    });
+
+    it("should create OrderStatusNotifyService with notification dependencies", () => {
+      init();
+
+      expect(OrderStatusNotifyService).toHaveBeenCalledWith({
+        orderStatusDb: expect.any(OrderStatusService),
+        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
+        sqsClient: expect.any(AWSSQSClient),
+        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
+        notifyMessagesQueueUrl: "https://example.queue.local/notify",
+      });
     });
   });
 

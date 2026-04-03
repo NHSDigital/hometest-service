@@ -1,10 +1,7 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
-import { NotificationAuditStatus } from "../lib/db/notification-audit-db-client";
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
-import { NotifyEventCode, NotifyMessage } from "../lib/types/notify-message";
 import { OrderStatusFHIRTask } from "./index";
-import { BuildOrderDispatchedNotifyMessageInput } from "./notify-message-builder";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping } from "./utils";
 
@@ -13,13 +10,7 @@ const mockInit = jest.fn();
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
-const mockIsFirstStatusOccurrence = jest.fn();
-const mockBuildOrderDispatchedNotifyMessage = jest.fn<
-  Promise<NotifyMessage>,
-  [BuildOrderDispatchedNotifyMessageInput]
->();
-const mockInsertNotificationAuditEntry = jest.fn();
-const mockSendMessage = jest.fn();
+const mockHandleOrderStatusUpdated = jest.fn();
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
@@ -51,37 +42,17 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
-    mockIsFirstStatusOccurrence.mockResolvedValue(true);
-    mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
-      messageReference: "123e4567-e89b-12d3-a456-426614174099",
-      eventCode: NotifyEventCode.OrderDispatched,
-      correlationId: MOCK_CORRELATION_ID,
-      recipient: {
-        nhsNumber: "1234567890",
-        dateOfBirth: "1990-01-02",
-      },
-      personalisation: {},
-    });
-    mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
-    mockSendMessage.mockResolvedValue(undefined);
+    mockHandleOrderStatusUpdated.mockResolvedValue(undefined);
 
     mockInit.mockReturnValue({
       orderStatusDb: {
         getPatientIdFromOrder: mockGetPatientIdFromOrder,
         checkIdempotency: mockCheckIdempotency,
         addOrderStatusUpdate: mockAddOrderStatusUpdate,
-        isFirstStatusOccurrence: mockIsFirstStatusOccurrence,
       },
-      notificationAuditDbClient: {
-        insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
+      orderStatusNotifyService: {
+        handleOrderStatusUpdated: mockHandleOrderStatusUpdated,
       },
-      sqsClient: {
-        sendMessage: mockSendMessage,
-      },
-      notifyMessageBuilder: {
-        buildOrderDispatchedNotifyMessage: mockBuildOrderDispatchedNotifyMessage,
-      },
-      notifyMessagesQueueUrl: "https://example.queue.local/notify",
     });
 
     const module = await import("./index");
@@ -306,7 +277,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
-      expect(mockSendMessage).not.toHaveBeenCalled();
+      expect(mockHandleOrderStatusUpdated).not.toHaveBeenCalled();
     });
 
     it("should process new updates with different correlation ID", async () => {
@@ -434,35 +405,28 @@ describe("Order Status Lambda Handler", () => {
       );
     });
 
-    it("should send dispatched notification for first DISPATCHED status", async () => {
-      mockIsFirstStatusOccurrence.mockResolvedValueOnce(true);
+    it("should delegate post-update side effects to the notification service", async () => {
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
-      expect(mockBuildOrderDispatchedNotifyMessage).toHaveBeenCalledWith(
+      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
         expect.objectContaining({
           patientId: MOCK_PATIENT_UID,
           correlationId: MOCK_CORRELATION_ID,
           orderId: MOCK_ORDER_UID,
-          dispatchedAt: validTaskBody.lastModified,
-        }),
-      );
-      expect(mockSendMessage).toHaveBeenCalledWith(
-        "https://example.queue.local/notify",
-        expect.any(String),
-      );
-      expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith(
-        expect.objectContaining({
-          eventCode: NotifyEventCode.OrderDispatched,
-          correlationId: MOCK_CORRELATION_ID,
-          status: NotificationAuditStatus.QUEUED,
+          statusUpdate: expect.objectContaining({
+            orderId: MOCK_ORDER_UID,
+            statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
+            createdAt: validTaskBody.lastModified,
+            correlationId: MOCK_CORRELATION_ID,
+          }),
         }),
       );
     });
 
-    it("should not send notification for non-DISPATCHED status", async () => {
+    it("should still delegate non-dispatched statuses to the notification service", async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
         businessStatus: {
@@ -473,45 +437,22 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
-      expect(mockIsFirstStatusOccurrence).not.toHaveBeenCalled();
-      expect(mockSendMessage).not.toHaveBeenCalled();
-    });
-
-    it("should not send notification when DISPATCHED is not first occurrence", async () => {
-      mockIsFirstStatusOccurrence.mockResolvedValueOnce(false);
-      mockEvent.body = JSON.stringify(validTaskBody);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
-
-      expect(result.statusCode).toBe(201);
-      expect(mockIsFirstStatusOccurrence).toHaveBeenCalledWith(MOCK_ORDER_UID, "DISPATCHED");
-      expect(mockSendMessage).not.toHaveBeenCalled();
-      expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
-    });
-
-    it("should return 201 when sending notify message fails", async () => {
-      mockSendMessage.mockRejectedValueOnce(new Error("SQS unavailable"));
-      mockEvent.body = JSON.stringify(validTaskBody);
-
-      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
-
-      expect(result.statusCode).toBe(201);
-      expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalledWith(
-        expect.objectContaining({ status: NotificationAuditStatus.FAILED }),
+      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statusUpdate: expect.objectContaining({
+            statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
+          }),
+        }),
       );
     });
 
-    it("should return 201 when building notify message fails", async () => {
-      mockBuildOrderDispatchedNotifyMessage.mockRejectedValueOnce(
-        new Error("Notify payload build failed"),
-      );
+    it("should return 500 when notification service fails", async () => {
+      mockHandleOrderStatusUpdated.mockRejectedValueOnce(new Error("Unexpected side effect error"));
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
-      expect(result.statusCode).toBe(201);
-      expect(mockSendMessage).not.toHaveBeenCalled();
-      expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
+      expect(result.statusCode).toBe(500);
     });
   });
 

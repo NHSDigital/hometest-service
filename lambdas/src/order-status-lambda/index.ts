@@ -6,8 +6,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import z from "zod";
 
 import { ConsoleCommons } from "../lib/commons";
-import { NotificationAuditStatus } from "../lib/db/notification-audit-db-client";
-import { OrderStatusCodes, OrderStatusUpdateParams } from "../lib/db/order-status-db";
+import { OrderStatusUpdateParams } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
 import {
@@ -43,13 +42,7 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const {
-    orderStatusDb,
-    notificationAuditDbClient,
-    sqsClient,
-    notifyMessageBuilder,
-    notifyMessagesQueueUrl,
-  } = init();
+  const { orderStatusDb, orderStatusNotifyService } = init();
   commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
@@ -168,38 +161,12 @@ export const lambdaHandler = async (
 
     commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
 
-    if (statusOrderUpdateParams.statusCode === OrderStatusCodes.DISPATCHED) {
-      const isFirstDispatched = await orderStatusDb.isFirstStatusOccurrence(
-        orderId,
-        OrderStatusCodes.DISPATCHED,
-      );
-
-      if (isFirstDispatched) {
-        try {
-          const notifyMessage = await notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
-            patientId: orderPatientId,
-            correlationId,
-            orderId,
-            dispatchedAt: statusOrderUpdateParams.createdAt,
-          });
-
-          await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));
-
-          await notificationAuditDbClient.insertNotificationAuditEntry({
-            messageReference: notifyMessage.messageReference,
-            eventCode: notifyMessage.eventCode,
-            correlationId,
-            status: NotificationAuditStatus.QUEUED,
-          });
-        } catch (error) {
-          commons.logError(name, "Failed to send dispatched notification", {
-            correlationId,
-            orderId,
-            error,
-          });
-        }
-      }
-    }
+    await orderStatusNotifyService.handleOrderStatusUpdated({
+      orderId,
+      patientId: orderPatientId,
+      correlationId,
+      statusUpdate: statusOrderUpdateParams,
+    });
 
     return createFhirResponse(201, validatedTask);
   } catch (error) {

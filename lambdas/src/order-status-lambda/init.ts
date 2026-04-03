@@ -7,20 +7,18 @@ import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 import { NotifyMessageBuilder } from "./notify-message-builder";
+import { OrderStatusNotifyService } from "./notify-service";
 
 export interface Environment {
   orderStatusDb: OrderStatusService;
-  patientDbClient: PatientDbClient;
-  notificationAuditDbClient: NotificationAuditDbClient;
-  sqsClient: AWSSQSClient;
-  notifyMessageBuilder: NotifyMessageBuilder;
-  notifyMessagesQueueUrl: string;
+  orderStatusNotifyService: OrderStatusNotifyService;
 }
 
 export function buildEnvironment(): Environment {
   const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
   const notifyMessagesQueueUrl = retrieveMandatoryEnvVariable("NOTIFY_MESSAGES_QUEUE_URL");
   const homeTestBaseUrl = retrieveMandatoryEnvVariable("HOME_TEST_BASE_URL");
+
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderStatusDb = new OrderStatusService(dbClient);
@@ -28,14 +26,17 @@ export function buildEnvironment(): Environment {
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
   const sqsClient = new AWSSQSClient();
   const notifyMessageBuilder = new NotifyMessageBuilder(patientDbClient, homeTestBaseUrl);
-
-  return {
+  const orderStatusNotifyService = new OrderStatusNotifyService({
     orderStatusDb,
-    patientDbClient,
     notificationAuditDbClient,
     sqsClient,
     notifyMessageBuilder,
     notifyMessagesQueueUrl,
+  });
+
+  return {
+    orderStatusDb,
+    orderStatusNotifyService,
   };
 }
 
