@@ -30,11 +30,11 @@ describe("PatientDbClient", () => {
         rowCount: 1,
       });
 
-      const result = await patientDbClient.getNotifyRecipientData("some-mocked-patient-id");
+      const result = await patientDbClient.get("some-mocked-patient-id");
 
       expect(result).toEqual({
         nhsNumber: "1234567890",
-        dateOfBirth: "1990-04-20",
+        birthDate: "1990-04-20",
       });
       expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("patient_mapping"), [
         "some-mocked-patient-id",
@@ -47,7 +47,7 @@ describe("PatientDbClient", () => {
         rowCount: 0,
       });
 
-      await expect(patientDbClient.getNotifyRecipientData("missing-patient-id")).rejects.toThrow(
+      await expect(patientDbClient.get("missing-patient-id")).rejects.toThrow(
         "Failed to fetch notify recipient data",
       );
     });

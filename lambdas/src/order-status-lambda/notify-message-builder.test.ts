@@ -1,21 +1,21 @@
-import type { PatientDbClient } from "../lib/db/patient-db-client";
+import type { Patient, PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyEventCode } from "../lib/types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
 
 describe("NotifyMessageBuilder", () => {
-  const mockGetNotifyRecipientData = jest.fn();
+  const mockGetPatient = jest.fn<Promise<Patient>, [string]>();
 
-  const mockPatientDbClient: Pick<PatientDbClient, "getNotifyRecipientData"> = {
-    getNotifyRecipientData: mockGetNotifyRecipientData,
+  const mockPatientDbClient: Pick<PatientDbClient, "get"> = {
+    get: mockGetPatient,
   };
 
   let builder: NotifyMessageBuilder;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetNotifyRecipientData.mockResolvedValue({
+    mockGetPatient.mockResolvedValue({
       nhsNumber: "1234567890",
-      dateOfBirth: "1990-01-02",
+      birthDate: "1990-01-02",
     });
 
     builder = new NotifyMessageBuilder(
@@ -40,8 +40,8 @@ describe("NotifyMessageBuilder", () => {
     });
 
     expect(result.personalisation).toEqual({
-      dispatched_date: "6 August 2026",
-      status_url:
+      dispatchedDate: "6 August 2026",
+      statusLink:
         "[View kit order update and see more information](https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking)",
     });
   });
@@ -59,13 +59,13 @@ describe("NotifyMessageBuilder", () => {
       dispatchedAt: "2026-08-06T10:00:00Z",
     });
 
-    const statusUrl = result.personalisation?.status_url;
+    const statusLink = result.personalisation?.statusLink;
 
-    expect(typeof statusUrl).toBe("string");
-    expect(statusUrl).toContain(
+    expect(typeof statusLink).toBe("string");
+    expect(statusLink).toContain(
       "https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking",
     );
-    expect(statusUrl).not.toContain(".uk//orders");
+    expect(statusLink).not.toContain(".uk//orders");
   });
 
   it("should call recipient lookup with patient id", async () => {
@@ -76,6 +76,6 @@ describe("NotifyMessageBuilder", () => {
       dispatchedAt: "2026-08-06T10:00:00Z",
     });
 
-    expect(mockGetNotifyRecipientData).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440111");
+    expect(mockGetPatient).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440111");
   });
 });

@@ -1,10 +1,14 @@
-import { type NotifyRecipient } from "../types/notify-message";
 import { type DBClient } from "./db-client";
+
+export interface Patient {
+  nhsNumber: string;
+  birthDate: string;
+}
 
 export class PatientDbClient {
   constructor(private readonly dbClient: DBClient) {}
 
-  async getNotifyRecipientData(patientId: string): Promise<NotifyRecipient> {
+  async get(patientId: string): Promise<Patient> {
     const query = `
       SELECT nhs_number, birth_date
       FROM patient_mapping
@@ -14,7 +18,7 @@ export class PatientDbClient {
 
     try {
       const result = await this.dbClient.query<
-        { nhs_number: string; birth_date: string | Date },
+        { nhs_number: string; birth_date: string },
         [string]
       >(query, [patientId]);
 
@@ -26,10 +30,7 @@ export class PatientDbClient {
 
       return {
         nhsNumber: row.nhs_number,
-        dateOfBirth:
-          row.birth_date instanceof Date
-            ? row.birth_date.toISOString().slice(0, 10)
-            : row.birth_date,
+        birthDate: row.birth_date,
       };
     } catch (error) {
       throw new Error(`Failed to fetch notify recipient data for patientId ${patientId}`, {
