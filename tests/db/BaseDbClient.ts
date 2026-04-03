@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 
 import { EnvironmentVariables } from "../configuration/EnvironmentConfiguration";
+import { getTestLogPrefix } from "../utils/testLogContext";
 
 export class BaseDbClient {
   private pool: Pool;
@@ -21,7 +22,6 @@ export class BaseDbClient {
   }
 
   async connect(): Promise<void> {
-    // Test connection by acquiring and releasing a client
     const client = await this.pool.connect();
     client.release();
   }
@@ -31,7 +31,7 @@ export class BaseDbClient {
   }
 
   protected async query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
-    console.log(`[DB QUERY] ${sql}`, params);
+    console.log(`${getTestLogPrefix()} [DB QUERY] ${sql}`, params);
     const result = await this.pool.query(sql, params);
     return result.rows as T[];
   }

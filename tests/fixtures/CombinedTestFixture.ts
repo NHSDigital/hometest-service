@@ -5,6 +5,7 @@ import { accessibilityFixture } from "./accessibilityFixture";
 import { apiFixture } from "./apiFixture";
 import { configurationFixture } from "./configurationFixture";
 import { consoleErrorFixture } from "./consoleErrorFixture";
+import { logContextFixture } from "./logContextFixture";
 import { pageObjectFixture } from "./pageObjectsFixture";
 import { storageStateFixture } from "./storageStateFixture";
 import { wiremockFixture } from "./wiremockFixture";
@@ -15,6 +16,7 @@ export const test = mergeTests(
   apiFixture,
   dbFixture,
   accessibilityFixture,
+  logContextFixture,
   storageStateFixture,
   consoleErrorFixture,
   wiremockFixture,
