@@ -1,15 +1,9 @@
 import { Bundle, Observation } from "fhir/r4";
 
-import { HttpClient } from "../http/http-client";
-import { OAuthSupplierAuthClient } from "./supplier-auth-client";
-import { SecretsClient } from "../secrets/secrets-manager-client";
 import { SupplierService } from "../db/supplier-db";
-
-export interface SupplierTestResultsServiceProperties {
-  httpClient: HttpClient;
-  secretsClient: SecretsClient;
-  supplierDb: SupplierService;
-}
+import { HttpClient } from "../http/http-client";
+import { SecretsClient } from "../secrets/secrets-manager-client";
+import { getOrCreateTokenGenerator } from "./supplier-auth-client";
 
 export class SupplierTestResultsService {
   constructor(
@@ -29,13 +23,13 @@ export class SupplierTestResultsService {
       throw new Error("Missing supplier config for: " + supplierId);
     }
 
-    const supplierAuthClient = OAuthSupplierAuthClient.fromSupplierConfig(
+    const tokenGenerator = getOrCreateTokenGenerator(
       this.httpClient,
       this.secretsClient,
       serviceConfig,
     );
 
-    const accessToken = await supplierAuthClient.getAccessToken();
+    const accessToken = await tokenGenerator.generateToken();
 
     const resultsUrl = `${serviceConfig.serviceUrl}${serviceConfig.resultsPath}`;
     const url = new URL(resultsUrl);
