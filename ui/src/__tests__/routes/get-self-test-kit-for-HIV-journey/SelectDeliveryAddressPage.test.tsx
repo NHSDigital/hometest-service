@@ -1,4 +1,11 @@
 import "@testing-library/jest-dom";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
+import { MemoryRouter } from "react-router-dom";
+
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import laLookupService from "@/lib/services/la-lookup-service";
+import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import {
   AuthContext,
   AuthUser,
@@ -7,12 +14,6 @@ import {
   PostcodeLookupProvider,
   useCreateOrderContext,
 } from "@/state";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import { MemoryRouter } from "react-router-dom";
-import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
-import laLookupService from "@/lib/services/la-lookup-service";
-import { useEffect } from "react";
 
 const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
 
@@ -26,6 +27,7 @@ const mockNavigationContext: {
   goBack: jest.Mock;
   canGoBack: jest.Mock;
   clearHistory: jest.Mock;
+  resetNavigation: jest.Mock;
   stepHistory: string[];
   returnToStep: string | null;
   setReturnToStep: jest.Mock;
@@ -35,6 +37,7 @@ const mockNavigationContext: {
   goBack: jest.fn(),
   canGoBack: jest.fn(() => true),
   clearHistory: jest.fn(),
+  resetNavigation: jest.fn(),
   stepHistory: ["enter-delivery-address", "select-delivery-address"],
   returnToStep: null,
   setReturnToStep: jest.fn(),

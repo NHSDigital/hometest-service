@@ -1,4 +1,11 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
+import { MemoryRouter } from "react-router-dom";
+
+import { RoutePath } from "@/lib/models/route-paths";
+import orderService from "@/lib/services/order-service";
 import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
+import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
 import {
   AuthProvider,
   AuthUser,
@@ -6,16 +13,25 @@ import {
   useAuth,
   useCreateOrderContext,
 } from "@/state";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import CheckYourAnswersPage from "@/routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
-import { MemoryRouter } from "react-router-dom";
-import orderService from "@/lib/services/order-service";
-import { useEffect } from "react";
+const mockNavigate = jest.fn();
+const mockClearAddresses = jest.fn();
+let mockNavigationType = "PUSH";
+
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useNavigationType: () => mockNavigationType,
+  };
+});
 
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
 const mockGoBack = jest.fn();
+const mockResetNavigation = jest.fn();
 
 jest.mock("@/state", () => {
   const actual = jest.requireActual("@/state");
@@ -29,7 +45,19 @@ jest.mock("@/state", () => {
       goBack: mockGoBack,
       canGoBack: () => true,
       clearHistory: jest.fn(),
+      resetNavigation: mockResetNavigation,
       setReturnToStep: mockSetReturnToStep,
+    }),
+    usePostcodeLookup: () => ({
+      postcode: "",
+      addresses: [],
+      selectedAddress: null,
+      isLoading: false,
+      lookupResultsStatus: "idle",
+      error: null,
+      lookupPostcode: jest.fn(),
+      setSelectedAddress: jest.fn(),
+      clearAddresses: mockClearAddresses,
     }),
   };
 });
@@ -79,10 +107,10 @@ function StateSeeder({
 function AuthSeeder({
   children,
   user = defaultAuthUser,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   user?: AuthUser;
-}) {
+}>) {
   const { setUser } = useAuth();
 
   useEffect(() => {
@@ -139,6 +167,7 @@ describe("CheckYourAnswersPage", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockNavigationType = "PUSH";
   });
 
   describe("Component Rendering", () => {
@@ -308,6 +337,36 @@ describe("CheckYourAnswersPage", () => {
   });
 
   describe("Submit Order", () => {
+    it("clears state and redirects to start when revisited via browser back after submission", async () => {
+      mockNavigationType = "POP";
+
+      render(
+        <>
+          <CheckYourAnswersPage />
+          <OrderReferenceObserver />
+        </>,
+        {
+          wrapper: (props) => (
+            <TestWrapper
+              orderData={{
+                ...defaultOrderData,
+                orderReferenceNumber: 123,
+              }}
+              {...props}
+            />
+          ),
+        },
+      );
+
+      await waitFor(() => {
+        expect(mockClearAddresses).toHaveBeenCalled();
+        expect(mockResetNavigation).toHaveBeenCalledWith(RoutePath.GetSelfTestKitPage, {
+          replace: true,
+        });
+        expect(screen.getByTestId("order-reference")).toHaveTextContent("");
+      });
+    });
+
     it("shows error when submitting without consent", async () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 
