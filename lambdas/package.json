@@ -27,7 +27,7 @@
     "@middy/http-cors": "7.2.1",
     "@middy/http-error-handler": "7.2.1",
     "@middy/http-security-headers": "7.2.1",
-    "axios": "1.13.6",
+    "axios": "1.14.0",
     "cookie": "1.1.1",
     "dayjs": "1.11.20",
     "esbuild": "0.27.4",
