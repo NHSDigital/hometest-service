@@ -6,8 +6,7 @@ import http from "k6/http";
 import { postCreateOrder } from "./api/createOrder.js";
 import { postResult } from "./api/updateResults.js";
 import { postOrderStatusUpdate } from "./api/updateStatus.js";
-import { ORDER_STATUS_URL, ORDER_URL, RESULT_URL } from "./configuration/endpoints.js";
-import { closePatientLookupDb, getPatientIdByNhsAndBirthDate } from "./db/PatientLookupK6.js";
+import { closePatientLookupDb, getPatientIdByOrderId } from "./db/PatientLookupK6.js";
 import { buildFhirHeaders, buildHeaders, parseCsv } from "./helpers/k6-request-utils.js";
 import { buildCreateOrderPayload } from "./test-data/CreateOrder.js";
 import { buildNormalResultObservation } from "./test-data/NormalResultObservation.js";
@@ -36,7 +35,7 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 0,
       stages: [
-        { duration: "30s", target: 2 },
+        { duration: "20s", target: 2 },
         { duration: "1m", target: 5 },
         { duration: "30s", target: 0 },
       ],
@@ -66,7 +65,7 @@ export function endToEnd() {
   });
   sleep(1);
 
-  const { patientId } = getPatientIdByNhsAndBirthDate(params.nhsNumber, params.birthDate);
+  const { patientId } = getPatientIdByOrderId(orderId);
 
   //Update order status to dispatched
   const dispatchedPayload = JSON.stringify(

@@ -12,15 +12,13 @@ const dbConnectionString = `postgres://${dbUser}:${dbPassword}@${dbHost}:${dbPor
 
 const db = sql.open(driver, dbConnectionString);
 
-export function getPatientIdByNhsAndBirthDate(nhsNumber, birthDate) {
+export function getPatientIdByOrderId(orderId) {
   const rows = db.query(
-    `SELECT patient_uid
-     FROM patient_mapping
-     WHERE nhs_number = $1
-       AND birth_date = $2::date
+    `SELECT patient_uid::text
+     FROM test_order
+     WHERE order_uid = $1::uuid
      LIMIT 1`,
-    nhsNumber,
-    birthDate,
+    orderId,
   );
 
   return {
