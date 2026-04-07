@@ -1,5 +1,5 @@
-import type { Patient, PatientDbClient } from "../lib/db/patient-db-client";
-import { NotifyEventCode } from "../lib/types/notify-message";
+import type { Patient, PatientDbClient } from "../db/patient-db-client";
+import { NotifyEventCode } from "../types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
 
 describe("NotifyMessageBuilder", () => {
@@ -89,6 +89,23 @@ describe("NotifyMessageBuilder", () => {
 
     expect(result.correlationId).toBe("123e4567-e89b-12d3-a456-426614174000");
     expect(result.eventCode).toBe(NotifyEventCode.OrderReceived);
+    expect(result.personalisation).toEqual({
+      receivedDate: "6 August 2026",
+      statusLink:
+        "[View kit order update and see more information](https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking)",
+    });
+  });
+
+  it("should build result available notify message with receivedDate in personalisation", async () => {
+    const result = await builder.buildOrderResultAvailableNotifyMessage({
+      patientId: "550e8400-e29b-41d4-a716-446655440111",
+      correlationId: "123e4567-e89b-12d3-a456-426614174000",
+      orderId: "550e8400-e29b-41d4-a716-446655440000",
+      receivedAt: "2026-08-06T10:00:00Z",
+    });
+
+    expect(result.correlationId).toBe("123e4567-e89b-12d3-a456-426614174000");
+    expect(result.eventCode).toBe(NotifyEventCode.ResultReady);
     expect(result.personalisation).toEqual({
       receivedDate: "6 August 2026",
       statusLink:

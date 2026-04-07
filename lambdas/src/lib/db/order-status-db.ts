@@ -116,20 +116,23 @@ export class OrderStatusService {
     }
   }
 
-  async isFirstStatusOccurrence(orderId: string, statusCode: OrderStatusCode): Promise<boolean> {
+  async getFirstStatusOccurrenceCreatedAt(
+    orderId: string,
+    statusCode: OrderStatusCode,
+  ): Promise<string | null> {
     const query = `
-      SELECT COUNT(*)::int AS count
+      SELECT created_at
       FROM order_status
       WHERE order_uid = $1::uuid AND status_code = $2;
     `;
 
     try {
-      const result = await this.dbClient.query<{ count: number }, [string, OrderStatusCode]>(
+      const result = await this.dbClient.query<{ created_at: string }, [string, OrderStatusCode]>(
         query,
         [orderId, statusCode],
       );
 
-      return result.rows[0]?.count === 1;
+      return result.rowCount === 1 ? result.rows[0].created_at : null;
     } catch (error) {
       throw new Error(
         `Failed to verify first occurrence for orderId ${orderId} and statusCode ${statusCode}`,

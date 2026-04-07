@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { OrderResultSummary } from "../lib/db/order-db";
+import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { OrderStatus, ResultStatus } from "../lib/types/status";
 import { init } from "./init";
@@ -11,7 +12,7 @@ import {
   validateDBData,
 } from "./validation-service";
 
-const { commons, orderService } = init();
+const { commons, orderService, orderStatusNotifyService } = init();
 
 async function updateDatabase(
   identifiers: Identifiers,
@@ -113,6 +114,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     commons.logError("order-result-lambda", "Database update failed", { error });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
+
+  await orderStatusNotifyService.handleOrderStatusUpdated({
+    orderId: identifiers.orderUid,
+    patientId: testOrderResult.patient_uid,
+    correlationId: identifiers.correlationId,
+    statusCode: OrderStatusCodes.COMPLETE,
+  });
 
   return createFhirResponse(201, observation);
 };

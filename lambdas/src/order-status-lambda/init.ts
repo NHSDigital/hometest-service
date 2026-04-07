@@ -3,11 +3,11 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
+import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
+import { OrderStatusNotifyService } from "../lib/notify/notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
-import { NotifyMessageBuilder } from "./notify-message-builder";
-import { OrderStatusNotifyService } from "./notify-service";
 
 export interface Environment {
   orderStatusDb: OrderStatusService;

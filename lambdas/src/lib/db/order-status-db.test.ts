@@ -156,37 +156,51 @@ describe("OrderStatusService", () => {
     });
   });
 
-  describe("isFirstStatusOccurrence", () => {
-    it("should return true for first occurrence", async () => {
+  describe("getFirstStatusOccurrenceCreatedAt", () => {
+    it("should return the created_at timestamp for first occurrence", async () => {
       mockQuery.mockResolvedValue({
-        rows: [{ count: 1 }],
+        rows: [{ created_at: "2024-01-15T10:00:00Z" }],
         rowCount: 1,
       });
 
-      const result = await service.isFirstStatusOccurrence(
+      const result = await service.getFirstStatusOccurrenceCreatedAt(
         "some-mocked-order-id",
         OrderStatusCodes.DISPATCHED,
       );
 
-      expect(result).toBe(true);
-      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("COUNT(*)::int"), [
+      expect(result).toBe("2024-01-15T10:00:00Z");
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("created_at"), [
         "some-mocked-order-id",
         OrderStatusCodes.DISPATCHED,
       ]);
     });
 
-    it("should return false when status already exists", async () => {
+    it("should return null when status has not been recorded", async () => {
       mockQuery.mockResolvedValue({
-        rows: [{ count: 2 }],
-        rowCount: 1,
+        rows: [],
+        rowCount: 0,
       });
 
-      const result = await service.isFirstStatusOccurrence(
+      const result = await service.getFirstStatusOccurrenceCreatedAt(
         "some-mocked-order-id",
         OrderStatusCodes.DISPATCHED,
       );
 
-      expect(result).toBe(false);
+      expect(result).toBeNull();
+    });
+
+    it("should return null when status occurs more than once", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [{ created_at: "2024-01-15T10:00:00Z" }, { created_at: "2024-01-16T10:00:00Z" }],
+        rowCount: 2,
+      });
+
+      const result = await service.getFirstStatusOccurrenceCreatedAt(
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      );
+
+      expect(result).toBeNull();
     });
   });
 });

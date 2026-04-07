@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
-import type { PatientDbClient } from "../lib/db/patient-db-client";
-import { NotifyEventCode, NotifyMessage, NotifyRecipient } from "../lib/types/notify-message";
+import type { PatientDbClient } from "../db/patient-db-client";
+import { NotifyEventCode, NotifyMessage, NotifyRecipient } from "../types/notify-message";
 
 export interface BuildOrderDispatchedNotifyMessageInput {
   patientId: string;
@@ -11,6 +11,13 @@ export interface BuildOrderDispatchedNotifyMessageInput {
 }
 
 export interface BuildOrderReceivedNotifyMessageInput {
+  patientId: string;
+  correlationId: string;
+  orderId: string;
+  receivedAt: string;
+}
+
+export interface BuildResultReadyNotifyMessageInput {
   patientId: string;
   correlationId: string;
   orderId: string;
@@ -63,6 +70,22 @@ export class NotifyMessageBuilder {
       correlationId,
       orderId,
       eventCode: NotifyEventCode.OrderReceived,
+      personalisation: {
+        receivedDate: formatStatusDate(receivedAt),
+      },
+    });
+  }
+
+  async buildOrderResultAvailableNotifyMessage(
+    input: BuildResultReadyNotifyMessageInput,
+  ): Promise<NotifyMessage> {
+    const { patientId, correlationId, orderId, receivedAt } = input;
+
+    return this.buildOrderStatusNotifyMessage({
+      patientId,
+      correlationId,
+      orderId,
+      eventCode: NotifyEventCode.ResultReady,
       personalisation: {
         receivedDate: formatStatusDate(receivedAt),
       },

@@ -1,20 +1,15 @@
-import { ConsoleCommons } from "../lib/commons";
+import { ConsoleCommons } from "../commons";
 import {
   NotificationAuditDbClient,
   NotificationAuditStatus,
-} from "../lib/db/notification-audit-db-client";
-import {
-  OrderStatusCode,
-  OrderStatusCodes,
-  OrderStatusService,
-  OrderStatusUpdateParams,
-} from "../lib/db/order-status-db";
-import { SQSClientInterface } from "../lib/sqs/sqs-client";
-import type { NotifyMessage } from "../lib/types/notify-message";
+} from "../db/notification-audit-db-client";
+import { OrderStatusCode, OrderStatusCodes, OrderStatusService } from "../db/order-status-db";
+import { SQSClientInterface } from "../sqs/sqs-client";
+import type { NotifyMessage } from "../types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
 
 const commons = new ConsoleCommons();
-const name = "order-status-lambda";
+const name = "notify-service";
 
 export interface OrderStatusNotifyServiceDependencies {
   orderStatusDb: OrderStatusService;
@@ -28,7 +23,7 @@ export interface HandleOrderStatusUpdatedInput {
   orderId: string;
   patientId: string;
   correlationId: string;
-  statusUpdate: OrderStatusUpdateParams;
+  statusCode: OrderStatusCode;
 }
 
 interface BuildNotifyMessageInput {
@@ -48,7 +43,7 @@ export class OrderStatusNotifyService {
   async handleOrderStatusUpdated(
     handleOrderStatusUpdatedInput: HandleOrderStatusUpdatedInput,
   ): Promise<void> {
-    const { statusUpdate } = handleOrderStatusUpdatedInput;
+    const { statusCode } = handleOrderStatusUpdatedInput;
     const { notifyMessageBuilder } = this.dependencies;
 
     const buildNotifyMessageByStatus: NotifyMessageBuilderByStatus = {
@@ -66,9 +61,16 @@ export class OrderStatusNotifyService {
           orderId,
           receivedAt: createdAt,
         }),
+      [OrderStatusCodes.COMPLETE]: ({ patientId, correlationId, orderId, createdAt }) =>
+        notifyMessageBuilder.buildOrderResultAvailableNotifyMessage({
+          patientId,
+          correlationId,
+          orderId,
+          receivedAt: createdAt,
+        }),
     };
 
-    const buildNotifyMessageFunc = buildNotifyMessageByStatus[statusUpdate.statusCode];
+    const buildNotifyMessageFunc = buildNotifyMessageByStatus[statusCode];
 
     if (!buildNotifyMessageFunc) {
       return;
@@ -81,14 +83,13 @@ export class OrderStatusNotifyService {
     input: HandleOrderStatusUpdatedInput,
     buildNotifyMessage: (input: BuildNotifyMessageInput) => Promise<NotifyMessage>,
   ): Promise<void> {
-    const { orderId, patientId, correlationId, statusUpdate } = input;
-    const { statusCode } = statusUpdate;
+    const { orderId, patientId, correlationId, statusCode } = input;
     const { orderStatusDb, notificationAuditDbClient, sqsClient, notifyMessagesQueueUrl } =
       this.dependencies;
 
-    const isFirstOccurrence = await orderStatusDb.isFirstStatusOccurrence(orderId, statusCode);
+    const createdAt = await orderStatusDb.getFirstStatusOccurrenceCreatedAt(orderId, statusCode);
 
-    if (!isFirstOccurrence) {
+    if (!createdAt) {
       return;
     }
 
@@ -97,7 +98,7 @@ export class OrderStatusNotifyService {
         patientId,
         correlationId,
         orderId,
-        createdAt: statusUpdate.createdAt,
+        createdAt,
       });
 
       await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));
