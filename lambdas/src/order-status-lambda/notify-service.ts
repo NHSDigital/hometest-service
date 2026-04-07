@@ -54,16 +54,16 @@ export class OrderStatusNotifyService {
       notifyMessagesQueueUrl,
     } = this.dependencies;
 
-    const isFirstDispatched = await orderStatusDb.isFirstStatusOccurrence(
-      orderId,
-      OrderStatusCodes.DISPATCHED,
-    );
-
-    if (!isFirstDispatched) {
-      return;
-    }
-
     try {
+      const isFirstDispatched = await orderStatusDb.isFirstStatusOccurrence(
+        orderId,
+        OrderStatusCodes.DISPATCHED,
+      );
+
+      if (!isFirstDispatched) {
+        return;
+      }
+
       const notifyMessage = await notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
         patientId,
         correlationId,
