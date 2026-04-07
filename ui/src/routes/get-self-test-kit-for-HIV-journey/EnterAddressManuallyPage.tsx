@@ -3,119 +3,13 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useState } from "react";
 
-import type { ValidationMessages } from "@/content";
 import { useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { isUnder18 } from "@/lib/utils/is-under-18";
+import { createAddressSchema } from "@/lib/validation/address-schema";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
-const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
-const MAX_POSTCODE_LENGTH = 8;
-const MAX_ADDRESS_LINE_LENGTH = 100;
-const MAX_TOWN_LENGTH = 100;
-
-const validateAddressLine1 = (
-  value: string,
-  validationMessages: ValidationMessages,
-): string | null => {
-  if (!value || value.trim() === "") {
-    return validationMessages.addressLine1.required;
-  }
-
-  if (value.length > MAX_ADDRESS_LINE_LENGTH) {
-    return validationMessages.addressLine1.maxLength;
-  }
-
-  const validCharactersRegex = /^[a-zA-Z0-9\s\-,./&#'"()]+$/;
-  if (!validCharactersRegex.test(value)) {
-    return validationMessages.addressLine1.invalid;
-  }
-
-  return null;
-};
-
-const validateAddressLine2 = (
-  value: string,
-  validationMessages: ValidationMessages,
-): string | null => {
-  if (!value || value.trim() === "") {
-    return null;
-  }
-
-  if (value.length > MAX_ADDRESS_LINE_LENGTH) {
-    return validationMessages.addressLine2.maxLength;
-  }
-
-  const validCharactersRegex = /^[a-zA-Z0-9\s\-,./&#'"()]+$/;
-  if (!validCharactersRegex.test(value)) {
-    return validationMessages.addressLine2.invalid;
-  }
-
-  return null;
-};
-
-const validateAddressLine3 = (
-  value: string,
-  validationMessages: ValidationMessages,
-): string | null => {
-  if (!value || value.trim() === "") {
-    return null;
-  }
-
-  if (value.length > MAX_ADDRESS_LINE_LENGTH) {
-    return validationMessages.addressLine3.maxLength;
-  }
-
-  const validCharactersRegex = /^[a-zA-Z0-9\s\-,./&#'"()]+$/;
-  if (!validCharactersRegex.test(value)) {
-    return validationMessages.addressLine3.invalid;
-  }
-
-  return null;
-};
-
-const validateTownOrCity = (
-  value: string,
-  validationMessages: ValidationMessages,
-): string | null => {
-  if (!value || value.trim() === "") {
-    return validationMessages.townOrCity.required;
-  }
-
-  if (value.length > MAX_TOWN_LENGTH) {
-    return validationMessages.townOrCity.maxLength;
-  }
-
-  const validCharactersRegex = /^[a-zA-Z\s\-'.]+$/;
-  if (!validCharactersRegex.test(value)) {
-    return validationMessages.townOrCity.invalid;
-  }
-
-  return null;
-};
-
-const validatePostcode = (
-  postcode: string,
-  validationMessages: ValidationMessages,
-): { valid: true; value: string } | { valid: false; message: string } => {
-  if (!postcode || postcode.trim() === "") {
-    return { valid: false, message: validationMessages.postcode.required };
-  }
-
-  if (postcode.length > MAX_POSTCODE_LENGTH) {
-    return { valid: false, message: validationMessages.postcode.maxLength };
-  }
-
-  const normalizedPostcode = postcode.trim().toUpperCase();
-
-  if (!POSTCODE_REGEX.test(normalizedPostcode)) {
-    return { valid: false, message: validationMessages.postcode.invalid };
-  }
-
-  return { valid: true, value: normalizedPostcode };
-};
 
 export default function EnterAddressManuallyPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
@@ -178,39 +72,53 @@ export default function EnterAddressManuallyPage() {
     setPostcode(e.target.value);
   };
 
+  const addressSchema = createAddressSchema(commonContent.validation);
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    const addressLine1ValidationError = validateAddressLine1(
+    const addressValidationResult = addressSchema.safeParse({
       addressLine1,
-      commonContent.validation,
-    );
-    const addressLine2ValidationError = validateAddressLine2(
       addressLine2,
-      commonContent.validation,
-    );
-    const addressLine3ValidationError = validateAddressLine3(
       addressLine3,
-      commonContent.validation,
+      townOrCity,
+      postcode,
+    });
+
+    setAddressLine1Error(
+      addressValidationResult.success
+        ? null
+        : addressValidationResult.error.issues.find((issue) => issue.path[0] === "addressLine1")
+            ?.message || null,
     );
-    const townOrCityValidationError = validateTownOrCity(townOrCity, commonContent.validation);
-    const postcodeValidation = validatePostcode(postcode, commonContent.validation);
+    setAddressLine2Error(
+      addressValidationResult.success
+        ? null
+        : addressValidationResult.error.issues.find((issue) => issue.path[0] === "addressLine2")
+            ?.message || null,
+    );
+    setAddressLine3Error(
+      addressValidationResult.success
+        ? null
+        : addressValidationResult.error.issues.find((issue) => issue.path[0] === "addressLine3")
+            ?.message || null,
+    );
+    setTownOrCityError(
+      addressValidationResult.success
+        ? null
+        : addressValidationResult.error.issues.find((issue) => issue.path[0] === "townOrCity")
+            ?.message || null,
+    );
+    setPostcodeError(
+      addressValidationResult.success
+        ? null
+        : addressValidationResult.error.issues.find((issue) => issue.path[0] === "postcode")
+            ?.message || null,
+    );
 
-    setAddressLine1Error(addressLine1ValidationError);
-    setAddressLine2Error(addressLine2ValidationError);
-    setAddressLine3Error(addressLine3ValidationError);
-    setTownOrCityError(townOrCityValidationError);
-    setPostcodeError(postcodeValidation.valid ? null : postcodeValidation.message);
-
-    if (
-      !addressLine1ValidationError &&
-      !addressLine2ValidationError &&
-      !addressLine3ValidationError &&
-      !townOrCityValidationError &&
-      postcodeValidation.valid
-    ) {
+    if (addressValidationResult.success) {
       try {
-        const postcode = postcodeValidation.value;
+        const postcode = addressValidationResult.data.postcode;
         const laResponse = await laLookupService.getByPostcode(postcode);
         if (!laResponse?.suppliers?.length) {
           updateOrderAnswers({ postcodeSearch: postcode });
