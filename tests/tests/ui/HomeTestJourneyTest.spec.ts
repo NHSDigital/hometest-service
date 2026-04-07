@@ -61,6 +61,7 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
   test.beforeEach(
     async ({
       homeTestStartPage,
+      bloodSampleGuidePage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
@@ -69,6 +70,9 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
     }) => {
       await homeTestStartPage.navigate();
       await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
+      await homeTestStartPage.clickBloodSampleGuideLink();
+      await bloodSampleGuidePage.waitUntilPageLoaded();
+      await bloodSampleGuidePage.clickBackLink();
       await homeTestStartPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.selectAddressAndContinue();

@@ -51,15 +51,39 @@ function tryClaimUrl(url: string): boolean {
       } finally {
         try {
           fs.unlinkSync(LOCK_FILE);
-        } catch {
+        } catch (_e) {
           // Lock file may already have been cleaned up.
         }
       }
-    } catch {
+    } catch (_e) {
       // Lock file already exists — another worker holds the lock. Spin.
     }
   }
   return false;
+}
+
+function unclaimUrl(url: string): void {
+  const deadline = Date.now() + LOCK_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    try {
+      const fd = fs.openSync(LOCK_FILE, "wx");
+      fs.closeSync(fd);
+      try {
+        const existing = readScannedUrls();
+        existing.delete(url);
+        writeScannedUrls(existing);
+        return;
+      } finally {
+        try {
+          fs.unlinkSync(LOCK_FILE);
+        } catch (_e) {
+          // Lock file may already have been cleaned up.
+        }
+      }
+    } catch (_e) {
+      // Lock file already exists — another worker holds the lock. Spin.
+    }
+  }
 }
 
 const ACCESSIBILITY_STANDARDS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] as const;
@@ -71,6 +95,7 @@ export interface AutoAccessibilityOptions {
 interface AutoAccessibilityFixtures {
   autoAccessibilityOptions: AutoAccessibilityOptions;
   autoA11ySetup: void;
+  scanA11y: (label: string) => Promise<void>;
 }
 
 interface AutoAccessibilityWorkerFixtures {
@@ -123,18 +148,22 @@ export const accessibilityAutoFixture = base.extend<
         if (workerScannedUrls.has(url)) return;
         workerScannedUrls.add(url);
         if (!tryClaimUrl(url)) return;
-        scannedUrls.add(url);
 
         const scanPromise = page
           .locator("h1")
           .first()
           .waitFor({ state: "visible", timeout: 10000 })
           .then(async () => {
-            if (page.url() !== url) return null;
+            if (page.url() !== url) {
+              workerScannedUrls.delete(url);
+              unclaimUrl(url);
+              return null;
+            }
             return new AxeBuilder({ page }).withTags(standards).analyze();
           })
           .then((results: AxeResults | null) => {
             if (!results) return;
+            scannedUrls.add(url);
             results.violations.forEach((v) => violations.push({ url, violation: v }));
 
             const urlSlug =
@@ -165,7 +194,8 @@ export const accessibilityAutoFixture = base.extend<
             });
           })
           .catch(() => {
-            // Swallow scan errors so they do not mask real test failures.
+            workerScannedUrls.delete(url);
+            unclaimUrl(url);
           });
 
         pending.push(scanPromise);
@@ -214,4 +244,78 @@ export const accessibilityAutoFixture = base.extend<
     },
     { auto: true },
   ],
+
+  scanA11y: async (
+    { page, autoAccessibilityOptions, workerScannedUrls },
+    use,
+    testInfo: TestInfo,
+  ) => {
+    const options = { ...defaultOptions, ...autoAccessibilityOptions };
+
+    const standardsConfig = ConfigFactory.getConfig().accessibilityStandards;
+    const standards: string[] = standardsConfig
+      ? standardsConfig.split(",").map((s: string) => s.trim())
+      : [...ACCESSIBILITY_STANDARDS];
+
+    const violations: Array<{ url: string; violation: Result }> = [];
+    const scannedLabels = new Set<string>();
+    const absoluteReportDir = AUTO_REPORTS_DIR;
+    const relativeReportDir = path.relative(process.cwd(), absoluteReportDir);
+    fs.mkdirSync(absoluteReportDir, { recursive: true });
+
+    await use(async (label: string) => {
+      const claimKey = `label:${label}`;
+      if (workerScannedUrls.has(claimKey)) return;
+      workerScannedUrls.add(claimKey);
+      if (!tryClaimUrl(claimKey)) return;
+
+      const url = page.url();
+      let results: AxeResults;
+      try {
+        results = await new AxeBuilder({ page }).withTags(standards).analyze();
+      } catch (_e) {
+        workerScannedUrls.delete(claimKey);
+        unclaimUrl(claimKey);
+        return;
+      }
+
+      scannedLabels.add(label);
+      results.violations.forEach((v) => violations.push({ url, violation: v }));
+
+      const labelSlug = label.replace(/[^a-zA-Z0-9-]/g, "_").substring(0, 80);
+      const reportFileName = `auto-${labelSlug}-accessibility-report.html`;
+      const absoluteReportPath = path.join(absoluteReportDir, reportFileName);
+
+      createHtmlReport({
+        results,
+        options: {
+          projectKey: `${url} (${label})`,
+          outputDir: relativeReportDir,
+          reportFileName,
+        },
+      });
+
+      if (fs.existsSync(absoluteReportPath)) {
+        await testInfo.attach(`a11y: ${label}`, {
+          path: absoluteReportPath,
+          contentType: "text/html",
+        });
+      }
+    });
+
+    if (violations.length === 0) return;
+
+    const summary = violations
+      .map(
+        ({ url, violation }) =>
+          `  [${violation.impact ?? "unknown"}] ${violation.id} on ${url}: ${violation.description}`,
+      )
+      .join("\n");
+
+    if (options.failOnViolation) {
+      throw new Error(
+        `Automatic accessibility check found ${violations.length} violation(s):\n${summary}`,
+      );
+    }
+  },
 });
