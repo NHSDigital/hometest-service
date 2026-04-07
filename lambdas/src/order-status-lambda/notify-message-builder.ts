@@ -10,8 +10,6 @@ export interface BuildOrderDispatchedNotifyMessageInput {
   dispatchedAt: string;
 }
 
-const ORDER_TRACKING_LINK_TEXT = "View kit order update and see more information";
-
 const formatDispatchedDate = (isoDateTime: string): string =>
   new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -50,7 +48,7 @@ export class NotifyMessageBuilder {
       recipient,
       personalisation: {
         dispatchedDate: formatDispatchedDate(dispatchedAt),
-        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
+        orderLinkUrl: trackingUrl,
       },
     };
   }
