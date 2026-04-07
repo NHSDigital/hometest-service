@@ -43,6 +43,10 @@ interface PersistedJourneyNavigationState {
   returnToStep: Step | null;
 }
 
+interface JourneyNavigationState extends PersistedJourneyNavigationState {
+  pendingResetToStep: Step | null;
+}
+
 export interface JourneyNavigationContextType {
   currentStep: Step;
   stepHistory: Step[];
@@ -65,7 +69,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
 
   const currentStep = getStepFromPath(location.pathname);
 
-  const [navigation, setNavigation] = useState<PersistedJourneyNavigationState>(() => {
+  const [navigation, setNavigation] = useState<JourneyNavigationState>(() => {
     const persistedState =
       sessionService.rehydrateJourneyNavigation<PersistedJourneyNavigationState>({
         stepHistory: [currentStep],
@@ -79,18 +83,28 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
     return {
       stepHistory: lastStep === currentStep ? stepHistory : [...stepHistory, currentStep],
       returnToStep: persistedState.returnToStep,
+      pendingResetToStep: null,
     };
   });
 
   const stepHistory = useMemo(() => {
+    if (navigation.pendingResetToStep !== null && currentStep !== navigation.pendingResetToStep) {
+      return navigation.stepHistory;
+    }
+
     const lastStep = navigation.stepHistory.at(-1);
 
     return lastStep === currentStep
       ? navigation.stepHistory
       : [...navigation.stepHistory, currentStep];
-  }, [navigation.stepHistory, currentStep]);
+  }, [currentStep, navigation.pendingResetToStep, navigation.stepHistory]);
 
   useEffect(() => {
+    if (navigation.pendingResetToStep !== null && currentStep !== navigation.pendingResetToStep) {
+      sessionService.clearJourneyNavigation();
+      return;
+    }
+
     const hasOnlyCurrentStep = stepHistory.length === 1 && stepHistory[0] === currentStep;
 
     if (hasOnlyCurrentStep && navigation.returnToStep === null) {
@@ -102,7 +116,26 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
       stepHistory,
       returnToStep: navigation.returnToStep,
     });
-  }, [currentStep, stepHistory, navigation.returnToStep]);
+  }, [currentStep, stepHistory, navigation.pendingResetToStep, navigation.returnToStep]);
+
+  useEffect(() => {
+    if (navigation.pendingResetToStep === null || currentStep !== navigation.pendingResetToStep) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      setNavigation((previousNavigation) => {
+        if (previousNavigation.pendingResetToStep === null) {
+          return previousNavigation;
+        }
+
+        return {
+          ...previousNavigation,
+          pendingResetToStep: null,
+        };
+      });
+    });
+  }, [currentStep, navigation.pendingResetToStep]);
 
   const goToStep = useCallback(
     (step: Step) => {
@@ -132,6 +165,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
     setNavigation((previousNavigation) => ({
       ...previousNavigation,
       stepHistory: [currentStep],
+      pendingResetToStep: null,
     }));
   }, [currentStep]);
 
@@ -140,6 +174,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
       setNavigation({
         stepHistory: [step],
         returnToStep: null,
+        pendingResetToStep: step === currentStep ? null : step,
       });
 
       sessionService.clearJourneyNavigation();
@@ -155,6 +190,7 @@ export function JourneyNavigationProvider({ children }: Readonly<{ children: Rea
     setNavigation((previousNavigation) => ({
       ...previousNavigation,
       returnToStep: step,
+      pendingResetToStep: null,
     }));
   }, []);
 
