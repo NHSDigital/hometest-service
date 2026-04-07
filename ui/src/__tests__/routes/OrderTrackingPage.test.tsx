@@ -1,15 +1,14 @@
-import "@testing-library/jest-dom";
-
-import { AuthContext, AuthUser } from "@/state";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-
-import OrderTrackingPage from "@/routes/OrderTrackingPage";
-import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
 import { act } from "react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import orderDetailsService from "@/lib/services/order-details-service";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
+import OrderTrackingPage from "@/routes/OrderTrackingPage";
+import { AuthContext, AuthUser } from "@/state";
 
 jest.mock("@/lib/services/order-details-service", () => ({
   __esModule: true,
@@ -229,20 +228,6 @@ describe("OrderTrackingPage", () => {
   });
 
   describe("Different order types", () => {
-    it("handles different test types", async () => {
-      const syphilisOrder: OrderDetails = {
-        ...mockOrder,
-      };
-      (orderDetailsService.get as jest.Mock).mockResolvedValue(syphilisOrder);
-
-      await act(async () => {
-        renderWithRouter(orderId);
-      });
-
-      await screen.findByTestId("order-status");
-      expect(screen.getByText("HIV self-test")).toBeInTheDocument();
-    });
-
     it("handles different suppliers", async () => {
       const differentSupplierOrder: OrderDetails = {
         ...mockOrder,

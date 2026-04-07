@@ -1,5 +1,5 @@
-import { postgresConfig, postgresIamConfig, postgresConfigFromEnv } from "./db-config";
 import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
+import { postgresConfig, postgresConfigFromEnv, postgresIamConfig } from "./db-config";
 
 describe("db-config", () => {
   // Environment variable keys
@@ -150,14 +150,11 @@ describe("db-config", () => {
 
       // Test password function
       expect(typeof config.password).toBe("function");
-      const resolvedPassword = await (
-        config.password as () => Promise<string>
-      )();
+      const resolvedPassword = await (config.password as () => Promise<string>)();
 
-      expect(secretsClient.getSecretValue).toHaveBeenCalledWith(
-        TEST_PASSWORD_SECRET_NAME,
-        { jsonKey: "password" },
-      );
+      expect(secretsClient.getSecretValue).toHaveBeenCalledWith(TEST_PASSWORD_SECRET_NAME, {
+        jsonKey: "password",
+      });
       expect(resolvedPassword).toEqual(expectedPassword);
     },
   );
@@ -174,35 +171,29 @@ describe("db-config", () => {
     });
 
     describe("missing environment variables", () => {
-      it.each([
-        [ENV_DB_USERNAME],
-        [ENV_DB_ADDRESS],
-        [ENV_DB_PORT],
-        [ENV_DB_NAME],
-        [ENV_DB_SECRET_NAME],
-      ])("should throw error when %s is missing", (envVar: string) => {
-        delete process.env[envVar];
+      it.each([ENV_DB_USERNAME, ENV_DB_ADDRESS, ENV_DB_PORT, ENV_DB_NAME, ENV_DB_SECRET_NAME])(
+        "should throw error when %s is missing",
+        (envVar: string) => {
+          delete process.env[envVar];
 
-        expect(() => postgresConfigFromEnv(secretsClient)).toThrow(
-          `Missing value for an environment variable ${envVar}`,
-        );
-      });
+          expect(() => postgresConfigFromEnv(secretsClient)).toThrow(
+            `Missing value for an environment variable ${envVar}`,
+          );
+        },
+      );
     });
 
     describe("empty environment variables", () => {
-      it.each([
-        [ENV_DB_USERNAME],
-        [ENV_DB_ADDRESS],
-        [ENV_DB_PORT],
-        [ENV_DB_NAME],
-        [ENV_DB_SECRET_NAME],
-      ])("should throw error when %s is empty", (envVar: string) => {
-        process.env[envVar] = "";
+      it.each([ENV_DB_USERNAME, ENV_DB_ADDRESS, ENV_DB_PORT, ENV_DB_NAME, ENV_DB_SECRET_NAME])(
+        "should throw error when %s is empty",
+        (envVar: string) => {
+          process.env[envVar] = "";
 
-        expect(() => postgresConfigFromEnv(secretsClient)).toThrow(
-          `Missing value for an environment variable ${envVar}`,
-        );
-      });
+          expect(() => postgresConfigFromEnv(secretsClient)).toThrow(
+            `Missing value for an environment variable ${envVar}`,
+          );
+        },
+      );
     });
 
     it("should create config from environment variables", () => {
