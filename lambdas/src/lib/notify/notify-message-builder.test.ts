@@ -108,8 +108,8 @@ describe("NotifyMessageBuilder", () => {
     expect(result.eventCode).toBe(NotifyEventCode.ResultReady);
     expect(result.personalisation).toEqual({
       receivedDate: "6 August 2026",
-      statusLink:
-        "[View kit order update and see more information](https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking)",
+      resultLink:
+        "[View your result](https://hometest.example.nhs.uk/order/550e8400-e29b-41d4-a716-446655440000/results)",
     });
   });
 });

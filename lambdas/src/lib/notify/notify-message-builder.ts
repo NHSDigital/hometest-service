@@ -25,6 +25,7 @@ export interface BuildResultReadyNotifyMessageInput {
 }
 
 const ORDER_TRACKING_LINK_TEXT = "View kit order update and see more information";
+const ORDER_RESULTS_LINK_TEXT = "View your result";
 
 const formatStatusDate = (isoDateTime: string): string =>
   new Intl.DateTimeFormat("en-GB", {
@@ -49,13 +50,15 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, dispatchedAt } = input;
 
+    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
+
     return this.buildOrderStatusNotifyMessage({
       patientId,
       correlationId,
-      orderId,
       eventCode: NotifyEventCode.OrderDispatched,
       personalisation: {
         dispatchedDate: formatStatusDate(dispatchedAt),
+        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
       },
     });
   }
@@ -65,13 +68,15 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, receivedAt } = input;
 
+    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
+
     return this.buildOrderStatusNotifyMessage({
       patientId,
       correlationId,
-      orderId,
       eventCode: NotifyEventCode.OrderReceived,
       personalisation: {
         receivedDate: formatStatusDate(receivedAt),
+        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
       },
     });
   }
@@ -81,13 +86,15 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, receivedAt } = input;
 
+    const resultsUrl = `${this.normalizedHomeTestBaseUrl}/order/${orderId}/results`;
+
     return this.buildOrderStatusNotifyMessage({
       patientId,
       correlationId,
-      orderId,
       eventCode: NotifyEventCode.ResultReady,
       personalisation: {
         receivedDate: formatStatusDate(receivedAt),
+        resultLink: `[${ORDER_RESULTS_LINK_TEXT}](${resultsUrl})`,
       },
     });
   }
@@ -95,11 +102,10 @@ export class NotifyMessageBuilder {
   private async buildOrderStatusNotifyMessage(input: {
     patientId: string;
     correlationId: string;
-    orderId: string;
     eventCode: NotifyEventCode;
     personalisation: Record<string, string>;
   }): Promise<NotifyMessage> {
-    const { patientId, correlationId, orderId, eventCode, personalisation } = input;
+    const { patientId, correlationId, eventCode, personalisation } = input;
 
     const patient = await this.patientDbClient.get(patientId);
     const recipient: NotifyRecipient = {
@@ -107,17 +113,12 @@ export class NotifyMessageBuilder {
       dateOfBirth: patient.birthDate,
     };
 
-    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
-
     return {
       correlationId,
       messageReference: uuidv4(),
       eventCode,
       recipient,
-      personalisation: {
-        ...personalisation,
-        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
-      },
+      personalisation,
     };
   }
 }
