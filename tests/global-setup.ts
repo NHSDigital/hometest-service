@@ -4,7 +4,11 @@ import * as path from "node:path";
 
 import { WireMockClient } from "./api/clients/WireMockClient";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
-import { AUTO_REPORTS_DIR, SCANNED_URLS_FILE } from "./fixtures/accessibilityAutoFixture";
+import {
+  A11Y_REPORTS_DIR,
+  AUTO_REPORTS_DIR,
+  SCANNED_URLS_FILE,
+} from "./fixtures/accessibilityAutoFixture";
 import { CredentialsHelper } from "./utils";
 import { UserManagerFactory } from "./utils/users";
 import {
@@ -18,7 +22,7 @@ async function globalSetup() {
   console.log("🚀 Global setup started");
   console.log(`Tests will run on environment: ${process.env.ENV ?? "local"}`);
 
-  fs.rmSync(AUTO_REPORTS_DIR, { recursive: true, force: true });
+  fs.rmSync(A11Y_REPORTS_DIR, { recursive: true, force: true });
   fs.mkdirSync(AUTO_REPORTS_DIR, { recursive: true });
 
   fs.mkdirSync(path.dirname(SCANNED_URLS_FILE), { recursive: true });

@@ -14,6 +14,7 @@ export const SCANNED_URLS_FILE = path.resolve(
   "testResults",
   "a11y-scanned-urls.json",
 );
+export const A11Y_REPORTS_DIR = path.resolve(__dirname, "..", "testResults", "accessibility");
 export const AUTO_REPORTS_DIR = path.resolve(
   __dirname,
   "..",
