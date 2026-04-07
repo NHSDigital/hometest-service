@@ -1,5 +1,9 @@
 # SQS and Error Handling
 
+## Overview
+
+This page consolidates the current SQS and error-handling implementation, the future recommendations discussed on this branch, and the agreed decisions taken so far. It is intended to provide a single view of the present design, the available improvement options, and the decisions that will be implemented or followed up.
+
 ## Current State
 
 ### Queues
