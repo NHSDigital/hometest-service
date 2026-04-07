@@ -24,6 +24,8 @@ export const AUTO_REPORTS_DIR = path.resolve(
 );
 const LOCK_FILE = `${SCANNED_URLS_FILE}.lock`;
 const LOCK_TIMEOUT_MS = 5_000;
+const LOCK_RETRY_BASE_MS = 10;
+const LOCK_RETRY_MAX_MS = 200;
 
 function readScannedUrls(): Set<string> {
   try {
@@ -37,54 +39,62 @@ function writeScannedUrls(urls: Set<string>): void {
   fs.writeFileSync(SCANNED_URLS_FILE, JSON.stringify([...urls], null, 2), "utf8");
 }
 
-function tryClaimUrl(url: string): boolean {
-  const deadline = Date.now() + LOCK_TIMEOUT_MS;
-  while (Date.now() < deadline) {
-    try {
-      const fd = fs.openSync(LOCK_FILE, "wx");
-      fs.closeSync(fd);
-      try {
-        const existing = readScannedUrls();
-        if (existing.has(url)) return false;
-        existing.add(url);
-        writeScannedUrls(existing);
-        return true;
-      } finally {
-        try {
-          fs.unlinkSync(LOCK_FILE);
-        } catch (_e) {
-          // Lock file may already have been cleaned up.
-        }
-      }
-    } catch (_e) {
-      // Lock file already exists — another worker holds the lock. Spin.
-    }
-  }
-  return false;
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function unclaimUrl(url: string): void {
-  const deadline = Date.now() + LOCK_TIMEOUT_MS;
-  while (Date.now() < deadline) {
-    try {
-      const fd = fs.openSync(LOCK_FILE, "wx");
-      fs.closeSync(fd);
-      try {
-        const existing = readScannedUrls();
-        existing.delete(url);
-        writeScannedUrls(existing);
-        return;
-      } finally {
-        try {
-          fs.unlinkSync(LOCK_FILE);
-        } catch (_e) {
-          // Lock file may already have been cleaned up.
-        }
-      }
-    } catch (_e) {
-      // Lock file already exists — another worker holds the lock. Spin.
-    }
+function tryAcquireLock(): boolean {
+  try {
+    const fd = fs.openSync(LOCK_FILE, "wx");
+    fs.closeSync(fd);
+    return true;
+  } catch {
+    return false;
   }
+}
+
+function releaseLock(): void {
+  try {
+    fs.unlinkSync(LOCK_FILE);
+  } catch {
+    // Lock file may already have been cleaned up.
+  }
+}
+
+async function withLock<T>(fn: () => T): Promise<T | undefined> {
+  const deadline = Date.now() + LOCK_TIMEOUT_MS;
+  let delay = LOCK_RETRY_BASE_MS;
+  while (Date.now() < deadline) {
+    if (tryAcquireLock()) {
+      try {
+        return fn();
+      } finally {
+        releaseLock();
+      }
+    }
+    await sleep(delay);
+    delay = Math.min(delay * 2, LOCK_RETRY_MAX_MS);
+  }
+  return undefined;
+}
+
+async function tryClaimUrl(url: string): Promise<boolean> {
+  const result = await withLock(() => {
+    const existing = readScannedUrls();
+    if (existing.has(url)) return false;
+    existing.add(url);
+    writeScannedUrls(existing);
+    return true;
+  });
+  return result ?? false;
+}
+
+async function unclaimUrl(url: string): Promise<void> {
+  await withLock(() => {
+    const existing = readScannedUrls();
+    existing.delete(url);
+    writeScannedUrls(existing);
+  });
 }
 
 const ACCESSIBILITY_STANDARDS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] as const;
@@ -148,16 +158,14 @@ export const accessibilityAutoFixture = base.extend<
         if (url === "about:blank" || url.startsWith("data:")) return;
         if (workerScannedUrls.has(url)) return;
         workerScannedUrls.add(url);
-        if (!tryClaimUrl(url)) return;
 
-        const scanPromise = page
-          .locator("h1")
-          .first()
-          .waitFor({ state: "visible", timeout: 10000 })
-          .then(async () => {
+        const scanPromise = tryClaimUrl(url)
+          .then(async (claimed) => {
+            if (!claimed) return null;
+            await page.locator("h1").first().waitFor({ state: "visible", timeout: 10000 });
             if (page.url() !== url) {
               workerScannedUrls.delete(url);
-              unclaimUrl(url);
+              await unclaimUrl(url);
               return null;
             }
             return new AxeBuilder({ page }).withTags(standards).analyze();
@@ -194,9 +202,9 @@ export const accessibilityAutoFixture = base.extend<
               contentType: "text/html",
             });
           })
-          .catch(() => {
+          .catch(async () => {
             workerScannedUrls.delete(url);
-            unclaimUrl(url);
+            await unclaimUrl(url);
           });
 
         pending.push(scanPromise);
@@ -268,7 +276,7 @@ export const accessibilityAutoFixture = base.extend<
       const claimKey = `label:${label}`;
       if (workerScannedUrls.has(claimKey)) return;
       workerScannedUrls.add(claimKey);
-      if (!tryClaimUrl(claimKey)) return;
+      if (!(await tryClaimUrl(claimKey))) return;
 
       const url = page.url();
       let results: AxeResults;
@@ -276,7 +284,7 @@ export const accessibilityAutoFixture = base.extend<
         results = await new AxeBuilder({ page }).withTags(standards).analyze();
       } catch (_e) {
         workerScannedUrls.delete(claimKey);
-        unclaimUrl(claimKey);
+        await unclaimUrl(claimKey);
         return;
       }
 
@@ -304,7 +312,7 @@ export const accessibilityAutoFixture = base.extend<
       }
     });
 
-    if (violations.length === 0) return;
+    if (scannedLabels.size === 0) return;
 
     const summary = violations
       .map(
@@ -312,6 +320,27 @@ export const accessibilityAutoFixture = base.extend<
           `  [${violation.impact ?? "unknown"}] ${violation.id} on ${url}: ${violation.description}`,
       )
       .join("\n");
+
+    await testInfo.attach("auto-accessibility-report-labels", {
+      body: JSON.stringify(
+        {
+          labelsScanned: [...scannedLabels],
+          violationCount: violations.length,
+          violations: violations.map(({ url, violation }) => ({
+            url,
+            id: violation.id,
+            impact: violation.impact,
+            description: violation.description,
+            nodeCount: violation.nodes.length,
+          })),
+        },
+        null,
+        2,
+      ),
+      contentType: "application/json",
+    });
+
+    if (violations.length === 0) return;
 
     if (options.failOnViolation) {
       throw new Error(
