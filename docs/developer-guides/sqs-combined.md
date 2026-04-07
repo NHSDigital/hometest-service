@@ -1,8 +1,14 @@
 # SQS and Error Handling
 
+## Contents
+
+- [Current State](#current-state)
+- [Future Recommendations](#future-recommendations)
+- [Agreed Decisions](#agreed-decisions)
+
 ## Overview
 
-This page consolidates the current SQS and error-handling implementation, the future recommendations discussed on this branch, and the agreed decisions taken so far. It is intended to provide a single view of the present design, the available improvement options, and the decisions that will be implemented or followed up.
+This page consolidates the current SQS and error-handling implementation, the future recommendations discussed on [this branch](https://github.com/NHSDigital/hometest-service/tree/feature/hote-813/document-sqs-and-error-handling-approach), and the agreed decisions taken so far. It is intended to provide a single view of the present design, the available improvement options, and the decisions that will be implemented or followed up.
 
 ## Current State
 

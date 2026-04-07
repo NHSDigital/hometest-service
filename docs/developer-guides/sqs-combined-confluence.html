@@ -35,21 +35,44 @@
       code {
         font-family: Menlo, Consolas, monospace;
       }
+
+      .contents {
+        margin: 16px 0 24px;
+        padding: 12px;
+        border: 1px solid #ccc;
+      }
+
+      .contents ul {
+        margin: 8px 0 0;
+      }
     </style>
   </head>
   <body>
     <h1>SQS and Error Handling</h1>
 
+    <div class="contents">
+      <strong>Contents</strong>
+      <ul>
+        <li><a href="#current-state">Current State</a></li>
+        <li><a href="#future-recommendations">Future Recommendations</a></li>
+        <li><a href="#agreed-decisions">Agreed Decisions</a></li>
+      </ul>
+    </div>
+
     <h2>Overview</h2>
 
     <p>
       This page consolidates the current SQS and error-handling implementation, the future
-      recommendations discussed on this branch, and the agreed decisions taken so far. It is
-      intended to provide a single view of the present design, the available improvement options,
-      and the decisions that will be implemented or followed up.
+      recommendations discussed on
+      <a
+        href="https://github.com/NHSDigital/hometest-service/tree/feature/hote-813/document-sqs-and-error-handling-approach"
+        >this branch</a
+      >, and the agreed decisions taken so far. It is intended to provide a single view of the
+      present design, the available improvement options, and the decisions that will be implemented
+      or followed up.
     </p>
 
-    <h2>Current State</h2>
+    <h2 id="current-state">Current State</h2>
 
     <h3>Queues</h3>
 
@@ -302,7 +325,7 @@ SQS order-placement → order-router-lambda (batch size 1)
 
     <p>All alarms notify the SNS alerts topic. OK transitions also notify.</p>
 
-    <h2>Future Recommendations</h2>
+    <h2 id="future-recommendations">Future Recommendations</h2>
 
     <h3>1. Clean up unused queues and the duplicate <code>events</code> ESM</h3>
 
@@ -684,7 +707,7 @@ SQS order-placement → order-router-lambda (batch size 1)
       batch-size tuning is guesswork and risks cascading failures.
     </p>
 
-    <h2>Agreed Decisions</h2>
+    <h2 id="agreed-decisions">Agreed Decisions</h2>
 
     <p>
       This document records the agreed decisions for points 1 to 10 from the SQS and error-handling
