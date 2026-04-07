@@ -24,9 +24,6 @@ export interface BuildResultReadyNotifyMessageInput {
   receivedAt: string;
 }
 
-const ORDER_TRACKING_LINK_TEXT = "View kit order update and see more information";
-const ORDER_RESULTS_LINK_TEXT = "View your result";
-
 const formatStatusDate = (isoDateTime: string): string =>
   new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -50,7 +47,7 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, dispatchedAt } = input;
 
-    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
+    const trackingUrl = this.buildOrderTrackingUrl(orderId);
 
     return this.buildOrderStatusNotifyMessage({
       patientId,
@@ -58,7 +55,7 @@ export class NotifyMessageBuilder {
       eventCode: NotifyEventCode.OrderDispatched,
       personalisation: {
         dispatchedDate: formatStatusDate(dispatchedAt),
-        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
+        orderLinkUrl: trackingUrl,
       },
     });
   }
@@ -68,7 +65,7 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, receivedAt } = input;
 
-    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
+    const trackingUrl = this.buildOrderTrackingUrl(orderId);
 
     return this.buildOrderStatusNotifyMessage({
       patientId,
@@ -76,7 +73,7 @@ export class NotifyMessageBuilder {
       eventCode: NotifyEventCode.OrderReceived,
       personalisation: {
         receivedDate: formatStatusDate(receivedAt),
-        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
+        orderLinkUrl: trackingUrl,
       },
     });
   }
@@ -86,7 +83,7 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, receivedAt } = input;
 
-    const resultsUrl = `${this.normalizedHomeTestBaseUrl}/order/${orderId}/results`;
+    const resultsUrl = this.buildOrderResultsUrl(orderId);
 
     return this.buildOrderStatusNotifyMessage({
       patientId,
@@ -94,7 +91,7 @@ export class NotifyMessageBuilder {
       eventCode: NotifyEventCode.ResultReady,
       personalisation: {
         receivedDate: formatStatusDate(receivedAt),
-        resultLink: `[${ORDER_RESULTS_LINK_TEXT}](${resultsUrl})`,
+        resultLinkUrl: resultsUrl,
       },
     });
   }
@@ -120,5 +117,13 @@ export class NotifyMessageBuilder {
       recipient,
       personalisation,
     };
+  }
+
+  private buildOrderTrackingUrl(orderId: string): string {
+    return `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
+  }
+
+  private buildOrderResultsUrl(orderId: string): string {
+    return `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/results`;
   }
 }
