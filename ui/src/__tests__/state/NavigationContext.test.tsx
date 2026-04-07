@@ -79,6 +79,35 @@ describe("NavigationContext", () => {
       expect(result.current.stepHistory).toEqual([RoutePath.GetSelfTestKitPage]);
       expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBeNull();
     });
+
+    it("does not re-persist the old current step while reset navigation is in flight", async () => {
+      const { result } = renderHook(() => useJourneyNavigationContext(), {
+        wrapper: TestWrapper,
+      });
+
+      act(() => {
+        result.current.setReturnToStep(JourneyStepNames.CheckYourAnswers);
+      });
+
+      await waitFor(() => {
+        expect(
+          globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation),
+        ).not.toBeNull();
+      });
+
+      act(() => {
+        result.current.resetNavigation(RoutePath.GetSelfTestKitPage);
+      });
+
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBeNull();
+
+      await waitFor(() => {
+        expect(result.current.currentStep).toBe(RoutePath.GetSelfTestKitPage);
+      });
+
+      expect(result.current.stepHistory).toEqual([RoutePath.GetSelfTestKitPage]);
+      expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBeNull();
+    });
   });
 
   describe("useJourneyNavigationContext", () => {
