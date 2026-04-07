@@ -150,27 +150,29 @@ export default function SelectDeliveryAddressPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Radios
-          id="collection-point"
-          name="collection-point"
-          legend={content.formLabel}
-          legendProps={{
-            isPageHeading: false,
-            size: "s",
-          }}
-          error={addressError || undefined}
-          onChange={handleRadioChange}
-        >
-          {addresses.map((address) => (
-            <Radios.Item
-              key={address.id}
-              value={address.id}
-              checked={selectedAddress === address.id}
-            >
-              {address.fullAddress}
-            </Radios.Item>
-          ))}
-        </Radios>
+        {addresses.length > 0 && (
+          <Radios
+            id="collection-point"
+            name="collection-point"
+            legend={content.formLabel}
+            legendProps={{
+              isPageHeading: false,
+              size: "s",
+            }}
+            error={addressError || undefined}
+            onChange={handleRadioChange}
+          >
+            {addresses.map((address) => (
+              <Radios.Item
+                key={address.id}
+                value={address.id}
+                checked={selectedAddress === address.id}
+              >
+                {address.fullAddress}
+              </Radios.Item>
+            ))}
+          </Radios>
+        )}
 
         <Button type="submit">{commonContent.navigation.continue}</Button>
       </form>
