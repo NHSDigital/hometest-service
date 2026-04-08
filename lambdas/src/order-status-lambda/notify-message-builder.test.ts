@@ -41,8 +41,8 @@ describe("NotifyMessageBuilder", () => {
 
     expect(result.personalisation).toEqual({
       dispatchedDate: "6 August 2026",
-      statusLink:
-        "[View kit order update and see more information](https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking)",
+      orderLinkUrl:
+        "https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking",
     });
   });
 
@@ -59,13 +59,13 @@ describe("NotifyMessageBuilder", () => {
       dispatchedAt: "2026-08-06T10:00:00Z",
     });
 
-    const statusLink = result.personalisation?.statusLink;
+    const orderLinkUrl = result.personalisation?.orderLinkUrl;
 
-    expect(typeof statusLink).toBe("string");
-    expect(statusLink).toContain(
+    expect(typeof orderLinkUrl).toBe("string");
+    expect(orderLinkUrl).toContain(
       "https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking",
     );
-    expect(statusLink).not.toContain(".uk//orders");
+    expect(orderLinkUrl).not.toContain(".uk//orders");
   });
 
   it("should call recipient lookup with patient id", async () => {
@@ -91,8 +91,8 @@ describe("NotifyMessageBuilder", () => {
     expect(result.eventCode).toBe(NotifyEventCode.OrderReceived);
     expect(result.personalisation).toEqual({
       receivedDate: "6 August 2026",
-      statusLink:
-        "[View kit order update and see more information](https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking)",
+      orderLinkUrl:
+        "https://hometest.example.nhs.uk/orders/550e8400-e29b-41d4-a716-446655440000/tracking",
     });
   });
 });

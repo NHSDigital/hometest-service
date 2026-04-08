@@ -17,8 +17,6 @@ export interface BuildOrderReceivedNotifyMessageInput {
   receivedAt: string;
 }
 
-const ORDER_TRACKING_LINK_TEXT = "View kit order update and see more information";
-
 const formatStatusDate = (isoDateTime: string): string =>
   new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -42,6 +40,7 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, dispatchedAt } = input;
 
+    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
     return this.buildOrderStatusNotifyMessage({
       patientId,
       correlationId,
@@ -49,6 +48,7 @@ export class NotifyMessageBuilder {
       eventCode: NotifyEventCode.OrderDispatched,
       personalisation: {
         dispatchedDate: formatStatusDate(dispatchedAt),
+        orderLinkUrl: trackingUrl,
       },
     });
   }
@@ -58,6 +58,8 @@ export class NotifyMessageBuilder {
   ): Promise<NotifyMessage> {
     const { patientId, correlationId, orderId, receivedAt } = input;
 
+    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
+
     return this.buildOrderStatusNotifyMessage({
       patientId,
       correlationId,
@@ -65,6 +67,7 @@ export class NotifyMessageBuilder {
       eventCode: NotifyEventCode.OrderReceived,
       personalisation: {
         receivedDate: formatStatusDate(receivedAt),
+        orderLinkUrl: trackingUrl,
       },
     });
   }
@@ -76,7 +79,7 @@ export class NotifyMessageBuilder {
     eventCode: NotifyEventCode;
     personalisation: Record<string, string>;
   }): Promise<NotifyMessage> {
-    const { patientId, correlationId, orderId, eventCode, personalisation } = input;
+    const { patientId, correlationId, eventCode, personalisation } = input;
 
     const patient = await this.patientDbClient.get(patientId);
     const recipient: NotifyRecipient = {
@@ -84,17 +87,12 @@ export class NotifyMessageBuilder {
       dateOfBirth: patient.birthDate,
     };
 
-    const trackingUrl = `${this.normalizedHomeTestBaseUrl}/orders/${orderId}/tracking`;
-
     return {
       correlationId,
       messageReference: uuidv4(),
       eventCode,
       recipient,
-      personalisation: {
-        ...personalisation,
-        statusLink: `[${ORDER_TRACKING_LINK_TEXT}](${trackingUrl})`,
-      },
+      personalisation,
     };
   }
 }

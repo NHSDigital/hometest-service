@@ -86,13 +86,13 @@ export class OrderStatusNotifyService {
     const { orderStatusDb, notificationAuditDbClient, sqsClient, notifyMessagesQueueUrl } =
       this.dependencies;
 
-    const isFirstOccurrence = await orderStatusDb.isFirstStatusOccurrence(orderId, statusCode);
-
-    if (!isFirstOccurrence) {
-      return;
-    }
-
     try {
+      const isFirstOccurrence = await orderStatusDb.isFirstStatusOccurrence(orderId, statusCode);
+
+      if (!isFirstOccurrence) {
+        return;
+      }
+
       const notifyMessage = await buildNotifyMessage({
         patientId,
         correlationId,
