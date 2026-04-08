@@ -46,11 +46,18 @@ jobs:
           EOF
 
       - name: "Create credentials file"
-        working-directory: tests
+        # working-directory: tests
         run: |
-          cat > credentials.ts << 'EOF'
+          cat > tests/credentials.ts << 'EOF'
           export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
           export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
+          EOF
+
+      - name: "Create os-places-creds file"
+        run: |
+          mkdir -p local-environment/infra/resources/secrets
+          cat > local-environment/infra/resources/secrets/os-places-creds.json << 'EOF'
+          {"apiKey":"test-api-key"}
           EOF
 
       - name: "Start the application"
@@ -115,10 +122,10 @@ jobs:
         env:
           CI: true
           FORCE_COLOR: true
-          UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
-          API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
+          # UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
+          # API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
           # WIREMOCK_BASE_URL: https://wiremock-uat.poc.hometest.service.nhs.uk
-          AUTH_TYPE: wiremock
+          # AUTH_TYPE: wiremock
 
       - name: "Grab docker compose logs"
         run: |
