@@ -9,7 +9,7 @@ const originator = OrderStatusTestData.DEFAULT_ORIGINATOR;
 const defaultStatus = OrderStatusTestData.DEFAULT_STATUS;
 const defaultIntent = OrderStatusTestData.DEFAULT_INTENT;
 
-test.describe("Order Status Update API", () => {
+test.describe("Order Status Update API", { tag: ["@API", "@db"] }, () => {
   let orderUid: string;
   let patientUid: string;
   let nhsNumber: string;

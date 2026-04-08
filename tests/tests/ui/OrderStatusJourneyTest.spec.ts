@@ -15,7 +15,7 @@ const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
 const config = ConfigFactory.getConfig();
 
-test.describe("Order Status Page", () => {
+test.describe("Order Status Page", { tag: "@db" }, () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser, testOrderDb }) => {
