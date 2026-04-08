@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { RoutePath } from "@/lib/models/route-paths";
@@ -91,7 +92,7 @@ function StateSeeder({
   children,
   orderData,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
   orderData: Record<string, unknown>;
 }>) {
   const { updateOrderAnswers } = useCreateOrderContext();
@@ -108,7 +109,7 @@ function AuthSeeder({
   children,
   user = defaultAuthUser,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
   user?: AuthUser;
 }>) {
   const { setUser } = useAuth();
@@ -140,7 +141,7 @@ const TestWrapper = ({
   children,
   orderData = defaultOrderData,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   orderData?: Record<string, unknown>;
 }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/check-your-answers"]}>

@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { JourneyStepNames } from "@/lib/models/route-paths";
@@ -138,7 +139,7 @@ jest.mock("@/hooks/useContent", () => ({
   }),
 }));
 
-function StateSeeder({ children }: Readonly<{ children: React.ReactNode }>) {
+function StateSeeder({ children }: Readonly<{ children: ReactNode }>) {
   const { updateOrderAnswers } = useCreateOrderContext();
 
   useEffect(() => {
@@ -147,7 +148,7 @@ function StateSeeder({ children }: Readonly<{ children: React.ReactNode }>) {
   return <>{children}</>;
 }
 
-const TestWrapper = ({ children, user }: { children: React.ReactNode; user?: AuthUser }) => (
+const TestWrapper = ({ children, user }: { children: ReactNode; user?: AuthUser }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
     <AuthContext.Provider value={{ user: user || mockUser, setUser: jest.fn() }}>
       <JourneyNavigationProvider>

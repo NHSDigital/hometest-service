@@ -1,12 +1,13 @@
 import "@testing-library/jest-dom";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { SESSION_STORAGE_KEYS } from "@/lib/services/session-service";
 import { JourneyNavigationProvider, useJourneyNavigationContext } from "@/state/NavigationContext";
 
-function TestWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
+function TestWrapper({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <MemoryRouter
       initialEntries={[`${RoutePath.GetSelfTestKitPage}/${JourneyStepNames.CheckYourAnswers}`]}
