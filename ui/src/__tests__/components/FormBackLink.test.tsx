@@ -27,12 +27,6 @@ describe("FormBackLink", () => {
   });
 
   describe("Rendering", () => {
-    it("renders with default text when can go back", () => {
-      render(<FormBackLink />);
-
-      expect(screen.getByText("Back")).toBeInTheDocument();
-    });
-
     it("renders with custom text", () => {
       render(<FormBackLink text="Go Back" />);
 

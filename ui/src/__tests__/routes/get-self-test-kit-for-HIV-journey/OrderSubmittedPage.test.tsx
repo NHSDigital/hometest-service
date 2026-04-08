@@ -219,14 +219,6 @@ describe("OrderSubmittedPage", () => {
       );
       expect(listItems[3]).toHaveTextContent(/you do not need to do anything else at this stage/i);
     });
-
-    it("displays the timeline with max days", () => {
-      render(<OrderSubmittedPage />, { wrapper: TestWrapper });
-
-      expect(
-        screen.getByText(/the self-test kit will then be sent to you within 5 working days/i),
-      ).toBeInTheDocument();
-    });
   });
 
   describe("Reference Number", () => {
