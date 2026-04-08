@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
-
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+
 import HomeTestTermsOfUsePage from "@/routes/HomeTestTermsOfUsePage";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -9,10 +9,16 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("HomeTestTermsOfUsePage", () => {
+  beforeEach(() => {
+    render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   describe("Component Rendering", () => {
     it("renders the main heading from content config", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const heading = screen.getByRole("heading", {
         name: /Hometest Terms of Use/i,
         level: 1,
@@ -21,21 +27,15 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("renders the Back link", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const backLink = screen.getByText(/^back$/i, { selector: ".nhsuk-back-link" });
       expect(backLink).toBeInTheDocument();
     });
 
     it("renders the introduction paragraph from content config", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       expect(screen.getByText(/\[Hometest\] is operated by NHS England/i)).toBeInTheDocument();
     });
 
     it("renders all main section headings", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       expect(screen.getByRole("heading", { name: /1\. Introduction/i })).toBeInTheDocument();
       expect(
         screen.getByRole("heading", { name: /2\. When these terms apply/i }),
@@ -78,8 +78,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("renders Testing Services and Hometest App Services as list items in section 6", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       expect(screen.getAllByText(/Testing Services/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Hometest App Services/i).length).toBeGreaterThan(0);
     });
@@ -87,8 +85,6 @@ describe("HomeTestTermsOfUsePage", () => {
 
   describe("AC3: External Links Open in New Tab", () => {
     it("renders the help and support URL as a clickable link", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const helpLinks = screen.getAllByRole("link", {
         name: /help and support page/i,
       });
@@ -98,8 +94,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("adds target='_blank' to the external help and support link", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const helpLinks = screen.getAllByRole("link", {
         name: /help and support page/i,
       });
@@ -108,8 +102,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("adds rel='noopener noreferrer' to the external help and support link", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const helpLinks = screen.getAllByRole("link", {
         name: /help and support page/i,
       });
@@ -119,8 +111,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("adds aria-label with '(opens in new tab)' for accessibility", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const helpLinks = screen.getAllByRole("link", {
         name: /help and support page.*opens in new tab/i,
       });
@@ -129,8 +119,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("applies correct NHS link styling class to external links", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const helpLinks = screen.getAllByRole("link", {
         name: /help and support page/i,
       });
@@ -141,8 +129,6 @@ describe("HomeTestTermsOfUsePage", () => {
 
   describe("Internal Links", () => {
     it("renders Hometest Privacy Policy as an internal link with display text", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const privacyLinks = screen.getAllByRole("link", {
         name: /Hometest Privacy Policy/i,
       });
@@ -152,8 +138,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("does not add target='_blank' to internal privacy policy links", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const privacyLinks = screen.getAllByRole("link", {
         name: /Hometest Privacy Policy/i,
       });
@@ -162,8 +146,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("applies nhsuk-link class to internal links", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const privacyLinks = screen.getAllByRole("link", {
         name: /Hometest Privacy Policy/i,
       });
@@ -174,8 +156,6 @@ describe("HomeTestTermsOfUsePage", () => {
 
   describe("Accessibility", () => {
     it("applies aria-labelledby to all sections", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const sections = screen.getAllByRole("region");
       sections.forEach((section) => {
         expect(section).toHaveAttribute("aria-labelledby");
@@ -183,8 +163,6 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("uses semantic heading hierarchy", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       expect(
         screen.getByRole("heading", {
           name: /Hometest Terms of Use/i,
@@ -203,8 +181,6 @@ describe("HomeTestTermsOfUsePage", () => {
 
   describe("Styling", () => {
     it("applies correct NHS heading class to main title", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const heading = screen.getByRole("heading", {
         name: /Hometest Terms of Use/i,
         level: 1,
@@ -214,15 +190,11 @@ describe("HomeTestTermsOfUsePage", () => {
     });
 
     it("applies NHS body class to paragraphs", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const introText = screen.getByText(/is operated by NHS England/i);
       expect(introText.closest("p")).toHaveClass("nhsuk-body");
     });
 
     it("applies nhsuk-list--bullet class to bullet lists", () => {
-      render(<HomeTestTermsOfUsePage />, { wrapper: TestWrapper });
-
       const lists = document.querySelectorAll(".nhsuk-list--bullet");
       expect(lists.length).toBeGreaterThan(0);
     });
