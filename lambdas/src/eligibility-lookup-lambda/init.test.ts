@@ -134,6 +134,7 @@ describe("eligibility-lookup-lambda init", () => {
         const { init: singletonInit } = require("./init");
 
         // _env was never assigned (??= only assigns if the expression completes)
+        expect(() => singletonInit()).toThrow("DB connection failed");
         const result = singletonInit();
         expect(PostgresDbClient).toHaveBeenCalledTimes(2);
         expect(result).toBeTruthy();
