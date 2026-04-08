@@ -115,4 +115,28 @@ export class OrderStatusService {
       });
     }
   }
+
+  async isFirstStatusOccurrence(orderId: string, statusCode: OrderStatusCode): Promise<boolean> {
+    const query = `
+      SELECT COUNT(*)::int AS count
+      FROM order_status
+      WHERE order_uid = $1::uuid AND status_code = $2;
+    `;
+
+    try {
+      const result = await this.dbClient.query<{ count: number }, [string, OrderStatusCode]>(
+        query,
+        [orderId, statusCode],
+      );
+
+      return result.rows[0]?.count === 1;
+    } catch (error) {
+      throw new Error(
+        `Failed to verify first occurrence for orderId ${orderId} and statusCode ${statusCode}`,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
 }

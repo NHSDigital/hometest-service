@@ -1,3 +1,4 @@
+import { DBClient } from "./db-client";
 import {
   OrderRow,
   OrderStatusCodes,
@@ -18,11 +19,12 @@ describe("OrderStatusService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    const mockDbClient = {
+    const mockDbClient: DBClient = {
       query: mockQuery,
-      close: jest.fn(),
+      close: jest.fn().mockResolvedValue(undefined),
+      withTransaction: jest.fn(),
     };
-    service = new OrderStatusService(mockDbClient as any);
+    service = new OrderStatusService(mockDbClient);
   });
 
   describe("getPatientIdFromOrder", () => {
@@ -151,6 +153,40 @@ describe("OrderStatusService", () => {
           correlationId: "some-mocked-correlation-id",
         } satisfies OrderStatusUpdateParams),
       ).rejects.toThrow("Failed to update order status");
+    });
+  });
+
+  describe("isFirstStatusOccurrence", () => {
+    it("should return true for first occurrence", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [{ count: 1 }],
+        rowCount: 1,
+      });
+
+      const result = await service.isFirstStatusOccurrence(
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      );
+
+      expect(result).toBe(true);
+      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("COUNT(*)::int"), [
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      ]);
+    });
+
+    it("should return false when status already exists", async () => {
+      mockQuery.mockResolvedValue({
+        rows: [{ count: 2 }],
+        rowCount: 1,
+      });
+
+      const result = await service.isFirstStatusOccurrence(
+        "some-mocked-order-id",
+        OrderStatusCodes.DISPATCHED,
+      );
+
+      expect(result).toBe(false);
     });
   });
 });
