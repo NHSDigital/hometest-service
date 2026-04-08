@@ -1,5 +1,6 @@
 import { test as baseTest } from "@playwright/test";
 
+import { setTestLogContext } from "../utils/testLogContext";
 import { type BaseTestUser, type BaseUserManager, UserManagerFactory } from "../utils/users";
 
 let _userManager: BaseUserManager<BaseTestUser> | undefined;
@@ -20,16 +21,20 @@ export const storageStateFixture = baseTest.extend<
     userManager: BaseUserManager<BaseTestUser>;
   }
 >({
-  // Use the same storage state for all tests in this worker.
   storageState: async ({ testedUser, workerStorageState }, use) => {
     const worker = `Worker-${getWorkerIndex() + 1}`;
-    const testTitle = storageStateFixture.info().title;
+    const info = storageStateFixture.info();
+    setTestLogContext({
+      worker,
+      testTitle: info.title,
+      nhsNumber: testedUser.nhsNumber ?? "unknown",
+      browser: info.project.name,
+    });
     console.log(
-      `[${worker}] "${testTitle}" | nhsNumber: ${testedUser.nhsNumber} | started: ${new Date().toISOString()}`,
+      `[${worker}] "${info.title}" | nhsNumber: ${testedUser.nhsNumber} | started: ${new Date().toISOString()}`,
     );
     await use(workerStorageState);
   },
-  // Authenticate once per worker with a worker-scoped fixture.
   workerStorageState: [
     async ({}, use) => {
       const workerIndex = getWorkerIndex();
@@ -51,7 +56,6 @@ export const storageStateFixture = baseTest.extend<
     async ({}, use) => {
       const user: BaseTestUser = getUserManager().getWorkerUser(getWorkerIndex());
 
-      // Validate that required user properties exist
       if (!user.nhsNumber || !user.dob) {
         throw new Error(
           `Test user is missing required properties. nhsNumber: ${user.nhsNumber}, dob: ${user.dob}. User: ${JSON.stringify(user)}`,

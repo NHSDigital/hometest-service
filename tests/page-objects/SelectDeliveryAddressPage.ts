@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+
 import { BasePage } from "./BasePage";
 
 export class SelectDeliveryAddressPage extends BasePage {
@@ -18,6 +19,7 @@ export class SelectDeliveryAddressPage extends BasePage {
 
   async waitUntilPageLoaded(): Promise<void> {
     await this.pageHeader.waitFor({ state: "visible" });
+    await this.page.locator(".nhsuk-radios__item").first().waitFor({ state: "visible" });
   }
 
   async clickContinueButton(): Promise<void> {
@@ -44,7 +46,7 @@ export class SelectDeliveryAddressPage extends BasePage {
     await addressRadioButton.click();
     const addressLabel = this.page.locator(`#collection-point-${selectedOption}--label`);
     const addressText = await addressLabel.innerText();
-    const addressArray = addressText.split(',').map(line => line.trim());
+    const addressArray = addressText.split(",").map((line) => line.trim());
     await this.continueButton.click();
     return addressArray;
   }

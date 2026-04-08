@@ -15,8 +15,6 @@ let supplierId: string;
 
 test.describe("Results Flow - Update Order Results Logic", () => {
   test.beforeEach("Create a patient, order, order status", async ({ testedUser, testOrderDb }) => {
-    console.log("Tested user:", JSON.stringify(testedUser, null, 2));
-
     const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder()
         .withUser(testedUser)

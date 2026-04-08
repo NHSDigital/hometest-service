@@ -5,11 +5,10 @@ describe("base64UrlEncode", () => {
     expect(base64UrlEncode("hello")).toBe("aGVsbG8");
   });
 
-  it("produces only URL-safe characters (no +, /, or =)", () => {
-    const inputs = ["hello", "hello world", '{"csrf":"x","returnTo":"/"}', "\xfb\xfc\xfd\xfe"];
-    for (const input of inputs) {
-      expect(base64UrlEncode(input)).toMatch(/^[A-Za-z0-9_-]*$/);
-    }
+  const inputs = ["hello", "hello world", '{"csrf":"x","returnTo":"/"}', "\xfb\xfc\xfd\xfe"];
+
+  it.each(inputs)("produces only URL-safe characters from: %p", (input) => {
+    expect(base64UrlEncode(input)).toMatch(/^[A-Za-z0-9_-]*$/);
   });
 
   it("encodes a JSON object correctly and round-trips with decode", () => {
@@ -52,10 +51,9 @@ describe("base64UrlDecode", () => {
     expect(base64UrlDecode("aA")).toBe("h");
   });
 
-  it("is the inverse of encode for arbitrary strings", () => {
-    const inputs = ["", "a", "ab", "abc", "abcd", "hello world", '{"key":"value"}'];
-    for (const input of inputs) {
-      expect(base64UrlDecode(base64UrlEncode(input))).toBe(input);
-    }
+  const inputs = ["", "a", "ab", "abc", "abcd", "hello world", '{"key":"value"}'];
+
+  it.each(inputs)("is the inverse of encode for arbitrary string: %p", (input) => {
+    expect(base64UrlDecode(base64UrlEncode(input))).toBe(input);
   });
 });

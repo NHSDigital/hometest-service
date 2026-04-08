@@ -1,15 +1,25 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { PatientDbClient } from "../lib/db/patient-db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
 import { buildEnvironment as init } from "./init";
+import { NotifyMessageBuilder } from "./notify-message-builder";
+import { OrderStatusNotifyService } from "./notify-service";
 
 jest.mock("../lib/db/order-status-db");
+jest.mock("../lib/db/patient-db-client");
+jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
+jest.mock("./notify-message-builder");
+jest.mock("./notify-service");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -21,6 +31,8 @@ describe("init", () => {
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
+    NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
+    HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
   };
 
   const mockPostgresConfig = {
@@ -97,6 +109,7 @@ describe("init", () => {
 
       expect(result).toEqual({
         orderStatusDb: expect.any(OrderStatusService),
+        orderStatusNotifyService: expect.any(OrderStatusNotifyService),
       });
     });
   });
@@ -133,7 +146,50 @@ describe("init", () => {
             times: 1,
             calledWith: expect.any(PostgresDbClient),
           },
+          {
+            mock: PatientDbClient as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: NotificationAuditDbClient as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: AWSSQSClient as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: NotifyMessageBuilder as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: OrderStatusNotifyService as jest.Mock,
+            times: 1,
+          },
         ],
+      });
+    });
+
+    it("should create NotifyMessageBuilder with PatientDbClient and home test base url", () => {
+      init();
+
+      expect(NotifyMessageBuilder).toHaveBeenCalledWith(
+        expect.any(PatientDbClient),
+        "https://hometest.example.nhs.uk",
+      );
+    });
+
+    it("should create OrderStatusNotifyService with notification dependencies", () => {
+      init();
+
+      expect(OrderStatusNotifyService).toHaveBeenCalledWith({
+        orderStatusDb: expect.any(OrderStatusService),
+        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
+        sqsClient: expect.any(AWSSQSClient),
+        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
+        notifyMessagesQueueUrl: "https://example.queue.local/notify",
       });
     });
   });
