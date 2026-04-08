@@ -49,3 +49,5 @@ npx playwright test --project=chromium
 # DB_NAME=local_hometest_db
 # DB_USER=admin
 # DB_PASSWORD=admin
+
+# The login Lambda expects iss: http://wiremock:8080 but the WireMock tokens have iss: http://localhost:8080. Let me trace how this is configured.

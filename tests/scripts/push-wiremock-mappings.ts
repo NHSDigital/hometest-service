@@ -85,10 +85,11 @@ async function main(): Promise<void> {
   const wiremock = new WireMockClient(wiremockBaseUrl);
 
   // Generate fresh RSA key pairs + JWTs for all default test users.
-  // The issued JWTs use wiremockBaseUrl as the issuer so they match what
-  // the login-lambda validates against (NHS_LOGIN_BASE_ENDPOINT_URL).
+  // The issued JWTs use the Docker-internal WIREMOCK_ISSUER ("http://wiremock:8080")
+  // as the issuer so they match what the login-lambda validates against
+  // (NHS_LOGIN_BASE_ENDPOINT_URL inside the localstack container).
   cleanupWireMockAuthState();
-  const manifest = createWireMockAuthManifest(wiremockBaseUrl);
+  const manifest = createWireMockAuthManifest();
 
   // Reset + push NHS Login OAuth stubs (JWKS, /authorize redirects, /token exchanges)
   await configureWireMockAuthMappings(wiremock, manifest);

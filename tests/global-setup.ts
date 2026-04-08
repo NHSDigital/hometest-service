@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import * as path from "node:path";
 
-import { type WireMockMapping, WireMockClient } from "./api/clients/WireMockClient";
+import { WireMockClient, type WireMockMapping } from "./api/clients/WireMockClient";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 import { CredentialsHelper } from "./utils";
 import { UserManagerFactory } from "./utils/users";
@@ -66,7 +66,7 @@ async function globalSetup() {
     cleanupWireMockAuthState();
 
     const wiremock = new WireMockClient(config.wiremockBaseUrl);
-    const manifest = createWireMockAuthManifest(config.wiremockBaseUrl);
+    const manifest = createWireMockAuthManifest();
 
     await configureWireMockAuthMappings(wiremock, manifest);
 
