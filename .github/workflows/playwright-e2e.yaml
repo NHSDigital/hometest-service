@@ -173,3 +173,5 @@ jobs:
           name: playwright-report
           path: tests/testResults/
           retention-days: 30
+
+# TODO: Add caching  /home/runner/.cache/ms-playwright/, node-modules
