@@ -34,35 +34,31 @@ jobs:
       - name: Initialize mise
         uses: ./.github/actions/init-mise
 
-      - name: "Install Playwright browsers"
-        working-directory: tests
-        run: npx playwright install --with-deps
-
       - name: "Create nhs login private key file"
         run: |
           mkdir -p local-environment/infra/resources/secrets
-          cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
-          ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
-          EOF
+          echo '${{ secrets.NHS_LOGIN_PRIVATE_KEY }}' > local-environment/infra/resources/secrets/nhs-login-private-key.pem
 
       - name: "Create credentials file"
-        # working-directory: tests
         run: |
-          cat > tests/credentials.ts << 'EOF'
+          cat > tests/credentials.ts << 'CREDENTIALS'
           export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
           export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
-          EOF
+          CREDENTIALS
+          sed -i 's/^          //' tests/credentials.ts
 
       - name: "Create os-places-creds file"
         run: |
           mkdir -p local-environment/infra/resources/secrets
-          cat > local-environment/infra/resources/secrets/os-places-creds.json << 'EOF'
-          {"apiKey":"test-api-key"}
-          EOF
+          echo '{"apiKey":"test-api-key"}' > local-environment/infra/resources/secrets/os-places-creds.json
 
       - name: "Install npm deps"
         run: |
           npm install
+
+      - name: "Install Playwright browsers"
+        working-directory: tests
+        run: npx playwright install --with-deps
 
       - name: "Start the application"
         run: |
@@ -101,39 +97,36 @@ jobs:
           done
           echo "UI is reachable!"
 
-      # - name: "Run Playwright tests"
-      #   working-directory: tests
-      #   run: |
-      #     BROWSER="${{ inputs.browser }}"
-      #     BROWSER="${BROWSER:-chromium}"
-      #     FILTER="${{ inputs.test_filter }}"
-
-      #     # Build the command
-      #     CMD="npx playwright test"
-
-      #     # Add browser project
-      #     if [ "$BROWSER" != "all" ]; then
-      #       CMD="$CMD --project=$BROWSER"
-      #     fi
-
-      #     # Add filter if provided
-      #     if [ -n "$FILTER" ]; then
-      #       CMD="$CMD --grep \"$FILTER\""
-      #     fi
-
-      #     echo "Running: $CMD"
-      #     eval $CMD
-      #   env:
-      #     CI: true
-      #     FORCE_COLOR: true
-      #     # UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
-      #     # API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
-      #     # WIREMOCK_BASE_URL: https://wiremock-uat.poc.hometest.service.nhs.uk
-      #     # AUTH_TYPE: wiremock
-
-      - name: Run Playwright tests in Docker
+      - name: "Run Playwright tests"
+        working-directory: tests
         run: |
-          scripts/tests/run_e2e_in_docker.sh
+          BROWSER="${{ inputs.browser }}"
+          BROWSER="${BROWSER:-chromium}"
+          FILTER="${{ inputs.test_filter }}"
+
+          # Build the command
+          CMD="npx playwright test"
+
+          # Add browser project
+          if [ "$BROWSER" != "all" ]; then
+            CMD="$CMD --project=$BROWSER"
+          fi
+
+          # Add filter if provided
+          if [ -n "$FILTER" ]; then
+            CMD="$CMD --grep \"$FILTER\""
+          fi
+
+          echo "Running: $CMD"
+          eval $CMD
+        env:
+          CI: true
+          FORCE_COLOR: true
+          PLAYWRIGHT_HTML_OPEN: never
+
+      # - name: Run Playwright tests in Docker
+      #   run: |
+      #     scripts/tests/run_e2e_in_docker.sh
 
       - name: "Grab docker compose logs"
         run: |
