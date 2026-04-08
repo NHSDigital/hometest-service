@@ -15,5 +15,5 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 # cp -rfv $GIT_ROOT/tests/configuration/.env.local /tmp/hometest-service/tests/configuration/.env.local
 
 # cd hometest-service
-docker build -f /tmp/hometest-service/scripts/tests/Dockerfile -t playwright-e2e .
+docker build -f scripts/tests/Dockerfile -t playwright-e2e .
 docker run --network=host --rm -v /tmp/mise:/root/.local/share/mise -v /tmp/playwright:/root/.cache/ms-playwright -v $(pwd):/repo -v /var/run/docker.sock:/var/run/docker.sock playwright-e2e /repo/scripts/tests/run_e2e_tests.sh
