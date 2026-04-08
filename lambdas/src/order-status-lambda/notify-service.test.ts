@@ -6,6 +6,7 @@ import { OrderStatusNotifyService } from "./notify-service";
 describe("OrderStatusNotifyService", () => {
   const mockIsFirstStatusOccurrence = jest.fn<Promise<boolean>, [string, string]>();
   const mockBuildOrderDispatchedNotifyMessage = jest.fn();
+  const mockBuildOrderReceivedNotifyMessage = jest.fn();
   const mockSendMessage = jest.fn();
   const mockInsertNotificationAuditEntry = jest.fn();
 
@@ -32,6 +33,16 @@ describe("OrderStatusNotifyService", () => {
       },
       personalisation: {},
     });
+    mockBuildOrderReceivedNotifyMessage.mockResolvedValue({
+      messageReference: "123e4567-e89b-12d3-a456-426614174199",
+      eventCode: NotifyEventCode.OrderReceived,
+      correlationId: statusUpdate.correlationId,
+      recipient: {
+        nhsNumber: "1234567890",
+        dateOfBirth: "1990-01-02",
+      },
+      personalisation: {},
+    });
     mockSendMessage.mockResolvedValue({ messageId: "message-id" });
     mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
 
@@ -47,6 +58,7 @@ describe("OrderStatusNotifyService", () => {
       },
       notifyMessageBuilder: {
         buildOrderDispatchedNotifyMessage: mockBuildOrderDispatchedNotifyMessage,
+        buildOrderReceivedNotifyMessage: mockBuildOrderReceivedNotifyMessage,
       } as never,
       notifyMessagesQueueUrl: "https://example.queue.local/notify",
     });
@@ -59,12 +71,13 @@ describe("OrderStatusNotifyService", () => {
       correlationId: statusUpdate.correlationId,
       statusUpdate: {
         ...statusUpdate,
-        statusCode: OrderStatusCodes.RECEIVED,
+        statusCode: OrderStatusCodes.COMPLETE,
       },
     });
 
     expect(mockIsFirstStatusOccurrence).not.toHaveBeenCalled();
     expect(mockBuildOrderDispatchedNotifyMessage).not.toHaveBeenCalled();
+    expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
     expect(mockSendMessage).not.toHaveBeenCalled();
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
@@ -84,6 +97,7 @@ describe("OrderStatusNotifyService", () => {
       OrderStatusCodes.DISPATCHED,
     );
     expect(mockBuildOrderDispatchedNotifyMessage).not.toHaveBeenCalled();
+    expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
     expect(mockSendMessage).not.toHaveBeenCalled();
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
@@ -109,6 +123,57 @@ describe("OrderStatusNotifyService", () => {
     expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith({
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
       eventCode: NotifyEventCode.OrderDispatched,
+      correlationId: statusUpdate.correlationId,
+      status: NotificationAuditStatus.QUEUED,
+    });
+  });
+
+  it("should not send a received notification when it is not the first occurrence", async () => {
+    mockIsFirstStatusOccurrence.mockResolvedValueOnce(false);
+
+    await service.handleOrderStatusUpdated({
+      orderId: statusUpdate.orderId,
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      statusUpdate: {
+        ...statusUpdate,
+        statusCode: OrderStatusCodes.RECEIVED,
+      },
+    });
+
+    expect(mockIsFirstStatusOccurrence).toHaveBeenCalledWith(
+      statusUpdate.orderId,
+      OrderStatusCodes.RECEIVED,
+    );
+    expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
+    expect(mockSendMessage).not.toHaveBeenCalled();
+    expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
+  });
+
+  it("should send and audit the first received notification", async () => {
+    await service.handleOrderStatusUpdated({
+      orderId: statusUpdate.orderId,
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      statusUpdate: {
+        ...statusUpdate,
+        statusCode: OrderStatusCodes.RECEIVED,
+      },
+    });
+
+    expect(mockBuildOrderReceivedNotifyMessage).toHaveBeenCalledWith({
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      orderId: statusUpdate.orderId,
+      receivedAt: statusUpdate.createdAt,
+    });
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      "https://example.queue.local/notify",
+      expect.any(String),
+    );
+    expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith({
+      messageReference: "123e4567-e89b-12d3-a456-426614174199",
+      eventCode: NotifyEventCode.OrderReceived,
       correlationId: statusUpdate.correlationId,
       status: NotificationAuditStatus.QUEUED,
     });
@@ -144,6 +209,27 @@ describe("OrderStatusNotifyService", () => {
       }),
     ).resolves.toBeUndefined();
 
+    expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
+  });
+
+  it("should swallow errors when building the received notify message fails", async () => {
+    mockBuildOrderReceivedNotifyMessage.mockRejectedValueOnce(
+      new Error("Notify payload build failed"),
+    );
+
+    await expect(
+      service.handleOrderStatusUpdated({
+        orderId: statusUpdate.orderId,
+        patientId: "patient-123",
+        correlationId: statusUpdate.correlationId,
+        statusUpdate: {
+          ...statusUpdate,
+          statusCode: OrderStatusCodes.RECEIVED,
+        },
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(mockSendMessage).not.toHaveBeenCalled();
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
 });

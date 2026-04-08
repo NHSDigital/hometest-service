@@ -4,11 +4,13 @@ import {
   NotificationAuditStatus,
 } from "../lib/db/notification-audit-db-client";
 import {
+  OrderStatusCode,
   OrderStatusCodes,
   OrderStatusService,
   OrderStatusUpdateParams,
 } from "../lib/db/order-status-db";
 import { SQSClientInterface } from "../lib/sqs/sqs-client";
+import type { NotifyMessage } from "../lib/types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
 
 const commons = new ConsoleCommons();
@@ -29,46 +31,73 @@ export interface HandleOrderStatusUpdatedInput {
   statusUpdate: OrderStatusUpdateParams;
 }
 
+interface BuildNotifyMessageInput {
+  orderId: string;
+  patientId: string;
+  correlationId: string;
+  createdAt: string;
+}
+
+type NotifyMessageBuilderByStatus = Partial<
+  Record<OrderStatusCode, (input: BuildNotifyMessageInput) => Promise<NotifyMessage>>
+>;
+
 export class OrderStatusNotifyService {
   constructor(private readonly dependencies: OrderStatusNotifyServiceDependencies) {}
 
-  async handleOrderStatusUpdated(input: HandleOrderStatusUpdatedInput): Promise<void> {
-    const { statusUpdate } = input;
+  async handleOrderStatusUpdated(
+    handleOrderStatusUpdatedInput: HandleOrderStatusUpdatedInput,
+  ): Promise<void> {
+    const { statusUpdate } = handleOrderStatusUpdatedInput;
+    const { notifyMessageBuilder } = this.dependencies;
 
-    switch (statusUpdate.statusCode) {
-      case OrderStatusCodes.DISPATCHED:
-        await this.handleDispatchedStatusUpdated(input);
-        return;
-      default:
-        return;
+    const buildNotifyMessageByStatus: NotifyMessageBuilderByStatus = {
+      [OrderStatusCodes.DISPATCHED]: ({ patientId, correlationId, orderId, createdAt }) =>
+        notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
+          patientId,
+          correlationId,
+          orderId,
+          dispatchedAt: createdAt,
+        }),
+      [OrderStatusCodes.RECEIVED]: ({ patientId, correlationId, orderId, createdAt }) =>
+        notifyMessageBuilder.buildOrderReceivedNotifyMessage({
+          patientId,
+          correlationId,
+          orderId,
+          receivedAt: createdAt,
+        }),
+    };
+
+    const buildNotifyMessageFunc = buildNotifyMessageByStatus[statusUpdate.statusCode];
+
+    if (!buildNotifyMessageFunc) {
+      return;
     }
+
+    await this.handleStatusUpdated(handleOrderStatusUpdatedInput, buildNotifyMessageFunc);
   }
 
-  private async handleDispatchedStatusUpdated(input: HandleOrderStatusUpdatedInput): Promise<void> {
+  private async handleStatusUpdated(
+    input: HandleOrderStatusUpdatedInput,
+    buildNotifyMessage: (input: BuildNotifyMessageInput) => Promise<NotifyMessage>,
+  ): Promise<void> {
     const { orderId, patientId, correlationId, statusUpdate } = input;
-    const {
-      orderStatusDb,
-      notificationAuditDbClient,
-      sqsClient,
-      notifyMessageBuilder,
-      notifyMessagesQueueUrl,
-    } = this.dependencies;
+    const { statusCode } = statusUpdate;
+    const { orderStatusDb, notificationAuditDbClient, sqsClient, notifyMessagesQueueUrl } =
+      this.dependencies;
 
     try {
-      const isFirstDispatched = await orderStatusDb.isFirstStatusOccurrence(
-        orderId,
-        OrderStatusCodes.DISPATCHED,
-      );
+      const isFirstOccurrence = await orderStatusDb.isFirstStatusOccurrence(orderId, statusCode);
 
-      if (!isFirstDispatched) {
+      if (!isFirstOccurrence) {
         return;
       }
 
-      const notifyMessage = await notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
+      const notifyMessage = await buildNotifyMessage({
         patientId,
         correlationId,
         orderId,
-        dispatchedAt: statusUpdate.createdAt,
+        createdAt: statusUpdate.createdAt,
       });
 
       await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));
@@ -80,9 +109,10 @@ export class OrderStatusNotifyService {
         status: NotificationAuditStatus.QUEUED,
       });
     } catch (error) {
-      commons.logError(name, "Failed to send dispatched notification", {
+      commons.logError(name, "Failed to send status notification", {
         correlationId,
         orderId,
+        statusCode,
         error,
       });
     }
