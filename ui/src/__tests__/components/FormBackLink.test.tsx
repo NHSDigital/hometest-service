@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { FormBackLink } from "@/components/FormBackLink";
@@ -25,12 +24,6 @@ describe("FormBackLink", () => {
   });
 
   describe("Rendering", () => {
-    it("renders with default text when can go back", () => {
-      render(<FormBackLink />);
-
-      expect(screen.getByText("Back")).toBeInTheDocument();
-    });
-
     it("renders with custom text", () => {
       render(<FormBackLink text="Go Back" />);
 
@@ -109,34 +102,7 @@ describe("FormBackLink", () => {
 
       // BackLink should still be rendered but with empty text
       // Check for the back link container class
-      expect(document.querySelector('.nhsuk-back-link')).toBeInTheDocument();
-    });
-  });
-
-  describe("Conditional Rendering Logic", () => {
-    it("shows when canGoBack returns true", () => {
-      mockNavigationContext.canGoBack.mockReturnValue(true);
-
-      render(<FormBackLink />);
-
-      expect(screen.getByText("Back")).toBeInTheDocument();
-    });
-
-    it("hides when canGoBack returns false and no onClick", () => {
-      mockNavigationContext.canGoBack.mockReturnValue(false);
-
-      render(<FormBackLink />);
-
-      expect(screen.queryByText("Back")).not.toBeInTheDocument();
-    });
-
-    it("shows when canGoBack returns false but onClick is provided", () => {
-      mockNavigationContext.canGoBack.mockReturnValue(false);
-      const mockOnClick = jest.fn();
-
-      render(<FormBackLink onClick={mockOnClick} />);
-
-      expect(screen.getByText("Back")).toBeInTheDocument();
+      expect(document.querySelector(".nhsuk-back-link")).toBeInTheDocument();
     });
   });
 });

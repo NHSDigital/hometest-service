@@ -1,4 +1,11 @@
 import "@testing-library/jest-dom";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
+import { MemoryRouter } from "react-router-dom";
+
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import laLookupService from "@/lib/services/la-lookup-service";
+import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
 import {
   AuthContext,
   AuthUser,
@@ -7,12 +14,6 @@ import {
   PostcodeLookupProvider,
   useCreateOrderContext,
 } from "@/state";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { JourneyStepNames } from "@/lib/models/route-paths";
-import { MemoryRouter } from "react-router-dom";
-import SelectDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/SelectDeliveryAddressPage";
-import laLookupService from "@/lib/services/la-lookup-service";
-import { useEffect } from "react";
 
 const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
 
@@ -127,7 +128,7 @@ jest.mock("@/hooks/useContent", () => ({
       },
     },
     "select-delivery-address": {
-      title: "addresses found",
+      title: "found",
       postcodeLabel: "Postcode:",
       editPostcodeLink: "Edit postcode",
       formLabel: "Select your delivery address",
@@ -188,38 +189,36 @@ describe("SelectDeliveryAddressPage", () => {
   });
 
   describe("Component Rendering", () => {
-    it("renders the main heading with correct address count", () => {
+    beforeEach(() => {
       render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
+    });
 
+    afterEach(() => {
+      cleanup();
+    });
+
+    it("renders the main heading with correct address count", () => {
       const heading = screen.getByRole("heading");
-      expect(heading).toHaveTextContent("3 addresses addresses found");
+      expect(heading).toHaveTextContent("3 addresses found");
     });
 
     it("displays the searched postcode", () => {
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
-
       expect(screen.getByText(/postcode:/i)).toBeInTheDocument();
     });
 
     it("renders edit postcode link", () => {
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
-
       const editLink = screen.getByRole("link", { name: /edit postcode/i });
       expect(editLink).toBeInTheDocument();
       expect(editLink).toHaveAttribute("href", "enter-delivery-address");
     });
 
     it("renders all form elements", () => {
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
-
       expect(screen.getByText(/select your delivery address/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
       expect(screen.getByText(/enter address manually/i)).toBeInTheDocument();
     });
 
     it("renders all address options from mock data", () => {
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
-
       expect(screen.getByText(/1 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
       expect(screen.getByText(/2 TEST ROAD, CHECK TOWN, B99 95C/i)).toBeInTheDocument();
       expect(
@@ -228,8 +227,6 @@ describe("SelectDeliveryAddressPage", () => {
     });
 
     it("renders correct number of radio buttons", () => {
-      render(<SelectDeliveryAddressPage />, { wrapper: TestWrapper });
-
       const radios = screen.getAllByRole("radio");
       expect(radios).toHaveLength(3);
     });
