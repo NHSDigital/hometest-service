@@ -3,7 +3,7 @@ name: "Playwright E2E Tests"
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Every day at 2am UTC
+    - cron: "0 2 * * *" # Every day at 2am UTC
   workflow_dispatch:
     inputs:
       browser:
@@ -31,11 +31,8 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v6
 
-      - name: "Install mise"
-        uses: jdx/mise-action@v4
-        with:
-          install: true
-          cache: true
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
 
       - name: "Install Playwright browsers"
         working-directory: tests
