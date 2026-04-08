@@ -60,6 +60,10 @@ jobs:
           {"apiKey":"test-api-key"}
           EOF
 
+      - name: "Install npm deps"
+        run: |
+          npm install
+
       - name: "Start the application"
         run: |
           npm run start
@@ -97,35 +101,39 @@ jobs:
           done
           echo "UI is reachable!"
 
-      - name: "Run Playwright tests"
-        working-directory: tests
+      # - name: "Run Playwright tests"
+      #   working-directory: tests
+      #   run: |
+      #     BROWSER="${{ inputs.browser }}"
+      #     BROWSER="${BROWSER:-chromium}"
+      #     FILTER="${{ inputs.test_filter }}"
+
+      #     # Build the command
+      #     CMD="npx playwright test"
+
+      #     # Add browser project
+      #     if [ "$BROWSER" != "all" ]; then
+      #       CMD="$CMD --project=$BROWSER"
+      #     fi
+
+      #     # Add filter if provided
+      #     if [ -n "$FILTER" ]; then
+      #       CMD="$CMD --grep \"$FILTER\""
+      #     fi
+
+      #     echo "Running: $CMD"
+      #     eval $CMD
+      #   env:
+      #     CI: true
+      #     FORCE_COLOR: true
+      #     # UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
+      #     # API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
+      #     # WIREMOCK_BASE_URL: https://wiremock-uat.poc.hometest.service.nhs.uk
+      #     # AUTH_TYPE: wiremock
+
+      - name: Run Playwright tests in Docker
         run: |
-          BROWSER="${{ inputs.browser }}"
-          BROWSER="${BROWSER:-chromium}"
-          FILTER="${{ inputs.test_filter }}"
-
-          # Build the command
-          CMD="npx playwright test"
-
-          # Add browser project
-          if [ "$BROWSER" != "all" ]; then
-            CMD="$CMD --project=$BROWSER"
-          fi
-
-          # Add filter if provided
-          if [ -n "$FILTER" ]; then
-            CMD="$CMD --grep \"$FILTER\""
-          fi
-
-          echo "Running: $CMD"
-          eval $CMD
-        env:
-          CI: true
-          FORCE_COLOR: true
-          # UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
-          # API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
-          # WIREMOCK_BASE_URL: https://wiremock-uat.poc.hometest.service.nhs.uk
-          # AUTH_TYPE: wiremock
+          scripts/tests/run_e2e_in_docker.sh
 
       - name: "Grab docker compose logs"
         run: |
