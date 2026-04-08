@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 
-import { test } from "../../fixtures/CombinedTestFixture";
 import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import { test } from "../../fixtures/CombinedTestFixture";
 import { createOSPlacesSuccessMapping } from "../../utils/wireMockMappings/OSPlacesWireMockMappings";
 
 /**

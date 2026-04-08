@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/IntegrationFixture";
+import { expect, test } from "../../fixtures/IntegrationFixture";
 import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
 import { OrderTestData } from "../../test-data/OrderTestData";
 import { headersOrder } from "../../utils";

@@ -1,9 +1,11 @@
 import { randomUUID } from "crypto";
-import { test, expect } from "../../fixtures/IntegrationFixture";
+
+import { faker } from "@faker-js/faker";
+
+import { expect, test } from "../../fixtures/IntegrationFixture";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import { OrderTestData } from "../../test-data/OrderTestData";
 import { buildHeaders, orderStatusPayload } from "../../utils";
-import { faker } from "@faker-js/faker";
 
 const originator = OrderStatusTestData.DEFAULT_ORIGINATOR;
 const defaultStatus = OrderStatusTestData.DEFAULT_STATUS;

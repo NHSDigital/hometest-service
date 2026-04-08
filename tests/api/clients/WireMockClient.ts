@@ -46,7 +46,9 @@ export class WireMockClient {
       }
 
       if (response.status === 403 && attempt < maxRetries) {
-        console.warn(`⚠️ WireMock admin returned 403 (attempt ${attempt + 1}/${maxRetries + 1}), retrying...`);
+        console.warn(
+          `⚠️ WireMock admin returned 403 (attempt ${attempt + 1}/${maxRetries + 1}), retrying...`,
+        );
         await new Promise((resolve) => setTimeout(resolve, 1000));
         continue;
       }
