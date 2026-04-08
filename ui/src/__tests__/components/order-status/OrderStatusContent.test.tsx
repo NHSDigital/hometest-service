@@ -1,8 +1,8 @@
-import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
-
 import { MemoryRouter } from "react-router-dom";
+
 import { OrderStatusContent } from "@/components/order-status";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<MemoryRouter>{component}</MemoryRouter>);
@@ -19,7 +19,7 @@ describe("OrderStatusContent", () => {
   };
 
   describe("Processing status", () => {
-    it.each([[OrderStatus.GENERATED], [OrderStatus.QUEUED]])(
+    it.each([OrderStatus.GENERATED, OrderStatus.QUEUED])(
       "renders processing status for %s",
       (status) => {
         const processingOrder: OrderDetails = {
@@ -33,7 +33,7 @@ describe("OrderStatusContent", () => {
   });
 
   describe("Confirmed and Submitted status", () => {
-    it.each([[OrderStatus.CONFIRMED], [OrderStatus.SUBMITTED]])(
+    it.each([OrderStatus.CONFIRMED, OrderStatus.SUBMITTED])(
       "renders confirmed status heading for %s",
       (status) => {
         const order: OrderDetails = {

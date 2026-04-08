@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom";
-
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 import BloodSampleGuidePage from "@/routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
-import { MemoryRouter } from "react-router-dom";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/blood-sample-guide"]}>
@@ -15,14 +14,19 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe("BloodSampleGuidePage", () => {
-  it("renders without crashing", () => {
+  beforeEach(() => {
     render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders without crashing", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
   });
 
   it("renders the main heading", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     const header = screen.getByRole("heading", {
       name: "Blood sample step-by-step guide",
       level: 1,
@@ -31,15 +35,11 @@ describe("BloodSampleGuidePage", () => {
   });
 
   it("renders the 'What's in the kit' details section", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     const summary = screen.getByText("What's in the kit");
     expect(summary).toBeInTheDocument();
   });
 
   it("renders the kit contents list items", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     expect(screen.getByText("Instructions")).toBeInTheDocument();
     expect(screen.getByText("Blood sample tube")).toBeInTheDocument();
     expect(screen.getByText("Alcohol wipe")).toBeInTheDocument();
@@ -48,31 +48,23 @@ describe("BloodSampleGuidePage", () => {
   });
 
   it("renders the 'Tips before you start' details section", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     const summary = screen.getByText("Tips before you start");
     expect(summary).toBeInTheDocument();
   });
 
   it("renders the tips list items", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     expect(screen.getByText(/Drink a big glass of water at least 30 minutes/)).toBeInTheDocument();
     expect(screen.getByText(/Do the test after a shower or bath/)).toBeInTheDocument();
     expect(screen.getByText(/Read the instructions in full before starting/)).toBeInTheDocument();
   });
 
   it("renders the kit contents image with correct alt text", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     const image = screen.getByAltText("Image showing the contents of the kit");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", "/images/self-sample-steps/self-sample-kit-contents.svg");
   });
 
   it("renders step headings", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     expect(
       screen.getByRole("heading", { name: "Step 1: Get ready", level: 2 }),
     ).toBeInTheDocument();
@@ -97,8 +89,6 @@ describe("BloodSampleGuidePage", () => {
   });
 
   it("renders step images with correct src attributes", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     const step1Image = screen.getByAltText("Person opening blood sample tube");
     expect(step1Image).toBeInTheDocument();
     expect(step1Image).toHaveAttribute("src", "/images/self-sample-steps/self-sample-step1.svg");
@@ -129,8 +119,6 @@ describe("BloodSampleGuidePage", () => {
   });
 
   it("renders step captions", () => {
-    render(<BloodSampleGuidePage />, { wrapper: TestWrapper });
-
     expect(screen.getByText(/Wash your hands using warm water and soap/)).toBeInTheDocument();
     expect(
       screen.getByText(/Choose a finger from the hand you don't write with/),
