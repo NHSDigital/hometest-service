@@ -33,7 +33,7 @@ if [[ "${ENV}" == "local" ]]; then
     --output text > /dev/null
 else
   # Remote mode: use real AWS CLI
-  REMOTE_FUNCTION_NAME="${AWS_LAMBDA_NAME:-hometest-${ENV}-login}"
+  REMOTE_FUNCTION_NAME="${AWS_LAMBDA_NAME:-nhs-hometest-poc-${ENV}-login-lambda}"
 
   if ! command -v aws &>/dev/null; then
     echo "⚠️  AWS CLI not found — skipping Lambda cache reset for ${ENV}"
@@ -42,10 +42,11 @@ else
 
   echo "♻️  Resetting JWKS cache for Lambda (AWS ${ENV}): ${REMOTE_FUNCTION_NAME}"
 
-  aws lambda update-function-configuration \
-    --function-name "${REMOTE_FUNCTION_NAME}" \
-    --description "cache-bust-$(date +%s)" \
-    --output text > /dev/null 2>&1 || {
+  AWS_ARGS=(--function-name "${REMOTE_FUNCTION_NAME}" --description "cache-bust-$(date +%s)" --output text)
+  [[ -n "${AWS_REGION:-}" ]] && AWS_ARGS+=(--region "${AWS_REGION}")
+  [[ -n "${AWS_PROFILE:-}" ]] && AWS_ARGS+=(--profile "${AWS_PROFILE}")
+
+  aws lambda update-function-configuration "${AWS_ARGS[@]}" > /dev/null 2>&1 || {
     echo "⚠️  Could not reset Lambda cache for ${REMOTE_FUNCTION_NAME} — continuing anyway"
     exit 0
   }

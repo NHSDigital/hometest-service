@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 
 import { test } from "../../fixtures/CombinedTestFixture";
+import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
 import { createOSPlacesSuccessMapping } from "../../utils/wireMockMappings/OSPlacesWireMockMappings";
 
 /**
@@ -76,7 +77,11 @@ test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
     await expect(howComfortablePrickingFingerPage.pageHeader).toBeVisible();
 
     // --- Verify: WireMock received the postcode lookup request ---
-    const callCount = await wiremock.verifyRequest("/find", "GET");
-    expect(callCount).toBeGreaterThanOrEqual(1);
+    // Only verify in local env where the postcode-lookup Lambda routes through WireMock.
+    // In deployed environments the Lambda calls the real OS Places API directly.
+    if (ConfigFactory.getEnvironment() === "local") {
+      const callCount = await wiremock.verifyRequest("/find", "GET");
+      expect(callCount).toBeGreaterThanOrEqual(1);
+    }
   });
 });

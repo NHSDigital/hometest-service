@@ -61,3 +61,5 @@ run = "pre-commit run --all-files --show-diff-on-failure --color=always"
 [tasks.install-npm]
 description = "Install npm dependencies"
 run = "npm ci"
+
+# export PATH="/Users/mikolajmiotk/.local/share/mise/installs/node/24.14.1/bin:$PATH" && cd /Users/mikolajmiotk/git/kainos/nhs/code/hometest-service/tests && PLAYWRIGHT_HTML_OPEN=never ENV=uat node_modules/.bin/playwright test --project=chromium --grep-invert @db 2>&1 | tail -120
