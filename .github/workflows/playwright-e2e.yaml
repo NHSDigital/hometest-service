@@ -66,7 +66,7 @@ jobs:
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
-          API_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url)
+          API_URL=$(terraform -chdir=local-environment/infra output -raw backend_base_url)
           echo "ui_url=$UI_URL" >> $GITHUB_OUTPUT
           echo "api_base_url=$API_URL" >> $GITHUB_OUTPUT
           echo "UI URL: $UI_URL"
@@ -117,6 +117,8 @@ jobs:
           FORCE_COLOR: true
           UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
           API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
+          # WIREMOCK_BASE_URL: https://wiremock-uat.poc.hometest.service.nhs.uk
+          AUTH_TYPE: wiremock
 
       - name: "Grab docker compose logs"
         run: |

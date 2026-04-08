@@ -28,6 +28,7 @@ runs:
         restore-keys: |
           mise-${{ runner.os }}-service-
           mise-${{ runner.os }}-
+          mise-
 
     # - name: Cache mise
     #   uses: actions/cache@v5
