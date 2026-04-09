@@ -1,11 +1,12 @@
 import { ClientConfig } from "pg";
+
+import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
+import type { SecretsClient } from "../secrets/secrets-manager-client";
 import {
   retrieveMandatoryEnvVariable,
   retrieveOptionalEnvVariable,
+  retrieveOptionalEnvVariableWithDefault,
 } from "../utils/utils";
-import { EU_WEST_2_BUNDLE } from "../../certs/eu-west-2-bundle";
-
-import type { SecretsClient } from "../secrets/secrets-manager-client";
 import type { RdsIamAuthClient } from "./rds-iam-auth";
 import { AwsRdsIamAuthClient } from "./rds-iam-auth";
 
@@ -55,10 +56,9 @@ export function postgresConfig(options: PostgresConfigOptions): ClientConfig {
     port: Number.parseInt(options.port, 10),
     database: options.database,
     password: async () => {
-      const password = await options.secretsClient.getSecretValue(
-        options.passwordSecretName,
-        { jsonKey: "password" },
-      );
+      const password = await options.secretsClient.getSecretValue(options.passwordSecretName, {
+        jsonKey: "password",
+      });
       // Trim whitespace and remove surrounding quotes
       return password.trim().replaceAll(/(^["']|["']$)/g, "");
     },
@@ -79,12 +79,14 @@ export function postgresConfig(options: PostgresConfigOptions): ClientConfig {
 export function postgresIamConfig(options: PostgresIamConfigOptions): ClientConfig {
   const portNumber = Number.parseInt(options.port, 10);
 
-  const iamAuthClient = options.iamAuthClient ?? new AwsRdsIamAuthClient({
-    hostname: options.address,
-    port: portNumber,
-    username: options.username,
-    region: options.region,
-  });
+  const iamAuthClient =
+    options.iamAuthClient ??
+    new AwsRdsIamAuthClient({
+      hostname: options.address,
+      port: portNumber,
+      username: options.username,
+      region: options.region,
+    });
 
   return {
     user: options.username,
@@ -108,11 +110,9 @@ export function postgresIamConfig(options: PostgresIamConfigOptions): ClientConf
  * When using IAM auth, the DB_SECRET_NAME env var is not required.
  * The DB_REGION env var (or AWS_REGION / AWS_DEFAULT_REGION) determines the AWS region.
  */
-export function postgresConfigFromEnv(
-  secretsClient: SecretsClient,
-): ClientConfig {
-  const sslEnabled = retrieveOptionalEnvVariable("DB_SSL", "true") === "true";
-  const useIamAuth = retrieveOptionalEnvVariable("USE_IAM_AUTH", "false") === "true";
+export function postgresConfigFromEnv(secretsClient: SecretsClient): ClientConfig {
+  const sslEnabled = retrieveOptionalEnvVariableWithDefault("DB_SSL", "true") === "true";
+  const useIamAuth = retrieveOptionalEnvVariableWithDefault("USE_IAM_AUTH", "false") === "true";
 
   const username = retrieveMandatoryEnvVariable("DB_USERNAME");
   const address = retrieveMandatoryEnvVariable("DB_ADDRESS");
@@ -122,10 +122,7 @@ export function postgresConfigFromEnv(
 
   if (useIamAuth) {
     const region =
-      retrieveOptionalEnvVariable("DB_REGION") ||
-      process.env.AWS_REGION ||
-      process.env.AWS_DEFAULT_REGION ||
-      "eu-west-2";
+      retrieveOptionalEnvVariable("DB_REGION") ?? retrieveMandatoryEnvVariable("AWS_REGION");
 
     return postgresIamConfig({
       username,

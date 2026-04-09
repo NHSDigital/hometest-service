@@ -4,6 +4,7 @@ import { OrderStatusService } from "../lib/db/order-status-db";
 import { SupplierService } from "../lib/db/supplier-db";
 import { FetchHttpClient } from "../lib/http/http-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
   httpClient: FetchHttpClient;
@@ -13,7 +14,7 @@ export interface Environment {
 }
 
 export function buildEnvironment(): Environment {
-  const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const awsRegion = retrieveMandatoryEnvVariable("AWS_REGION");
 
   const httpClient = new FetchHttpClient();
   const secretsClient = new AwsSecretsClient(awsRegion);

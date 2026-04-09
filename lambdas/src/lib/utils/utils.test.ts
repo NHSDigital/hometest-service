@@ -1,20 +1,22 @@
+import { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy";
+
 import {
-  isUUID,
-  getCorrelationIdFromEventHeaders,
+  calculateAge,
   createJsonResponse,
+  ensureDefined,
+  generateRandomString,
+  getCorrelationIdFromEventHeaders,
+  isInRange,
+  isNullOrUndefined,
+  isUUID,
   retrieveMandatoryEnvVariable,
   retrieveMandatoryJsonEnvVariable,
   retrieveOptionalEnvVariable,
-  calculateAge,
-  isNullOrUndefined,
-  ensureDefined,
-  generateRandomString,
-  isInRange,
+  retrieveOptionalEnvVariableWithDefault,
   roundTo1dp,
   titleCase,
   validateUrlSource,
 } from "./utils";
-import { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy";
 
 describe("isUUID", () => {
   it("returns true for valid UUIDs", () => {
@@ -36,9 +38,7 @@ describe("isUUID", () => {
 });
 
 describe("getCorrelationIdFromEventHeaders", () => {
-  const mockEvent = (
-    headers: Record<string, string>,
-  ): APIGatewayProxyEvent => ({
+  const mockEvent = (headers: Record<string, string>): APIGatewayProxyEvent => ({
     headers,
     body: null,
     httpMethod: "GET",
@@ -79,13 +79,10 @@ describe("getCorrelationIdFromEventHeaders", () => {
       uuid: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       description: "random mixed case",
     },
-  ])(
-    "returns correlation ID when header is $description ($headerKey)",
-    ({ headerKey, uuid }) => {
-      const event = mockEvent({ [headerKey]: uuid });
-      expect(getCorrelationIdFromEventHeaders(event)).toBe(uuid);
-    },
-  );
+  ])("returns correlation ID when header is $description ($headerKey)", ({ headerKey, uuid }) => {
+    const event = mockEvent({ [headerKey]: uuid });
+    expect(getCorrelationIdFromEventHeaders(event)).toBe(uuid);
+  });
 
   it("throws when no correlation ID header exists", () => {
     const event = mockEvent({});
@@ -217,23 +214,64 @@ describe("retrieveOptionalEnvVariable", () => {
     expect(retrieveOptionalEnvVariable("TEST_VAR")).toBe("test-value");
   });
 
-  it("should return empty string when environment variable is not set and no default provided", () => {
+  it("should return undefined when environment variable is not set", () => {
     delete process.env.TEST_VAR;
-    expect(retrieveOptionalEnvVariable("TEST_VAR")).toBe("");
+    expect(retrieveOptionalEnvVariable("TEST_VAR")).toBeUndefined();
   });
 
-  it("should return default value when environment variable is not set", () => {
+  it("should log when environment variable is not set", () => {
+    const consoleSpy = jest.spyOn(console, "info").mockImplementation(() => {});
     delete process.env.TEST_VAR;
-    expect(retrieveOptionalEnvVariable("TEST_VAR", "default-value")).toBe(
+    retrieveOptionalEnvVariable("TEST_VAR");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "The environment variable TEST_VAR has not been provided for the lambda",
+    );
+    consoleSpy.mockRestore();
+  });
+});
+
+describe("retrieveOptionalEnvVariableWithDefault", () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...originalEnv };
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  it("should return the value when environment variable is set", () => {
+    process.env.TEST_VAR = "actual-value";
+    expect(retrieveOptionalEnvVariableWithDefault("TEST_VAR", "default-value")).toBe(
+      "actual-value",
+    );
+  });
+
+  it("should return the default value when environment variable is not set", () => {
+    delete process.env.TEST_VAR;
+    expect(retrieveOptionalEnvVariableWithDefault("TEST_VAR", "default-value")).toBe(
       "default-value",
     );
   });
 
-  it("should return the actual value even when default is provided", () => {
-    process.env.TEST_VAR = "actual-value";
-    expect(retrieveOptionalEnvVariable("TEST_VAR", "default-value")).toBe(
-      "actual-value",
+  it("should log when falling back to the default value", () => {
+    const consoleSpy = jest.spyOn(console, "info").mockImplementation(() => {});
+    delete process.env.TEST_VAR;
+    retrieveOptionalEnvVariableWithDefault("TEST_VAR", "default-value");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "The environment variable TEST_VAR has not been provided for the lambda, using default value",
     );
+    consoleSpy.mockRestore();
+  });
+
+  it("should not log when the environment variable is set", () => {
+    const consoleSpy = jest.spyOn(console, "info").mockImplementation(() => {});
+    process.env.TEST_VAR = "real-value";
+    retrieveOptionalEnvVariableWithDefault("TEST_VAR", "default-value");
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });
 
@@ -286,9 +324,7 @@ describe("ensureDefined", () => {
   });
 
   it("should throw custom error when value is undefined", () => {
-    expect(() => ensureDefined(undefined, "Custom error message")).toThrow(
-      "Custom error message",
-    );
+    expect(() => ensureDefined(undefined, "Custom error message")).toThrow("Custom error message");
   });
 });
 

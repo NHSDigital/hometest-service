@@ -6,7 +6,7 @@ import { NhsLoginClient } from "../lib/login/nhs-login-client";
 import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { INhsLoginConfig } from "../lib/models/nhs-login/nhs-login-config";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 interface SessionEnvVariables {
   authCookieKeyId: string;
@@ -20,7 +20,7 @@ interface SessionLambdaDependencies {
 }
 
 const envVars: SessionEnvVariables = {
-  authCookieKeyId: retrieveOptionalEnvVariable("AUTH_COOKIE_KEY_ID", "key"),
+  authCookieKeyId: retrieveMandatoryEnvVariable("AUTH_COOKIE_KEY_ID"),
 
   authCookiePublicKeySecretName: retrieveMandatoryEnvVariable("AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME"),
 
@@ -29,9 +29,7 @@ const envVars: SessionEnvVariables = {
 };
 
 export async function buildEnvironment(): Promise<SessionLambdaDependencies> {
-  const secretManagerClient = new AwsSecretsClient(
-    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
-  );
+  const secretManagerClient = new AwsSecretsClient(retrieveMandatoryEnvVariable("AWS_REGION"));
 
   const publicKeyOrPem = await secretManagerClient.getSecretValue(
     envVars.authCookiePublicKeySecretName,

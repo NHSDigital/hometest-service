@@ -7,7 +7,10 @@ import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { TokenService } from "../lib/login/token-service";
 import { type INhsLoginConfig } from "../lib/models/nhs-login/nhs-login-config";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
+import {
+  retrieveMandatoryEnvVariable,
+  retrieveOptionalEnvVariableWithDefault,
+} from "../lib/utils/utils";
 import { type ILoginService, LoginService, type LoginServiceParams } from "./login-service";
 
 // ALPHA: This file will need revisiting.
@@ -30,6 +33,9 @@ const envVars: LoginEnvVariables = {
   authRefreshTokenExpiryDurationMinutes: Number.parseInt(
     retrieveMandatoryEnvVariable("AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES"),
   ),
+  authCookieSameSite: retrieveMandatoryEnvVariable("AUTH_COOKIE_SAME_SITE"),
+  authCookieSecure:
+    retrieveOptionalEnvVariableWithDefault("AUTH_COOKIE_SECURE", "true").toLowerCase() === "true",
 };
 
 interface LoginEnvVariables {
@@ -42,18 +48,20 @@ interface LoginEnvVariables {
   authSessionMaxDurationMinutes: number;
   authAccessTokenExpiryDurationMinutes: number;
   authRefreshTokenExpiryDurationMinutes: number;
+  authCookieSameSite: string;
+  authCookieSecure: boolean;
 }
 
 export interface LoginLambdaDependencies {
   loginService: ILoginService;
   authTokenService: AuthTokenService;
+  authCookieSameSite: string;
+  authCookieSecure: boolean;
 }
 
 // ALPHA: Removed commons temporarily.
 export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
-  const secretManagerClient = new AwsSecretsClient(
-    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2",
-  );
+  const secretManagerClient = new AwsSecretsClient(retrieveMandatoryEnvVariable("AWS_REGION"));
   const authCookiePrivateKeySecret = { key: "" } as Record<string, string>;
   // ALPHA: Requires a proper private key for cookie signing. Currently reusing nhs login key. Fix soon.
   // await secretManagerClient.getSecretKeyValuePair(
@@ -110,6 +118,8 @@ export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
   return {
     loginService,
     authTokenService,
+    authCookieSameSite: envVars.authCookieSameSite,
+    authCookieSecure: envVars.authCookieSecure,
   };
 }
 

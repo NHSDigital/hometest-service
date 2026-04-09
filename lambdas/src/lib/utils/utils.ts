@@ -1,19 +1,16 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy";
 import dayjs from "dayjs";
 import toTitleCase from "titlecase";
-import {
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-} from "aws-lambda/trigger/api-gateway-proxy";
 
 // ALPHA: Reimplentation needed with lambdas (nhslogin init.ts)
 const alwaysUppercase = new Set(["UK", "NHS"]);
 
 export function retrieveMandatoryEnvVariable(name: string): string {
-  const result = retrieveOptionalEnvVariable(name);
-  if (result === "") {
+  const envVarValue = process.env[name];
+  if (!envVarValue) {
     throw new Error(`Missing value for an environment variable ${name}`);
   }
-  return result;
+  return envVarValue;
 }
 
 export function retrieveMandatoryJsonEnvVariable<T>(name: string): T {
@@ -25,17 +22,23 @@ export function retrieveMandatoryJsonEnvVariable<T>(name: string): T {
   }
 }
 
-export function retrieveOptionalEnvVariable(
-  name: string,
-  defaultValue: string = "",
-): string {
+export function retrieveOptionalEnvVariable(name: string): string | undefined {
   const envVarValue = process.env[name];
   if (envVarValue === undefined) {
-    console.log(
-      `The environment variable ${name} has not been provided for the lambda`,
-    );
+    console.info(`The environment variable ${name} has not been provided for the lambda`);
   }
-  return envVarValue ?? defaultValue ?? "";
+  return envVarValue;
+}
+
+export function retrieveOptionalEnvVariableWithDefault(name: string, defaultValue: string): string {
+  const envVarValue = process.env[name];
+  if (envVarValue === undefined) {
+    console.info(
+      `The environment variable ${name} has not been provided for the lambda, using default value`,
+    );
+    return defaultValue;
+  }
+  return envVarValue;
 }
 
 // ALPHA: Do we really need this library for this? Can we not us Date functions?
@@ -43,9 +46,7 @@ export function calculateAge(birthdate: Date): number {
   return dayjs().diff(birthdate, "years");
 }
 
-export function isNullOrUndefined<T>(
-  value: T | null | undefined,
-): value is null | undefined {
+export function isNullOrUndefined<T>(value: T | null | undefined): value is null | undefined {
   return value === null || value === undefined;
 }
 
@@ -60,8 +61,7 @@ export function ensureDefined<T>(
 }
 
 export function generateRandomString(length): string {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
@@ -116,14 +116,10 @@ export function validateUrlSource(urlSource?: string): string | undefined {
 }
 
 export function isUUID(str: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    str,
-  );
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
 }
 
-export const getCorrelationIdFromEventHeaders = (
-  event: APIGatewayProxyEvent,
-): string => {
+export const getCorrelationIdFromEventHeaders = (event: APIGatewayProxyEvent): string => {
   let correlationId: string | null = null;
   for (const [key, value] of Object.entries(event.headers)) {
     if (value && key.toLowerCase() === "x-correlation-id") {

@@ -5,6 +5,7 @@ import { TestResultDbClient } from "../lib/db/test-result-db-client";
 import { FetchHttpClient } from "../lib/http/http-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { SupplierTestResultsService } from "../lib/supplier/supplier-test-results-service";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
   testResultDbClient: TestResultDbClient;
@@ -12,7 +13,7 @@ export interface Environment {
 }
 
 export function buildEnvironment(): Environment {
-  const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const awsRegion = retrieveMandatoryEnvVariable("AWS_REGION");
 
   const httpClient = new FetchHttpClient();
   const secretsClient = new AwsSecretsClient(awsRegion);
