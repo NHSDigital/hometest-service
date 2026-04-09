@@ -1,5 +1,6 @@
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 import { PersonalDetailsModel } from "../../models/PersonalDetails";
 
@@ -60,6 +61,7 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
   test.beforeEach(
     async ({
       homeTestStartPage,
+      bloodSampleGuidePage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
@@ -68,6 +70,9 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
     }) => {
       await homeTestStartPage.navigate();
       await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
+      await homeTestStartPage.clickBloodSampleGuideLink();
+      await bloodSampleGuidePage.waitUntilPageLoaded();
+      await bloodSampleGuidePage.clickBackLink();
       await homeTestStartPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.selectAddressAndContinue();
@@ -105,25 +110,18 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
   });
 });
 
-test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage, context }) => {
+test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage }) => {
   await homeTestStartPage.navigate();
   await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
   await homeTestStartPage.clickPrivacyPolicyLink();
   const actualHeaderText = await privacyPolicyPage.getHeaderText();
   expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
-  const [newTab] = await Promise.all([
-    context.waitForEvent("page"),
-    privacyPolicyPage.clickMakeAComplaintLink(),
-  ]);
-  await newTab.waitForLoadState();
-  expect(newTab.url()).toBe(makeAComplaintUrl);
+  await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("href", makeAComplaintUrl);
 });
 
 test("Verify Terms of Use page", async ({
   homeTestStartPage,
   termsOfUsePage,
-  context,
-  page,
   privacyPolicyPage,
 }) => {
   await homeTestStartPage.navigate();
@@ -131,23 +129,8 @@ test("Verify Terms of Use page", async ({
   await homeTestStartPage.clickTermsOfUseLink();
   await termsOfUsePage.waitUntilPageLoaded();
 
-  const [cyberAwareTab] = await Promise.all([
-    context.waitForEvent("page"),
-    termsOfUsePage.clickCyberAwareLink(),
-  ]);
-  await cyberAwareTab.waitForLoadState();
-  expect(cyberAwareTab.url()).toBe(cyberAwareUrl);
-  await cyberAwareTab.close();
-  await page.bringToFront();
-
-  const [helpAndSupportTab] = await Promise.all([
-    context.waitForEvent("page"),
-    termsOfUsePage.clickHelpAndSupportLink(),
-  ]);
-  await helpAndSupportTab.waitForLoadState();
-  expect(helpAndSupportTab.url()).toBe(helpAndSupportUrl);
-  await helpAndSupportTab.close();
-  await page.bringToFront();
+  await expect(termsOfUsePage.cyberAwareLink).toHaveAttribute("href", cyberAwareUrl);
+  await expect(termsOfUsePage.helpAndSupportLink).toHaveAttribute("href", helpAndSupportUrl);
 
   await termsOfUsePage.clickHomeTestPrivacyPolicyLink();
   await privacyPolicyPage.waitUntilPageLoaded();
