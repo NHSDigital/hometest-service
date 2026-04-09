@@ -3,10 +3,10 @@ import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { OrderStatusUpdateParams } from "src/lib/db/order-status-db";
 import z from "zod";
 
 import { ConsoleCommons } from "../lib/commons";
+import { OrderStatusUpdateParams } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
 import {
@@ -42,7 +42,7 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderStatusDb } = init();
+  const { orderStatusDb, orderStatusNotifyService } = init();
   commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
@@ -160,6 +160,13 @@ export const lambdaHandler = async (
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
 
     commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
+
+    await orderStatusNotifyService.handleOrderStatusUpdated({
+      orderId,
+      patientId: orderPatientId,
+      correlationId,
+      statusCode: statusOrderUpdateParams.statusCode,
+    });
 
     return createFhirResponse(201, validatedTask);
   } catch (error) {

@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom";
-
 import { render, screen } from "@testing-library/react";
 
 import { LegalDocumentContent } from "@/components/LegalDocumentContent";
@@ -66,5 +65,6 @@ describe("LegalDocumentContent", () => {
     expect(introLink).toHaveAttribute("href", "https://example.org/policy");
     expect(introLink).toHaveAttribute("target", "_blank");
     expect(listLink).toHaveAttribute("href", "https://example.org/details");
+    expect(listLink).toHaveAttribute("target", "_blank");
   });
 });

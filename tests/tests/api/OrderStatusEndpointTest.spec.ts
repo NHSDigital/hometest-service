@@ -1,7 +1,7 @@
 import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 
-test.describe("GET Order API", () => {
+test.describe("GET Order API", { tag: ["@API", "@db"] }, () => {
   let orderId: string;
   let patientId: string;
 

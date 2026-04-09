@@ -1,4 +1,5 @@
 const mockRetrieveMandatoryEnvVariable = jest.fn();
+const mockRetrieveOptionalEnvVariable = jest.fn();
 const mockRetrieveOptionalEnvVariableWithDefault = jest.fn();
 const mockGetSecretValue = jest.fn();
 
@@ -18,6 +19,7 @@ const mockLoginServiceInstance = {
 
 jest.mock("../lib/utils/utils", () => ({
   retrieveMandatoryEnvVariable: (...args: unknown[]) => mockRetrieveMandatoryEnvVariable(...args),
+  retrieveOptionalEnvVariable: (...args: unknown[]) => mockRetrieveOptionalEnvVariable(...args),
   retrieveOptionalEnvVariableWithDefault: (...args: unknown[]) =>
     mockRetrieveOptionalEnvVariableWithDefault(...args),
 }));
@@ -90,6 +92,7 @@ describe("login-lambda init", () => {
     jest.clearAllMocks();
 
     setMandatoryEnvVariableMock();
+    mockRetrieveOptionalEnvVariable.mockReturnValue(undefined);
     mockGetSecretValue.mockResolvedValue("nhs-private-key");
   });
 

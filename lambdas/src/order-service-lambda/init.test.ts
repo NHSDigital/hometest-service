@@ -126,7 +126,7 @@ describe("init", () => {
   });
 
   describe("missing environment variables", () => {
-    it.each([["ORDER_PLACEMENT_QUEUE_URL"]])("should throw error when %s is missing", (envVar) => {
+    it.each(["ORDER_PLACEMENT_QUEUE_URL"])("should throw error when %s is missing", (envVar) => {
       delete process.env[envVar];
 
       expect(() => init()).toThrow(`Missing value for an environment variable ${envVar}`);
@@ -134,7 +134,7 @@ describe("init", () => {
   });
 
   describe("empty environment variables", () => {
-    it.each([["ORDER_PLACEMENT_QUEUE_URL"]])(
+    it.each(["ORDER_PLACEMENT_QUEUE_URL"])(
       "should throw error when %s is empty string",
       (envVar) => {
         process.env[envVar] = "";

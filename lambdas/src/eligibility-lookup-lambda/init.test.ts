@@ -104,6 +104,9 @@ describe("eligibility-lookup-lambda init", () => {
 
         expect(PostgresDbClient).toHaveBeenCalledTimes(1);
         expect(env1).toBe(env2);
+        expect(env1.commons).toBe(env2.commons);
+        expect(env1.supplierDb).toBe(env2.supplierDb);
+        expect(env1.laLookupService).toBe(env2.laLookupService);
       });
     });
   });
@@ -118,10 +121,10 @@ describe("eligibility-lookup-lambda init", () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { init: singletonInit } = require("./init");
 
-        expect(() => singletonInit()).toThrow("DB connection failed");
-
         // _env was never assigned (??= only assigns if the expression completes)
+        expect(() => singletonInit()).toThrow("DB connection failed");
         const result = singletonInit();
+        expect(PostgresDbClient).toHaveBeenCalledTimes(2);
         expect(result).toBeTruthy();
       });
     });

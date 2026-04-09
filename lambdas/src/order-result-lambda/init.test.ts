@@ -1,15 +1,28 @@
 import { ConsoleCommons } from "../lib/commons";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
+import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderService } from "../lib/db/order-db";
+import { OrderDbClient } from "../lib/db/order-db-client";
+import { OrderStatusService } from "../lib/db/order-status-db";
+import { PatientDbClient } from "../lib/db/patient-db-client";
+import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
+import { OrderStatusNotifyService } from "../lib/notify/notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { buildEnvironment as init } from "./init";
 
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/db/order-db");
+jest.mock("../lib/db/order-status-db");
+jest.mock("../lib/db/patient-db-client");
+jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/commons");
 jest.mock("../lib/secrets/secrets-manager-client");
+jest.mock("../lib/sqs/sqs-client");
+jest.mock("../lib/notify/notify-message-builder");
+jest.mock("../lib/notify/notify-service");
 
 describe("order-result-lambda init", () => {
   const originalEnv = process.env;
@@ -23,6 +36,8 @@ describe("order-result-lambda init", () => {
     DB_SECRET_NAME: "test-secret-name",
     ORDER_PLACEMENT_QUEUE_URL: "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
     AWS_REGION: "eu-west-2",
+    NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
+    HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
   };
 
   // This represents the return value of postgresConfigFromEnv(secretsClient)
@@ -55,8 +70,10 @@ describe("order-result-lambda init", () => {
 
     expect(result).toHaveProperty("commons");
     expect(result).toHaveProperty("orderService");
+    expect(result).toHaveProperty("orderStatusNotifyService");
     expect(result.commons).toBeInstanceOf(ConsoleCommons);
     expect(result.orderService).toBeInstanceOf(OrderService);
+    expect(result.orderStatusNotifyService).toBeInstanceOf(OrderStatusNotifyService);
   });
 
   it("should create AwsSecretsClient with AWS_REGION when set", () => {
@@ -87,12 +104,38 @@ describe("order-result-lambda init", () => {
     expect(ConsoleCommons).toHaveBeenCalledWith();
   });
 
+  it("should create NotifyMessageBuilder with homeTestBaseUrl", () => {
+    init();
+
+    expect(NotifyMessageBuilder).toHaveBeenCalledWith(
+      expect.any(PatientDbClient),
+      expect.any(OrderDbClient),
+      expect.any(OrderStatusService),
+      "https://hometest.example.nhs.uk",
+    );
+  });
+
+  it("should create OrderStatusNotifyService with notifyMessagesQueueUrl", () => {
+    init();
+
+    expect(OrderStatusNotifyService).toHaveBeenCalledWith(
+      expect.objectContaining({
+        notifyMessagesQueueUrl: "https://example.queue.local/notify",
+        orderStatusDb: expect.any(OrderStatusService),
+        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
+        sqsClient: expect.any(AWSSQSClient),
+        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
+      }),
+    );
+  });
+
   it("should return an Environment object with all required properties", () => {
     const result = init();
 
     expect(result).toEqual({
       orderService: expect.any(OrderService),
       commons: expect.any(ConsoleCommons),
+      orderStatusNotifyService: expect.any(OrderStatusNotifyService),
     });
   });
 
