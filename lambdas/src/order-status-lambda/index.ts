@@ -165,7 +165,7 @@ export const lambdaHandler = async (
       orderId,
       patientId: orderPatientId,
       correlationId,
-      statusUpdate: statusOrderUpdateParams,
+      statusCode: statusOrderUpdateParams.statusCode,
     });
 
     return createFhirResponse(201, validatedTask);
