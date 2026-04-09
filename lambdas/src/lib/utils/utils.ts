@@ -2,12 +2,12 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda/trigger/
 import dayjs from "dayjs";
 import toTitleCase from "titlecase";
 
-// ALPHA: Reimplentation needed with lambdas (nhslogin init.ts)
+// ALPHA: Reimplementation needed with lambdas (nhslogin init.ts)
 const alwaysUppercase = new Set(["UK", "NHS"]);
 
 export function retrieveMandatoryEnvVariable(name: string): string {
   const envVarValue = process.env[name];
-  if (!envVarValue) {
+  if (envVarValue === undefined || envVarValue === "") {
     throw new Error(`Missing value for an environment variable ${name}`);
   }
   return envVarValue;
@@ -24,15 +24,16 @@ export function retrieveMandatoryJsonEnvVariable<T>(name: string): T {
 
 export function retrieveOptionalEnvVariable(name: string): string | undefined {
   const envVarValue = process.env[name];
-  if (envVarValue === undefined) {
+  if (envVarValue === undefined || envVarValue === "") {
     console.info(`The environment variable ${name} has not been provided for the lambda`);
+    return undefined;
   }
   return envVarValue;
 }
 
 export function retrieveOptionalEnvVariableWithDefault(name: string, defaultValue: string): string {
   const envVarValue = process.env[name];
-  if (envVarValue === undefined) {
+  if (envVarValue === undefined || envVarValue === "") {
     console.info(
       `The environment variable ${name} has not been provided for the lambda, using default value`,
     );

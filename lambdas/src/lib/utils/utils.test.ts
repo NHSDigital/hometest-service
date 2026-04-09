@@ -146,6 +146,11 @@ describe("retrieveMandatoryEnvVariable", () => {
     expect(retrieveMandatoryEnvVariable("TEST_VAR")).toBe("test-value");
   });
 
+  it('should not throw for a value of "0"', () => {
+    process.env.TEST_VAR = "0";
+    expect(retrieveMandatoryEnvVariable("TEST_VAR")).toBe("0");
+  });
+
   it("should throw error when environment variable is not set", () => {
     delete process.env.TEST_VAR;
     expect(() => retrieveMandatoryEnvVariable("TEST_VAR")).toThrow(
@@ -219,6 +224,11 @@ describe("retrieveOptionalEnvVariable", () => {
     expect(retrieveOptionalEnvVariable("TEST_VAR")).toBeUndefined();
   });
 
+  it("should return undefined when environment variable is set to empty string", () => {
+    process.env.TEST_VAR = "";
+    expect(retrieveOptionalEnvVariable("TEST_VAR")).toBeUndefined();
+  });
+
   it("should log when environment variable is not set", () => {
     const consoleSpy = jest.spyOn(console, "info").mockImplementation(() => {});
     delete process.env.TEST_VAR;
@@ -251,6 +261,13 @@ describe("retrieveOptionalEnvVariableWithDefault", () => {
 
   it("should return the default value when environment variable is not set", () => {
     delete process.env.TEST_VAR;
+    expect(retrieveOptionalEnvVariableWithDefault("TEST_VAR", "default-value")).toBe(
+      "default-value",
+    );
+  });
+
+  it("should return the default value when environment variable is set to empty string", () => {
+    process.env.TEST_VAR = "";
     expect(retrieveOptionalEnvVariableWithDefault("TEST_VAR", "default-value")).toBe(
       "default-value",
     );

@@ -108,7 +108,7 @@ export function postgresIamConfig(options: PostgresIamConfigOptions): ClientConf
  * - USE_IAM_AUTH=false → Secrets Manager password (default, backwards-compatible)
  *
  * When using IAM auth, the DB_SECRET_NAME env var is not required.
- * The DB_REGION env var (or AWS_REGION / AWS_DEFAULT_REGION) determines the AWS region.
+ * The DB_REGION env var, or otherwise the mandatory AWS_REGION env var, determines the AWS region.
  */
 export function postgresConfigFromEnv(secretsClient: SecretsClient): ClientConfig {
   const sslEnabled = retrieveOptionalEnvVariableWithDefault("DB_SSL", "true") === "true";

@@ -1,3 +1,5 @@
+import { retrieveOptionalEnvVariable } from "../utils/utils";
+
 export interface AwsClientOptions {
   region: string;
   endpoint?: string;
@@ -22,10 +24,10 @@ export interface AwsClientOptions {
  * same endpoint and credential-resolution rules across the codebase.
  */
 export function getAwsClientOptions(region: string): AwsClientOptions {
-  const endpoint = process.env.AWS_ENDPOINT_URL;
-  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  const sessionToken = process.env.AWS_SESSION_TOKEN;
+  const endpoint = retrieveOptionalEnvVariable("AWS_ENDPOINT_URL");
+  const accessKeyId = retrieveOptionalEnvVariable("AWS_ACCESS_KEY_ID");
+  const secretAccessKey = retrieveOptionalEnvVariable("AWS_SECRET_ACCESS_KEY");
+  const sessionToken = retrieveOptionalEnvVariable("AWS_SESSION_TOKEN");
 
   const options: AwsClientOptions = endpoint ? { region, endpoint } : { region };
 
