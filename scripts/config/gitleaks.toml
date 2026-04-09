@@ -25,6 +25,7 @@ paths = [
   '''tests/playwright.config.ts''',
   '''tests/testResults/*''',
   '''tests/.session-cache/*''',
+  '''tests/WorkerUserSession*''',
   '''.session-cache/*''',
   '''ui/.next/*''', '''ui/build/*''',
   '''cdk.out/*''',

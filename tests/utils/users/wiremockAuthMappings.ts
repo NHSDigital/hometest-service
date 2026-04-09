@@ -129,7 +129,11 @@ function signJwt(
   return `${signingInput}.${signature}`;
 }
 
-function createWireMockAuthContext(user: NHSLoginMockedUser, suffix: string): WireMockAuthContext {
+function createWireMockAuthContext(
+  user: NHSLoginMockedUser,
+  suffix: string,
+  issuerBaseUrl: string = WIREMOCK_ISSUER,
+): WireMockAuthContext {
   const { privateKey, publicKey } = generateKeyPairSync("rsa", {
     modulusLength: 2048,
   });
@@ -151,7 +155,7 @@ function createWireMockAuthContext(user: NHSLoginMockedUser, suffix: string): Wi
     code,
     accessToken: signJwt(privateKeyPem, kid, {
       sub,
-      iss: WIREMOCK_ISSUER,
+      iss: issuerBaseUrl,
       aud: WIREMOCK_AUDIENCE,
       exp,
       iat: now,
@@ -159,7 +163,7 @@ function createWireMockAuthContext(user: NHSLoginMockedUser, suffix: string): Wi
     }),
     idToken: signJwt(privateKeyPem, kid, {
       sub,
-      iss: WIREMOCK_ISSUER,
+      iss: issuerBaseUrl,
       aud: WIREMOCK_AUDIENCE,
       exp,
       iat: now,
@@ -175,8 +179,12 @@ function createWireMockAuthContext(user: NHSLoginMockedUser, suffix: string): Wi
   };
 }
 
-export function createWireMockAuthUser(user: NHSLoginMockedUser, suffix: string): WireMockAuthUser {
-  const authContext = createWireMockAuthContext(user, suffix);
+export function createWireMockAuthUser(
+  user: NHSLoginMockedUser,
+  suffix: string,
+  issuerBaseUrl?: string,
+): WireMockAuthUser {
+  const authContext = createWireMockAuthContext(user, suffix, issuerBaseUrl);
   return {
     ...user,
     code: authContext.code,
@@ -184,16 +192,17 @@ export function createWireMockAuthUser(user: NHSLoginMockedUser, suffix: string)
   };
 }
 
-function createDefaultWireMockAuthManifest(): WireMockAuthManifest {
+function createDefaultWireMockAuthManifest(issuerBaseUrl?: string): WireMockAuthManifest {
   return {
     createdAt: new Date().toISOString(),
     workerUsers: DEFAULT_WORKER_USERS.map((user, index) =>
-      createWireMockAuthUser(user, `worker-${index}`),
+      createWireMockAuthUser(user, `worker-${index}`, issuerBaseUrl),
     ),
     specialUsers: {
       [SpecialUserKey.UNDER_18]: createWireMockAuthUser(
         DEFAULT_SPECIAL_USERS[SpecialUserKey.UNDER_18],
         "under-18",
+        issuerBaseUrl,
       ),
     },
   };
@@ -231,8 +240,8 @@ export function loadWireMockAuthManifest(): WireMockAuthManifest {
   return JSON.parse(content) as WireMockAuthManifest;
 }
 
-export function createWireMockAuthManifest(): WireMockAuthManifest {
-  const manifest = createDefaultWireMockAuthManifest();
+export function createWireMockAuthManifest(issuerBaseUrl?: string): WireMockAuthManifest {
+  const manifest = createDefaultWireMockAuthManifest(issuerBaseUrl);
   writeWireMockAuthManifest(manifest);
   return manifest;
 }
@@ -268,6 +277,28 @@ export function createWireMockJwksMapping(users: readonly WireMockAuthUser[]): W
       jsonBody: {
         keys: users.map((user) => user.authContext.publicJwk),
       },
+    },
+  };
+}
+
+/**
+ * Catch-all /authorize mapping with no login_hint constraint.
+ * Used as a fallback when a real browser navigates to the site (no login_hint is sent).
+ * Must have a higher priority number (lower precedence) than the per-user stubs (priority 1).
+ */
+export function createWireMockCatchAllAuthorizeMapping(user: WireMockAuthUser): WireMockMapping {
+  return {
+    priority: 10,
+    request: {
+      method: "GET",
+      urlPath: "/authorize",
+    },
+    response: {
+      status: 302,
+      headers: {
+        Location: `{{request.query.redirect_uri}}?code=${user.code}&state={{request.query.state}}`,
+      },
+      transformers: ["response-template"],
     },
   };
 }

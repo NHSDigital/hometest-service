@@ -30,7 +30,7 @@ interface OrderData {
   supplierId: string;
 }
 
-test.describe("Home test E2E tests", () => {
+test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
   async function completeOrderJourney(context: {
     homeTestStartPage: any;
     enterDeliveryAddressPage: any;
