@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import * as path from "node:path";
 
-import { WireMockClient, type WireMockMapping } from "./api/clients/WireMockClient";
+import { WireMockClient } from "./api/clients/WireMockClient";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
 import { CredentialsHelper } from "./utils";
 import { UserManagerFactory } from "./utils/users";
@@ -12,50 +12,9 @@ import {
   createWireMockCatchAllAuthorizeMapping,
 } from "./utils/users/wiremockAuthMappings";
 import { createWireMockUserInfoMapping } from "./utils/users/wiremockUserInfoMapping";
+import { createOSPlacesCatchAllMapping } from "./utils/wireMockMappings/OSPlacesWireMockMappings";
 import { createSupplierOAuthTokenMapping } from "./utils/wireMockMappings/SupplierOAuthWireMockMappings";
 import { createSupplierOrderSuccessMapping } from "./utils/wireMockMappings/SupplierOrderWireMockMappings";
-
-function createOSPlacesCatchAllMapping(): WireMockMapping {
-  return {
-    priority: 100,
-    request: {
-      method: "GET",
-      urlPath: "/find",
-      queryParameters: { query: { matches: ".*" } },
-    },
-    response: {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-      jsonBody: {
-        header: {
-          uri: "http://wiremock/find",
-          query: "query=SW1A1AA",
-          offset: 0,
-          totalresults: 1,
-          format: "JSON",
-          dataset: "DPA",
-          lr: "EN",
-          maxresults: 100,
-          epoch: "95",
-          output_srs: "EPSG:27700",
-        },
-        results: [
-          {
-            DPA: {
-              UPRN: "100023336956",
-              UDPRN: "52640002",
-              ADDRESS: "10 DOWNING STREET, LONDON, SW1A 1AA",
-              BUILDING_NUMBER: "10",
-              THOROUGHFARE_NAME: "DOWNING STREET",
-              POST_TOWN: "LONDON",
-              POSTCODE: "SW1A 1AA",
-            },
-          },
-        ],
-      },
-    },
-  };
-}
 
 async function globalSetup() {
   console.log("🚀 Global setup started");

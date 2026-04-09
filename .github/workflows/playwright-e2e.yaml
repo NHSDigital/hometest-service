@@ -124,10 +124,6 @@ jobs:
           FORCE_COLOR: true
           PLAYWRIGHT_HTML_OPEN: never
 
-      # - name: Run Playwright tests in Docker
-      #   run: |
-      #     scripts/tests/run_e2e_in_docker.sh
-
       - name: "Grab docker compose logs"
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
@@ -173,5 +169,3 @@ jobs:
           name: playwright-report
           path: tests/testResults/
           retention-days: 30
-
-# TODO: Add caching  /home/runner/.cache/ms-playwright/, node-modules
