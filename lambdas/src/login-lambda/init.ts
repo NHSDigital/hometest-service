@@ -7,13 +7,14 @@ import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { TokenService } from "../lib/login/token-service";
 import { type INhsLoginConfig } from "../lib/models/nhs-login/nhs-login-config";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
+import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
 import { type ILoginService, LoginService, type LoginServiceParams } from "./login-service";
 
 // ALPHA: This file will need revisiting.
 const envVars: LoginEnvVariables = {
   // ALPHA: Uncomment when environment variables are properly set up. Currently using hardcoded values for development and testing.
   nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_BASE_ENDPOINT_URL"),
+  nhsLoginJwksUri: retrieveOptionalEnvVariable("NHS_LOGIN_JWKS_URI", ""),
   nhsLoginClientId: retrieveMandatoryEnvVariable("NHS_LOGIN_CLIENT_ID"),
   nhsLoginRedirectUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_REDIRECT_URL"),
   nhsLoginPrivateKeySecretName: retrieveMandatoryEnvVariable("NHS_LOGIN_PRIVATE_KEY_SECRET_NAME"),
@@ -34,6 +35,7 @@ const envVars: LoginEnvVariables = {
 
 interface LoginEnvVariables {
   nhsLoginBaseEndpointUrl: string;
+  nhsLoginJwksUri: string;
   nhsLoginClientId: string;
   nhsLoginRedirectUrl: string;
   nhsLoginPrivateKeySecretName: string;
@@ -81,6 +83,7 @@ export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
     redirectUri: envVars.nhsLoginRedirectUrl,
     baseUri: envVars.nhsLoginBaseEndpointUrl,
     privateKey: nhsLoginPrivateKey,
+    jwksUri: envVars.nhsLoginJwksUri || undefined,
   };
 
   const nhsLoginJwtHelper: NhsLoginJwtHelper = new NhsLoginJwtHelper(nhsLoginConfig);
@@ -89,7 +92,7 @@ export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
   const jwksClient = new JwksClient({
     cache: true,
     rateLimit: true,
-    jwksUri: `${nhsLoginConfig.baseUri}/.well-known/jwks.json`,
+    jwksUri: nhsLoginConfig.jwksUri ?? `${nhsLoginConfig.baseUri}/.well-known/jwks.json`,
   });
   const nhsLoginClient = new NhsLoginClient(
     nhsLoginConfig,
