@@ -100,7 +100,7 @@ describe("AuthLoader", () => {
   it("loads the session user and renders the protected outlet", async () => {
     mockFetchSessionUser.mockResolvedValue(mockUser);
 
-    renderProtectedRoute("/protected");
+    renderProtectedRoute({ pathname: "/protected" });
 
     expect(screen.getByRole("heading", { name: "Loading page" })).toBeInTheDocument();
 

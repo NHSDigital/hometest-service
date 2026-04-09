@@ -29,5 +29,6 @@ describe("FindAnotherSexualHealthClinicLink", () => {
       "href",
       "https://www.nhs.uk/service-search/sexual-health-services/find-a-sexual-health-clinic/results?location=SW1A%201AA",
     );
+    expect(link).toHaveAttribute("target", "_blank");
   });
 });
