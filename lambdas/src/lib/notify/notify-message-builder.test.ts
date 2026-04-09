@@ -8,7 +8,7 @@ import { NotifyMessageBuilder } from "./notify-message-builder";
 describe("NotifyMessageBuilder", () => {
   const mockGetPatient = jest.fn<Promise<Patient>, [string]>();
   const mockGetOrderCreatedAt = jest.fn<Promise<string>, [string]>();
-  const mockGetOrderReferenceNumber = jest.fn<Promise<number>, [string]>();
+  const mockGetOrderReferenceNumber = jest.fn<Promise<string>, [string]>();
   const mockGetOrderStatusCreatedAt = jest.fn<Promise<string>, [string, string]>();
 
   const mockPatientDbClient: Pick<PatientDbClient, "get"> = {
@@ -43,7 +43,7 @@ describe("NotifyMessageBuilder", () => {
 
   it("should build dispatched notify message with formatted date and tracking url", async () => {
     mockGetOrderStatusCreatedAt.mockResolvedValue("2026-08-06T10:00:00Z");
-    mockGetOrderReferenceNumber.mockResolvedValue(100001);
+    mockGetOrderReferenceNumber.mockResolvedValue("100001");
 
     const result = await builder.buildOrderDispatchedNotifyMessage({
       patientId: "550e8400-e29b-41d4-a716-446655440111",
@@ -76,7 +76,7 @@ describe("NotifyMessageBuilder", () => {
 
   it("should normalize trailing slash in base url", async () => {
     mockGetOrderStatusCreatedAt.mockResolvedValue("2026-08-06T10:00:00Z");
-    mockGetOrderReferenceNumber.mockResolvedValue(100001);
+    mockGetOrderReferenceNumber.mockResolvedValue("100001");
 
     const trailingSlashBuilder = new NotifyMessageBuilder(
       mockPatientDbClient as PatientDbClient,
@@ -102,7 +102,7 @@ describe("NotifyMessageBuilder", () => {
 
   it("should call recipient lookup with patient id", async () => {
     mockGetOrderStatusCreatedAt.mockResolvedValue("2026-08-06T10:00:00Z");
-    mockGetOrderReferenceNumber.mockResolvedValue(100001);
+    mockGetOrderReferenceNumber.mockResolvedValue("100001");
 
     await builder.buildOrderDispatchedNotifyMessage({
       patientId: "550e8400-e29b-41d4-a716-446655440111",
@@ -115,7 +115,7 @@ describe("NotifyMessageBuilder", () => {
 
   it("should build received notify message with receivedDate in personalisation", async () => {
     mockGetOrderStatusCreatedAt.mockResolvedValue("2026-08-06T10:00:00Z");
-    mockGetOrderReferenceNumber.mockResolvedValue(100001);
+    mockGetOrderReferenceNumber.mockResolvedValue("100001");
 
     const result = await builder.buildOrderReceivedNotifyMessage({
       patientId: "550e8400-e29b-41d4-a716-446655440111",
@@ -140,7 +140,7 @@ describe("NotifyMessageBuilder", () => {
 
   it("should build result available notify message with orderedDate in personalisation", async () => {
     mockGetOrderCreatedAt.mockResolvedValue("2026-08-05T10:00:00Z");
-    mockGetOrderReferenceNumber.mockResolvedValue(100001);
+    mockGetOrderReferenceNumber.mockResolvedValue("100001");
 
     const result = await builder.buildOrderResultAvailableNotifyMessage({
       patientId: "550e8400-e29b-41d4-a716-446655440111",

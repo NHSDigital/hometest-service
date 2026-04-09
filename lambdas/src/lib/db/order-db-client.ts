@@ -85,7 +85,7 @@ export class OrderDbClient {
     }
   }
 
-  public async getOrderReferenceNumber(orderId: string): Promise<number> {
+  public async getOrderReferenceNumber(orderId: string): Promise<string> {
     const query = `
       SELECT order_reference
       FROM test_order
@@ -94,7 +94,7 @@ export class OrderDbClient {
     `;
 
     try {
-      const result = await this.dbClient.query<{ order_reference: number }, [string]>(query, [
+      const result = await this.dbClient.query<{ order_reference: string }, [string]>(query, [
         orderId,
       ]);
 

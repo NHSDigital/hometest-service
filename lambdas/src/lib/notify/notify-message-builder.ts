@@ -124,7 +124,7 @@ export class NotifyMessageBuilder {
       recipient,
       personalisation: {
         ...personalisation,
-        referenceNumber: referenceNumber.toString(),
+        referenceNumber: referenceNumber,
       },
     };
   }

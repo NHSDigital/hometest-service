@@ -166,7 +166,7 @@ describe("OrderDbClient", () => {
     const orderId = "550e8400-e29b-41d4-a716-446655440000";
 
     it("should return reference number for order", async () => {
-      const referenceNumber = 12345;
+      const referenceNumber = "12345";
       mockDbClient.query.mockResolvedValue({
         rows: [{ order_reference: referenceNumber }],
         rowCount: 1,
