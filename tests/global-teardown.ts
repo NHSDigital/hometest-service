@@ -2,6 +2,7 @@ import { FullConfig } from "@playwright/test";
 
 import { WireMockClient } from "./api/clients/WireMockClient";
 import { AuthType, ConfigFactory } from "./configuration/EnvironmentConfiguration";
+import { SCANNED_URLS_FILE } from "./fixtures/accessibilityAutoFixture";
 import { cleanupWireMockAuthState } from "./utils/users/wiremockAuthMappings";
 
 async function globalTeardown(config: FullConfig) {
@@ -24,6 +25,15 @@ async function globalTeardown(config: FullConfig) {
   }
 
   console.log("✅ Global teardown completed");
+
+  try {
+    const fs = await import("node:fs");
+
+    const scanned: string[] = JSON.parse(fs.readFileSync(SCANNED_URLS_FILE, "utf8"));
+    console.log(`♿ Accessibility scanned ${scanned.length} unique URL(s) across all workers.`);
+  } catch {
+    // Non-fatal — do not block teardown if summary generation fails.
+  }
 }
 
 export default globalTeardown;
