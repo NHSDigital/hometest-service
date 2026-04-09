@@ -1,4 +1,5 @@
 const mockRetrieveMandatoryEnvVariable = jest.fn();
+const mockRetrieveOptionalEnvVariable = jest.fn();
 const mockGetSecretValue = jest.fn();
 
 const mockAuthTokenServiceInstance = {
@@ -17,6 +18,7 @@ const mockLoginServiceInstance = {
 
 jest.mock("../lib/utils/utils", () => ({
   retrieveMandatoryEnvVariable: (...args: unknown[]) => mockRetrieveMandatoryEnvVariable(...args),
+  retrieveOptionalEnvVariable: (...args: unknown[]) => mockRetrieveOptionalEnvVariable(...args),
 }));
 
 jest.mock("../lib/secrets/secrets-manager-client", () => ({
@@ -84,6 +86,9 @@ describe("login-lambda init", () => {
     delete process.env.AWS_DEFAULT_REGION;
 
     setMandatoryEnvVariableMock();
+    mockRetrieveOptionalEnvVariable.mockImplementation(
+      (_key: string, defaultValue: string = "") => defaultValue,
+    );
     mockGetSecretValue.mockResolvedValue("nhs-private-key");
   });
 

@@ -9,8 +9,12 @@ import {
   cleanupWireMockAuthState,
   configureWireMockAuthMappings,
   createWireMockAuthManifest,
+  createWireMockCatchAllAuthorizeMapping,
 } from "./utils/users/wiremockAuthMappings";
 import { createWireMockUserInfoMapping } from "./utils/users/wiremockUserInfoMapping";
+import { createOSPlacesCatchAllMapping } from "./utils/wireMockMappings/OSPlacesWireMockMappings";
+import { createSupplierOAuthTokenMapping } from "./utils/wireMockMappings/SupplierOAuthWireMockMappings";
+import { createSupplierOrderSuccessMapping } from "./utils/wireMockMappings/SupplierOrderWireMockMappings";
 
 async function globalSetup() {
   console.log("🚀 Global setup started");
@@ -27,9 +31,22 @@ async function globalSetup() {
 
     for (const user of [...manifest.workerUsers, ...Object.values(manifest.specialUsers)]) {
       await wiremock.createMapping(
-        createWireMockUserInfoMapping(user, user.authContext.accessToken, user.authContext.sub),
+        createWireMockUserInfoMapping(
+          user,
+          user.authContext.accessToken,
+          user.authContext.sub,
+          config.wiremockBaseUrl,
+        ),
       );
     }
+
+    // Push catch-all /authorize fallback for browsers without login_hint
+    await wiremock.createMapping(createWireMockCatchAllAuthorizeMapping(manifest.workerUsers[0]));
+
+    // Push static supplier and OS Places stubs (wiped by resetAllMappings above)
+    await wiremock.createMapping(createSupplierOAuthTokenMapping());
+    await wiremock.createMapping(createSupplierOrderSuccessMapping());
+    await wiremock.createMapping(createOSPlacesCatchAllMapping());
 
     resetLoginLambdaCache();
   } else {

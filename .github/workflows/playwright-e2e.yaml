@@ -1,9 +1,20 @@
 ---
 name: "Playwright E2E Tests"
+run-name: "E2E Tests: browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
+
+# Add concurrency to prevent multiple runs for the same branch/PR and reduce noise in CI
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    types: [opened, reopened, synchronize]
   schedule:
-    - cron: '0 2 * * *'  # Every day at 2am UTC
+    - cron: "0 2 * * *" # Every day at 2am UTC
   workflow_dispatch:
     inputs:
       browser:
@@ -31,30 +42,30 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v6
 
-      - name: "Install mise"
-        uses: jdx/mise-action@v4
-        with:
-          install: true
-          cache: true
-
-      - name: "Install Playwright browsers"
-        working-directory: tests
-        run: npx playwright install --with-deps
+      - name: Initialize mise
+        uses: ./.github/actions/init-mise
 
       - name: "Create nhs login private key file"
         run: |
           mkdir -p local-environment/infra/resources/secrets
-          cat > local-environment/infra/resources/secrets/nhs-login-private-key.pem << 'EOF'
-          ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
-          EOF
+          echo '${{ secrets.NHS_LOGIN_PRIVATE_KEY }}' > local-environment/infra/resources/secrets/nhs-login-private-key.pem
 
       - name: "Create credentials file"
-        working-directory: tests
         run: |
-          cat > credentials.ts << 'EOF'
+          cat > tests/credentials.ts << 'CREDENTIALS'
           export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
           export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
-          EOF
+          CREDENTIALS
+          sed -i 's/^          //' tests/credentials.ts
+
+      - name: "Create os-places-creds file"
+        run: |
+          mkdir -p local-environment/infra/resources/secrets
+          echo '{"apiKey":"test-api-key"}' > local-environment/infra/resources/secrets/os-places-creds.json
+
+      - name: "Install Playwright browsers"
+        working-directory: tests
+        run: npx playwright install --with-deps
 
       - name: "Start the application"
         run: |
@@ -69,7 +80,7 @@ jobs:
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
-          API_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url)
+          API_URL=$(terraform -chdir=local-environment/infra output -raw backend_base_url)
           echo "ui_url=$UI_URL" >> $GITHUB_OUTPUT
           echo "api_base_url=$API_URL" >> $GITHUB_OUTPUT
           echo "UI URL: $UI_URL"
@@ -118,8 +129,7 @@ jobs:
         env:
           CI: true
           FORCE_COLOR: true
-          UI_BASE_URL: ${{ steps.terraform.outputs.ui_url }}
-          API_BASE_URL: ${{ steps.terraform.outputs.api_base_url }}
+          PLAYWRIGHT_HTML_OPEN: never
 
       - name: "Grab docker compose logs"
         run: |
