@@ -1,7 +1,9 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import { MemoryRouter } from "react-router-dom";
+
+import laLookupService from "@/lib/services/la-lookup-service";
+import EnterAddressManuallyPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterAddressManuallyPage";
 import {
   AuthProvider,
   CreateOrderProvider,
@@ -10,7 +12,6 @@ import {
   useCreateOrderContext,
   useJourneyNavigationContext,
 } from "@/state";
-import laLookupService from "@/lib/services/la-lookup-service";
 
 const FIXED_TODAY = new Date(2026, 2, 4); // March 4, 2026
 
@@ -165,6 +166,18 @@ describe("EnterAddressManuallyPage", () => {
 
       expect(postcodeInput).toHaveFocus();
     });
+
+    it("Does not display error summary when form is valid", () => {
+      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+
+      fillValidRequiredFields();
+
+      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+      expect(
+        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe("Address Validation", () => {
@@ -240,32 +253,6 @@ describe("EnterAddressManuallyPage", () => {
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
       expect(screen.queryByText("Enter a full UK postcode")).not.toBeInTheDocument();
-    });
-  });
-
-  describe("Form Submission", () => {
-    it("does not submit when validation fails", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
-
-      const errorSummaryHeading = screen.getByRole("heading", { name: "There is a problem" });
-      const errorSummary = errorSummaryHeading.closest(
-        '[role="alert"][aria-labelledby="error-summary-title"]',
-      );
-      expect(errorSummary).toBeInTheDocument();
-    });
-
-    it("submits valid form without errors", () => {
-      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
-
-      fillValidRequiredFields();
-
-      fireEvent.click(screen.getByRole("button", { name: /continue/i }));
-
-      expect(
-        document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
-      ).not.toBeInTheDocument();
     });
   });
 

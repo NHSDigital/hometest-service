@@ -1,6 +1,6 @@
-jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
-
 import laLookupService, { LaLookupResponse } from "@/lib/services/la-lookup-service";
+
+jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
 
 const mockFetch = jest.fn();
 globalThis.fetch = mockFetch;
@@ -31,7 +31,6 @@ describe("LaLookupService", () => {
 
     const result = await laLookupService.getByPostcode(postcode);
     expect(result).toEqual(mockResponse);
-    expect(mockFetch).toHaveBeenCalledWith(apiUrl, expect.objectContaining({ method: "GET" }));
   });
 
   it("should throw an error if the API response is not ok", async () => {
@@ -39,7 +38,6 @@ describe("LaLookupService", () => {
     await expect(laLookupService.getByPostcode(postcode)).rejects.toThrow(
       "Failed to fetch local authority",
     );
-    expect(mockFetch).toHaveBeenCalledWith(apiUrl, expect.objectContaining({ method: "GET" }));
   });
 
   it("should call the API with the correct URL and headers", async () => {

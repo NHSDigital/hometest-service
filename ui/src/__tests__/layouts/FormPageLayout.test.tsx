@@ -1,19 +1,9 @@
 import "@testing-library/jest-dom";
-
 import { render, screen } from "@testing-library/react";
 
 import FormPageLayout from "@/layouts/FormPageLayout";
 
 describe("FormPageLayout", () => {
-  it("renders without crashing", () => {
-    render(
-      <FormPageLayout>
-        <div>Test content</div>
-      </FormPageLayout>,
-    );
-    expect(screen.getByText("Test content")).toBeInTheDocument();
-  });
-
   it("renders children correctly", () => {
     const testText = "Hello, World!";
     render(

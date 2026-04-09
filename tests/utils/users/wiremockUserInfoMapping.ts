@@ -5,6 +5,7 @@ export function createWireMockUserInfoMapping(
   user: NHSLoginMockedUser,
   accessToken?: string,
   sub: string = "test-sub-123",
+  issuerBaseUrl: string = "http://wiremock:8080",
 ): WireMockMapping {
   return {
     priority: 1,
@@ -23,7 +24,7 @@ export function createWireMockUserInfoMapping(
         "Content-Type": "application/json",
       },
       jsonBody: {
-        iss: "http://wiremock:8080",
+        iss: issuerBaseUrl,
         aud: "hometest",
         sub,
         family_name: user.familyName ?? "MILLAR",
