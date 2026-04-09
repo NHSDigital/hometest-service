@@ -1,7 +1,13 @@
 ---
 name: "Playwright E2E Tests"
+run-name: "E2E Tests: browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    types: [opened, reopened, synchronize]
   schedule:
     - cron: "0 2 * * *" # Every day at 2am UTC
   workflow_dispatch:
