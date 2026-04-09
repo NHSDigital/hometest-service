@@ -2,6 +2,10 @@
 name: "Playwright E2E Tests"
 run-name: "E2E Tests: browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
