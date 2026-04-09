@@ -121,6 +121,7 @@ export class OrderStatusService {
       SELECT created_at
       FROM order_status
       WHERE order_uid = $1::uuid AND status_code = $2
+      ORDER BY created_at DESC
       LIMIT 1;
     `;
 

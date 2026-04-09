@@ -169,10 +169,16 @@ describe("OrderStatusService", () => {
       );
 
       expect(result).toBe("2024-01-15T10:00:00Z");
-      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("created_at"), [
-        "some-mocked-order-id",
-        OrderStatusCodes.DISPATCHED,
-      ]);
+      expect(mockQuery).toHaveBeenCalledWith(
+        `
+      SELECT created_at
+      FROM order_status
+      WHERE order_uid = $1::uuid AND status_code = $2
+      ORDER BY created_at DESC
+      LIMIT 1;
+    `,
+        ["some-mocked-order-id", OrderStatusCodes.DISPATCHED],
+      );
     });
 
     it("should throw error when status has not been recorded", async () => {
