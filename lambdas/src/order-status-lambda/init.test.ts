@@ -1,6 +1,7 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
+import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
@@ -177,6 +178,8 @@ describe("init", () => {
 
       expect(NotifyMessageBuilder).toHaveBeenCalledWith(
         expect.any(PatientDbClient),
+        expect.any(OrderDbClient),
+        expect.any(OrderStatusService),
         "https://hometest.example.nhs.uk",
       );
     });

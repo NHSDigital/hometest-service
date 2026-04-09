@@ -1,6 +1,7 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
+import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
@@ -23,9 +24,15 @@ export function buildEnvironment(): Environment {
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderStatusDb = new OrderStatusService(dbClient);
   const patientDbClient = new PatientDbClient(dbClient);
+  const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
   const sqsClient = new AWSSQSClient();
-  const notifyMessageBuilder = new NotifyMessageBuilder(patientDbClient, homeTestBaseUrl);
+  const notifyMessageBuilder = new NotifyMessageBuilder(
+    patientDbClient,
+    orderDbClient,
+    orderStatusDb,
+    homeTestBaseUrl,
+  );
   const orderStatusNotifyService = new OrderStatusNotifyService({
     orderStatusDb,
     notificationAuditDbClient,

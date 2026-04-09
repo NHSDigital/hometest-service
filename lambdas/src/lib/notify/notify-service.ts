@@ -30,7 +30,6 @@ interface BuildNotifyMessageInput {
   orderId: string;
   patientId: string;
   correlationId: string;
-  createdAt: string;
 }
 
 type NotifyMessageBuilderByStatus = Partial<
@@ -47,26 +46,23 @@ export class OrderStatusNotifyService {
     const { notifyMessageBuilder } = this.dependencies;
 
     const buildNotifyMessageByStatus: NotifyMessageBuilderByStatus = {
-      [OrderStatusCodes.DISPATCHED]: ({ patientId, correlationId, orderId, createdAt }) =>
+      [OrderStatusCodes.DISPATCHED]: ({ patientId, correlationId, orderId }) =>
         notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
           patientId,
           correlationId,
           orderId,
-          dispatchedAt: createdAt,
         }),
-      [OrderStatusCodes.RECEIVED]: ({ patientId, correlationId, orderId, createdAt }) =>
+      [OrderStatusCodes.RECEIVED]: ({ patientId, correlationId, orderId }) =>
         notifyMessageBuilder.buildOrderReceivedNotifyMessage({
           patientId,
           correlationId,
           orderId,
-          receivedAt: createdAt,
         }),
-      [OrderStatusCodes.COMPLETE]: ({ patientId, correlationId, orderId, createdAt }) =>
+      [OrderStatusCodes.COMPLETE]: ({ patientId, correlationId, orderId }) =>
         notifyMessageBuilder.buildOrderResultAvailableNotifyMessage({
           patientId,
           correlationId,
           orderId,
-          receivedAt: createdAt,
         }),
     };
 
@@ -84,21 +80,13 @@ export class OrderStatusNotifyService {
     buildNotifyMessage: (input: BuildNotifyMessageInput) => Promise<NotifyMessage>,
   ): Promise<void> {
     const { orderId, patientId, correlationId, statusCode } = input;
-    const { orderStatusDb, notificationAuditDbClient, sqsClient, notifyMessagesQueueUrl } =
-      this.dependencies;
+    const { notificationAuditDbClient, sqsClient, notifyMessagesQueueUrl } = this.dependencies;
 
     try {
-      const createdAt = await orderStatusDb.getFirstStatusOccurrenceCreatedAt(orderId, statusCode);
-
-      if (!createdAt) {
-        return;
-      }
-
       const notifyMessage = await buildNotifyMessage({
         patientId,
         correlationId,
         orderId,
-        createdAt,
       });
 
       await sqsClient.sendMessage(notifyMessagesQueueUrl, JSON.stringify(notifyMessage));

@@ -213,14 +213,7 @@ describe("order-result-lambda handler", () => {
       ResultStatus.Result_Withheld,
       identifiers.correlationId,
     );
-    expect(initMock.orderStatusNotifyService.handleOrderStatusUpdated).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderId: identifiers.orderUid,
-        patientId: expect.any(String),
-        correlationId: identifiers.correlationId,
-        statusCode: "COMPLETE",
-      }),
-    );
+    expect(initMock.orderStatusNotifyService.handleOrderStatusUpdated).not.toHaveBeenCalled();
   });
 
   it("returns 500 if updateDatabase throws", async () => {

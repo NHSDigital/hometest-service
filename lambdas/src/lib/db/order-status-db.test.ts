@@ -156,14 +156,14 @@ describe("OrderStatusService", () => {
     });
   });
 
-  describe("getFirstStatusOccurrenceCreatedAt", () => {
-    it("should return the created_at timestamp for first occurrence", async () => {
+  describe("getOrderStatusCreatedAt", () => {
+    it("should return the created_at timestamp for order status", async () => {
       mockQuery.mockResolvedValue({
         rows: [{ created_at: "2024-01-15T10:00:00Z" }],
         rowCount: 1,
       });
 
-      const result = await service.getFirstStatusOccurrenceCreatedAt(
+      const result = await service.getOrderStatusCreatedAt(
         "some-mocked-order-id",
         OrderStatusCodes.DISPATCHED,
       );
@@ -175,32 +175,23 @@ describe("OrderStatusService", () => {
       ]);
     });
 
-    it("should return null when status has not been recorded", async () => {
+    it("should throw error when status has not been recorded", async () => {
       mockQuery.mockResolvedValue({
         rows: [],
         rowCount: 0,
       });
 
-      const result = await service.getFirstStatusOccurrenceCreatedAt(
-        "some-mocked-order-id",
-        OrderStatusCodes.DISPATCHED,
-      );
-
-      expect(result).toBeNull();
+      await expect(
+        service.getOrderStatusCreatedAt("some-mocked-order-id", OrderStatusCodes.DISPATCHED),
+      ).rejects.toThrow("Failed to retrieve order status created_at");
     });
 
-    it("should return null when status occurs more than once", async () => {
-      mockQuery.mockResolvedValue({
-        rows: [{ created_at: "2024-01-15T10:00:00Z" }, { created_at: "2024-01-16T10:00:00Z" }],
-        rowCount: 2,
-      });
+    it("should throw error on database failure", async () => {
+      mockQuery.mockRejectedValue(new Error("DB connection failed"));
 
-      const result = await service.getFirstStatusOccurrenceCreatedAt(
-        "some-mocked-order-id",
-        OrderStatusCodes.DISPATCHED,
-      );
-
-      expect(result).toBeNull();
+      await expect(
+        service.getOrderStatusCreatedAt("some-mocked-order-id", OrderStatusCodes.DISPATCHED),
+      ).rejects.toThrow("Failed to retrieve order status created_at");
     });
   });
 });

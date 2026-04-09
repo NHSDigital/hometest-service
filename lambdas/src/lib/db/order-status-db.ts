@@ -116,14 +116,12 @@ export class OrderStatusService {
     }
   }
 
-  async getFirstStatusOccurrenceCreatedAt(
-    orderId: string,
-    statusCode: OrderStatusCode,
-  ): Promise<string | null> {
+  async getOrderStatusCreatedAt(orderId: string, statusCode: OrderStatusCode): Promise<string> {
     const query = `
       SELECT created_at
       FROM order_status
-      WHERE order_uid = $1::uuid AND status_code = $2;
+      WHERE order_uid = $1::uuid AND status_code = $2
+      LIMIT 1;
     `;
 
     try {
@@ -132,10 +130,16 @@ export class OrderStatusService {
         [orderId, statusCode],
       );
 
-      return result.rowCount === 1 ? result.rows[0].created_at : null;
+      if (result.rowCount === 0) {
+        throw new Error(
+          `Order status not found for orderId ${orderId} and statusCode ${statusCode}`,
+        );
+      }
+
+      return result.rows[0].created_at;
     } catch (error) {
       throw new Error(
-        `Failed to verify first occurrence for orderId ${orderId} and statusCode ${statusCode}`,
+        `Failed to retrieve order status created_at for orderId ${orderId} and statusCode ${statusCode}`,
         {
           cause: error,
         },

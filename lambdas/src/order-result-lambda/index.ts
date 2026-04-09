@@ -115,12 +115,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
-  await orderStatusNotifyService.handleOrderStatusUpdated({
-    orderId: identifiers.orderUid,
-    patientId: testOrderResult.patient_uid,
-    correlationId: identifiers.correlationId,
-    statusCode: OrderStatusCodes.COMPLETE,
-  });
+  if (interpretationCode === InterpretationCode.Normal) {
+    await orderStatusNotifyService.handleOrderStatusUpdated({
+      orderId: identifiers.orderUid,
+      patientId: testOrderResult.patient_uid,
+      correlationId: identifiers.correlationId,
+      statusCode: OrderStatusCodes.COMPLETE,
+    });
+  }
 
   return createFhirResponse(201, observation);
 };

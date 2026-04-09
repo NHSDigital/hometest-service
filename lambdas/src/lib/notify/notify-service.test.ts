@@ -4,7 +4,6 @@ import { NotifyEventCode } from "../types/notify-message";
 import { OrderStatusNotifyService } from "./notify-service";
 
 describe("OrderStatusNotifyService", () => {
-  const mockGetFirstStatusOccurrenceCreatedAt = jest.fn<Promise<string | null>, [string, string]>();
   const mockBuildOrderDispatchedNotifyMessage = jest.fn();
   const mockBuildOrderReceivedNotifyMessage = jest.fn();
   const mockBuildOrderResultAvailableNotifyMessage = jest.fn();
@@ -23,7 +22,6 @@ describe("OrderStatusNotifyService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockGetFirstStatusOccurrenceCreatedAt.mockResolvedValue(statusUpdate.createdAt);
     mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
       eventCode: NotifyEventCode.OrderDispatched,
@@ -58,9 +56,7 @@ describe("OrderStatusNotifyService", () => {
     mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
 
     service = new OrderStatusNotifyService({
-      orderStatusDb: {
-        getFirstStatusOccurrenceCreatedAt: mockGetFirstStatusOccurrenceCreatedAt,
-      } as never,
+      orderStatusDb: {} as never,
       notificationAuditDbClient: {
         insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       } as never,
@@ -84,7 +80,6 @@ describe("OrderStatusNotifyService", () => {
       statusCode: OrderStatusCodes.SUBMITTED,
     });
 
-    expect(mockGetFirstStatusOccurrenceCreatedAt).not.toHaveBeenCalled();
     expect(mockBuildOrderDispatchedNotifyMessage).not.toHaveBeenCalled();
     expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
     expect(mockBuildOrderResultAvailableNotifyMessage).not.toHaveBeenCalled();
@@ -92,27 +87,7 @@ describe("OrderStatusNotifyService", () => {
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
 
-  it("should not send a dispatched notification when it is not the first occurrence", async () => {
-    mockGetFirstStatusOccurrenceCreatedAt.mockResolvedValueOnce(null);
-
-    await service.handleOrderStatusUpdated({
-      orderId: statusUpdate.orderId,
-      patientId: "patient-123",
-      correlationId: statusUpdate.correlationId,
-      statusCode: OrderStatusCodes.DISPATCHED,
-    });
-
-    expect(mockGetFirstStatusOccurrenceCreatedAt).toHaveBeenCalledWith(
-      statusUpdate.orderId,
-      OrderStatusCodes.DISPATCHED,
-    );
-    expect(mockBuildOrderDispatchedNotifyMessage).not.toHaveBeenCalled();
-    expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
-    expect(mockSendMessage).not.toHaveBeenCalled();
-    expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
-  });
-
-  it("should send and audit the first dispatched notification", async () => {
+  it("should send and audit a dispatched notification", async () => {
     await service.handleOrderStatusUpdated({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
@@ -124,7 +99,6 @@ describe("OrderStatusNotifyService", () => {
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
       orderId: statusUpdate.orderId,
-      dispatchedAt: statusUpdate.createdAt,
     });
     expect(mockSendMessage).toHaveBeenCalledWith(
       "https://example.queue.local/notify",
@@ -138,26 +112,7 @@ describe("OrderStatusNotifyService", () => {
     });
   });
 
-  it("should not send a received notification when it is not the first occurrence", async () => {
-    mockGetFirstStatusOccurrenceCreatedAt.mockResolvedValueOnce(null);
-
-    await service.handleOrderStatusUpdated({
-      orderId: statusUpdate.orderId,
-      patientId: "patient-123",
-      correlationId: statusUpdate.correlationId,
-      statusCode: OrderStatusCodes.RECEIVED,
-    });
-
-    expect(mockGetFirstStatusOccurrenceCreatedAt).toHaveBeenCalledWith(
-      statusUpdate.orderId,
-      OrderStatusCodes.RECEIVED,
-    );
-    expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
-    expect(mockSendMessage).not.toHaveBeenCalled();
-    expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
-  });
-
-  it("should send and audit the first received notification", async () => {
+  it("should send and audit a received notification", async () => {
     await service.handleOrderStatusUpdated({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
@@ -169,7 +124,6 @@ describe("OrderStatusNotifyService", () => {
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
       orderId: statusUpdate.orderId,
-      receivedAt: statusUpdate.createdAt,
     });
     expect(mockSendMessage).toHaveBeenCalledWith(
       "https://example.queue.local/notify",
@@ -183,26 +137,7 @@ describe("OrderStatusNotifyService", () => {
     });
   });
 
-  it("should not send a result available notification when it is not the first occurrence", async () => {
-    mockGetFirstStatusOccurrenceCreatedAt.mockResolvedValueOnce(null);
-
-    await service.handleOrderStatusUpdated({
-      orderId: statusUpdate.orderId,
-      patientId: "patient-123",
-      correlationId: statusUpdate.correlationId,
-      statusCode: OrderStatusCodes.COMPLETE,
-    });
-
-    expect(mockGetFirstStatusOccurrenceCreatedAt).toHaveBeenCalledWith(
-      statusUpdate.orderId,
-      OrderStatusCodes.COMPLETE,
-    );
-    expect(mockBuildOrderResultAvailableNotifyMessage).not.toHaveBeenCalled();
-    expect(mockSendMessage).not.toHaveBeenCalled();
-    expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
-  });
-
-  it("should send and audit the first result available notification", async () => {
+  it("should send and audit a result available notification", async () => {
     await service.handleOrderStatusUpdated({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
@@ -214,7 +149,6 @@ describe("OrderStatusNotifyService", () => {
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
       orderId: statusUpdate.orderId,
-      receivedAt: statusUpdate.createdAt,
     });
     expect(mockSendMessage).toHaveBeenCalledWith(
       "https://example.queue.local/notify",
