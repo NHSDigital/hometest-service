@@ -9,14 +9,17 @@
     "lint:fix": "eslint . --fix",
     "pretest": "bash ../scripts/tests/reset-login-lambda-cache.sh || true",
     "test": "playwright test",
+    "test:no-db": "playwright test --grep-invert @db",
     "test:chrome": "playwright test --project=chromium",
+    "test:chrome:no-db": "playwright test --project=chromium --grep-invert @db",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "test:codegen": "playwright codegen",
     "test:env": "node -r dotenv/config -e 'console.log(process.env)' dotenv_config_path=../.env",
-    "check-typescript": "tsc --noEmit"
+    "check-typescript": "tsc --noEmit",
+    "wiremock:push": "tsx scripts/push-wiremock-mappings.ts"
   },
   "keywords": [
     "playwright",
@@ -35,7 +38,8 @@
     "eslint": "10.1.0",
     "globals": "17.4.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.58.0"
+    "typescript-eslint": "8.58.0",
+    "tsx": "4.19.3"
   },
   "dependencies": {
     "@axe-core/playwright": "4.11.1",

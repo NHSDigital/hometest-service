@@ -46,6 +46,7 @@ jest.mock("@/hooks", () => ({
 
 const goBackMock = jest.fn();
 const goToStepMock = jest.fn();
+const resetNavigationMock = jest.fn();
 
 const TestProvider = ({
   children,
@@ -77,6 +78,7 @@ const TestProvider = ({
           goToStep: goToStepMock,
           canGoBack: () => history.length > 1,
           clearHistory: jest.fn(),
+          resetNavigation: resetNavigationMock,
           setReturnToStep: jest.fn(),
         }}
       >

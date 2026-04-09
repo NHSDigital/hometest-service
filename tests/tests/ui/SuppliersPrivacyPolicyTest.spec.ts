@@ -7,7 +7,7 @@ let orderId: string;
 let patientId: string;
 let orderId2: string;
 
-test.describe("Suppliers Privacy Policy Page", () => {
+test.describe("Suppliers Privacy Policy Page", { tag: "@db" }, () => {
   test.beforeAll(
     "Connect to the database and create a patient and orders with different suppliers",
     async ({ testedUser, testOrderDb }) => {

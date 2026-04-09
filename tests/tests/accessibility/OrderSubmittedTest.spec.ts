@@ -5,7 +5,7 @@ import { AddressModel } from "../../models/Address";
 
 const randomAddress = AddressModel.getRandomAddress();
 
-test.describe("Accessibility Testing @accessibility", () => {
+test.describe("Accessibility Testing @accessibility", { tag: ["@accessibility", "@db"] }, () => {
   test.afterAll(async ({ testedUser, testOrderDb }) => {
     const patientId = await testOrderDb.getPatientUidByNhsNumber(testedUser.nhsNumber!);
     if (patientId) {

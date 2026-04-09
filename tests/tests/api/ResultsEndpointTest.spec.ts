@@ -14,7 +14,7 @@ let orderId: string;
 let patientId: string;
 let correlationId: string;
 
-test.describe("GET Result API", () => {
+test.describe("GET Result API", { tag: ["@API", "@db"] }, () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser, testOrderDb, testResultDb }) => {
