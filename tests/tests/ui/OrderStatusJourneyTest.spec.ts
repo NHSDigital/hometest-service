@@ -15,7 +15,7 @@ const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
 const config = ConfigFactory.getConfig();
 
-test.describe("Order Status Page", () => {
+test.describe("Order Status Page", { tag: "@db" }, () => {
   test.beforeAll(
     "Connect to the database and create a patient, order, initial order status and result status",
     async ({ testedUser, testOrderDb }) => {
@@ -57,11 +57,13 @@ test.describe("Order Status Page", () => {
     orderStatusPage,
     errorPage,
     testOrderDb,
+    scanA11y,
   }) => {
     expect((await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
     await orderStatusPage.navigateToOrder(orderId);
     await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
     await expect(orderStatusPage.statusTag).toHaveText("Confirmed");
+    await scanA11y("order-tracking-status-confirmed");
     const orderReferenceOnPage = await orderStatusPage.getOrderReference();
     expect(orderReferenceOnPage).toBe(orderReference);
   });
@@ -71,12 +73,14 @@ test.describe("Order Status Page", () => {
       orderStatusPage,
       errorPage,
       testOrderDb,
+      scanA11y,
     }) => {
       await testOrderDb.updateOrderStatus(orderId, status);
       expect((await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderId)).count).toBe(1);
       await orderStatusPage.navigateToOrder(orderId);
       await expect(errorPage.orderNotFoundMessage).not.toBeVisible();
       await expect(orderStatusPage.statusTag).toHaveText(tag);
+      await scanA11y(`order-tracking-status-${status.toLowerCase()}`);
       const orderReferenceOnPage = await orderStatusPage.getOrderReference();
       expect(orderReferenceOnPage).toBe(orderReference);
     });

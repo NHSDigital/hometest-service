@@ -156,37 +156,48 @@ describe("OrderStatusService", () => {
     });
   });
 
-  describe("isFirstStatusOccurrence", () => {
-    it("should return true for first occurrence", async () => {
+  describe("getOrderStatusCreatedAt", () => {
+    it("should return the created_at timestamp for order status", async () => {
       mockQuery.mockResolvedValue({
-        rows: [{ count: 1 }],
+        rows: [{ created_at: "2024-01-15T10:00:00Z" }],
         rowCount: 1,
       });
 
-      const result = await service.isFirstStatusOccurrence(
+      const result = await service.getOrderStatusCreatedAt(
         "some-mocked-order-id",
         OrderStatusCodes.DISPATCHED,
       );
 
-      expect(result).toBe(true);
-      expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining("COUNT(*)::int"), [
-        "some-mocked-order-id",
-        OrderStatusCodes.DISPATCHED,
-      ]);
+      expect(result).toBe("2024-01-15T10:00:00Z");
+      expect(mockQuery).toHaveBeenCalledWith(
+        `
+      SELECT created_at
+      FROM order_status
+      WHERE order_uid = $1::uuid AND status_code = $2
+      ORDER BY created_at DESC
+      LIMIT 1;
+    `,
+        ["some-mocked-order-id", OrderStatusCodes.DISPATCHED],
+      );
     });
 
-    it("should return false when status already exists", async () => {
+    it("should throw error when status has not been recorded", async () => {
       mockQuery.mockResolvedValue({
-        rows: [{ count: 2 }],
-        rowCount: 1,
+        rows: [],
+        rowCount: 0,
       });
 
-      const result = await service.isFirstStatusOccurrence(
-        "some-mocked-order-id",
-        OrderStatusCodes.DISPATCHED,
-      );
+      await expect(
+        service.getOrderStatusCreatedAt("some-mocked-order-id", OrderStatusCodes.DISPATCHED),
+      ).rejects.toThrow("Failed to retrieve order status created_at");
+    });
 
-      expect(result).toBe(false);
+    it("should throw error on database failure", async () => {
+      mockQuery.mockRejectedValue(new Error("DB connection failed"));
+
+      await expect(
+        service.getOrderStatusCreatedAt("some-mocked-order-id", OrderStatusCodes.DISPATCHED),
+      ).rejects.toThrow("Failed to retrieve order status created_at");
     });
   });
 });

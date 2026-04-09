@@ -1,5 +1,5 @@
-import { OrderDbClient, type Order } from "./order-db-client";
 import { type DBClient } from "./db-client";
+import { type Order, OrderDbClient } from "./order-db-client";
 
 describe("OrderDbClient", () => {
   let orderDbClient: OrderDbClient;
@@ -45,11 +45,7 @@ describe("OrderDbClient", () => {
         rowCount: 1,
       });
 
-      const result = await orderDbClient.getOrder(
-        orderId,
-        nhsNumber,
-        dateOfBirth,
-      );
+      const result = await orderDbClient.getOrder(orderId, nhsNumber, dateOfBirth);
 
       expect(result).toEqual(mockOrder);
       expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
@@ -65,11 +61,7 @@ describe("OrderDbClient", () => {
         rowCount: 0,
       });
 
-      const result = await orderDbClient.getOrder(
-        orderId,
-        nhsNumber,
-        dateOfBirth,
-      );
+      const result = await orderDbClient.getOrder(orderId, nhsNumber, dateOfBirth);
 
       expect(result).toBeNull();
       expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
@@ -113,8 +105,7 @@ describe("OrderDbClient", () => {
       const actualQuery = mockDbClient.query.mock.calls[0][0];
 
       // Normalize whitespace for comparison
-      const normalizeQuery = (query: string) =>
-        query.replace(/\s+/g, " ").trim();
+      const normalizeQuery = (query: string) => query.replace(/\s+/g, " ").trim();
 
       expect(normalizeQuery(actualQuery)).toBe(normalizeQuery(expectedQuery));
       expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
@@ -128,9 +119,83 @@ describe("OrderDbClient", () => {
       const dbError = new Error("Database connection failed");
       mockDbClient.query.mockRejectedValue(dbError);
 
-      await expect(
-        orderDbClient.getOrder(orderId, nhsNumber, dateOfBirth),
-      ).rejects.toThrow("Database connection failed");
+      await expect(orderDbClient.getOrder(orderId, nhsNumber, dateOfBirth)).rejects.toThrow(
+        "Database connection failed",
+      );
+    });
+  });
+
+  describe("getOrderCreatedAt", () => {
+    const orderId = "550e8400-e29b-41d4-a716-446655440000";
+
+    it("should return created_at timestamp for order", async () => {
+      const createdAt = "2026-02-15T10:30:00Z";
+      mockDbClient.query.mockResolvedValue({
+        rows: [{ created_at: createdAt }],
+        rowCount: 1,
+      });
+
+      const result = await orderDbClient.getOrderCreatedAt(orderId);
+
+      expect(result).toBe(createdAt);
+      expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [orderId]);
+    });
+
+    it("should throw error when order not found", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [],
+        rowCount: 0,
+      });
+
+      await expect(orderDbClient.getOrderCreatedAt(orderId)).rejects.toThrow(
+        "Failed to retrieve order created_at for orderId",
+      );
+    });
+
+    it("should throw error when database query fails", async () => {
+      const dbError = new Error("Database connection failed");
+      mockDbClient.query.mockRejectedValue(dbError);
+
+      await expect(orderDbClient.getOrderCreatedAt(orderId)).rejects.toThrow(
+        "Failed to retrieve order created_at",
+      );
+    });
+  });
+
+  describe("getOrderReferenceNumber", () => {
+    const orderId = "550e8400-e29b-41d4-a716-446655440000";
+
+    it("should return reference number for order", async () => {
+      const referenceNumber = "12345";
+      mockDbClient.query.mockResolvedValue({
+        rows: [{ order_reference: referenceNumber }],
+        rowCount: 1,
+      });
+
+      const result = await orderDbClient.getOrderReferenceNumber(orderId);
+
+      expect(result).toBe(referenceNumber);
+      expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [orderId]);
+    });
+
+    it("should throw error when order not found", async () => {
+      mockDbClient.query.mockResolvedValue({
+        rows: [],
+        rowCount: 0,
+      });
+
+      await expect(orderDbClient.getOrderReferenceNumber(orderId)).rejects.toThrow(
+        "Failed to retrieve order reference number for orderId",
+      );
+    });
+
+    it("should throw error when database query fails", async () => {
+      const dbError = new Error("Database connection failed");
+      mockDbClient.query.mockRejectedValue(dbError);
+
+      await expect(orderDbClient.getOrderReferenceNumber(orderId)).rejects.toThrow(
+        "Failed to retrieve order reference number",
+      );
     });
   });
 });

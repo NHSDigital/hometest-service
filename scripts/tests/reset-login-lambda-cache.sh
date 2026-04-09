@@ -8,27 +8,48 @@
 # Usage:
 #   bash scripts/tests/reset-login-lambda-cache.sh
 #   bash scripts/tests/reset-login-lambda-cache.sh my-custom-function-name
+#
+# Environment variables:
+#   ENV               - Target environment (local, dev, uat). Default: local
+#   AWS_LAMBDA_NAME   - Override Lambda function name for remote environments.
 set -euo pipefail
 
 FUNCTION_NAME="${1:-hometest-service-login}"
+ENV="${ENV:-local}"
 LOCALSTACK_CONTAINER="${LOCALSTACK_CONTAINER:-localstack-main}"
 
-if ! docker ps --format "{{.Names}}" | grep -q "^${LOCALSTACK_CONTAINER}$"; then
-  echo "⚠️  LocalStack container '${LOCALSTACK_CONTAINER}' is not running — skipping Lambda cache reset"
-  exit 0
+if [[ "${ENV}" == "local" ]]; then
+  # Local mode: use LocalStack inside Docker
+  if ! docker ps --format "{{.Names}}" | grep -q "^${LOCALSTACK_CONTAINER}$"; then
+    echo "⚠️  LocalStack container '${LOCALSTACK_CONTAINER}' is not running — skipping Lambda cache reset"
+    exit 0
+  fi
+
+  echo "♻️  Resetting JWKS cache for Lambda (LocalStack): ${FUNCTION_NAME}"
+
+  docker exec "${LOCALSTACK_CONTAINER}" awslocal lambda update-function-configuration \
+    --function-name "${FUNCTION_NAME}" \
+    --description "cache-bust-$(date +%s)" \
+    --output text > /dev/null
+else
+  # Remote mode: use real AWS CLI
+  REMOTE_FUNCTION_NAME="${AWS_LAMBDA_NAME:-nhs-hometest-poc-${ENV}-login-lambda}"
+
+  if ! command -v aws &>/dev/null; then
+    echo "⚠️  AWS CLI not found — skipping Lambda cache reset for ${ENV}"
+    exit 0
+  fi
+
+  echo "♻️  Resetting JWKS cache for Lambda (AWS ${ENV}): ${REMOTE_FUNCTION_NAME}"
+
+  AWS_ARGS=(--function-name "${REMOTE_FUNCTION_NAME}" --description "cache-bust-$(date +%s)" --output text)
+  [[ -n "${AWS_REGION:-}" ]] && AWS_ARGS+=(--region "${AWS_REGION}")
+  [[ -n "${AWS_PROFILE:-}" ]] && AWS_ARGS+=(--profile "${AWS_PROFILE}")
+
+  aws lambda update-function-configuration "${AWS_ARGS[@]}" > /dev/null 2>&1 || {
+    echo "⚠️  Could not reset Lambda cache for ${REMOTE_FUNCTION_NAME} — continuing anyway"
+    exit 0
+  }
 fi
-
-echo "♻️  Resetting JWKS cache for Lambda: ${FUNCTION_NAME}"
-
-# Force a Lambda cold start by updating the function description (no-op change).
-# This signals LocalStack to retire the current warm execution environment so the
-# next invocation cold-starts with an empty JwksClient cache, fetching fresh JWKS.
-#
-# We update only the description — never the environment variables — so we cannot
-# accidentally wipe the function's configuration.
-docker exec "${LOCALSTACK_CONTAINER}" awslocal lambda update-function-configuration \
-  --function-name "${FUNCTION_NAME}" \
-  --description "cache-bust-$(date +%s)" \
-  --output text > /dev/null
 
 echo "✅ Lambda cache invalidated: ${FUNCTION_NAME}"

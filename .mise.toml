@@ -13,30 +13,30 @@ install_before = "7d"
 ## Infrastructure tools
 
 # https://github.com/hashicorp/terraform/releases
-terraform = "1.14.4"
+terraform = "1.14.8"
 
 # https://github.com/gruntwork-io/terragrunt/releases
-terragrunt = "0.99.1"
+terragrunt = "1.0.0"
 
 # https://github.com/terraform-linters/tflint/releases
 tflint = "0.61.0"
 
 # https://github.com/terraform-docs/terraform-docs/releases
-terraform-docs = "0.21.0"
+terraform-docs = "0.22.0"
 
 # https://github.com/aws/aws-cli/tags
-awscli = "2.33.13"
+awscli = "2.34.26"
+
+# https://devguide.python.org/versions/
+python = "3.14.3"
 
 ## Security scanning
 
 # https://github.com/aquasecurity/trivy/releases
 "aqua:aquasecurity/trivy" = "v0.69.3"
 
-# https://github.com/bridgecrewio/checkov/releases
-# checkov = "latest"
-
 # https://github.com/gitleaks/gitleaks/releases
-gitleaks = "8.18.4"
+gitleaks = "8.30.1"
 
 ## Pre-commit and linting
 
@@ -52,10 +52,7 @@ vale = "3.14.1"
 ## Application dependencies
 
 # https://nodejs.org/en/download/releases
-node = "24"
-
-# https://www.python.org/downloads/
-python = "3.12"
+node = "24.14.1"
 
 [tasks.pre-commit]
 description = "Run pre-commit checks on all files"

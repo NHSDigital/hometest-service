@@ -416,12 +416,7 @@ describe("Order Status Lambda Handler", () => {
           patientId: MOCK_PATIENT_UID,
           correlationId: MOCK_CORRELATION_ID,
           orderId: MOCK_ORDER_UID,
-          statusUpdate: expect.objectContaining({
-            orderId: MOCK_ORDER_UID,
-            statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
-            createdAt: validTaskBody.lastModified,
-            correlationId: MOCK_CORRELATION_ID,
-          }),
+          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
         }),
       );
     });
@@ -439,9 +434,7 @@ describe("Order Status Lambda Handler", () => {
       expect(result.statusCode).toBe(201);
       expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
         expect.objectContaining({
-          statusUpdate: expect.objectContaining({
-            statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
-          }),
+          statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
         }),
       );
     });

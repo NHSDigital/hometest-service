@@ -3,7 +3,6 @@ import { randomUUID } from "crypto";
 import { APIResponse, expect } from "@playwright/test";
 
 import type { TestOrderDbClient } from "../../db/TestOrderDbClient";
-import type { TestResultDbClient } from "../../db/TestResultDbClient";
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
@@ -30,7 +29,7 @@ interface OrderData {
   supplierId: string;
 }
 
-test.describe("Home test E2E tests", () => {
+test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
   async function completeOrderJourney(context: {
     homeTestStartPage: any;
     enterDeliveryAddressPage: any;
