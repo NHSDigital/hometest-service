@@ -11,6 +11,9 @@ const mockNavigationContext = {
   goBack: jest.fn(),
   canGoBack: jest.fn(() => true),
   clearHistory: jest.fn(),
+  resetNavigation: jest.fn(),
+  returnToStep: null,
+  setReturnToStep: jest.fn(),
 };
 
 jest.mock("@/state", () => ({
@@ -103,6 +106,33 @@ describe("FormBackLink", () => {
       // BackLink should still be rendered but with empty text
       // Check for the back link container class
       expect(document.querySelector(".nhsuk-back-link")).toBeInTheDocument();
+    });
+  });
+
+  describe("Conditional Rendering Logic", () => {
+    it("shows when canGoBack returns true", () => {
+      mockNavigationContext.canGoBack.mockReturnValue(true);
+
+      render(<FormBackLink />);
+
+      expect(screen.getByText("Back")).toBeInTheDocument();
+    });
+
+    it("hides when canGoBack returns false and no onClick", () => {
+      mockNavigationContext.canGoBack.mockReturnValue(false);
+
+      render(<FormBackLink />);
+
+      expect(screen.queryByText("Back")).not.toBeInTheDocument();
+    });
+
+    it("shows when canGoBack returns false but onClick is provided", () => {
+      mockNavigationContext.canGoBack.mockReturnValue(false);
+      const mockOnClick = jest.fn();
+
+      render(<FormBackLink onClick={mockOnClick} />);
+
+      expect(screen.getByText("Back")).toBeInTheDocument();
     });
   });
 });

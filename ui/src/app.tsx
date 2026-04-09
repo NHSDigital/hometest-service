@@ -1,12 +1,11 @@
 import * as React from "react";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import ErrorRedirect from "./components/ErrorRedirect";
 import JourneyLayout from "./layouts/JourneyLayout";
 import MainLayout from "./layouts/MainLayout";
 import { JourneyStepNames, RoutePath } from "./lib/models/route-paths";
 import CallbackPage from "./routes/CallbackPage";
-import HomePage from "./routes/HomePage";
 import HomeTestPrivacyPolicyPage from "./routes/HomeTestPrivacyPolicyPage";
 import HomeTestTermsOfUsePage from "./routes/HomeTestTermsOfUsePage";
 import LoginPage from "./routes/LoginPage";
@@ -75,7 +74,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: RoutePath.HomePage,
-        element: <HomePage />,
+        element: <Navigate to={RoutePath.GetSelfTestKitPage} replace />,
       },
       {
         path: RoutePath.OrderTrackingPage,

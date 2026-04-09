@@ -8,6 +8,7 @@ import { CreateOrderProvider, JourneyNavigationProvider, useCreateOrderContext }
 const mockGoToStep = jest.fn();
 const mockSetReturnToStep = jest.fn();
 const mockGoBack = jest.fn();
+const mockResetNavigation = jest.fn();
 
 jest.mock("@/state", () => {
   const actual = jest.requireActual("@/state");
@@ -21,6 +22,7 @@ jest.mock("@/state", () => {
       goBack: mockGoBack,
       canGoBack: () => false,
       clearHistory: jest.fn(),
+      resetNavigation: mockResetNavigation,
       setReturnToStep: mockSetReturnToStep,
     }),
   };
