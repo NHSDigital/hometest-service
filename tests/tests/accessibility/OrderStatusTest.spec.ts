@@ -20,7 +20,7 @@ const ORDER_STATUS_STEPS: OrderStatusStep[] = [
 let orderId: string;
 let patientId: string;
 
-test.describe("Accessibility Testing @accessibility", () => {
+test.describe("Accessibility Testing @accessibility", { tag: ["@accessibility", "@db"] }, () => {
   test.beforeEach(async ({ testedUser, testOrderDb }) => {
     const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(testedUser).build(),

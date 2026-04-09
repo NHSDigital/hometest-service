@@ -9,7 +9,7 @@ let orderId: string;
 let patientId: string;
 let correlationId: string;
 
-test.describe("Accessibility Testing @accessibility", () => {
+test.describe("Accessibility Testing @accessibility", { tag: ["@accessibility", "@db"] }, () => {
   test.beforeAll(async ({ testedUser, testOrderDb, testResultDb }) => {
     const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder().withUser(testedUser).withStatus("COMPLETE").build(),

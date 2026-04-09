@@ -1,12 +1,22 @@
 "use client";
 
-import FormPageLayout from "@/layouts/FormPageLayout";
+import { useLayoutEffect } from "react";
+
 import { useContent } from "@/hooks";
-import { useCreateOrderContext } from "@/state";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { RoutePath } from "@/lib/models/route-paths";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function OrderSubmittedPage() {
   const { orderAnswers } = useCreateOrderContext();
+  const { resetNavigation } = useJourneyNavigationContext();
   const { "order-submitted": content } = useContent();
+
+  useLayoutEffect(() => {
+    if (orderAnswers.orderReferenceNumber == null) {
+      resetNavigation(RoutePath.GetSelfTestKitPage, { replace: true });
+    }
+  }, [orderAnswers.orderReferenceNumber, resetNavigation]);
 
   const referenceNumber = orderAnswers.orderReferenceNumber ?? "[Reference Number]";
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
