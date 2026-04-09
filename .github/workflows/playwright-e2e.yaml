@@ -2,6 +2,7 @@
 name: "Playwright E2E Tests"
 run-name: "E2E Tests: browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
+# Add concurrency to prevent multiple runs for the same branch/PR and reduce noise in CI
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
