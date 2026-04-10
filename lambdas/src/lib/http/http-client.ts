@@ -1,14 +1,11 @@
-import { Agent, fetch as undiciFetch } from 'undici';
+import { Agent, fetch as undiciFetch } from "undici";
 
 // Use undici's own fetch so that the Agent dispatcher is compatible at runtime.
 // Cast to the global fetch type to avoid type conflicts between undici and undici-types.
 const fetchFn = undiciFetch as unknown as typeof fetch;
 
 export interface HttpClient {
-  get<T>(
-    url: string,
-    headers?: Record<string, string>,
-  ): Promise<T>;
+  get<T>(url: string, headers?: Record<string, string>): Promise<T>;
   post<T>(
     url: string,
     body: any,
@@ -50,7 +47,7 @@ export class FetchHttpClient implements HttpClient {
     if (this.dispatcher) {
       return fetchFn(url, {
         ...init,
-        ...(({ dispatcher: this.dispatcher } as unknown as RequestInit)),
+        ...({ dispatcher: this.dispatcher } as unknown as RequestInit),
       });
     }
     return fetch(url, init);
