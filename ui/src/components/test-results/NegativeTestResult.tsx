@@ -1,12 +1,11 @@
 import { AboutService } from "@/components/AboutService";
+import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 import { OrderStatusHeader } from "@/components/order-status";
 import { MedicalAbbreviationsHelp } from "@/components/test-results/MedicalAbbreviationsHelp";
 import { MoreOptionsAndInformation } from "@/components/test-results/MoreOptionsAndInformation";
 import { usePageContent } from "@/hooks";
 import { OrderDetails } from "@/lib/models/order-details";
 import supplierService from "@/lib/services/supplier-service";
-
-import { OpensInNewTabLink } from "../OpensInNewTabLink";
 
 interface NegativeTestResultProps {
   order: OrderDetails;
