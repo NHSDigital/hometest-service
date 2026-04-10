@@ -1,4 +1,4 @@
-import { createSign, generateKeyPairSync } from "node:crypto";
+import { createSign, generateKeyPairSync, randomBytes } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -8,6 +8,10 @@ import type { NHSLoginMockedUser } from "./BaseUser";
 import { SpecialUserKey } from "./SpecialUserKey";
 
 const WIREMOCK_ISSUER = "http://wiremock:8080";
+// Per-process nonce appended to kid values so that every run produces unique kids.
+// This forces the lambda's JwksClient (which caches by kid) to re-fetch the JWKS
+// instead of serving stale public keys from a previous push.
+const KID_NONCE = randomBytes(4).toString("hex");
 const WIREMOCK_AUDIENCE = "hometest";
 const WIREMOCK_SCOPE = "openid profile email phone nhs_number";
 const TOKEN_LIFETIME_SECONDS = 60 * 60;
@@ -145,7 +149,7 @@ function createWireMockAuthContext(
   };
   const now = Math.floor(Date.now() / 1000);
   const exp = now + TOKEN_LIFETIME_SECONDS;
-  const kid = `wiremock-key-${suffix}`;
+  const kid = `wiremock-key-${suffix}-${KID_NONCE}`;
   const sub = `wiremock-sub-${user.nhsNumber}`;
   const code = `wiremock-auth-code-${suffix}`;
 
