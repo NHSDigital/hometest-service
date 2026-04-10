@@ -1,4 +1,8 @@
-import { Agent } from 'undici';
+import { Agent, fetch as undiciFetch } from 'undici';
+
+// Use undici's own fetch so that the Agent dispatcher is compatible at runtime.
+// Cast to the global fetch type to avoid type conflicts between undici and undici-types.
+const fetchFn = undiciFetch as unknown as typeof fetch;
 
 export interface HttpClient {
   get<T>(
@@ -39,14 +43,26 @@ export class FetchHttpClient implements HttpClient {
     }
   }
 
+  // When a custom dispatcher is set, use undici's own fetch so the Agent instance
+  // is compatible. Without a dispatcher, fall back to the global fetch so that
+  // unit-test mocks on global.fetch continue to work.
+  private doFetch(url: string, init: RequestInit): Promise<Response> {
+    if (this.dispatcher) {
+      return fetchFn(url, {
+        ...init,
+        ...(({ dispatcher: this.dispatcher } as unknown as RequestInit)),
+      });
+    }
+    return fetch(url, init);
+  }
+
   async get<T>(url: string, headers?: Record<string, string>): Promise<T> {
-    const response = await fetch(url, {
+    const response = await this.doFetch(url, {
       method: "GET",
       headers: {
         Accept: "application/json",
         ...headers,
       },
-      ...(this.dispatcher ? ({ dispatcher: this.dispatcher } as unknown as RequestInit) : {}),
     });
 
     if (!response.ok) {
@@ -67,7 +83,7 @@ export class FetchHttpClient implements HttpClient {
     headers?: Record<string, string>,
     contentType: string = "application/json",
   ): Promise<T> {
-    const response = await fetch(url, {
+    const response = await this.doFetch(url, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -75,7 +91,6 @@ export class FetchHttpClient implements HttpClient {
         ...headers,
       },
       body: typeof body === "string" ? body : JSON.stringify(body),
-      ...(this.dispatcher ? ({ dispatcher: this.dispatcher } as unknown as RequestInit) : {}),
     });
 
     if (!response.ok) {
@@ -96,7 +111,7 @@ export class FetchHttpClient implements HttpClient {
     headers?: Record<string, string>,
     contentType: string = "application/json",
   ): Promise<Response> {
-    const response = await fetch(url, {
+    const response = await this.doFetch(url, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -104,7 +119,6 @@ export class FetchHttpClient implements HttpClient {
         ...headers,
       },
       body: typeof body === "string" ? body : JSON.stringify(body),
-      ...(this.dispatcher ? ({ dispatcher: this.dispatcher } as unknown as RequestInit) : {}),
     });
 
     if (!response.ok) {
