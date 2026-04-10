@@ -40,13 +40,5 @@ export function OrderStatusContent({ order }: Readonly<OrderStatusContentProps>)
     }
   };
 
-  return (
-    <section
-      className="nhsuk-u-margin-bottom-5"
-      aria-live="polite"
-      aria-label={`Order status: ${order.status}`}
-    >
-      {renderStatus()}
-    </section>
-  );
+  return renderStatus();
 }
