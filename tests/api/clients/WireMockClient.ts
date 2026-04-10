@@ -31,20 +31,32 @@ export class WireMockClient {
   }
 
   async createMapping(mapping: WireMockMapping): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/__admin/mappings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(mapping),
-    });
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const response = await fetch(`${this.baseUrl}/__admin/mappings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mapping),
+      });
 
-    if (!response.ok) {
+      if (response.ok) {
+        const body = (await response.json()) as WireMockMappingResponse;
+        this.createdMappingIds.push(body.id);
+        return body.id;
+      }
+
+      if (response.status === 403 && attempt < maxRetries) {
+        console.warn(
+          `⚠️ WireMock admin returned 403 (attempt ${attempt + 1}/${maxRetries + 1}), retrying...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        continue;
+      }
+
       const text = await response.text();
       throw new Error(`Failed to create WireMock mapping: ${response.status} ${text}`);
     }
-
-    const body = (await response.json()) as WireMockMappingResponse;
-    this.createdMappingIds.push(body.id);
-    return body.id;
+    throw new Error("Unreachable");
   }
 
   async deleteMapping(mappingId: string): Promise<void> {

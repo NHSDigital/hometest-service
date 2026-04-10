@@ -13,7 +13,7 @@ let orderReference: number;
 const nhsNumber2 = "9876543211";
 const birthDate2 = "1990-01-01";
 
-test.describe("Results Page", { tag: "@ui" }, () => {
+test.describe("Results Page", { tag: ["@ui", "@db"] }, () => {
   test.beforeAll(
     "Connect to the database and create second patient order",
     async ({ testOrderDb }) => {

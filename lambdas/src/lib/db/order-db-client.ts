@@ -61,4 +61,52 @@ export class OrderDbClient {
 
     return result?.rows[0] ?? null;
   }
+
+  public async getOrderCreatedAt(orderId: string): Promise<string> {
+    const query = `
+      SELECT created_at
+      FROM test_order
+      WHERE order_uid = $1::uuid
+      LIMIT 1;
+    `;
+
+    try {
+      const result = await this.dbClient.query<{ created_at: string }, [string]>(query, [orderId]);
+
+      if (result.rowCount === 0) {
+        throw new Error(`Order not found for orderId ${orderId}`);
+      }
+
+      return result.rows[0].created_at;
+    } catch (error) {
+      throw new Error(`Failed to retrieve order created_at for orderId ${orderId}`, {
+        cause: error,
+      });
+    }
+  }
+
+  public async getOrderReferenceNumber(orderId: string): Promise<string> {
+    const query = `
+      SELECT order_reference
+      FROM test_order
+      WHERE order_uid = $1::uuid
+      LIMIT 1;
+    `;
+
+    try {
+      const result = await this.dbClient.query<{ order_reference: string }, [string]>(query, [
+        orderId,
+      ]);
+
+      if (result.rowCount === 0) {
+        throw new Error(`Order not found for orderId ${orderId}`);
+      }
+
+      return result.rows[0].order_reference;
+    } catch (error) {
+      throw new Error(`Failed to retrieve order reference number for orderId ${orderId}`, {
+        cause: error,
+      });
+    }
+  }
 }

@@ -18,5 +18,5 @@ export enum EnvironmentVariables {
   WIREMOCK_BASE_URL = "WIREMOCK_BASE_URL",
 }
 
-export const availableEnvironments = ["local", "dev"] as const;
+export const availableEnvironments = ["local", "dev", "uat"] as const;
 export type Environment = (typeof availableEnvironments)[number];
