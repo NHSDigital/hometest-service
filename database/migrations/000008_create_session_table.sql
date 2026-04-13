@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS session
 (
-  session_id uuid PRIMARY KEY,
+  session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   refresh_token_id uuid NOT NULL,
   nhs_access_token text NOT NULL,
   iss text NOT NULL,
