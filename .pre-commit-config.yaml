@@ -32,47 +32,47 @@ repos:
 
       - id: prettier-formatting
         name: prettier-formatting
-        entry: pnpm run format:pre-commit --
+        entry: bun run format:pre-commit --
         language: system
 
       - id: eslint-ui
         name: ESLint (UI)
-        entry: pnpm -C ui run lint --fix
+        entry: bun run --cwd ui lint --fix
         language: system
         files: ^ui/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
       - id: eslint-lambdas
         name: ESLint (Lambdas)
-        entry: pnpm -C lambdas run lint --fix
+        entry: bun run --cwd lambdas lint --fix
         language: system
         files: ^lambdas/.*\.(ts|js)$
         pass_filenames: false
 
       - id: eslint-tests
         name: ESLint (Tests)
-        entry: pnpm -C tests run lint --fix
+        entry: bun run --cwd tests lint --fix
         language: system
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false
 
       - id: check-typescript-ui
         name: TypeScript (UI)
-        entry: pnpm -C ui run check-typescript
+        entry: bun run --cwd ui check-typescript
         language: system
         files: ^ui/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
       - id: check-typescript-lambdas
         name: TypeScript (Lambdas)
-        entry: pnpm -C lambdas run check-typescript
+        entry: bun run --cwd lambdas check-typescript
         language: system
         files: ^lambdas/.*\.(ts|js)$
         pass_filenames: false
 
       - id: check-typescript-tests
         name: TypeScript (Tests)
-        entry: pnpm -C tests run check-typescript
+        entry: bun run --cwd tests check-typescript
         language: system
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false
@@ -86,7 +86,7 @@ repos:
         entry: yamllint
         language: python
         types: [file, yaml]
-        exclude: pnpm-lock.yaml
+        exclude: bun.lock
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli

@@ -63,30 +63,30 @@ Before every commit, ensure your code compiles:
 
 ```bash
 # In the root directory
-pnpm run build
+bun run build
 
 # Or check TypeScript compilation
-pnpm exec tsc --noEmit
+bunx tsc --noEmit
 
 # For tests directory
 cd tests
-pnpm run build
+bun run build
 # or
-pnpm exec tsc --noEmit
+bunx tsc --noEmit
 ```
 
 **For Lambda functions:**
 
 ```bash
 cd lambdas
-pnpm run build
+bun run build
 ```
 
 **For UI:**
 
 ```bash
 cd ui
-pnpm run build
+bun run build
 ```
 
 #### Fixing Compilation Errors
@@ -101,7 +101,7 @@ If you see compilation errors:
 **Example of compilation error:**
 
 ```bash
-$ pnpm run build
+$ bun run build
 
 src/test.ts:10:5 - error TS2322: Type 'string' is not assignable to type 'number'.
 
@@ -114,7 +114,7 @@ Found 1 error in src/test.ts:10
 **Fix it, then verify:**
 
 ```bash
-$ pnpm run build
+$ bun run build
 ✓ Build completed successfully
 ```
 
@@ -619,7 +619,7 @@ export { expect } from "@playwright/test";
 
 When creating a PR, verify:
 
-- [ ] **Code compiles without any errors** (`pnpm run build` succeeds)
+- [ ] **Code compiles without any errors** (`bun run build` succeeds)
 - [ ] **Run branch checks** before opening PR (English usage, markdown format, file format)
 - [ ] Using the same PR process as all team members
 - [ ] Ready to respond to each commit during review
