@@ -1,4 +1,3 @@
-import { Commons } from "../commons";
 import { OrderStatus, ResultStatus } from "../types/status";
 import { OrderResultSummary, OrderService } from "./order-db";
 
@@ -6,7 +5,6 @@ const normalizeWhitespace = (sql: string): string => sql.replace(/\s+/g, " ").tr
 
 describe("OrderService", () => {
   let dbClient: any;
-  let commons: Pick<Commons, "logError">;
   let orderService: OrderService;
 
   beforeEach(() => {
@@ -14,10 +12,7 @@ describe("OrderService", () => {
       query: jest.fn(),
       withTransaction: jest.fn(),
     };
-    commons = {
-      logError: jest.fn(),
-    };
-    orderService = new OrderService(dbClient, commons as any as Commons);
+    orderService = new OrderService(dbClient);
   });
 
   describe("retrieveOrderDetails", () => {
@@ -82,14 +77,10 @@ describe("OrderService", () => {
         normalizeWhitespace(expectedRetrieveOrderDetailsQuery),
       );
       expect(dbClient.query.mock.calls[0][1]).toEqual(["order-500"]);
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-db",
-        "Failed to retrieve order details",
-        {
-          error,
-          orderUid: "order-500",
-        },
-      );
+      expect(console.error).toHaveBeenCalledWith("order-db", "Failed to retrieve order details", {
+        error,
+        orderUid: "order-500",
+      });
     });
   });
 
@@ -208,7 +199,7 @@ describe("OrderService", () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(commons.logError).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         "order-db",
         "Failed to update order and result status",
         {

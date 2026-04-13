@@ -1,4 +1,3 @@
-import { Commons } from "../commons";
 import { OrderStatus, ResultStatus } from "../types/status";
 import { DBClient } from "./db-client";
 
@@ -18,10 +17,8 @@ export interface OrderPatientReference {
 
 export class OrderService {
   private readonly dbClient: DBClient;
-  private readonly commons: Commons;
-  constructor(dbClient: DBClient, commons: Commons) {
+  constructor(dbClient: DBClient) {
     this.dbClient = dbClient;
-    this.commons = commons;
   }
 
   async retrieveOrderDetails(orderUid: string): Promise<OrderResultSummary | null> {
@@ -45,7 +42,7 @@ export class OrderService {
       const result = await this.dbClient.query<OrderResultSummary, [string]>(query, [orderUid]);
       return result.rows[0] || null;
     } catch (error) {
-      this.commons.logError("order-db", "Failed to retrieve order details", { error, orderUid });
+      console.error("order-db", "Failed to retrieve order details", { error, orderUid });
       throw error;
     }
   }
@@ -64,7 +61,7 @@ export class OrderService {
       const result = await this.dbClient.query<OrderPatientReference, [string]>(query, [orderUid]);
       return result.rows[0] || null;
     } catch (error) {
-      this.commons.logError("order-db", "Failed to retrieve order-patient association", {
+      console.error("order-db", "Failed to retrieve order-patient association", {
         error,
         orderUid,
       });
@@ -99,7 +96,7 @@ export class OrderService {
         await dbClient.query(resultStatusQuery, [orderUid, resultStatus, correlationId]);
       });
     } catch (error) {
-      this.commons.logError("order-db", "Failed to update order and result status", {
+      console.error("order-db", "Failed to update order and result status", {
         error,
         orderUid,
       });

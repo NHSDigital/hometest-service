@@ -4,19 +4,11 @@ import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-respons
 import { ResultStatus } from "../lib/types/status";
 import { lambdaHandler } from "./index";
 
-const mockLogInfo = jest.fn();
-const mockLogDebug = jest.fn();
-const mockLogError = jest.fn();
 const mockUpdateResultStatus = jest.fn();
 const mockRetrievePatientIdFromOrder = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
-    commons: {
-      logInfo: mockLogInfo,
-      logDebug: mockLogDebug,
-      logError: mockLogError,
-    },
     resultService: {
       updateResultStatus: mockUpdateResultStatus,
     },
@@ -40,6 +32,7 @@ jest.mock("../lib/fhir-response", () => ({
 const VALID_ORDER_UUID = "123a1234-a12b-1234-abcd-1234567890ab";
 const VALID_PATIENT_UUID = "123a1234-a12b-1234-abcd-1234567890ab";
 const VALID_CORRELATION_ID = "123a1234-a12b-1234-abcd-1234567890ab";
+const VALID_HEADERS = { "X-Correlation-ID": VALID_CORRELATION_ID };
 
 const validTask = {
   resourceType: "Task",
@@ -66,9 +59,6 @@ describe("result-status-lambda handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockLogInfo.mockReset();
-    mockLogDebug.mockReset();
-    mockLogError.mockReset();
     mockUpdateResultStatus.mockReset();
     mockRetrievePatientIdFromOrder.mockReset();
 
@@ -81,7 +71,7 @@ describe("result-status-lambda handler", () => {
 
   describe("request body parsing", () => {
     it("returns 400 when body is null", async () => {
-      const res = await lambdaHandler(makeEvent(null));
+      const res = await lambdaHandler(makeEvent(null, VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -93,7 +83,7 @@ describe("result-status-lambda handler", () => {
     });
 
     it("returns 400 when body is invalid JSON", async () => {
-      const res = await lambdaHandler(makeEvent("not-valid-json"));
+      const res = await lambdaHandler(makeEvent("not-valid-json", VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -117,7 +107,9 @@ describe("result-status-lambda handler", () => {
     });
 
     it("returns 400 when task fails schema validation", async () => {
-      const res = await lambdaHandler(makeEvent(JSON.stringify({ resourceType: "Task" })));
+      const res = await lambdaHandler(
+        makeEvent(JSON.stringify({ resourceType: "Task" }), VALID_HEADERS),
+      );
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -131,7 +123,7 @@ describe("result-status-lambda handler", () => {
     it("returns 400 when resourceType is not Task", async () => {
       const invalidTask = { ...validTask, resourceType: "Observation" };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
     });
@@ -142,7 +134,7 @@ describe("result-status-lambda handler", () => {
         businessStatus: { coding: [{ code: ResultStatus.Result_Withheld }] },
       };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
     });
@@ -150,7 +142,7 @@ describe("result-status-lambda handler", () => {
     it("returns 400 when identifier array is empty", async () => {
       const invalidTask = { ...validTask, identifier: [] };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
     });
@@ -160,7 +152,7 @@ describe("result-status-lambda handler", () => {
     it("returns 400 when for.reference has no slash (single segment)", async () => {
       const invalidTask = { ...validTask, for: { reference: VALID_PATIENT_UUID } };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -177,7 +169,7 @@ describe("result-status-lambda handler", () => {
         for: { reference: `Patient/${VALID_PATIENT_UUID}/extra` },
       };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -191,7 +183,7 @@ describe("result-status-lambda handler", () => {
     it("returns 400 when patient ID in for.reference is not a valid UUID", async () => {
       const invalidTask = { ...validTask, for: { reference: "Patient/not-a-uuid" } };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -205,7 +197,7 @@ describe("result-status-lambda handler", () => {
     it("returns 400 when order identifier value is not a valid UUID", async () => {
       const invalidTask = { ...validTask, identifier: [{ value: "not-a-uuid" }] };
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask)));
+      const res = await lambdaHandler(makeEvent(JSON.stringify(invalidTask), VALID_HEADERS));
 
       expect(res.statusCode).toBe(400);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -221,7 +213,9 @@ describe("result-status-lambda handler", () => {
     it("returns 500 when orderService.retrievePatientIdFromOrder throws", async () => {
       mockRetrievePatientIdFromOrder.mockRejectedValueOnce(new Error("DB connection failed"));
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(validTask)));
+      const res = await lambdaHandler(
+        makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
+      );
 
       expect(res.statusCode).toBe(500);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -235,7 +229,9 @@ describe("result-status-lambda handler", () => {
     it("returns 404 when order is not found", async () => {
       mockRetrievePatientIdFromOrder.mockResolvedValueOnce(null);
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(validTask)));
+      const res = await lambdaHandler(
+        makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
+      );
 
       expect(res.statusCode).toBe(404);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(
@@ -254,7 +250,9 @@ describe("result-status-lambda handler", () => {
         patient_uid: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       });
 
-      const res = await lambdaHandler(makeEvent(JSON.stringify(validTask)));
+      const res = await lambdaHandler(
+        makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
+      );
 
       expect(res.statusCode).toBe(403);
       expect(createFhirErrorResponse).toHaveBeenCalledWith(

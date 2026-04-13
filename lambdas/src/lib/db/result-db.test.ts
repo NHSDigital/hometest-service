@@ -1,4 +1,3 @@
-import { Commons } from "../commons";
 import { ResultStatus } from "../types/status";
 import { DBClient } from "./db-client";
 import { ResultService } from "./result-db";
@@ -11,12 +10,6 @@ const mockDbClient: DBClient = {
   withTransaction: jest.fn(),
 };
 
-const mockCommons: Commons = {
-  logError: jest.fn(),
-  logInfo: jest.fn(),
-  logDebug: jest.fn(),
-};
-
 const orderUid = "order-123";
 const correlationId = "corr-xyz";
 
@@ -26,7 +19,7 @@ describe("ResultService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockQuery.mockReset();
-    resultService = new ResultService(mockDbClient, mockCommons);
+    resultService = new ResultService(mockDbClient);
   });
 
   describe("updateResultStatus", () => {

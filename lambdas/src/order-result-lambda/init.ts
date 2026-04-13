@@ -25,7 +25,7 @@ export function buildEnvironment(): Environment {
   const homeTestBaseUrl = retrieveMandatoryEnvVariable("HOME_TEST_BASE_URL");
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
-  const orderService = new OrderService(dbClient, commons);
+  const orderService = new OrderService(dbClient);
   const orderStatusDb = new OrderStatusService(dbClient);
   const patientDbClient = new PatientDbClient(dbClient);
   const orderDbClient = new OrderDbClient(dbClient);

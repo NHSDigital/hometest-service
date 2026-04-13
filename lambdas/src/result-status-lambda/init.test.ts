@@ -1,25 +1,15 @@
-import { ConsoleCommons } from "../lib/commons";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderService } from "../lib/db/order-db";
 import { ResultService } from "../lib/db/result-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { buildEnvironment, init } from "./init";
 
-const mockGetSecretValue = jest.fn();
-
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/secrets/secrets-manager-client");
-jest.mock("../lib/commons");
 jest.mock("../lib/db/result-db");
 jest.mock("../lib/db/order-db");
-
-jest.mock("../lib/secrets/secrets-manager-client", () => ({
-  AwsSecretsClient: jest.fn().mockImplementation(() => ({
-    getSecretValue: mockGetSecretValue,
-  })),
-}));
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -68,10 +58,8 @@ describe("init", () => {
 
       const result = init();
 
-      expect(result).toHaveProperty("commons");
       expect(result).toHaveProperty("resultService");
       expect(result).toHaveProperty("orderService");
-      expect(result.commons).toBeInstanceOf(ConsoleCommons);
       expect(result.resultService).toBeInstanceOf(ResultService);
       expect(result.orderService).toBeInstanceOf(OrderService);
     });
@@ -115,7 +103,6 @@ describe("init", () => {
       const result = init();
 
       expect(result).toEqual({
-        commons: expect.any(ConsoleCommons),
         resultService: expect.any(ResultService),
         orderService: expect.any(OrderService),
       });
@@ -131,16 +118,6 @@ describe("init", () => {
       const orderServiceDbClient = (OrderService as jest.Mock).mock.calls[0][0];
 
       expect(resultServiceDbClient).toBe(orderServiceDbClient);
-    });
-
-    it("should create ResultService and OrderService with the same commons instance", () => {
-      buildEnvironment();
-
-      // Extract the commons instances from the mocked constructors
-      const resultServiceCommons = (ResultService as jest.Mock).mock.calls[0][1];
-      const orderServiceCommons = (OrderService as jest.Mock).mock.calls[0][1];
-
-      expect(resultServiceCommons).toBe(orderServiceCommons);
     });
   });
 

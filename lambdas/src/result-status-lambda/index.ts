@@ -4,7 +4,6 @@ import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { Commons } from "../lib/commons";
 import { type OrderPatientReference } from "../lib/db/order-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
@@ -16,18 +15,20 @@ import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 import { resultStatusFHIRTaskSchema } from "./schemas";
 
-function parseAndValidateTask(body: string | null, commons: Commons): FHIRTask {
+const name = "result-status-lambda";
+
+function parseAndValidateTask(body: string | null): FHIRTask {
   let parsedTask: unknown;
 
   if (!body) {
-    commons.logError("result-status-lambda", "Missing request body");
+    console.error(name, "Missing request body");
     throw new Error("Request body is required");
   }
 
   try {
     parsedTask = JSON.parse(body);
   } catch (error) {
-    commons.logError("result-status-lambda", "Invalid JSON in request body", { error });
+    console.error(name, "Invalid JSON in request body", { error });
     throw new Error("Invalid JSON in request body", { cause: error });
   }
 
@@ -35,7 +36,7 @@ function parseAndValidateTask(body: string | null, commons: Commons): FHIRTask {
 
   if (!validationResult.success) {
     const errorDetails = generateReadableError(validationResult.error);
-    commons.logError("result-status-lambda", "Task validation failed", { error: errorDetails });
+    console.error(name, "Task validation failed", { error: errorDetails });
     throw new Error(`Task validation failed: ${errorDetails}`);
   }
 
@@ -78,16 +79,28 @@ function extractOrderUidFromFHIRTask(task: FHIRTask): string {
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { commons, resultService, orderService } = init();
-  commons.logInfo("result-status-lambda", "Received result status request", {
+  const { resultService, orderService } = init();
+  let correlationId: string;
+
+  try {
+    correlationId = getCorrelationIdFromEventHeaders(event);
+  } catch (error) {
+    console.error(name, "Failed to extract correlation ID from request headers", {
+      error,
+    });
+    return createFhirErrorResponse(400, "invalid", "Invalid correlation ID in headers", "error");
+  }
+
+  console.info(name, "Received result status request", {
     path: event.path,
     method: event.httpMethod,
+    correlationId: correlationId,
   });
 
   let task: FHIRTask;
 
   try {
-    task = parseAndValidateTask(event.body, commons);
+    task = parseAndValidateTask(event.body);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid request body";
     return createFhirErrorResponse(400, "invalid", message, "error");
@@ -100,8 +113,9 @@ export const lambdaHandler = async (
     orderUID = extractOrderUidFromFHIRTask(task);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid identifiers";
-    commons.logError("result-status-lambda", "Failed to extract identifiers from FHIR Task", {
+    console.error(name, "Failed to extract identifiers from FHIR Task", {
       error,
+      correlationId,
     });
     return createFhirErrorResponse(400, "invalid", message, "error");
   }
@@ -111,21 +125,26 @@ export const lambdaHandler = async (
   try {
     orderSummary = await orderService.retrievePatientIdFromOrder(orderUID);
   } catch (error) {
-    commons.logError("result-status-lambda", "Failed to retrieve order details from database", {
+    console.error(name, "Failed to retrieve order details from database", {
       error,
       orderUID,
+      correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
   if (!orderSummary) {
-    commons.logError("result-status-lambda", "Order not found for given order UID", { orderUID });
+    console.error(name, "Order not found for given order UID", {
+      orderUID,
+      correlationId,
+    });
     return createFhirErrorResponse(404, "not-found", "Order not found", "error");
   }
 
   if (orderSummary.patient_uid !== patientUID) {
-    commons.logError("result-status-lambda", "Patient UID in Task does not match order record", {
+    console.error(name, "Patient UID in Task does not match order record", {
       orderUID,
+      correlationId,
     });
     return createFhirErrorResponse(
       403,
@@ -135,27 +154,13 @@ export const lambdaHandler = async (
     );
   }
 
-  let correlationId: string;
-
-  try {
-    correlationId = getCorrelationIdFromEventHeaders(event);
-  } catch (error) {
-    commons.logError(
-      "result-status-lambda",
-      "Failed to extract correlation ID from request headers",
-      {
-        error,
-      },
-    );
-    return createFhirErrorResponse(400, "invalid", "Invalid correlation ID in headers", "error");
-  }
-
   try {
     await resultService.updateResultStatus(orderUID, ResultStatus.Result_Available, correlationId);
   } catch (error) {
-    commons.logError("result-status-lambda", "Failed to update result status in database", {
+    console.error(name, "Failed to update result status in database", {
       error,
       orderUID,
+      correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
