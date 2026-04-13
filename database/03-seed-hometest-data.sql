@@ -141,14 +141,3 @@ VALUES (
   'def5a6b7-4567-4cde-8fab-45abcdefabcd'
 )
 ON CONFLICT (correlation_id) DO NOTHING;
-
-INSERT INTO order_status_reminder (reminder_id, order_uid, trigger_status, reminder_number, status, triggered_at)
-VALUES (
-  'efa6b7c8-5678-4def-8abc-56abcdefabcd',
-  'e9c0d1e2-9012-4bcd-8efa-90abcdefabcd',
-  'CONFIRMED',
-  1,
-  'SCHEDULED',
-  '2026-04-10T12:56:00Z'
-)
-ON CONFLICT (reminder_id) DO NOTHING;
