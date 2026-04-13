@@ -32,47 +32,47 @@ repos:
 
       - id: prettier-formatting
         name: prettier-formatting
-        entry: npm run format:pre-commit --
+        entry: pnpm run format:pre-commit --
         language: system
 
       - id: eslint-ui
         name: ESLint (UI)
-        entry: npm --prefix ui run lint -- --fix
+        entry: pnpm -C ui run lint --fix
         language: system
         files: ^ui/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
       - id: eslint-lambdas
         name: ESLint (Lambdas)
-        entry: npm --prefix lambdas run lint -- --fix
+        entry: pnpm -C lambdas run lint --fix
         language: system
         files: ^lambdas/.*\.(ts|js)$
         pass_filenames: false
 
       - id: eslint-tests
         name: ESLint (Tests)
-        entry: npm --prefix tests run lint -- --fix
+        entry: pnpm -C tests run lint --fix
         language: system
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false
 
       - id: check-typescript-ui
         name: TypeScript (UI)
-        entry: npm --prefix ui run check-typescript
+        entry: pnpm -C ui run check-typescript
         language: system
         files: ^ui/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
       - id: check-typescript-lambdas
         name: TypeScript (Lambdas)
-        entry: npm --prefix lambdas run check-typescript
+        entry: pnpm -C lambdas run check-typescript
         language: system
         files: ^lambdas/.*\.(ts|js)$
         pass_filenames: false
 
       - id: check-typescript-tests
         name: TypeScript (Tests)
-        entry: npm --prefix tests run check-typescript
+        entry: pnpm -C tests run check-typescript
         language: system
         files: ^tests/.*\.(ts|js)$
         pass_filenames: false

@@ -3,7 +3,7 @@ name: "Run NPM Tests"
 description: "Run Jest tests with coverage reporting"
 inputs:
   working-directory:
-    description: "Directory containing the npm project (e.g., ui, lambdas)"
+    description: "Directory containing the project (e.g., ui, lambdas)"
     required: true
   nodejs-version:
     description: "Node.js version to use"
@@ -27,7 +27,7 @@ runs:
   steps:
     - name: "Run test suite"
       shell: bash
-      run: mise exec -- npm --prefix ${{ inputs.working-directory }} run test -- --ci
+      run: mise exec -- pnpm -C ${{ inputs.working-directory }} run test -- --ci
       env:
         FORCE_COLOR: true
 
