@@ -311,7 +311,6 @@ module "postcode_lookup_lambda" {
     POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",
     POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR    = "2",
     USE_STUB_POSTCODE_CLIENT                = false,
-    POSTCODE_LOOKUP_REJECT_UNAUTHORIZED     = false,
   }
 }
 
