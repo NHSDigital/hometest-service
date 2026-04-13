@@ -18,6 +18,7 @@ export class ResultService {
     const query = `
             INSERT INTO result_status (order_uid, status, correlation_id)
             VALUES ($1::uuid, $2, $3)
+            ON CONFLICT (correlation_id) DO NOTHING
         `;
     try {
       await this.dbClient.query(query, [orderUid, status, correlationId]);

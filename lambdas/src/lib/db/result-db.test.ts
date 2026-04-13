@@ -51,5 +51,21 @@ describe("ResultService", () => {
         resultService.updateResultStatus(orderUid, ResultStatus.Result_Available, correlationId),
       ).rejects.toThrow("Database error");
     });
+
+    it("should handle idempotent updates correctly", async () => {
+      // Simulate a conflict due to duplicate correlation ID
+      mockQuery.mockResolvedValue({ rowCount: 0 }); // No rows inserted due to conflict
+
+      await resultService.updateResultStatus(
+        orderUid,
+        ResultStatus.Result_Available,
+        correlationId,
+      );
+
+      expect(mockDbClient.query).toHaveBeenCalledWith(
+        expect.stringContaining("INSERT INTO result_status"),
+        [orderUid, ResultStatus.Result_Available, correlationId],
+      );
+    });
   });
 });

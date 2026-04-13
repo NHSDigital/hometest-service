@@ -1,17 +1,23 @@
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { ConsoleCommons } from "../lib/commons";
+import { Commons } from "../lib/commons";
 import { type OrderPatientReference } from "../lib/db/order-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { securityHeaders } from "../lib/http/security-headers";
 import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import { ResultStatus } from "../lib/types/status";
 import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
 import { generateReadableError } from "../lib/utils/validation-utils";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
-import { resultStatusFHIRTaskSchema } from "./models";
+import { resultStatusFHIRTaskSchema } from "./schemas";
 
-function parseAndValidateTask(body: string | null, commons: ConsoleCommons): FHIRTask {
-  let parsedTask: string;
+function parseAndValidateTask(body: string | null, commons: Commons): FHIRTask {
+  let parsedTask: unknown;
 
   if (!body) {
     commons.logError("result-status-lambda", "Missing request body");
@@ -69,7 +75,9 @@ function extractOrderUidFromFHIRTask(task: FHIRTask): string {
  * Accepts FHIR Task resources and updates result status on database after validation and business logic checks.
  * Returns appropriate FHIR responses for success and error cases.
  */
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
   const { commons, resultService, orderService } = init();
   commons.logInfo("result-status-lambda", "Received result status request", {
     path: event.path,
@@ -112,7 +120,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   if (!orderSummary) {
     commons.logError("result-status-lambda", "Order not found for given order UID", { orderUID });
-    return createFhirErrorResponse(404, "not_found", "Order not found", "error");
+    return createFhirErrorResponse(404, "not-found", "Order not found", "error");
   }
 
   if (orderSummary.patient_uid !== patientUID) {
@@ -127,7 +135,20 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     );
   }
 
-  const correlationId = getCorrelationIdFromEventHeaders(event);
+  let correlationId: string;
+
+  try {
+    correlationId = getCorrelationIdFromEventHeaders(event);
+  } catch (error) {
+    commons.logError(
+      "result-status-lambda",
+      "Failed to extract correlation ID from request headers",
+      {
+        error,
+      },
+    );
+    return createFhirErrorResponse(400, "invalid", "Invalid correlation ID in headers", "error");
+  }
 
   try {
     await resultService.updateResultStatus(orderUID, ResultStatus.Result_Available, correlationId);
@@ -141,3 +162,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   return createFhirResponse(201, task);
 };
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(corsOptions))
+  .use(httpErrorHandler());
