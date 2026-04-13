@@ -9,9 +9,9 @@ interface OrderStatusProps {
 
 export function OrderStatus({ order }: Readonly<OrderStatusProps>) {
   return (
-    <section aria-label="Order status information">
+    <>
       <OrderStatusHeader order={order} heading="HIV self-test" />
       <OrderStatusContent order={order} />
-    </section>
+    </>
   );
 }

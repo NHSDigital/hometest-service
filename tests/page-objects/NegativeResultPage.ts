@@ -10,7 +10,7 @@ export class NegativeResultPage extends AuthenticatedPage {
   constructor(page: Page) {
     super(page);
     this.result = page.locator("p", { hasText: /^Negative$/ });
-    this.orderReference = page.getByLabel(/^Reference number:/);
+    this.orderReference = page.locator("p", { hasText: /^Reference number/ });
     this.pageHeader = page.locator("h1", { hasText: "HIV self-test result" });
   }
 
