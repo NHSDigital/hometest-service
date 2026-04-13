@@ -85,6 +85,28 @@ entity "notification_audit" as notification_audit {
   unique(message_reference, status)
 }
 
+entity "session" as session {
+  **session_id : uuid**
+  refresh_token_id : uuid
+  nhs_access_token : text
+  issuer : text
+  audience : text
+  subject : text
+  family_name : varchar(255)
+  given_name : varchar(255)
+  identity_proofing_level : varchar(10)
+  email : varchar(320)
+  email_verified : boolean
+  phone_number_verified : boolean
+  birth_date : date
+  nhs_number : varchar(10)
+  gp_ods_code : varchar(20)
+  session_created_at : timestamp
+  last_refresh_at : timestamp
+  max_expires_at : timestamp
+  unique(refresh_token_id)
+}
+
 ' Relationships
 patient ||--o{ orders : "patient_uid"
 supplier ||--o{ orders : "supplier_id"
