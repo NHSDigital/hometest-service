@@ -58,15 +58,20 @@ jobs:
 
       - name: "Create nhs login private key file"
         if: env.TARGET_ENV == 'local'
+        env:
+          NHS_LOGIN_PRIVATE_KEY: ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
         run: |
           mkdir -p local-environment/infra/resources/secrets
-          echo '${{ secrets.NHS_LOGIN_PRIVATE_KEY }}' > local-environment/infra/resources/secrets/nhs-login-private-key.pem
+          echo "$NHS_LOGIN_PRIVATE_KEY" > local-environment/infra/resources/secrets/nhs-login-private-key.pem
 
       - name: "Create credentials file"
+        env:
+          PLAYWRIGHT_PASSWORD: ${{ secrets.PLAYWRIGHT_PASSWORD }}
+          PLAYWRIGHT_OTP: ${{ secrets.PLAYWRIGHT_OTP }}
         run: |
-          cat > tests/credentials.ts << 'CREDENTIALS'
-          export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
-          export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
+          cat > tests/credentials.ts << CREDENTIALS
+          export const userPasswordGeneric = '${PLAYWRIGHT_PASSWORD}';
+          export const OTP = '${PLAYWRIGHT_OTP}';
           CREDENTIALS
           sed -i 's/^          //' tests/credentials.ts
 
@@ -113,8 +118,10 @@ jobs:
 
       - name: "Wait for UI to be reachable"
         if: env.TARGET_ENV == 'local'
+        env:
+          TERRAFORM_UI_URL: ${{ steps.terraform.outputs.ui_url }}
         run: |
-          UI_URL="${{ steps.terraform.outputs.ui_url }}"
+          UI_URL="${TERRAFORM_UI_URL}"
           echo "Waiting for UI to be reachable at $UI_URL..."
           timeout=120
           elapsed=0
@@ -133,9 +140,9 @@ jobs:
       - name: "Run Playwright tests"
         working-directory: tests
         run: |
-          BROWSER="${{ inputs.browser }}"
+          BROWSER="${INPUT_BROWSER}"
           BROWSER="${BROWSER:-chromium}"
-          FILTER="${{ inputs.test_filter }}"
+          FILTER="${INPUT_TEST_FILTER}"
 
           # Build the command
           CMD="npx playwright test"
@@ -162,6 +169,8 @@ jobs:
           CI: true
           FORCE_COLOR: true
           PLAYWRIGHT_HTML_OPEN: never
+          INPUT_BROWSER: ${{ inputs.browser }}
+          INPUT_TEST_FILTER: ${{ inputs.test_filter }}
 
       - name: "Grab docker compose logs"
         if: always() && env.TARGET_ENV == 'local'

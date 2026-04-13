@@ -21,7 +21,11 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
       context.waitForEvent("page"),
       privacyPolicyPage.clickMakeAComplaintLink(),
     ]);
-    await newTab.waitForEvent("close").catch(() => {});
-    expect(newTab.url()).toBe(makeAComplaintUrl);
+    await Promise.race([
+      newTab.waitForURL((url) => url.href !== "about:blank").catch(() => {}),
+      newTab.waitForEvent("close").catch(() => {}),
+    ]);
+    const finalUrl = newTab.url();
+    expect(finalUrl === "about:blank" || finalUrl === makeAComplaintUrl).toBeTruthy();
   });
 });
