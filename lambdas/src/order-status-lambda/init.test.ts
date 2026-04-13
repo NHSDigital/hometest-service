@@ -188,7 +188,6 @@ describe("init", () => {
       init();
 
       expect(OrderStatusNotifyService).toHaveBeenCalledWith({
-        orderStatusDb: expect.any(OrderStatusService),
         notificationAuditDbClient: expect.any(NotificationAuditDbClient),
         sqsClient: expect.any(AWSSQSClient),
         notifyMessageBuilder: expect.any(NotifyMessageBuilder),

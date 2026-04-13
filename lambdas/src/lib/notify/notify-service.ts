@@ -12,7 +12,6 @@ const commons = new ConsoleCommons();
 const name = "notify-service";
 
 export interface OrderStatusNotifyServiceDependencies {
-  orderStatusDb: OrderStatusService;
   notificationAuditDbClient: NotificationAuditDbClient;
   sqsClient: SQSClientInterface;
   notifyMessageBuilder: NotifyMessageBuilder;
@@ -46,6 +45,12 @@ export class OrderStatusNotifyService {
     const { notifyMessageBuilder } = this.dependencies;
 
     const buildNotifyMessageByStatus: NotifyMessageBuilderByStatus = {
+      [OrderStatusCodes.CONFIRMED]: ({ patientId, correlationId, orderId }) =>
+        notifyMessageBuilder.buildOrderConfirmedNotifyMessage({
+          patientId,
+          correlationId,
+          orderId,
+        }),
       [OrderStatusCodes.DISPATCHED]: ({ patientId, correlationId, orderId }) =>
         notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
           patientId,

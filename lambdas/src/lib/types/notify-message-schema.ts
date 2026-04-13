@@ -14,6 +14,7 @@ export const NotifyMessageSchema: z.ZodType<NotifyMessage> = z.object({
   correlationId: z.uuid("Invalid correlationId format"),
   messageReference: z.uuid("Invalid messageReference format"),
   eventCode: z.enum(NotifyEventCode),
+  nhsNumber: z.string().regex(/^\d{10}$/, "Invalid NHS number format"),
   recipient: NotifyRecipientSchema,
   personalisation: z.record(z.string(), z.unknown()).optional(),
 });

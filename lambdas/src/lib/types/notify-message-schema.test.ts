@@ -6,6 +6,7 @@ describe("NotifyMessageSchema", () => {
     correlationId: "550e8400-e29b-41d4-a716-446655440000",
     messageReference: "550e8400-e29b-41d4-a716-446655440001",
     eventCode: NotifyEventCode.OrderConfirmed,
+    nhsNumber: "1234567890",
     recipient: {
       nhsNumber: "1234567890",
       dateOfBirth: "1990-01-31",

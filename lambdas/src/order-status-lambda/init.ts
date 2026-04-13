@@ -34,7 +34,6 @@ export function buildEnvironment(): Environment {
     homeTestBaseUrl,
   );
   const orderStatusNotifyService = new OrderStatusNotifyService({
-    orderStatusDb,
     notificationAuditDbClient,
     sqsClient,
     notifyMessageBuilder,

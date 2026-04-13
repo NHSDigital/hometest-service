@@ -4,6 +4,7 @@ import { NotifyEventCode } from "../types/notify-message";
 import { OrderStatusNotifyService } from "./notify-service";
 
 describe("OrderStatusNotifyService", () => {
+  const mockBuildOrderConfirmedNotifyMessage = jest.fn();
   const mockBuildOrderDispatchedNotifyMessage = jest.fn();
   const mockBuildOrderReceivedNotifyMessage = jest.fn();
   const mockBuildOrderResultAvailableNotifyMessage = jest.fn();
@@ -22,10 +23,22 @@ describe("OrderStatusNotifyService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    mockBuildOrderConfirmedNotifyMessage.mockResolvedValue({
+      messageReference: "123e4567-e89b-12d3-a456-426614174089",
+      eventCode: NotifyEventCode.OrderConfirmed,
+      correlationId: statusUpdate.correlationId,
+      nhsNumber: "1234567890",
+      recipient: {
+        nhsNumber: "1234567890",
+        dateOfBirth: "1990-01-02",
+      },
+      personalisation: {},
+    });
     mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
       eventCode: NotifyEventCode.OrderDispatched,
       correlationId: statusUpdate.correlationId,
+      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",
@@ -36,6 +49,7 @@ describe("OrderStatusNotifyService", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174199",
       eventCode: NotifyEventCode.OrderReceived,
       correlationId: statusUpdate.correlationId,
+      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",
@@ -46,6 +60,7 @@ describe("OrderStatusNotifyService", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174299",
       eventCode: NotifyEventCode.ResultReady,
       correlationId: statusUpdate.correlationId,
+      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",
@@ -56,7 +71,6 @@ describe("OrderStatusNotifyService", () => {
     mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
 
     service = new OrderStatusNotifyService({
-      orderStatusDb: {} as never,
       notificationAuditDbClient: {
         insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       } as never,
@@ -64,6 +78,7 @@ describe("OrderStatusNotifyService", () => {
         sendMessage: mockSendMessage,
       },
       notifyMessageBuilder: {
+        buildOrderConfirmedNotifyMessage: mockBuildOrderConfirmedNotifyMessage,
         buildOrderDispatchedNotifyMessage: mockBuildOrderDispatchedNotifyMessage,
         buildOrderReceivedNotifyMessage: mockBuildOrderReceivedNotifyMessage,
         buildOrderResultAvailableNotifyMessage: mockBuildOrderResultAvailableNotifyMessage,
@@ -80,11 +95,33 @@ describe("OrderStatusNotifyService", () => {
       statusCode: OrderStatusCodes.SUBMITTED,
     });
 
+    expect(mockBuildOrderConfirmedNotifyMessage).not.toHaveBeenCalled();
     expect(mockBuildOrderDispatchedNotifyMessage).not.toHaveBeenCalled();
     expect(mockBuildOrderReceivedNotifyMessage).not.toHaveBeenCalled();
     expect(mockBuildOrderResultAvailableNotifyMessage).not.toHaveBeenCalled();
     expect(mockSendMessage).not.toHaveBeenCalled();
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
+  });
+
+  it("should send and audit an order confirmed notification", async () => {
+    await service.handleOrderStatusUpdated({
+      orderId: statusUpdate.orderId,
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      statusCode: OrderStatusCodes.CONFIRMED,
+    });
+
+    expect(mockBuildOrderConfirmedNotifyMessage).toHaveBeenCalledWith({
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      orderId: statusUpdate.orderId,
+    });
+    expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith({
+      messageReference: "123e4567-e89b-12d3-a456-426614174089",
+      eventCode: NotifyEventCode.OrderConfirmed,
+      correlationId: statusUpdate.correlationId,
+      status: NotificationAuditStatus.QUEUED,
+    });
   });
 
   it("should send and audit a dispatched notification", async () => {

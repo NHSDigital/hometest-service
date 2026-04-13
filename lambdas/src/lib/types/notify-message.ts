@@ -2,6 +2,7 @@ export interface NotifyMessage {
   correlationId: string;
   messageReference: string;
   eventCode: NotifyEventCode;
+  nhsNumber: string;
   recipient: NotifyRecipient;
   personalisation?: Record<string, unknown>;
 }
