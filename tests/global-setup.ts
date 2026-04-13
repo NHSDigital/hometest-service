@@ -42,7 +42,7 @@ async function globalSetup() {
     cleanupWireMockAuthState();
 
     const wiremock = new WireMockClient(config.wiremockBaseUrl);
-    const manifest = createWireMockAuthManifest();
+    const manifest = createWireMockAuthManifest(config.wiremockJwtIssuer);
 
     await configureWireMockAuthMappings(wiremock, manifest);
 
@@ -52,7 +52,7 @@ async function globalSetup() {
           user,
           user.authContext.accessToken,
           user.authContext.sub,
-          config.wiremockBaseUrl,
+          config.wiremockJwtIssuer,
         ),
       );
     }

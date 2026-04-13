@@ -17,21 +17,17 @@ runs:
         cache: true
         install: true
 
-    - name: Cache node_modules
+    - name: Cache bun install
       uses: actions/cache@v5
       with:
-        path: |
-          node_modules
-          ui/node_modules
-          lambdas/node_modules
-          tests/node_modules
-        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        path: ~/.bun/install/cache
+        key: bun-cache-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
         restore-keys: |
-          node-modules-${{ runner.os }}-
+          bun-cache-${{ runner.os }}-
 
-    - name: Install npm dependencies
+    - name: Install bun dependencies
       shell: bash
       run: |
-        echo "::group::Install npm dependencies"
+        echo "::group::Install bun dependencies"
         mise run install-npm
         echo "::endgroup::"

@@ -4,7 +4,7 @@
 
 <!-- vale Vale.Terms = NO -->
 
-`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `npm --prefix` — this is **not** an npm workspaces setup.
+`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `bun install --cwd` — this is **not** a bun workspaces setup.
 
 <!-- vale Vale.Terms = YES -->
 
@@ -109,37 +109,37 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 
 ```bash
 # Install all workspace dependencies (also installs ui/, lambdas/, tests/ via postinstall)
-npm ci
+bun install
 
 # Build and package lambdas (required before first start or after lambda changes)
-npm run build:lambdas
-npm run package:lambdas
+bun run build:lambdas
+bun run package:lambdas
 
 # Start the full local environment (Docker + LocalStack + Terraform deploy + UI)
-npm start
+bun start
 
 # Stop the local environment and destroy Terraform state
-npm run stop
+bun run stop
 
 # Restart the local environment
-npm run local:restart
+bun run local:restart
 
 # Start only the backend (Docker + DB migration)
-npm run local:backend:start
+bun run local:backend:start
 
 # Start only the frontend (Docker UI container)
-npm run local:frontend:start
+bun run local:frontend:start
 
 # Run all unit tests (ui + lambdas)
-npm test
+bun test
 
 # Run Playwright tests (reads URLs from Terraform outputs)
-npm run test:playwright
+bun run test:playwright
 
 # Individual service controls
-npm run local:service:db:start       # start Postgres only
-npm run local:service:db:migrate     # run DB migrations
-npm run local:service:localstack:start  # start LocalStack only
+bun run local:service:db:start       # start Postgres only
+bun run local:service:db:migrate     # run DB migrations
+bun run local:service:localstack:start  # start LocalStack only
 ```
 
 ## Review Philosophy

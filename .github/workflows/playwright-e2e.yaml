@@ -65,11 +65,11 @@ jobs:
 
       - name: "Install Playwright browsers"
         working-directory: tests
-        run: npx playwright install --with-deps
+        run: bunx playwright install --with-deps
 
       - name: "Start the application"
         run: |
-          npm run start
+          bun run local:start
 
       - name: "Show application status"
         run: |
@@ -112,7 +112,7 @@ jobs:
           FILTER="${{ inputs.test_filter }}"
 
           # Build the command
-          CMD="npx playwright test"
+          CMD="bunx playwright test"
 
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
