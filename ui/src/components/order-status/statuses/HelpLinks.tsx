@@ -16,10 +16,8 @@ export function HelpLinks({ supplier }: Readonly<HelpLinksProps>) {
   const contactSupplierText = content.contactSupplier.replace("{supplier}", supplier);
 
   return (
-    <section aria-labelledby="help-links-heading">
-      <h2 id="help-links-heading" className="nhsuk-heading-m">
-        {content.heading}
-      </h2>
+    <>
+      <h2 className="nhsuk-heading-m">{content.heading}</h2>
       <p className="nhsuk-body">
         <OpensInNewTabLink linkHref={supplierLinks.contact} linkText={contactSupplierText} />
       </p>
@@ -35,6 +33,6 @@ export function HelpLinks({ supplier }: Readonly<HelpLinksProps>) {
         />
       </p>
       <LearnMoreAboutHivAndAidsLink />
-    </section>
+    </>
   );
 }
