@@ -1,3 +1,5 @@
+import { randomInt } from "node:crypto";
+
 export interface DbRetryOptions {
   maxRetries: number;
   initialDelayMs: number;
@@ -130,7 +132,7 @@ function getRetryDelayMs(retryCount: number, options: DbRetryOptions): number {
   }
 
   const jitterFloor = exponentialDelay / 2;
-  return Math.floor(jitterFloor + Math.random() * jitterFloor);
+  return randomInt(jitterFloor, exponentialDelay);
 }
 
 async function wait(delayMs: number): Promise<void> {
