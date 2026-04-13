@@ -1,6 +1,6 @@
 ---
 name: "Playwright E2E Tests"
-run-name: "E2E Tests: browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
+run-name: "E2E Tests: env: ${{ inputs.environment || 'local' }}, browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 # Add concurrency to prevent multiple runs for the same branch/PR and reduce noise in CI
 concurrency:
@@ -27,6 +27,14 @@ on:
           - firefox
           - webkit
           - all
+      environment:
+        description: "Target environment to run tests against"
+        required: false
+        default: "local"
+        type: choice
+        options:
+          - local
+          - uat
       test_filter:
         description: "Test filter pattern (e.g., 'HomeTest' or leave empty for all)"
         required: false
@@ -46,6 +54,7 @@ jobs:
         uses: ./.github/actions/init-mise
 
       - name: "Create nhs login private key file"
+        if: inputs.environment == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           echo '${{ secrets.NHS_LOGIN_PRIVATE_KEY }}' > local-environment/infra/resources/secrets/nhs-login-private-key.pem
@@ -59,24 +68,37 @@ jobs:
           sed -i 's/^          //' tests/credentials.ts
 
       - name: "Create os-places-creds file"
+        if: inputs.environment == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           echo '{"apiKey":"test-api-key"}' > local-environment/infra/resources/secrets/os-places-creds.json
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: |
+            /home/runner/.cache/ms-playwright/
+          key: playwright-${{ runner.os }}-${{ hashFiles('ui/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
 
       - name: "Install Playwright browsers"
         working-directory: tests
         run: npx playwright install --with-deps
 
       - name: "Start the application"
+        if: inputs.environment == 'local'
         run: |
           npm run start
 
       - name: "Show application status"
+        if: inputs.environment == 'local'
         run: |
           docker compose -f local-environment/docker-compose.yml ps
           docker logs ui
 
       - name: "Get terraform outputs"
+        if: inputs.environment == 'local'
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
@@ -87,6 +109,7 @@ jobs:
           echo "API URL: $API_URL"
 
       - name: "Wait for UI to be reachable"
+        if: inputs.environment == 'local'
         run: |
           UI_URL="${{ steps.terraform.outputs.ui_url }}"
           echo "Waiting for UI to be reachable at $UI_URL..."
@@ -110,6 +133,7 @@ jobs:
           BROWSER="${{ inputs.browser }}"
           BROWSER="${BROWSER:-chromium}"
           FILTER="${{ inputs.test_filter }}"
+          TARGET_ENV="${{ inputs.environment }}"
 
           # Build the command
           CMD="npx playwright test"
@@ -117,6 +141,11 @@ jobs:
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
             CMD="$CMD --project=$BROWSER"
+          fi
+
+          # Exclude @db tests when running against UAT
+          if [ "$TARGET_ENV" = "uat" ]; then
+            CMD="$CMD --grep-invert @db"
           fi
 
           # Add filter if provided
@@ -127,16 +156,17 @@ jobs:
           echo "Running: $CMD"
           eval $CMD
         env:
+          ENV: ${{ inputs.environment || 'local' }}
           CI: true
           FORCE_COLOR: true
           PLAYWRIGHT_HTML_OPEN: never
 
       - name: "Grab docker compose logs"
+        if: always() && inputs.environment == 'local'
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
           done
-        if: always()
 
       - name: "Publish Test Results"
         uses: dorny/test-reporter@v3
