@@ -1,5 +1,6 @@
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 
 const makeAComplaintUrl = "https://ico.org.uk/make-a-complaint/";
 
@@ -14,11 +15,13 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     await homeTestStartPage.clickPrivacyPolicyLink();
     const actualHeaderText = await privacyPolicyPage.getHeaderText();
     expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
+    await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("href", makeAComplaintUrl);
+    await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("target", "_blank");
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
       privacyPolicyPage.clickMakeAComplaintLink(),
     ]);
-    await newTab.waitForLoadState();
+    await newTab.waitForEvent("close").catch(() => {});
     expect(newTab.url()).toBe(makeAComplaintUrl);
   });
 });

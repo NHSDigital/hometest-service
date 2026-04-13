@@ -7,6 +7,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  TARGET_ENV: ${{ inputs.environment || 'local' }}
+
 on:
   push:
     branches:
@@ -54,7 +57,7 @@ jobs:
         uses: ./.github/actions/init-mise
 
       - name: "Create nhs login private key file"
-        if: inputs.environment == 'local'
+        if: env.TARGET_ENV == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           echo '${{ secrets.NHS_LOGIN_PRIVATE_KEY }}' > local-environment/infra/resources/secrets/nhs-login-private-key.pem
@@ -68,7 +71,7 @@ jobs:
           sed -i 's/^          //' tests/credentials.ts
 
       - name: "Create os-places-creds file"
-        if: inputs.environment == 'local'
+        if: env.TARGET_ENV == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           echo '{"apiKey":"test-api-key"}' > local-environment/infra/resources/secrets/os-places-creds.json
@@ -87,18 +90,18 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: "Start the application"
-        if: inputs.environment == 'local'
+        if: env.TARGET_ENV == 'local'
         run: |
           npm run start
 
       - name: "Show application status"
-        if: inputs.environment == 'local'
+        if: env.TARGET_ENV == 'local'
         run: |
           docker compose -f local-environment/docker-compose.yml ps
           docker logs ui
 
       - name: "Get terraform outputs"
-        if: inputs.environment == 'local'
+        if: env.TARGET_ENV == 'local'
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
@@ -109,7 +112,7 @@ jobs:
           echo "API URL: $API_URL"
 
       - name: "Wait for UI to be reachable"
-        if: inputs.environment == 'local'
+        if: env.TARGET_ENV == 'local'
         run: |
           UI_URL="${{ steps.terraform.outputs.ui_url }}"
           echo "Waiting for UI to be reachable at $UI_URL..."
@@ -133,7 +136,6 @@ jobs:
           BROWSER="${{ inputs.browser }}"
           BROWSER="${BROWSER:-chromium}"
           FILTER="${{ inputs.test_filter }}"
-          TARGET_ENV="${{ inputs.environment }}"
 
           # Build the command
           CMD="npx playwright test"
@@ -156,13 +158,13 @@ jobs:
           echo "Running: $CMD"
           eval $CMD
         env:
-          ENV: ${{ inputs.environment || 'local' }}
+          ENV: ${{ env.TARGET_ENV }}
           CI: true
           FORCE_COLOR: true
           PLAYWRIGHT_HTML_OPEN: never
 
       - name: "Grab docker compose logs"
-        if: always() && inputs.environment == 'local'
+        if: always() && env.TARGET_ENV == 'local'
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
