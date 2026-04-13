@@ -27,7 +27,6 @@ describe("OrderStatusNotifyService", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174089",
       eventCode: NotifyEventCode.OrderConfirmed,
       correlationId: statusUpdate.correlationId,
-      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",
@@ -38,7 +37,6 @@ describe("OrderStatusNotifyService", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
       eventCode: NotifyEventCode.OrderDispatched,
       correlationId: statusUpdate.correlationId,
-      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",
@@ -49,7 +47,6 @@ describe("OrderStatusNotifyService", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174199",
       eventCode: NotifyEventCode.OrderReceived,
       correlationId: statusUpdate.correlationId,
-      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",
@@ -60,7 +57,6 @@ describe("OrderStatusNotifyService", () => {
       messageReference: "123e4567-e89b-12d3-a456-426614174299",
       eventCode: NotifyEventCode.ResultReady,
       correlationId: statusUpdate.correlationId,
-      nhsNumber: "1234567890",
       recipient: {
         nhsNumber: "1234567890",
         dateOfBirth: "1990-01-02",

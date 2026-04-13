@@ -53,7 +53,6 @@ describe("NotifyMessageBuilder", () => {
 
     expect(result.correlationId).toBe("123e4567-e89b-12d3-a456-426614174000");
     expect(result.eventCode).toBe(NotifyEventCode.OrderDispatched);
-    expect(result.nhsNumber).toBe("1234567890");
     expect(result.recipient).toEqual({
       nhsNumber: "1234567890",
       dateOfBirth: "1990-01-02",

@@ -140,7 +140,6 @@ export class NotifyMessageBuilder {
       correlationId,
       messageReference: uuidv4(),
       eventCode,
-      nhsNumber: recipient.nhsNumber,
       recipient,
       personalisation: {
         ...personalisation,
