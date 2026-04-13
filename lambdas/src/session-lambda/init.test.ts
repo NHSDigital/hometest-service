@@ -28,8 +28,8 @@ jest.mock("../lib/login/nhs-login-client", () => ({
   NhsLoginClient: jest.fn().mockImplementation(() => mockNhsLoginClientInstance),
 }));
 
-jest.mock("../lib/http/login-http-client", () => ({
-  HttpClient: jest.fn().mockImplementation(() => ({})),
+jest.mock("../lib/http/http-client", () => ({
+  FetchHttpClient: jest.fn().mockImplementation(() => ({})),
 }));
 
 jest.mock("jwks-rsa", () => ({

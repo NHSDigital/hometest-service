@@ -1,13 +1,32 @@
 "use client";
 
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { getAuthorizeLoginHintFragment } from "@/lib/auth/loginHint";
 import { generateState, persistLoginCsrf } from "@/lib/auth/loginState";
-import { nhsLoginAuthorizeUrl } from "@/settings";
+import { RoutePath } from "@/lib/models/route-paths";
+import * as settings from "@/settings";
 
 export default function RedirectPage() {
+  const navigate = useNavigate();
+
   useEffect(() => {
+    const authorizeUrl = settings.nhsLoginAuthorizeUrl?.trim();
+    const clientId = settings.nhsLoginClientId?.trim();
+    const scope = settings.nhsLoginScope?.trim();
+
+    if (!authorizeUrl || !clientId || !scope) {
+      const missingConfigError =
+        "Missing NHS Login configuration. Ensure NEXT_PUBLIC_NHS_LOGIN_AUTHORIZE_URL, NEXT_PUBLIC_NHS_LOGIN_CLIENT_ID, and NEXT_PUBLIC_NHS_LOGIN_SCOPE are set.";
+      console.error(missingConfigError);
+      navigate(RoutePath.ServiceErrorPage, {
+        replace: true,
+        state: { errorMessage: missingConfigError },
+      });
+      return;
+    }
+
     // Generate your URL client-side
     const params = new URLSearchParams(globalThis.location.search);
     const returnTo = params.get("returnTo") ?? "/";
@@ -16,18 +35,17 @@ export default function RedirectPage() {
     const { csrf, encoded: state } = generateState(returnTo);
     persistLoginCsrf(csrf);
 
-    // ALPHA: Improve this to use proper values and env variables.
-    const nonce = Math.floor(1000 + Math.random() * 9000);
+    const nonce = globalThis.crypto.randomUUID();
     const callbackUrl = encodeURIComponent(`${globalThis.location.origin}/callback`);
     globalThis.location.href =
-      `${nhsLoginAuthorizeUrl}` +
+      `${authorizeUrl}` +
       `?response_type=code` +
-      `&client_id=hometest` +
+      `&client_id=${clientId}` +
       `&redirect_uri=${callbackUrl}` +
-      `&scope=${encodeURIComponent("openid profile email phone")}` +
+      `&scope=${encodeURIComponent(scope)}` +
       `&state=${encodeURIComponent(state)}` +
       loginHintQuery +
       `&nonce=${nonce}`;
-  }, []);
+  }, [navigate]);
   return null;
 }
