@@ -1,5 +1,5 @@
 [settings]
-# locked = true
+locked = true
 lockfile = true
 install_before = "7d"
 
@@ -63,7 +63,7 @@ vale = "3.14.1"
 node = "24.14.1"
 
 # https://github.com/pnpm/pnpm/releases
-"npm:pnpm" = "10.12.1"
+"npm:pnpm" = "10.33.0"
 
 [tasks.pre-commit]
 description = "Run pre-commit checks on all files"
