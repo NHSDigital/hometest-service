@@ -9,11 +9,11 @@
  *
  * Usage:
  *   WIREMOCK_BASE_URL=https://wiremock-uat.poc.hometest.service.nhs.uk \
- *   pnpm exec tsx scripts/push-wiremock-mappings.ts
+ *   bunx tsx scripts/push-wiremock-mappings.ts
  *
- * Or via the pnpm script:
+ * Or via the bun script:
  *   WIREMOCK_BASE_URL=https://wiremock-uat.poc.hometest.service.nhs.uk \
- *   pnpm run wiremock:push
+ *   bun run wiremock:push
  *
  * Environment variables:
  *   WIREMOCK_BASE_URL    Base URL of the WireMock instance (default: http://localhost:8080).

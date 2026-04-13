@@ -17,22 +17,17 @@ runs:
         cache: true
         install: true
 
-    - name: Get pnpm store directory
-      id: pnpm-store
-      shell: bash
-      run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-    - name: Cache pnpm store
+    - name: Cache bun install
       uses: actions/cache@v5
       with:
-        path: ${{ steps.pnpm-store.outputs.path }}
-        key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        path: ~/.bun/install/cache
+        key: bun-cache-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
         restore-keys: |
-          pnpm-store-${{ runner.os }}-
+          bun-cache-${{ runner.os }}-
 
-    - name: Install pnpm dependencies
+    - name: Install bun dependencies
       shell: bash
       run: |
-        echo "::group::Install pnpm dependencies"
+        echo "::group::Install bun dependencies"
         mise run install-npm
         echo "::endgroup::"

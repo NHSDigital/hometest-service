@@ -50,8 +50,8 @@ infrastructure-as-code.
 4. Install dependencies for the root, lambdas, and tests, start the local development environment
 
    ```shell
-   pnpm install
-   pnpm run start
+   bun install
+   bun run start
    ```
 
 ### Prerequisites
@@ -83,7 +83,7 @@ mise run pre-commit   # Run the pre-commit task defined in .mise.toml
 To spin up the entire local environment (LocalStack, Postgres, and the Next.js Frontend):
 
 ```shell
-pnpm start
+bun start
 ```
 
 This command:
@@ -95,35 +95,35 @@ This command:
 To stop the environment:
 
 ```shell
-pnpm run stop
+bun run stop
 ```
 
 ### Common local workflows
 
-After running `pnpm start`, use targeted commands instead of restarting everything:
+After running `bun start`, use targeted commands instead of restarting everything:
 
 - **Lambda code changes** (build/package/deploy lambdas to LocalStack):
 
   ```shell
-  pnpm run local:deploy
+  bun run local:deploy
   ```
 
 - **Database schema or seed changes** (rerun DB migration container, including goose migrations):
 
   ```shell
-  pnpm run local:service:db:migrate
+  bun run local:service:db:migrate
   ```
 
 - **Terraform infrastructure changes** (apply infra updates to LocalStack without restarting containers):
 
   ```shell
-  pnpm run local:terraform:apply
+  bun run local:terraform:apply
   ```
 
   This expects the backend containers, including LocalStack, to already be running. If they are not, start them first:
 
   ```shell
-  pnpm run local:backend:start
+  bun run local:backend:start
   ```
 
   To switch local integrations between WireMock and real upstreams, pass Terraform variables when applying - some examples below.
@@ -131,13 +131,13 @@ After running `pnpm start`, use targeted commands instead of restarting everythi
   To only use WireMock everywhere (default mode - only needed to switch over):
 
   ```shell
-  TF_VAR_local_service_mode=wiremock pnpm run local:terraform:apply # this is the default mode, only needed to switch over
+  TF_VAR_local_service_mode=wiremock bun run local:terraform:apply # this is the default mode, only needed to switch over
   ```
 
   To not use WireMock anywhere (real downstream APIs):
 
   ```shell
-  TF_VAR_local_service_mode=real pnpm run local:terraform:apply
+  TF_VAR_local_service_mode=real bun run local:terraform:apply
   ```
 
   To use WireMock except for specific services, pass only the overrides you need:
@@ -147,47 +147,47 @@ After running `pnpm start`, use targeted commands instead of restarting everythi
   TF_VAR_local_supplier_service_url_override=https://supplier.example.com \
   TF_VAR_local_use_ui_auth_url_override=https://auth.sandpit.signin.nhs.uk \
   TF_VAR_local_postcode_lookup_base_url_override=https://api.os.uk/search/places/v1 \
-  pnpm run local:terraform:apply # pnpm run local:frontend:restart - if overriding UI auth
+  bun run local:terraform:apply # bun run local:frontend:restart - if overriding UI auth
   ```
 
   If you change UI-facing auth settings, restart the frontend so it picks up the updated `ui/.env.local` values:
 
   ```shell
-  pnpm run local:frontend:restart
+  bun run local:frontend:restart
   ```
 
 - **Restart backend containers only** (Postgres, LocalStack, WireMock, db-migrate):
 
   ```shell
-  pnpm run local:compose -- stop postgres-db localstack wiremock
-  pnpm run local:backend:start
+  bun run local:compose -- stop postgres-db localstack wiremock
+  bun run local:backend:start
   ```
 
 - **Restart frontend only**:
 
   ```shell
-  pnpm run local:frontend:restart
+  bun run local:frontend:restart
   ```
 
 - **Start/stop backend only**:
 
   ```shell
-  pnpm run local:backend:start
-  pnpm run local:compose -- stop postgres-db localstack wiremock
+  bun run local:backend:start
+  bun run local:compose -- stop postgres-db localstack wiremock
   ```
 
 - **Start/stop frontend only**:
 
   ```shell
-  pnpm run local:frontend:start
-  pnpm run local:compose -- stop ui
+  bun run local:frontend:start
+  bun run local:compose -- stop ui
   ```
 
 - **Start/stop specified lambda**
 
   ```shell
-  LAMBDA={lambda_name} pnpm run local:service:lambda:enable
-  LAMBDA={lambda_name} pnpm run local:service:lambda:disable
+  LAMBDA={lambda_name} bun run local:service:lambda:enable
+  LAMBDA={lambda_name} bun run local:service:lambda:disable
   ```
 
 ### Frontend
@@ -195,8 +195,8 @@ After running `pnpm start`, use targeted commands instead of restarting everythi
 The frontend is a Next.js application located in the `/ui` directory.
 
 1. cd to `/ui` directory.
-2. Run `pnpm install`.
-3. Run `pnpm run dev`.
+2. Run `bun install`.
+3. Run `bun run dev`.
 
 - When creating a new page, use the PageLayout component found in `/ui/src/components`.
 - To create a new route, create a directory with the name of your route in `/ui/src/app`, and add a `page.tsx` file within.

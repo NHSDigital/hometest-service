@@ -4,7 +4,7 @@
 
 <!-- vale Vale.Terms = NO -->
 
-`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `pnpm -C` — this is **not** a pnpm workspaces setup.
+`hometest-service` is an NHS England service that allows patients to order self-test HIV kits at home. It is a TypeScript monorepo with four independent packages. Each has its own `package.json` and is installed separately via `bun install --cwd` — this is **not** a bun workspaces setup.
 
 <!-- vale Vale.Terms = YES -->
 
@@ -109,37 +109,37 @@ local-environment/  Docker Compose + LocalStack + Terraform for local dev
 
 ```bash
 # Install all workspace dependencies (also installs ui/, lambdas/, tests/ via postinstall)
-pnpm install
+bun install
 
 # Build and package lambdas (required before first start or after lambda changes)
-pnpm run build:lambdas
-pnpm run package:lambdas
+bun run build:lambdas
+bun run package:lambdas
 
 # Start the full local environment (Docker + LocalStack + Terraform deploy + UI)
-pnpm start
+bun start
 
 # Stop the local environment and destroy Terraform state
-pnpm run stop
+bun run stop
 
 # Restart the local environment
-pnpm run local:restart
+bun run local:restart
 
 # Start only the backend (Docker + DB migration)
-pnpm run local:backend:start
+bun run local:backend:start
 
 # Start only the frontend (Docker UI container)
-pnpm run local:frontend:start
+bun run local:frontend:start
 
 # Run all unit tests (ui + lambdas)
-pnpm test
+bun test
 
 # Run Playwright tests (reads URLs from Terraform outputs)
-pnpm run test:playwright
+bun run test:playwright
 
 # Individual service controls
-pnpm run local:service:db:start       # start Postgres only
-pnpm run local:service:db:migrate     # run DB migrations
-pnpm run local:service:localstack:start  # start LocalStack only
+bun run local:service:db:start       # start Postgres only
+bun run local:service:db:migrate     # run DB migrations
+bun run local:service:localstack:start  # start LocalStack only
 ```
 
 ## Review Philosophy
