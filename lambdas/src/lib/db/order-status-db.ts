@@ -115,4 +115,36 @@ export class OrderStatusService {
       });
     }
   }
+
+  async getOrderStatusCreatedAt(orderId: string, statusCode: OrderStatusCode): Promise<string> {
+    const query = `
+      SELECT created_at
+      FROM order_status
+      WHERE order_uid = $1::uuid AND status_code = $2
+      ORDER BY created_at DESC
+      LIMIT 1;
+    `;
+
+    try {
+      const result = await this.dbClient.query<{ created_at: string }, [string, OrderStatusCode]>(
+        query,
+        [orderId, statusCode],
+      );
+
+      if (result.rowCount === 0) {
+        throw new Error(
+          `Order status not found for orderId ${orderId} and statusCode ${statusCode}`,
+        );
+      }
+
+      return result.rows[0].created_at;
+    } catch (error) {
+      throw new Error(
+        `Failed to retrieve order status created_at for orderId ${orderId} and statusCode ${statusCode}`,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
 }

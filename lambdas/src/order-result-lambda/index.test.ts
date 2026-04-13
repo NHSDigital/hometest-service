@@ -1,9 +1,9 @@
-import { OrderStatus, ResultStatus } from "../lib/types/status";
-import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
-
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { InterpretationCode } from "./models";
+
+import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { OrderStatus, ResultStatus } from "../lib/types/status";
 import { handler } from "./index";
+import { InterpretationCode } from "./models";
 
 jest.mock("./init", () => {
   const initMock = {
@@ -14,6 +14,9 @@ jest.mock("./init", () => {
     orderService: {
       retrieveOrderDetails: jest.fn(),
       updateOrderStatusAndResultStatus: jest.fn(),
+    },
+    orderStatusNotifyService: {
+      handleOrderStatusUpdated: jest.fn(),
     },
   };
   return {
@@ -70,6 +73,9 @@ const { initMock } = jest.requireMock("./init") as {
       retrieveOrderDetails: jest.Mock;
       updateOrderStatusAndResultStatus: jest.Mock;
     };
+    orderStatusNotifyService: {
+      handleOrderStatusUpdated: jest.Mock;
+    };
   };
 };
 
@@ -115,10 +121,11 @@ describe("order-result-lambda handler", () => {
         identifiers,
       },
     });
-    initMock.orderService.retrieveOrderDetails.mockResolvedValue({});
+    initMock.orderService.retrieveOrderDetails.mockResolvedValue({ patient_uid: "patient-uid-1" });
     validateDBDataMock.mockResolvedValue({ success: true, data: { isIdempotent: false } });
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
+    initMock.orderStatusNotifyService.handleOrderStatusUpdated.mockResolvedValue(undefined);
   });
 
   it("returns 201 and resource on success", async () => {
@@ -185,6 +192,14 @@ describe("order-result-lambda handler", () => {
       ResultStatus.Result_Available,
       identifiers.correlationId,
     );
+    expect(initMock.orderStatusNotifyService.handleOrderStatusUpdated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId: identifiers.orderUid,
+        patientId: expect.any(String),
+        correlationId: identifiers.correlationId,
+        statusCode: "COMPLETE",
+      }),
+    );
   });
 
   it("calls updateOrderStatusAndResultStatus for interpretation code abnormal with result withheld", async () => {
@@ -198,6 +213,7 @@ describe("order-result-lambda handler", () => {
       ResultStatus.Result_Withheld,
       identifiers.correlationId,
     );
+    expect(initMock.orderStatusNotifyService.handleOrderStatusUpdated).not.toHaveBeenCalled();
   });
 
   it("returns 500 if updateDatabase throws", async () => {

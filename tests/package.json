@@ -9,14 +9,17 @@
     "lint:fix": "eslint . --fix",
     "pretest": "bash ../scripts/tests/reset-login-lambda-cache.sh || true",
     "test": "playwright test",
+    "test:no-db": "playwright test --grep-invert @db",
     "test:chrome": "playwright test --project=chromium",
+    "test:chrome:no-db": "playwright test --project=chromium --grep-invert @db",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "test:codegen": "playwright codegen",
     "test:env": "node -r dotenv/config -e 'console.log(process.env)' dotenv_config_path=../.env",
-    "check-typescript": "tsc --noEmit"
+    "check-typescript": "tsc --noEmit",
+    "wiremock:push": "tsx scripts/push-wiremock-mappings.ts"
   },
   "keywords": [
     "playwright",
@@ -28,14 +31,15 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@faker-js/faker": "10.4.0",
-    "@playwright/test": "1.59.0",
-    "@types/node": "24.12.0",
+    "@playwright/test": "1.59.1",
+    "@types/node": "24.12.2",
     "@types/pg": "8.20.0",
-    "dotenv": "17.3.1",
-    "eslint": "10.1.0",
+    "dotenv": "17.4.1",
+    "eslint": "10.2.0",
     "globals": "17.4.0",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.58.0"
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.58.1",
+    "tsx": "4.21.0"
   },
   "dependencies": {
     "@axe-core/playwright": "4.11.1",

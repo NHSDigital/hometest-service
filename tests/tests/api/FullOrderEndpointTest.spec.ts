@@ -85,7 +85,7 @@ async function waitForResultStatusCount(
     .toBe(expectedCount);
 }
 
-test.describe("Full Order E2E API", { tag: ["@API"] }, () => {
+test.describe("Full Order E2E API", { tag: ["@API", "@db"] }, () => {
   test.beforeEach("Create an order via API", async ({ testedUser, orderApi, testOrderDb }) => {
     const payload = OrderTestData.getDefaultOrder();
     payload.patient.nhsNumber = testedUser.nhsNumber!;

@@ -10,6 +10,7 @@ const mockInit = jest.fn();
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
+const mockHandleOrderStatusUpdated = jest.fn();
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
@@ -41,12 +42,16 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
+    mockHandleOrderStatusUpdated.mockResolvedValue(undefined);
 
     mockInit.mockReturnValue({
       orderStatusDb: {
         getPatientIdFromOrder: mockGetPatientIdFromOrder,
         checkIdempotency: mockCheckIdempotency,
         addOrderStatusUpdate: mockAddOrderStatusUpdate,
+      },
+      orderStatusNotifyService: {
+        handleOrderStatusUpdated: mockHandleOrderStatusUpdated,
       },
     });
 
@@ -272,6 +277,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
+      expect(mockHandleOrderStatusUpdated).not.toHaveBeenCalled();
     });
 
     it("should process new updates with different correlation ID", async () => {
@@ -397,6 +403,49 @@ describe("Order Status Lambda Handler", () => {
           correlationId: MOCK_CORRELATION_ID,
         }),
       );
+    });
+
+    it("should delegate post-update side effects to the notification service", async () => {
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patientId: MOCK_PATIENT_UID,
+          correlationId: MOCK_CORRELATION_ID,
+          orderId: MOCK_ORDER_UID,
+          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
+        }),
+      );
+    });
+
+    it("should still delegate non-dispatched statuses to the notification service", async () => {
+      mockEvent.body = JSON.stringify({
+        ...validTaskBody,
+        businessStatus: {
+          text: IncomingBusinessStatus.RECEIVED_AT_LAB,
+        },
+      } satisfies Partial<OrderStatusFHIRTask>);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
+        }),
+      );
+    });
+
+    it("should return 500 when notification service fails", async () => {
+      mockHandleOrderStatusUpdated.mockRejectedValueOnce(new Error("Unexpected side effect error"));
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(500);
     });
   });
 

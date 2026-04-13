@@ -1,9 +1,9 @@
-import { test, expect } from "../../fixtures/IntegrationFixture";
+import { expect, test } from "../../fixtures/IntegrationFixture";
 import { CreateOrderResponseModel } from "../../models/CreateOrderResponse";
 import { OrderTestData } from "../../test-data/OrderTestData";
 import { headersOrder } from "../../utils";
 
-test.describe("Backend API, order endpoint", () => {
+test.describe("Backend API, order endpoint", { tag: ["@API", "@db"] }, () => {
   const payload = OrderTestData.getDefaultOrder();
   let createdOrderUid: string;
 

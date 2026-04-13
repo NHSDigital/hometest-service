@@ -132,7 +132,7 @@ describe("createTokenGenerator", () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date("2026-03-24T12:00:00.000Z"));
+    jest.setSystemTime(new Date("2026-03-24T12:00:00.000Z").getTime());
     jest.clearAllMocks();
   });
 

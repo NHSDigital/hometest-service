@@ -13,4 +13,7 @@ export interface NotifyRecipient {
 
 export enum NotifyEventCode {
   OrderConfirmed = "ORDER_CONFIRMED",
+  OrderDispatched = "ORDER_DISPATCHED",
+  OrderReceived = "ORDER_RECEIVED",
+  ResultReady = "RESULT_READY",
 }
