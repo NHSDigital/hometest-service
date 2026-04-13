@@ -1,5 +1,5 @@
 [settings]
-locked = true
+# locked = true
 lockfile = true
 install_before = "7d"
 
@@ -62,10 +62,13 @@ vale = "3.14.1"
 # https://nodejs.org/en/download/releases
 node = "24.14.1"
 
+# https://github.com/pnpm/pnpm/releases
+"npm:pnpm" = "10.12.1"
+
 [tasks.pre-commit]
 description = "Run pre-commit checks on all files"
 run = "pre-commit run --all-files --show-diff-on-failure --color=always"
 
 [tasks.install-npm]
-description = "Install npm dependencies"
-run = "npm ci"
+description = "Install pnpm dependencies"
+run = "pnpm install --frozen-lockfile"
