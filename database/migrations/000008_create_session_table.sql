@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS session
   nhs_number varchar(10) NOT NULL,
   gp_ods_code varchar(20) NOT NULL,
   session_created_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
-  last_refresh_at timestamp with time zone NOT NULL,
+  last_refresh_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
   max_expires_at timestamp with time zone NOT NULL,
   CONSTRAINT uq_session_refresh_token_id UNIQUE (refresh_token_id),
   CONSTRAINT chk_session_email_verified CHECK (
