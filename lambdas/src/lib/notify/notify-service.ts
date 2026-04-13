@@ -3,7 +3,7 @@ import {
   NotificationAuditDbClient,
   NotificationAuditStatus,
 } from "../db/notification-audit-db-client";
-import { OrderStatusCode, OrderStatusCodes, OrderStatusService } from "../db/order-status-db";
+import { OrderStatusCode, OrderStatusCodes } from "../db/order-status-db";
 import { SQSClientInterface } from "../sqs/sqs-client";
 import type { NotifyMessage } from "../types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
