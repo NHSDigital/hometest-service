@@ -5,6 +5,8 @@ import { ResultService } from "../lib/db/result-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { buildEnvironment, init } from "./init";
 
+const mockGetSecretValue = jest.fn();
+
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
@@ -12,6 +14,12 @@ jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/commons");
 jest.mock("../lib/db/result-db");
 jest.mock("../lib/db/order-db");
+
+jest.mock("../lib/secrets/secrets-manager-client", () => ({
+  AwsSecretsClient: jest.fn().mockImplementation(() => ({
+    getSecretValue: mockGetSecretValue,
+  })),
+}));
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -142,6 +150,25 @@ describe("init", () => {
       const env2 = init();
 
       expect(env1).toBe(env2);
+    });
+  });
+
+  describe("rejection retry", () => {
+    it("should allow retry after buildEnvironment throws", () => {
+      jest.isolateModules(() => {
+        jest.clearAllMocks();
+        (OrderService as jest.Mock).mockImplementationOnce(() => {
+          throw new Error("DB connection failed");
+        });
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: singletonInit } = require("./init");
+
+        expect(() => singletonInit()).toThrow("DB connection failed");
+
+        // _env was never assigned (??= only assigns if the expression completes)
+        const result = singletonInit();
+        expect(result).toBeTruthy();
+      });
     });
   });
 });
