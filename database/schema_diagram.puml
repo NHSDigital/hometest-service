@@ -101,12 +101,9 @@ entity "session" as session {
   birthdate : varchar(10)
   nhs_number : varchar(10)
   gp_ods_code : varchar(20)
-  session_start_at : timestamp
+  session_created_at : timestamp
   last_refresh_at : timestamp
   max_expires_at : timestamp
-  created_at : timestamp
-  updated_at : timestamp
-  metadata : jsonb
   unique(refresh_token_id)
 }
 

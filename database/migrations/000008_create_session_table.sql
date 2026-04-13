@@ -16,14 +16,10 @@ CREATE TABLE IF NOT EXISTS session
   birthdate varchar(10) NOT NULL,
   nhs_number varchar(10) NOT NULL,
   gp_ods_code varchar(20) NOT NULL,
-  session_start_at timestamp with time zone NOT NULL,
+  session_created_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
   last_refresh_at timestamp with time zone NOT NULL,
   max_expires_at timestamp with time zone NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
-  updated_at timestamp with time zone NOT NULL DEFAULT current_timestamp,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
   CONSTRAINT uq_session_refresh_token_id UNIQUE (refresh_token_id),
-  CONSTRAINT chk_session_metadata_object CHECK (jsonb_typeof(metadata) = 'object'),
   CONSTRAINT chk_session_email_verified CHECK (
     email_verified IN ('true', 'false')
   ),
