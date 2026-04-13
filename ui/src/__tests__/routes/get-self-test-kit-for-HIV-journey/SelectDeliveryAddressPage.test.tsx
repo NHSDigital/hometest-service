@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { JourneyStepNames } from "@/lib/models/route-paths";
@@ -27,6 +28,7 @@ const mockNavigationContext: {
   goBack: jest.Mock;
   canGoBack: jest.Mock;
   clearHistory: jest.Mock;
+  resetNavigation: jest.Mock;
   stepHistory: string[];
   returnToStep: string | null;
   setReturnToStep: jest.Mock;
@@ -36,6 +38,7 @@ const mockNavigationContext: {
   goBack: jest.fn(),
   canGoBack: jest.fn(() => true),
   clearHistory: jest.fn(),
+  resetNavigation: jest.fn(),
   stepHistory: ["enter-delivery-address", "select-delivery-address"],
   returnToStep: null,
   setReturnToStep: jest.fn(),
@@ -136,7 +139,7 @@ jest.mock("@/hooks/useContent", () => ({
   }),
 }));
 
-function StateSeeder({ children }: Readonly<{ children: React.ReactNode }>) {
+function StateSeeder({ children }: Readonly<{ children: ReactNode }>) {
   const { updateOrderAnswers } = useCreateOrderContext();
 
   useEffect(() => {
@@ -145,7 +148,7 @@ function StateSeeder({ children }: Readonly<{ children: React.ReactNode }>) {
   return <>{children}</>;
 }
 
-const TestWrapper = ({ children, user }: { children: React.ReactNode; user?: AuthUser }) => (
+const TestWrapper = ({ children, user }: { children: ReactNode; user?: AuthUser }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/select-delivery-address"]}>
     <AuthContext.Provider value={{ user: user || mockUser, setUser: jest.fn() }}>
       <JourneyNavigationProvider>
