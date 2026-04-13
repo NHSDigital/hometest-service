@@ -1,6 +1,5 @@
-import { OrderStatus, ResultStatus } from "../types/status";
-
 import { Commons } from "../commons";
+import { OrderStatus, ResultStatus } from "../types/status";
 import { DBClient } from "./db-client";
 
 export interface OrderResultSummary {
@@ -10,6 +9,11 @@ export interface OrderResultSummary {
   result_status: ResultStatus | null;
   correlation_id: string | null;
   order_status_code: OrderStatus | null;
+}
+
+export interface OrderPatientReference {
+  order_uid: string;
+  patient_uid: string;
 }
 
 export class OrderService {
@@ -42,6 +46,28 @@ export class OrderService {
       return result.rows[0] || null;
     } catch (error) {
       this.commons.logError("order-db", "Failed to retrieve order details", { error, orderUid });
+      throw error;
+    }
+  }
+
+  async retrievePatientIdFromOrder(orderUid: string): Promise<OrderPatientReference | null> {
+    const query = `
+      SELECT o.patient_uid,
+      o.order_uid
+      FROM test_order o
+      WHERE o.order_uid = $1::uuid
+      ORDER BY o.created_at DESC
+      LIMIT 1;
+    `;
+
+    try {
+      const result = await this.dbClient.query<OrderPatientReference, [string]>(query, [orderUid]);
+      return result.rows[0] || null;
+    } catch (error) {
+      this.commons.logError("order-db", "Failed to retrieve order-patient association", {
+        error,
+        orderUid,
+      });
       throw error;
     }
   }

@@ -1,7 +1,6 @@
-import { OrderResultSummary, OrderService } from "./order-db";
-import { OrderStatus, ResultStatus } from "../types/status";
-
 import { Commons } from "../commons";
+import { OrderStatus, ResultStatus } from "../types/status";
+import { OrderResultSummary, OrderService } from "./order-db";
 
 const normalizeWhitespace = (sql: string): string => sql.replace(/\s+/g, " ").trim();
 
@@ -91,6 +90,60 @@ describe("OrderService", () => {
           orderUid: "order-500",
         },
       );
+    });
+  });
+
+  describe("retrievePatientIdFromOrder", () => {
+    const expectedRetrievePatientIdQuery = `
+      SELECT o.patient_uid,
+      o.order_uid
+      FROM test_order o
+      WHERE o.order_uid = $1::uuid
+      ORDER BY o.created_at DESC
+      LIMIT 1;
+    `;
+
+    it("should return patient reference when found", async () => {
+      const mockReference = {
+        order_uid: "order-123",
+        patient_uid: "patient-abc",
+      };
+      dbClient.query.mockResolvedValue({ rows: [mockReference] });
+
+      const result = await orderService.retrievePatientIdFromOrder("order-123");
+
+      expect(dbClient.query).toHaveBeenCalledTimes(1);
+      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedRetrievePatientIdQuery),
+      );
+      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-123"]);
+      expect(result).toEqual(mockReference);
+    });
+
+    it("should return null when no order is found", async () => {
+      dbClient.query.mockResolvedValue({ rows: [] });
+
+      const result = await orderService.retrievePatientIdFromOrder("order-404");
+
+      expect(dbClient.query).toHaveBeenCalledTimes(1);
+      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedRetrievePatientIdQuery),
+      );
+      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-404"]);
+      expect(result).toBeNull();
+    });
+
+    it("should rethrow when retrieving patient reference fails", async () => {
+      const error = new Error("query failed");
+      dbClient.query.mockRejectedValue(error);
+
+      await expect(orderService.retrievePatientIdFromOrder("order-500")).rejects.toThrow(error);
+
+      expect(dbClient.query).toHaveBeenCalledTimes(1);
+      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
+        normalizeWhitespace(expectedRetrievePatientIdQuery),
+      );
+      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-500"]);
     });
   });
 
