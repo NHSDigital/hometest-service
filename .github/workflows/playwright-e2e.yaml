@@ -86,7 +86,7 @@ jobs:
         with:
           path: |
             /home/runner/.cache/ms-playwright/
-          key: playwright-${{ runner.os }}-${{ hashFiles('ui/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('tests/package-lock.json') }}
           restore-keys: |
             playwright-${{ runner.os }}-
 
