@@ -28,12 +28,12 @@ export function DispatchedStatus({
 
   return (
     <>
-      <Tag id="order-status-tag" modifier="blue" aria-label={`Order status: ${content.tag}`}>
+      <Tag id="order-status-tag" modifier="blue">
         {content.tag}
       </Tag>
       <h2 className="nhsuk-heading-m">{content.heading}</h2>
       {formattedDispatchedDate && (
-        <p aria-label={`Kit dispatched on ${formattedDispatchedDate}`}>
+        <p>
           {content.sentPrefix} {formattedDispatchedDate}
         </p>
       )}
