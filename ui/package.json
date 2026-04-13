@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
-    "serve:static": "pnpm run build && pnpm exec http-server build -p 8085 -c-1 --proxy http://localhost:8085?",
+    "serve:static": "bun run build && bunx http-server build -p 8085 -c-1 --proxy http://localhost:8085?",
     "check-typescript": "next typegen && tsc --noEmit"
   },
   "dependencies": {
