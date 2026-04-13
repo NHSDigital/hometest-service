@@ -86,6 +86,7 @@ repos:
         entry: yamllint
         language: python
         types: [file, yaml]
+        exclude: pnpm-lock.yaml
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
