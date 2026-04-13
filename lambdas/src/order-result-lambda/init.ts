@@ -6,8 +6,7 @@ import { OrderService } from "../lib/db/order-db";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
-import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
-import { OrderStatusNotifyService } from "../lib/notify/notify-service";
+import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
@@ -32,17 +31,11 @@ export function buildEnvironment(): Environment {
   const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
   const sqsClient = new AWSSQSClient();
-  const notifyMessageBuilder = new NotifyMessageBuilder(
-    patientDbClient,
-    orderDbClient,
-    orderStatusDb,
-    homeTestBaseUrl,
-  );
   const orderStatusNotifyService = new OrderStatusNotifyService({
-    orderStatusDb,
+    builderDeps: { patientDbClient, orderDbClient, homeTestBaseUrl },
+    orderStatusService: orderStatusDb,
     notificationAuditDbClient,
     sqsClient,
-    notifyMessageBuilder,
     notifyMessagesQueueUrl,
   });
 

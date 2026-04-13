@@ -116,7 +116,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 
   if (interpretationCode === InterpretationCode.Normal) {
-    await orderStatusNotifyService.handleOrderStatusUpdated({
+    await orderStatusNotifyService.dispatch({
       orderId: identifiers.orderUid,
       patientId: testOrderResult.patient_uid,
       correlationId: identifiers.correlationId,

@@ -1,4 +1,3 @@
-import { type NotifyEventCode } from "../types/notify-message";
 import { type DBClient } from "./db-client";
 
 export enum NotificationAuditStatus {
@@ -9,7 +8,7 @@ export enum NotificationAuditStatus {
 
 export interface NotificationAuditEntryParams {
   messageReference: string;
-  eventCode: NotifyEventCode;
+  eventCode: string;
   correlationId: string;
   status: NotificationAuditStatus;
   notifyMessageId?: string | null;
