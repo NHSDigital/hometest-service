@@ -151,4 +151,4 @@ VALUES (
   'SCHEDULED',
   '2026-04-10T12:56:00Z'
 )
-ON CONFLICT (order_uid, trigger_status, reminder_number) DO NOTHING;
+ON CONFLICT (reminder_id) DO NOTHING;
