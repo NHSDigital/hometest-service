@@ -8,6 +8,21 @@ import {
 const sessionId = "550e8400-e29b-41d4-a716-446655440000";
 const refreshTokenId = "650e8400-e29b-41d4-a716-446655440000";
 
+async function expectSanitizedFailure<T>(
+  promise: Promise<T>,
+  expectedMessage: string,
+): Promise<void> {
+  expect.assertions(3);
+
+  try {
+    await promise;
+  } catch (error) {
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toMatchObject({ message: expectedMessage });
+    expect(error).not.toHaveProperty("cause");
+  }
+}
+
 function buildCreateSessionInput(overrides: Partial<CreateSessionInput> = {}): CreateSessionInput {
   return {
     sessionId,
@@ -117,6 +132,9 @@ describe("SessionDbClient", () => {
           session.maxExpiresAt,
         ],
       );
+
+      const [query] = mockDbClient.query.mock.calls[0];
+      expect(query).toContain("$13::date");
     });
 
     it("should retry transient insert failures", async () => {
@@ -145,9 +163,13 @@ describe("SessionDbClient", () => {
     });
 
     it("should throw on database failure", async () => {
-      mockDbClient.query.mockRejectedValue(new Error("db down"));
+      const dbError = Object.assign(new Error("db down with token nhs-access-token"), {
+        code: "23514",
+      });
+      mockDbClient.query.mockRejectedValue(dbError);
 
-      await expect(sessionDbClient.createSession(buildCreateSessionInput())).rejects.toThrow(
+      await expectSanitizedFailure(
+        sessionDbClient.createSession(buildCreateSessionInput()),
         `Failed to create session for sessionId ${sessionId}`,
       );
     });
@@ -175,6 +197,18 @@ describe("SessionDbClient", () => {
       });
 
       await expect(sessionDbClient.getSession(sessionId)).resolves.toBeNull();
+    });
+
+    it("should sanitize database failures", async () => {
+      const dbError = Object.assign(new Error("bad row for nhs number 1234567890"), {
+        code: "08006",
+      });
+      mockDbClient.query.mockRejectedValue(dbError);
+
+      await expectSanitizedFailure(
+        sessionDbClient.getSession(sessionId),
+        `Failed to fetch session for sessionId ${sessionId}`,
+      );
     });
 
     it("should map all user info fields from row columns to session model", async () => {
@@ -275,6 +309,20 @@ describe("SessionDbClient", () => {
         }),
       ).rejects.toThrow(`Failed to update session for sessionId ${sessionId}`);
     });
+
+    it("should sanitize update database failures", async () => {
+      const dbError = Object.assign(new Error("update failed for birth date 1990-01-01"), {
+        code: "23505",
+      });
+      mockDbClient.query.mockRejectedValue(dbError);
+
+      await expectSanitizedFailure(
+        sessionDbClient.updateSession(sessionId, {
+          lastRefreshAt: "2026-04-10T09:15:00.000Z",
+        }),
+        `Failed to update session for sessionId ${sessionId}`,
+      );
+    });
   });
 
   describe("deleteSession", () => {
@@ -292,6 +340,18 @@ describe("SessionDbClient", () => {
       mockDbClient.query.mockResolvedValue({ rows: [], rowCount: 0 });
 
       await expect(sessionDbClient.deleteSession(sessionId)).rejects.toThrow(
+        `Failed to delete session for sessionId ${sessionId}`,
+      );
+    });
+
+    it("should sanitize delete database failures", async () => {
+      const dbError = Object.assign(new Error("delete failed for token nhs-access-token"), {
+        code: "08006",
+      });
+      mockDbClient.query.mockRejectedValue(dbError);
+
+      await expectSanitizedFailure(
+        sessionDbClient.deleteSession(sessionId),
         `Failed to delete session for sessionId ${sessionId}`,
       );
     });

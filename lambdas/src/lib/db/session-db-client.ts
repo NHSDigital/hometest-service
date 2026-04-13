@@ -111,7 +111,7 @@ export class SessionDbClient {
         $10,
         $11,
         $12,
-        $13,
+        $13::date,
         $14,
         $15,
         $16::timestamptz,
@@ -150,10 +150,8 @@ export class SessionDbClient {
       }
 
       return this.mapRowToSession(result.rows[0]);
-    } catch (error) {
-      throw new Error(`Failed to create session for sessionId ${session.sessionId}`, {
-        cause: error,
-      });
+    } catch {
+      throw new Error(`Failed to create session for sessionId ${session.sessionId}`);
     }
   }
 
@@ -169,10 +167,8 @@ export class SessionDbClient {
       const result = await this.query<SessionRow, [string]>(query, [sessionId]);
 
       return result.rowCount === 0 || !result.rows[0] ? null : this.mapRowToSession(result.rows[0]);
-    } catch (error) {
-      throw new Error(`Failed to fetch session for sessionId ${sessionId}`, {
-        cause: error,
-      });
+    } catch {
+      throw new Error(`Failed to fetch session for sessionId ${sessionId}`);
     }
   }
 
@@ -201,10 +197,8 @@ export class SessionDbClient {
       }
 
       return this.mapRowToSession(result.rows[0]);
-    } catch (error) {
-      throw new Error(`Failed to update session for sessionId ${sessionId}`, {
-        cause: error,
-      });
+    } catch {
+      throw new Error(`Failed to update session for sessionId ${sessionId}`);
     }
   }
 
@@ -220,10 +214,8 @@ export class SessionDbClient {
       if (result.rowCount === 0) {
         throw new Error("Failed to delete session");
       }
-    } catch (error) {
-      throw new Error(`Failed to delete session for sessionId ${sessionId}`, {
-        cause: error,
-      });
+    } catch {
+      throw new Error(`Failed to delete session for sessionId ${sessionId}`);
     }
   }
 
