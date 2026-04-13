@@ -26,7 +26,6 @@ const envVars: PostcodeLookupEnvVariables = {
     retrieveOptionalEnvVariable("POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR") ?? "2",
   ),
   useStubClient: retrieveOptionalEnvVariable("USE_STUB_POSTCODE_CLIENT") === "true",
-  rejectUnauthorized: retrieveOptionalEnvVariable("POSTCODE_LOOKUP_REJECT_UNAUTHORIZED") === "true",
 };
 
 export async function buildEnvironment(): Promise<PostcodeLookupDependencies> {
@@ -45,7 +44,6 @@ export async function buildEnvironment(): Promise<PostcodeLookupDependencies> {
     maxRetries: envVars.postcodeLookupMaxRetries,
     retryDelayMs: envVars.postcodeLookupRetryDelayMs,
     retryBackoffFactor: envVars.postcodeLookupRetryBackoffFactor,
-    rejectUnauthorized: envVars.rejectUnauthorized,
   };
 
   let postcodeLookupClient: PostcodeLookupClient;
