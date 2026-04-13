@@ -38,8 +38,8 @@ jest.mock("../lib/login/nhs-login-jwt-helper", () => ({
   NhsLoginJwtHelper: jest.fn().mockImplementation(() => mockNhsLoginJwtHelperInstance),
 }));
 
-jest.mock("../lib/http/login-http-client", () => ({
-  HttpClient: jest.fn().mockImplementation(() => mockHttpClientInstance),
+jest.mock("../lib/http/http-client", () => ({
+  FetchHttpClient: jest.fn().mockImplementation(() => mockHttpClientInstance),
 }));
 
 jest.mock("jwks-rsa", () => ({
@@ -64,6 +64,7 @@ describe("login-lambda init", () => {
     NHS_LOGIN_CLIENT_ID: "client-id-123",
     NHS_LOGIN_REDIRECT_URL: "https://app.example/callback",
     NHS_LOGIN_PRIVATE_KEY_SECRET_NAME: "nhs-login-private-key-secret",
+    AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME: "auth-cookie-private-keys-secret",
     AUTH_SESSION_MAX_DURATION_MINUTES: "120",
     AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES: "10",
     AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES: "30",
@@ -93,7 +94,17 @@ describe("login-lambda init", () => {
 
     setMandatoryEnvVariableMock();
     mockRetrieveOptionalEnvVariable.mockReturnValue(undefined);
-    mockGetSecretValue.mockResolvedValue("nhs-private-key");
+    mockGetSecretValue.mockImplementation((secretName: string) => {
+      if (secretName === "auth-cookie-private-keys-secret") {
+        return Promise.resolve("auth-private-key");
+      }
+
+      if (secretName === "nhs-login-private-key-secret") {
+        return Promise.resolve("nhs-private-key");
+      }
+
+      return Promise.reject(new Error(`Unexpected secret: ${secretName}`));
+    });
   });
 
   it("initializes and wires all dependencies with expected configuration", async () => {
@@ -103,20 +114,21 @@ describe("login-lambda init", () => {
     const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
     const { AuthTokenService } = await import("../lib/auth/auth-token-service");
     const { NhsLoginJwtHelper } = await import("../lib/login/nhs-login-jwt-helper");
-    const { HttpClient } = await import("../lib/http/login-http-client");
+    const { FetchHttpClient } = await import("../lib/http/http-client");
     const { JwksClient } = await import("jwks-rsa");
     const { NhsLoginClient } = await import("../lib/login/nhs-login-client");
     const { TokenService } = await import("../lib/login/token-service");
     const { LoginService } = await import("./login-service");
 
     expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+    expect(mockGetSecretValue).toHaveBeenCalledWith("auth-cookie-private-keys-secret");
     expect(mockGetSecretValue).toHaveBeenCalledWith("nhs-login-private-key-secret");
 
     expect(AuthTokenService).toHaveBeenCalledWith({
       sessionMaxDurationMinutes: 120,
       accessTokenExpiryDurationMinutes: 10,
       refreshTokenExpiryDurationMinutes: 30,
-      privateKeys: { key: "nhs-private-key" },
+      privateKeys: { key: "auth-private-key" },
       publicKeys: {},
     });
 
@@ -129,7 +141,7 @@ describe("login-lambda init", () => {
     };
 
     expect(NhsLoginJwtHelper).toHaveBeenCalledWith(expectedNhsConfig);
-    expect(HttpClient).toHaveBeenCalledTimes(1);
+    expect(FetchHttpClient).toHaveBeenCalledTimes(1);
     expect(JwksClient).toHaveBeenCalledWith({
       cache: true,
       rateLimit: true,
@@ -156,8 +168,35 @@ describe("login-lambda init", () => {
     });
   });
 
+  it("parses JSON auth-cookie private-key secrets", async () => {
+    mockGetSecretValue.mockImplementation((secretName: string) => {
+      if (secretName === "auth-cookie-private-keys-secret") {
+        return Promise.resolve('{"key":"auth-private-key","next":"rotated-private-key"}');
+      }
+
+      if (secretName === "nhs-login-private-key-secret") {
+        return Promise.resolve("nhs-private-key");
+      }
+
+      return Promise.reject(new Error(`Unexpected secret: ${secretName}`));
+    });
+
+    const { buildEnvironment: init } = await import("./init");
+    await init();
+
+    const { AuthTokenService } = await import("../lib/auth/auth-token-service");
+    expect(AuthTokenService).toHaveBeenCalledWith({
+      sessionMaxDurationMinutes: 120,
+      accessTokenExpiryDurationMinutes: 10,
+      refreshTokenExpiryDurationMinutes: 30,
+      privateKeys: { key: "auth-private-key", next: "rotated-private-key" },
+      publicKeys: {},
+    });
+  });
+
   it("uses the AWS_REGION value from mandatory env variable", async () => {
     setMandatoryEnvVariableMock({ AWS_REGION: "eu-central-1" });
+    process.env.AWS_DEFAULT_REGION = "us-east-1";
 
     const { buildEnvironment: init } = await import("./init");
     await init();
@@ -169,8 +208,36 @@ describe("login-lambda init", () => {
   it("throws when AWS_REGION is missing", async () => {
     setMandatoryEnvVariableMock({ AWS_REGION: "" });
 
-    const { buildEnvironment: init } = await import("./init");
-    await expect(init()).rejects.toThrow("Missing environment variable: AWS_REGION");
+    const { buildEnvironment } = await import("./init");
+    await expect(buildEnvironment()).rejects.toThrow("Missing environment variable: AWS_REGION");
+  });
+
+  it("throws when the auth-cookie private-key secret is an empty string", async () => {
+    mockGetSecretValue.mockImplementation((secretName: string) => {
+      if (secretName === "auth-cookie-private-keys-secret") {
+        return Promise.resolve("");
+      }
+      return Promise.resolve("nhs-private-key");
+    });
+
+    const { buildEnvironment } = await import("./init");
+    await expect(buildEnvironment()).rejects.toThrow(
+      "AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME secret value must not be empty.",
+    );
+  });
+
+  it("throws when the auth-cookie private-key secret is whitespace only", async () => {
+    mockGetSecretValue.mockImplementation((secretName: string) => {
+      if (secretName === "auth-cookie-private-keys-secret") {
+        return Promise.resolve("   ");
+      }
+      return Promise.resolve("nhs-private-key");
+    });
+
+    const { buildEnvironment } = await import("./init");
+    await expect(buildEnvironment()).rejects.toThrow(
+      "AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME secret value must not be empty.",
+    );
   });
 
   describe("singleton protection", () => {
@@ -190,7 +257,7 @@ describe("login-lambda init", () => {
     it("should clear the cached environment on rejection so subsequent calls can retry", async () => {
       mockGetSecretValue
         .mockRejectedValueOnce(new Error("Secrets Manager unavailable"))
-        .mockResolvedValue("nhs-private-key");
+        .mockResolvedValue("auth-private-key");
 
       const { init: singletonInit } = await import("./init");
 

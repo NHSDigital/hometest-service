@@ -244,14 +244,15 @@ module "login_lambda" {
     NODE_OPTIONS                               = "--enable-source-maps",
     ALLOW_ORIGIN                               = "http://localhost:3000",
     NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url,
-    NHS_LOGIN_CLIENT_ID                        = "hometest",
-    NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
-    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
-    AUTH_SESSION_MAX_DURATION_MINUTES          = "60",
-    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = "60",
-    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = "60",
-    AUTH_COOKIE_SAME_SITE                      = "Lax"
-    AUTH_COOKIE_SECURE                         = "false"
+    NHS_LOGIN_CLIENT_ID                        = var.local_nhs_login_client_id,
+    NHS_LOGIN_REDIRECT_URL                     = var.local_nhs_login_redirect_url,
+    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = var.local_nhs_login_private_key_secret_name,
+    AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME       = var.local_auth_cookie_private_keys_secret_name
+    AUTH_SESSION_MAX_DURATION_MINUTES          = var.local_auth_session_max_duration_minutes,
+    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = var.local_auth_access_token_expiry_duration_minutes,
+    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = var.local_auth_refresh_token_expiry_duration_minutes,
+    AUTH_COOKIE_SAME_SITE                      = var.local_auth_cookie_same_site
+    AUTH_COOKIE_SECURE                         = var.local_auth_cookie_secure
   }
 }
 
@@ -279,8 +280,8 @@ module "session_lambda" {
   environment_variables = {
     NODE_OPTIONS                       = "--enable-source-maps"
     ALLOW_ORIGIN                       = "http://localhost:3000"
-    AUTH_COOKIE_KEY_ID                 = "key"
-    AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
+    AUTH_COOKIE_KEY_ID                 = var.local_auth_cookie_key_id
+    AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = var.local_auth_cookie_public_key_secret_name
     NHS_LOGIN_BASE_ENDPOINT_URL        = local.resolved_nhs_login_base_url,
   }
 }
