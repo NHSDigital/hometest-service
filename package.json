@@ -4,7 +4,7 @@
   "description": "NHS Home Test Service",
   "private": true,
   "scripts": {
-    "postinstall": "npm --prefix ui ci && npm --prefix lambdas ci && npm --prefix tests ci",
+    "postinstall": "pnpm -C ui install --frozen-lockfile && pnpm -C lambdas install --frozen-lockfile && pnpm -C tests install --frozen-lockfile",
     "test": "npm --prefix ui run test && npm --prefix lambdas run test",
     "test:playwright": "UI_BASE_URL=$(terraform -chdir=local-environment/infra output -raw ui_url) API_BASE_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url) npm --prefix tests run test:chrome",
     "format": "(git diff --name-only --diff-filter=ACMR -z; git diff --name-only --cached --diff-filter=ACMR -z) | sort -zu | xargs -0 sh -c '[ \"$#\" -gt 0 ] && npm run format:pre-commit -- \"$@\"' sh",
@@ -12,7 +12,7 @@
     "lint": "npm --prefix ui run lint && npm --prefix lambdas run lint && npm --prefix tests run lint",
     "build:lambdas": "npm --prefix lambdas run build",
     "package:lambdas": "npm --prefix lambdas run package",
-    "start": "npm ci && npm run local:start",
+    "start": "pnpm install --frozen-lockfile && pnpm run local:start",
     "stop": "npm run local:stop",
     "local:start": "npm run local:backend:start && npm run local:terraform:init && npm run local:deploy && npm run local:frontend:up",
     "local:stop": "npm run local:terraform:destroy && COMPOSE_PROFILES=* npm run local:compose:down",
