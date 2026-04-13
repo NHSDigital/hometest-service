@@ -161,7 +161,7 @@ export const lambdaHandler = async (
 
     commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
 
-    await orderStatusNotifyService.handleOrderStatusUpdated({
+    await orderStatusNotifyService.dispatch({
       orderId,
       patientId: orderPatientId,
       correlationId,

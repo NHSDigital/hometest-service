@@ -4,8 +4,7 @@ import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-clien
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
-import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
-import { OrderStatusNotifyService } from "../lib/notify/notify-service";
+import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
@@ -19,8 +18,7 @@ jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
-jest.mock("../lib/notify/notify-message-builder");
-jest.mock("../lib/notify/notify-service");
+jest.mock("../lib/notify/services/order-status-notify-service");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -162,10 +160,6 @@ describe("init", () => {
             times: 1,
           },
           {
-            mock: NotifyMessageBuilder as jest.Mock,
-            times: 1,
-          },
-          {
             mock: OrderStatusNotifyService as jest.Mock,
             times: 1,
           },
@@ -173,25 +167,18 @@ describe("init", () => {
       });
     });
 
-    it("should create NotifyMessageBuilder with PatientDbClient and home test base url", () => {
-      init();
-
-      expect(NotifyMessageBuilder).toHaveBeenCalledWith(
-        expect.any(PatientDbClient),
-        expect.any(OrderDbClient),
-        expect.any(OrderStatusService),
-        "https://hometest.example.nhs.uk",
-      );
-    });
-
     it("should create OrderStatusNotifyService with notification dependencies", () => {
       init();
 
       expect(OrderStatusNotifyService).toHaveBeenCalledWith({
-        orderStatusDb: expect.any(OrderStatusService),
+        builderDeps: {
+          patientDbClient: expect.any(PatientDbClient),
+          orderDbClient: expect.any(OrderDbClient),
+          homeTestBaseUrl: "https://hometest.example.nhs.uk",
+        },
+        orderStatusService: expect.any(OrderStatusService),
         notificationAuditDbClient: expect.any(NotificationAuditDbClient),
         sqsClient: expect.any(AWSSQSClient),
-        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
         notifyMessagesQueueUrl: "https://example.queue.local/notify",
       });
     });

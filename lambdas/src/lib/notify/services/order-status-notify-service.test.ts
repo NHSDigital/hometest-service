@@ -1,7 +1,14 @@
-import { NotificationAuditStatus } from "../db/notification-audit-db-client";
-import { OrderStatusCodes, OrderStatusUpdateParams } from "../db/order-status-db";
-import { NotifyEventCode } from "../types/notify-message";
-import { OrderStatusNotifyService } from "./notify-service";
+import { NotificationAuditStatus } from "../../db/notification-audit-db-client";
+import { OrderStatusCodes, OrderStatusUpdateParams } from "../../db/order-status-db";
+import { NotifyEventCode } from "../../types/notify-message";
+import { OrderDispatchedMessageBuilder } from "../message-builders/order-dispatched-message-builder";
+import { OrderReceivedMessageBuilder } from "../message-builders/order-received-message-builder";
+import { OrderResultAvailableMessageBuilder } from "../message-builders/order-result-available-message-builder";
+import { OrderStatusNotifyService } from "./order-status-notify-service";
+
+jest.mock("../message-builders/order-dispatched-message-builder");
+jest.mock("../message-builders/order-received-message-builder");
+jest.mock("../message-builders/order-result-available-message-builder");
 
 describe("OrderStatusNotifyService", () => {
   const mockBuildOrderDispatchedNotifyMessage = jest.fn();
@@ -21,6 +28,16 @@ describe("OrderStatusNotifyService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    (OrderDispatchedMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
+      build: mockBuildOrderDispatchedNotifyMessage,
+    }));
+    (OrderReceivedMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
+      build: mockBuildOrderReceivedNotifyMessage,
+    }));
+    (OrderResultAvailableMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
+      build: mockBuildOrderResultAvailableNotifyMessage,
+    }));
 
     mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
@@ -56,24 +73,24 @@ describe("OrderStatusNotifyService", () => {
     mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
 
     service = new OrderStatusNotifyService({
-      orderStatusDb: {} as never,
+      builderDeps: {
+        patientDbClient: {} as never,
+        orderDbClient: {} as never,
+        homeTestBaseUrl: "https://hometest.example.nhs.uk",
+      },
+      orderStatusService: {} as never,
       notificationAuditDbClient: {
         insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       } as never,
       sqsClient: {
         sendMessage: mockSendMessage,
       },
-      notifyMessageBuilder: {
-        buildOrderDispatchedNotifyMessage: mockBuildOrderDispatchedNotifyMessage,
-        buildOrderReceivedNotifyMessage: mockBuildOrderReceivedNotifyMessage,
-        buildOrderResultAvailableNotifyMessage: mockBuildOrderResultAvailableNotifyMessage,
-      } as never,
       notifyMessagesQueueUrl: "https://example.queue.local/notify",
     });
   });
 
   it("should do nothing for statuses without side effects", async () => {
-    await service.handleOrderStatusUpdated({
+    await service.dispatch({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
@@ -88,7 +105,7 @@ describe("OrderStatusNotifyService", () => {
   });
 
   it("should send and audit a dispatched notification", async () => {
-    await service.handleOrderStatusUpdated({
+    await service.dispatch({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
@@ -113,7 +130,7 @@ describe("OrderStatusNotifyService", () => {
   });
 
   it("should send and audit a received notification", async () => {
-    await service.handleOrderStatusUpdated({
+    await service.dispatch({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
@@ -138,7 +155,7 @@ describe("OrderStatusNotifyService", () => {
   });
 
   it("should send and audit a result available notification", async () => {
-    await service.handleOrderStatusUpdated({
+    await service.dispatch({
       orderId: statusUpdate.orderId,
       patientId: "patient-123",
       correlationId: statusUpdate.correlationId,
@@ -162,19 +179,19 @@ describe("OrderStatusNotifyService", () => {
     });
   });
 
-  it("should swallow errors when building the notify message fails", async () => {
+  it("should propagate errors when building the notify message fails", async () => {
     mockBuildOrderDispatchedNotifyMessage.mockRejectedValueOnce(
       new Error("Notify payload build failed"),
     );
 
     await expect(
-      service.handleOrderStatusUpdated({
+      service.dispatch({
         orderId: statusUpdate.orderId,
         patientId: "patient-123",
         correlationId: statusUpdate.correlationId,
         statusCode: OrderStatusCodes.DISPATCHED,
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("Notify payload build failed");
 
     expect(mockSendMessage).not.toHaveBeenCalled();
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
@@ -184,7 +201,7 @@ describe("OrderStatusNotifyService", () => {
     mockSendMessage.mockRejectedValueOnce(new Error("SQS unavailable"));
 
     await expect(
-      service.handleOrderStatusUpdated({
+      service.dispatch({
         orderId: statusUpdate.orderId,
         patientId: "patient-123",
         correlationId: statusUpdate.correlationId,
@@ -195,19 +212,19 @@ describe("OrderStatusNotifyService", () => {
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
 
-  it("should swallow errors when building the received notify message fails", async () => {
+  it("should propagate errors when building the received notify message fails", async () => {
     mockBuildOrderReceivedNotifyMessage.mockRejectedValueOnce(
       new Error("Notify payload build failed"),
     );
 
     await expect(
-      service.handleOrderStatusUpdated({
+      service.dispatch({
         orderId: statusUpdate.orderId,
         patientId: "patient-123",
         correlationId: statusUpdate.correlationId,
         statusCode: OrderStatusCodes.RECEIVED,
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("Notify payload build failed");
 
     expect(mockSendMessage).not.toHaveBeenCalled();
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
