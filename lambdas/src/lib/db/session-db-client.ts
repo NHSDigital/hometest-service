@@ -118,6 +118,8 @@ export class SessionDbClient {
         $17::timestamptz,
         $18::timestamptz
       )
+      ON CONFLICT (session_id) DO UPDATE
+      SET session_id = EXCLUDED.session_id
       RETURNING ${SESSION_COLUMNS};
     `;
 

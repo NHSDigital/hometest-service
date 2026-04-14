@@ -96,7 +96,7 @@ export async function executeDbOperationWithRetry<T>(
   const options = buildDbRetryOptions(retryOptions);
   let retryCount = 0;
 
-  while (true) {
+  for (;;) {
     try {
       return await operation();
     } catch (error) {
