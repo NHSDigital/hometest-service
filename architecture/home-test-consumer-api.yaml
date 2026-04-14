@@ -281,7 +281,9 @@ paths:
               $ref: "#/components/schemas/FHIRTask"
             example:
               resourceType: "Task"
-              id: "550e8400-e29b-41d4-a716-446655440000"
+              identifier:
+                - system: "https://fhir.hometest.nhs.uk/Id/order-id"
+                  value: "550e8400-e29b-41d4-a716-446655440000"
               status: "completed"
               intent: "order"
               basedOn:
@@ -290,7 +292,7 @@ paths:
               requester:
                 reference: "Organization/ORG001"
               for:
-                reference: "#patient-1"
+                reference: "Patient/123e4567-e89b-12d3-a456-426614174000"
               businessStatus:
                 coding:
                   - system: "https://fhir.hometest.nhs.uk/CodeSystem/result-business-status"
@@ -308,7 +310,9 @@ paths:
                 $ref: "#/components/schemas/FHIRTask"
               example:
                 resourceType: "Task"
-                id: "550e8400-e29b-41d4-a716-446655440000"
+                identifier:
+                  - system: "https://fhir.hometest.nhs.uk/Id/order-id"
+                    value: "550e8400-e29b-41d4-a716-446655440000"
                 status: "completed"
                 intent: "order"
                 basedOn:
@@ -317,7 +321,7 @@ paths:
                 requester:
                   reference: "Organization/ORG001"
                 for:
-                  reference: "#patient-1"
+                  reference: "Patient/123e4567-e89b-12d3-a456-426614174000"
                 businessStatus:
                   coding:
                     - system: "https://fhir.hometest.nhs.uk/CodeSystem/result-business-status"

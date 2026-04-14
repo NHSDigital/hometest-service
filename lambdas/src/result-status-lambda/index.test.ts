@@ -208,7 +208,7 @@ describe("result-status-lambda handler", () => {
   });
 
   describe("order lookup", () => {
-    it("returns 500 when orderStatusService.getPatientIdFromOrder throws", async () => {
+    it("returns 500 when orderService.retrieveOrderDetails throws", async () => {
       mockRetrieveOrderDetails.mockRejectedValueOnce(new Error("DB connection failed"));
 
       const res = await lambdaHandler(
