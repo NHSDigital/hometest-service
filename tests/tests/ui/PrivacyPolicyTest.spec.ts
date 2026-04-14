@@ -1,5 +1,6 @@
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 
 const makeAComplaintUrl = "https://ico.org.uk/make-a-complaint/";
 

@@ -16,11 +16,11 @@
  *   npm run wiremock:push
  *
  * Environment variables:
- *   WIREMOCK_BASE_URL  Base URL of the WireMock instance (default: http://localhost:8080).
- *                      Also used as the JWT issuer so tokens match what the login-lambda expects.
+ *   WIREMOCK_BASE_URL    Base URL of the WireMock instance (default: http://localhost:8080).
+ *   WIREMOCK_JWT_ISSUER  Value used as the JWT `iss` claim (default: WIREMOCK_BASE_URL).
+ *                        For local Docker this is typically http://wiremock:8080 (Docker-internal).
  */
 import { WireMockClient } from "../api/clients/WireMockClient";
-import type { WireMockMapping } from "../api/clients/WireMockClient";
 import {
   cleanupWireMockAuthState,
   configureWireMockAuthMappings,
@@ -29,67 +29,21 @@ import {
   getWireMockAuthManifestPath,
 } from "../utils/users/wiremockAuthMappings";
 import { createWireMockUserInfoMapping } from "../utils/users/wiremockUserInfoMapping";
+import { createOSPlacesCatchAllMapping } from "../utils/wireMockMappings/OSPlacesWireMockMappings";
 import { createSupplierOAuthTokenMapping } from "../utils/wireMockMappings/SupplierOAuthWireMockMappings";
 import { createSupplierOrderSuccessMapping } from "../utils/wireMockMappings/SupplierOrderWireMockMappings";
 
 const wiremockBaseUrl = process.env.WIREMOCK_BASE_URL ?? "http://localhost:8080";
-
-/** Catch-all OS Places /find stub — returns a single dummy address for any postcode query. */
-function createOSPlacesCatchAllMapping(): WireMockMapping {
-  return {
-    priority: 100, // lower priority than per-test stubs
-    request: {
-      method: "GET",
-      urlPath: "/find",
-      queryParameters: {
-        query: { matches: ".*" },
-      },
-    },
-    response: {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-      jsonBody: {
-        header: {
-          uri: "http://wiremock/find",
-          query: "query=SW1A1AA",
-          offset: 0,
-          totalresults: 1,
-          format: "JSON",
-          dataset: "DPA",
-          lr: "EN",
-          maxresults: 100,
-          epoch: "95",
-          output_srs: "EPSG:27700",
-        },
-        results: [
-          {
-            DPA: {
-              UPRN: "100023336956",
-              UDPRN: "52640002",
-              ADDRESS: "10 DOWNING STREET, LONDON, SW1A 1AA",
-              BUILDING_NUMBER: "10",
-              THOROUGHFARE_NAME: "DOWNING STREET",
-              POST_TOWN: "LONDON",
-              POSTCODE: "SW1A 1AA",
-            },
-          },
-        ],
-      },
-    },
-  };
-}
+const wiremockJwtIssuer = process.env.WIREMOCK_JWT_ISSUER ?? wiremockBaseUrl;
 
 async function main(): Promise<void> {
   console.log(`Pushing WireMock mappings to: ${wiremockBaseUrl}`);
+  console.log(`JWT issuer: ${wiremockJwtIssuer}`);
 
   const wiremock = new WireMockClient(wiremockBaseUrl);
 
-  // Generate fresh RSA key pairs + JWTs for all default test users.
-  // The issued JWTs use the Docker-internal WIREMOCK_ISSUER ("http://wiremock:8080")
-  // as the issuer so they match what the login-lambda validates against
-  // (NHS_LOGIN_BASE_ENDPOINT_URL inside the localstack container).
   cleanupWireMockAuthState();
-  const manifest = createWireMockAuthManifest();
+  const manifest = createWireMockAuthManifest(wiremockJwtIssuer);
 
   // Reset + push NHS Login OAuth stubs (JWKS, /authorize redirects, /token exchanges)
   await configureWireMockAuthMappings(wiremock, manifest);
@@ -102,7 +56,7 @@ async function main(): Promise<void> {
         user,
         user.authContext.accessToken,
         user.authContext.sub,
-        wiremockBaseUrl,
+        wiremockJwtIssuer,
       ),
     );
   }
@@ -122,7 +76,7 @@ async function main(): Promise<void> {
     `✅ Pushed mappings: ${allUsers.length} users (auth + userinfo), supplier stubs, OS Places catch-all`,
   );
   console.log(`   Auth manifest: ${getWireMockAuthManifestPath()}`);
-  console.log(`   JWT issuer:    ${wiremockBaseUrl}`);
+  console.log(`   JWT issuer:    ${wiremockJwtIssuer}`);
 }
 
 main().catch((err: unknown) => {
