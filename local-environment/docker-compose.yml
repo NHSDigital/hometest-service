@@ -34,7 +34,7 @@ services:
       - REACT_APP_API_URL=http://localstack:4566
 
   postgres-db:
-    image: postgres:17.7
+    image: postgres:17.9
     container_name: postgres-db
     profiles:
       - backend

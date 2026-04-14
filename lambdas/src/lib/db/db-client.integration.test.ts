@@ -1,5 +1,6 @@
-import { PostgresDbClient } from "./db-client";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+
+import { PostgresDbClient } from "./db-client";
 
 describe("PostgresDbClient Integration Tests", () => {
   let container: StartedPostgreSqlContainer;
@@ -7,7 +8,7 @@ describe("PostgresDbClient Integration Tests", () => {
 
   beforeAll(async () => {
     // Start a real PostgreSQL container
-    container = await new PostgreSqlContainer("postgres:17.7-alpine")
+    container = await new PostgreSqlContainer("postgres:17.9")
       .withDatabase("testdb")
       .withUsername("testuser")
       .withPassword("testpass")
@@ -15,16 +16,14 @@ describe("PostgresDbClient Integration Tests", () => {
 
     const connectionUri = new URL(container.getConnectionUri());
 
-    client = new PostgresDbClient(
-      {
-        user: decodeURIComponent(connectionUri.username),
-        host: connectionUri.hostname,
-        port: parseInt(connectionUri.port, 10),
-        database: connectionUri.pathname.replace("/", ""),
-        password: decodeURIComponent(connectionUri.password),
-        options: "-c search_path=public",
-      }
-    );
+    client = new PostgresDbClient({
+      user: decodeURIComponent(connectionUri.username),
+      host: connectionUri.hostname,
+      port: parseInt(connectionUri.port, 10),
+      database: connectionUri.pathname.replace("/", ""),
+      password: decodeURIComponent(connectionUri.password),
+      options: "-c search_path=public",
+    });
 
     // Create a test table
     await client.query(`

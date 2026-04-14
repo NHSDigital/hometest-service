@@ -30,10 +30,14 @@ jobs:
           echo "build_timestamp=$(date --date=$datetime -u +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
           echo "nodejs_version=$(grep "^v" .nvmrc | cut -f2 -d'v')" >> $GITHUB_OUTPUT
       - name: "List variables"
+        env:
+          BUILD_DATETIME: ${{ steps.variables.outputs.build_datetime }}
+          BUILD_TIMESTAMP: ${{ steps.variables.outputs.build_timestamp }}
+          NODEJS_VERSION: ${{ steps.variables.outputs.nodejs_version }}
         run: |
-          export BUILD_DATETIME="${{ steps.variables.outputs.build_datetime }}"
-          export BUILD_TIMESTAMP="${{ steps.variables.outputs.build_timestamp }}"
-          export NODEJS_VERSION="${{ steps.variables.outputs.nodejs_version }}"
+          export BUILD_DATETIME
+          export BUILD_TIMESTAMP
+          export NODEJS_VERSION
           make list-variables
   commit-stage: # Recommended maximum execution time is 2 minutes
     name: "Commit stage"

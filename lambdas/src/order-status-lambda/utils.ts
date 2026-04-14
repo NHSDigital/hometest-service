@@ -1,7 +1,4 @@
-import {
-  AllowedInternalBusinessStatuses,
-  IncomingBusinessStatus,
-} from "./types";
+import { AllowedInternalBusinessStatuses, IncomingBusinessStatus } from "./types";
 
 /**
  * Extract UUID from a FHIR reference (e.g., "ServiceRequest/550e8400-e29b-41d4-a716-446655440000")
@@ -19,8 +16,7 @@ export const businessStatusMapping: Record<
   IncomingBusinessStatus,
   AllowedInternalBusinessStatuses
 > = {
-  [IncomingBusinessStatus.DISPATCHED]:
-    AllowedInternalBusinessStatuses.DISPATCHED,
-  [IncomingBusinessStatus.RECEIVED_AT_LAB]:
-    AllowedInternalBusinessStatuses.RECEIVED,
+  [IncomingBusinessStatus.CONFIRMED]: AllowedInternalBusinessStatuses.CONFIRMED,
+  [IncomingBusinessStatus.DISPATCHED]: AllowedInternalBusinessStatuses.DISPATCHED,
+  [IncomingBusinessStatus.RECEIVED_AT_LAB]: AllowedInternalBusinessStatuses.RECEIVED,
 };
