@@ -161,12 +161,20 @@ export const lambdaHandler = async (
 
     commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
 
-    await orderStatusNotifyService.dispatch({
-      orderId,
-      patientId: orderPatientId,
-      correlationId,
-      statusCode: statusOrderUpdateParams.statusCode,
-    });
+    try {
+      await orderStatusNotifyService.dispatch({
+        orderId,
+        patientId: orderPatientId,
+        correlationId,
+        statusCode: statusOrderUpdateParams.statusCode,
+      });
+    } catch (error) {
+      commons.logError(name, "Failed to dispatch order status notification", {
+        correlationId,
+        orderId,
+        error,
+      });
+    }
 
     return createFhirResponse(201, validatedTask);
   } catch (error) {

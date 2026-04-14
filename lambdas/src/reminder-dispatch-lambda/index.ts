@@ -1,25 +1,12 @@
 import { Context, EventBridgeEvent } from "aws-lambda";
 
 import { ConsoleCommons } from "../lib/commons";
-import { type OrderStatusReminderRecord } from "../lib/db/order-status-reminder-db-client";
-import { type ReminderConfiguration, getReminderDispatchConfigFromEnv } from "./config";
+import { type ReminderScheduleTuple } from "../lib/db/order-status-reminder-db-client";
+import { getReminderDispatchConfigFromEnv } from "./config";
 import { init } from "./init";
 
 const commons = new ConsoleCommons();
 const name = "reminder-dispatch-lambda";
-
-function getReminderEventCode(
-  reminder: OrderStatusReminderRecord,
-  reminderConfiguration: ReminderConfiguration,
-): string | undefined {
-  const schedules = reminderConfiguration[reminder.statusCode];
-
-  if (!schedules || schedules.length === 0) {
-    return undefined;
-  }
-
-  return schedules[reminder.reminderNumber - 1]?.eventCode;
-}
 
 export const lambdaHandler = async (
   event: EventBridgeEvent<"ReminderDispatchEvent", unknown>,
@@ -37,21 +24,33 @@ export const lambdaHandler = async (
     });
 
     // cleanup stale rows HOTE-1136
-    // todo implement proper database method need HOTE-1125
-    const reminders = await orderStatusReminderDbClient.getPendingReminders();
+    const schedules: ReminderScheduleTuple[] = Object.entries(reminderConfiguration).flatMap(
+      ([triggerStatus, configs]) =>
+        (configs ?? []).map((config, index) => ({
+          triggerStatus,
+          reminderNumber: index + 1,
+          intervalDays: config.interval,
+          eventCode: config.eventCode,
+        })),
+    );
+    const reminders = await orderStatusReminderDbClient.getScheduledReminders(schedules);
 
     for (const reminder of reminders) {
-      if (!enabledReminderStatuses.has(reminder.statusCode)) {
+      if (!enabledReminderStatuses.has(reminder.triggerStatus)) {
         commons.logInfo(name, "Reminder skipped for disabled trigger status", {
           correlationId,
           reminderId: reminder.reminderId,
           orderUid: reminder.orderUid,
-          statusCode: reminder.statusCode,
+          triggerStatus: reminder.triggerStatus,
         });
         continue;
       }
 
-      const reminderEventCode = getReminderEventCode(reminder, reminderConfiguration);
+      const reminderEventCode = schedules.find(
+        (s) =>
+          s.triggerStatus === reminder.triggerStatus &&
+          s.reminderNumber === reminder.reminderNumber,
+      )?.eventCode;
 
       if (!reminderEventCode) {
         commons.logInfo(name, "No reminder event code configured", {
@@ -62,19 +61,41 @@ export const lambdaHandler = async (
         continue;
       }
 
-      await reminderNotifyService.dispatch({
-        reminderId: reminder.reminderId,
-        orderId: reminder.orderUid,
-        correlationId,
-        statusCode: reminder.statusCode,
-        eventCode: reminderEventCode,
-      });
+      try {
+        await reminderNotifyService.dispatch({
+          reminderId: reminder.reminderId,
+          orderId: reminder.orderUid,
+          correlationId,
+          statusCode: reminder.triggerStatus,
+          eventCode: reminderEventCode,
+        });
+      } catch (error) {
+        commons.logError(name, "Failed to dispatch reminder", {
+          correlationId,
+          reminderId: reminder.reminderId,
+          orderUid: reminder.orderUid,
+          error,
+        });
+        await orderStatusReminderDbClient.markReminderAsFailed(reminder.reminderId);
+        continue;
+      }
 
-      // todo update reminder status
+      await orderStatusReminderDbClient.markReminderAsQueued(reminder.reminderId);
 
-      // todo insert next reminder all base on original dispatch if have next series
+      const nextSchedule = schedules.find(
+        (s) =>
+          s.triggerStatus === reminder.triggerStatus &&
+          s.reminderNumber === reminder.reminderNumber + 1,
+      );
 
-      // todo mark reminder on failed
+      if (nextSchedule) {
+        await orderStatusReminderDbClient.scheduleReminder(
+          reminder.orderUid,
+          reminder.triggerStatus,
+          nextSchedule.reminderNumber,
+          reminder.triggeredAt,
+        );
+      }
     }
 
     commons.logInfo(name, "Reminder dispatch completed", {

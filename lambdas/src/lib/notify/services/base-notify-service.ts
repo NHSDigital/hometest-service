@@ -25,11 +25,14 @@ export abstract class BaseNotifyService {
     const { correlationId } = notifyMessage;
     const { notificationAuditDbClient, sqsClient, notifyMessagesQueueUrl } = this.dependencies;
 
+    let sqsMessageId: string | undefined;
+
     try {
       const sqsResult = await sqsClient.sendMessage(
         notifyMessagesQueueUrl,
         JSON.stringify(notifyMessage),
       );
+      sqsMessageId = sqsResult.messageId;
 
       await notificationAuditDbClient.insertNotificationAuditEntry({
         messageReference: notifyMessage.messageReference,
@@ -42,7 +45,7 @@ export abstract class BaseNotifyService {
         correlationId,
         orderId,
         eventCode: notifyMessage.eventCode,
-        messageId: sqsResult.messageId,
+        sqsMessageId,
         messageReference: notifyMessage.messageReference,
       });
     } catch (error) {
@@ -50,8 +53,11 @@ export abstract class BaseNotifyService {
         correlationId,
         orderId,
         eventCode: notifyMessage.eventCode,
+        messageReference: notifyMessage.messageReference,
+        sqsMessageId,
         error,
       });
+      throw error;
     }
   }
 }

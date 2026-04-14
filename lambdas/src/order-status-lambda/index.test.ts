@@ -468,13 +468,13 @@ describe("Order Status Lambda Handler", () => {
       );
     });
 
-    it("should return 500 when notification service fails", async () => {
+    it("should return 201 when notification service fails after a successful status update", async () => {
       mockNotify.mockRejectedValueOnce(new Error("Unexpected side effect error"));
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(201);
     });
   });
 
