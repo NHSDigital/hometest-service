@@ -112,6 +112,10 @@ describe("OrderStatusNotifyService", () => {
       correlationId: statusUpdate.correlationId,
       orderId: statusUpdate.orderId,
     });
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      "https://example.queue.local/notify",
+      expect.any(String),
+    );
     expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith({
       messageReference: "123e4567-e89b-12d3-a456-426614174089",
       eventCode: NotifyEventCode.OrderConfirmed,
