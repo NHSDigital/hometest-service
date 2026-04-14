@@ -4,11 +4,10 @@ import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { type OrderPatientReference } from "../lib/db/order-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
 import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
-import { ResultStatus } from "../lib/types/status";
+import { OrderStatus, ResultStatus } from "../lib/types/status";
 import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
 import { generateReadableError } from "../lib/utils/validation-utils";
 import { corsOptions } from "./cors-configuration";
@@ -79,7 +78,7 @@ function extractOrderUidFromFHIRTask(task: FHIRTask): string {
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { resultService, orderService } = init();
+  const { orderService, orderStatusService } = init();
   let correlationId: string;
 
   try {
@@ -106,11 +105,11 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(400, "invalid", message, "error");
   }
 
-  let patientUID: string, orderUID: string;
+  let patientUid: string, orderUid: string;
 
   try {
-    patientUID = extractPatientIdFromFHIRTask(task);
-    orderUID = extractOrderUidFromFHIRTask(task);
+    patientUid = extractPatientIdFromFHIRTask(task);
+    orderUid = extractOrderUidFromFHIRTask(task);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid identifiers";
     console.error(name, "Failed to extract identifiers from FHIR Task", {
@@ -120,30 +119,30 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(400, "invalid", message, "error");
   }
 
-  let orderSummary: OrderPatientReference | null;
+  let patientFromOrder: string | null;
 
   try {
-    orderSummary = await orderService.retrievePatientIdFromOrder(orderUID);
+    patientFromOrder = await orderStatusService.getPatientIdFromOrder(orderUid);
   } catch (error) {
     console.error(name, "Failed to retrieve order details from database", {
       error,
-      orderUID,
+      orderUID: orderUid,
       correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
-  if (!orderSummary) {
+  if (!patientFromOrder) {
     console.error(name, "Order not found for given order UID", {
-      orderUID,
+      orderUID: orderUid,
       correlationId,
     });
     return createFhirErrorResponse(404, "not-found", "Order not found", "error");
   }
 
-  if (orderSummary.patient_uid !== patientUID) {
+  if (patientFromOrder !== patientUid) {
     console.error(name, "Patient UID in Task does not match order record", {
-      orderUID,
+      orderUID: orderUid,
       correlationId,
     });
     return createFhirErrorResponse(
@@ -155,15 +154,24 @@ export const lambdaHandler = async (
   }
 
   try {
-    await resultService.updateResultStatus(orderUID, ResultStatus.Result_Available, correlationId);
+    // await resultService.updateResultStatus(orderUid, ResultStatus.Result_Available, correlationId);
+    //TODO: update order status
+    await orderService.updateOrderStatusAndResultStatus(
+      orderUid,
+      OrderStatus.Complete,
+      ResultStatus.Result_Available,
+      correlationId,
+    );
   } catch (error) {
     console.error(name, "Failed to update result status in database", {
       error,
-      orderUID,
+      orderUID: orderUid,
       correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
+
+  //TODO: send notification in HOTE-982
 
   return createFhirResponse(201, task);
 };

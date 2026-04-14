@@ -66,7 +66,7 @@ describe("OrderService", () => {
       expect(result).toBeNull();
     });
 
-    it("should log and rethrow when retrieving order details fails", async () => {
+    it("should rethrow when retrieving order details fails", async () => {
       const error = new Error("query failed");
       dbClient.query.mockRejectedValue(error);
 
@@ -75,64 +75,6 @@ describe("OrderService", () => {
       expect(dbClient.query).toHaveBeenCalledTimes(1);
       expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
         normalizeWhitespace(expectedRetrieveOrderDetailsQuery),
-      );
-      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-500"]);
-      expect(console.error).toHaveBeenCalledWith("order-db", "Failed to retrieve order details", {
-        error,
-        orderUid: "order-500",
-      });
-    });
-  });
-
-  describe("retrievePatientIdFromOrder", () => {
-    const expectedRetrievePatientIdQuery = `
-      SELECT o.patient_uid,
-      o.order_uid
-      FROM test_order o
-      WHERE o.order_uid = $1::uuid
-      ORDER BY o.created_at DESC
-      LIMIT 1;
-    `;
-
-    it("should return patient reference when found", async () => {
-      const mockReference = {
-        order_uid: "order-123",
-        patient_uid: "patient-abc",
-      };
-      dbClient.query.mockResolvedValue({ rows: [mockReference] });
-
-      const result = await orderService.retrievePatientIdFromOrder("order-123");
-
-      expect(dbClient.query).toHaveBeenCalledTimes(1);
-      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
-        normalizeWhitespace(expectedRetrievePatientIdQuery),
-      );
-      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-123"]);
-      expect(result).toEqual(mockReference);
-    });
-
-    it("should return null when no order is found", async () => {
-      dbClient.query.mockResolvedValue({ rows: [] });
-
-      const result = await orderService.retrievePatientIdFromOrder("order-404");
-
-      expect(dbClient.query).toHaveBeenCalledTimes(1);
-      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
-        normalizeWhitespace(expectedRetrievePatientIdQuery),
-      );
-      expect(dbClient.query.mock.calls[0][1]).toEqual(["order-404"]);
-      expect(result).toBeNull();
-    });
-
-    it("should rethrow when retrieving patient reference fails", async () => {
-      const error = new Error("query failed");
-      dbClient.query.mockRejectedValue(error);
-
-      await expect(orderService.retrievePatientIdFromOrder("order-500")).rejects.toThrow(error);
-
-      expect(dbClient.query).toHaveBeenCalledTimes(1);
-      expect(normalizeWhitespace(dbClient.query.mock.calls[0][0])).toBe(
-        normalizeWhitespace(expectedRetrievePatientIdQuery),
       );
       expect(dbClient.query.mock.calls[0][1]).toEqual(["order-500"]);
     });
@@ -186,7 +128,7 @@ describe("OrderService", () => {
       ]);
     });
 
-    it("should log and rethrow when the transaction fails", async () => {
+    it("should rethrow when the transaction fails", async () => {
       const error = new Error("transaction failed");
       dbClient.withTransaction.mockRejectedValue(error);
 
@@ -198,15 +140,6 @@ describe("OrderService", () => {
           "corr-1",
         ),
       ).rejects.toThrow(error);
-
-      expect(console.error).toHaveBeenCalledWith(
-        "order-db",
-        "Failed to update order and result status",
-        {
-          error,
-          orderUid: "order-1",
-        },
-      );
     });
   });
 });

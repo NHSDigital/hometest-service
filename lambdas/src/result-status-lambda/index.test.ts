@@ -1,19 +1,19 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
-import { ResultStatus } from "../lib/types/status";
+import { OrderStatus, ResultStatus } from "../lib/types/status";
 import { lambdaHandler } from "./index";
 
-const mockUpdateResultStatus = jest.fn();
-const mockRetrievePatientIdFromOrder = jest.fn();
+const mockGetPatientIdFromOrder = jest.fn();
+const mockUpdateOrderStatusAndResultStatus = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
-    resultService: {
-      updateResultStatus: mockUpdateResultStatus,
+    orderStatusService: {
+      getPatientIdFromOrder: mockGetPatientIdFromOrder,
     },
     orderService: {
-      retrievePatientIdFromOrder: mockRetrievePatientIdFromOrder,
+      updateOrderStatusAndResultStatus: mockUpdateOrderStatusAndResultStatus,
     },
   })),
 }));
@@ -59,14 +59,14 @@ describe("result-status-lambda handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockUpdateResultStatus.mockReset();
-    mockRetrievePatientIdFromOrder.mockReset();
+    mockGetPatientIdFromOrder.mockReset();
+    mockUpdateOrderStatusAndResultStatus.mockReset();
 
-    mockRetrievePatientIdFromOrder.mockResolvedValue({
+    mockUpdateOrderStatusAndResultStatus.mockResolvedValue({
       order_uid: VALID_ORDER_UUID,
       patient_uid: VALID_PATIENT_UUID,
     });
-    mockUpdateResultStatus.mockResolvedValue(undefined);
+    mockGetPatientIdFromOrder.mockResolvedValue(undefined);
   });
 
   describe("request body parsing", () => {
@@ -210,8 +210,8 @@ describe("result-status-lambda handler", () => {
   });
 
   describe("order lookup", () => {
-    it("returns 500 when orderService.retrievePatientIdFromOrder throws", async () => {
-      mockRetrievePatientIdFromOrder.mockRejectedValueOnce(new Error("DB connection failed"));
+    it("returns 500 when orderStatusService.getPatientIdFromOrder throws", async () => {
+      mockGetPatientIdFromOrder.mockRejectedValueOnce(new Error("DB connection failed"));
 
       const res = await lambdaHandler(
         makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
@@ -227,7 +227,7 @@ describe("result-status-lambda handler", () => {
     });
 
     it("returns 404 when order is not found", async () => {
-      mockRetrievePatientIdFromOrder.mockResolvedValueOnce(null);
+      mockGetPatientIdFromOrder.mockResolvedValueOnce(null);
 
       const res = await lambdaHandler(
         makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
@@ -245,10 +245,7 @@ describe("result-status-lambda handler", () => {
 
   describe("patient authorisation", () => {
     it("returns 403 when patient UID in task does not match order record", async () => {
-      mockRetrievePatientIdFromOrder.mockResolvedValueOnce({
-        order_uid: VALID_ORDER_UUID,
-        patient_uid: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      });
+      mockGetPatientIdFromOrder.mockResolvedValueOnce("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
 
       const res = await lambdaHandler(
         makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
@@ -264,9 +261,13 @@ describe("result-status-lambda handler", () => {
     });
   });
 
-  describe("result status update", () => {
-    it("returns 500 when resultService.updateResultStatus throws", async () => {
-      mockUpdateResultStatus.mockRejectedValueOnce(new Error("DB write failed"));
+  describe("Order status update", () => {
+    beforeEach(() => {
+      mockGetPatientIdFromOrder.mockResolvedValue(VALID_PATIENT_UUID);
+    });
+
+    it("returns 500 when OrderService.updateOrderStatusAndResultStatus throws", async () => {
+      mockUpdateOrderStatusAndResultStatus.mockRejectedValueOnce(new Error("DB write failed"));
 
       const res = await lambdaHandler(makeEvent(JSON.stringify(validTask), validEventHeaders));
 
@@ -279,11 +280,12 @@ describe("result-status-lambda handler", () => {
       );
     });
 
-    it("calls updateResultStatus with correct arguments", async () => {
+    it("calls updateOrderStatusAndResultStatus with correct arguments", async () => {
       await lambdaHandler(makeEvent(JSON.stringify(validTask), validEventHeaders));
 
-      expect(mockUpdateResultStatus).toHaveBeenCalledWith(
+      expect(mockUpdateOrderStatusAndResultStatus).toHaveBeenCalledWith(
         VALID_ORDER_UUID,
+        OrderStatus.Complete,
         ResultStatus.Result_Available,
         VALID_CORRELATION_ID,
       );
@@ -292,6 +294,8 @@ describe("result-status-lambda handler", () => {
 
   describe("success", () => {
     it("returns 201 with the original task on success", async () => {
+      mockGetPatientIdFromOrder.mockResolvedValue(VALID_PATIENT_UUID);
+
       const res = await lambdaHandler(makeEvent(JSON.stringify(validTask), validEventHeaders));
 
       expect(res.statusCode).toBe(201);

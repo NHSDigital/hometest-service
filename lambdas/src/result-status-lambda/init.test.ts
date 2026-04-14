@@ -1,6 +1,6 @@
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderService } from "../lib/db/order-db";
-import { ResultService } from "../lib/db/result-db";
+import { OrderStatusService } from "../lib/db/order-status-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { buildEnvironment, init } from "./init";
 
@@ -8,7 +8,7 @@ import { buildEnvironment, init } from "./init";
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/secrets/secrets-manager-client");
-jest.mock("../lib/db/result-db");
+jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/order-db");
 
 describe("init", () => {
@@ -58,9 +58,9 @@ describe("init", () => {
 
       const result = init();
 
-      expect(result).toHaveProperty("resultService");
+      expect(result).toHaveProperty("orderStatusService");
       expect(result).toHaveProperty("orderService");
-      expect(result.resultService).toBeInstanceOf(ResultService);
+      expect(result.orderStatusService).toBeInstanceOf(OrderStatusService);
       expect(result.orderService).toBeInstanceOf(OrderService);
     });
 
@@ -103,21 +103,21 @@ describe("init", () => {
       const result = init();
 
       expect(result).toEqual({
-        resultService: expect.any(ResultService),
+        orderStatusService: expect.any(OrderStatusService),
         orderService: expect.any(OrderService),
       });
     });
   });
 
   describe("Integration of components", () => {
-    it("should create ResultService and OrderService with the same dbClient instance", () => {
+    it("should create OrderStatusService and OrderService with the same dbClient instance", () => {
       buildEnvironment();
 
       // Extract the dbClient instances from the mocked constructors
-      const resultServiceDbClient = (ResultService as jest.Mock).mock.calls[0][0];
+      const orderStatusServiceDbClient = (OrderStatusService as jest.Mock).mock.calls[0][0];
       const orderServiceDbClient = (OrderService as jest.Mock).mock.calls[0][0];
 
-      expect(resultServiceDbClient).toBe(orderServiceDbClient);
+      expect(orderStatusServiceDbClient).toBe(orderServiceDbClient);
     });
   });
 

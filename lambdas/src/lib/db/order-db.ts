@@ -10,11 +10,6 @@ export interface OrderResultSummary {
   order_status_code: OrderStatus | null;
 }
 
-export interface OrderPatientReference {
-  order_uid: string;
-  patient_uid: string;
-}
-
 export class OrderService {
   private readonly dbClient: DBClient;
   constructor(dbClient: DBClient) {
@@ -43,28 +38,6 @@ export class OrderService {
       return result.rows[0] || null;
     } catch (error) {
       console.error("order-db", "Failed to retrieve order details", { error, orderUid });
-      throw error;
-    }
-  }
-
-  async retrievePatientIdFromOrder(orderUid: string): Promise<OrderPatientReference | null> {
-    const query = `
-      SELECT o.patient_uid,
-      o.order_uid
-      FROM test_order o
-      WHERE o.order_uid = $1::uuid
-      ORDER BY o.created_at DESC
-      LIMIT 1;
-    `;
-
-    try {
-      const result = await this.dbClient.query<OrderPatientReference, [string]>(query, [orderUid]);
-      return result.rows[0] || null;
-    } catch (error) {
-      console.error("order-db", "Failed to retrieve order-patient association", {
-        error,
-        orderUid,
-      });
       throw error;
     }
   }
@@ -99,6 +72,9 @@ export class OrderService {
       console.error("order-db", "Failed to update order and result status", {
         error,
         orderUid,
+        correlationId,
+        statusCode,
+        resultStatus,
       });
       throw error;
     }
