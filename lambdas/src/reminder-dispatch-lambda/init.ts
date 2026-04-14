@@ -28,7 +28,7 @@ export function buildEnvironment(): Environment {
   const patientDbClient = new PatientDbClient(dbClient);
   const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
-  const sqsClient = new AWSSQSClient();
+  const sqsClient = new AWSSQSClient(awsRegion);
   const builderDeps = { patientDbClient, orderDbClient, homeTestBaseUrl };
   const reminderNotifyService = new ReminderNotifyService({
     notifyMessageBuilders: {

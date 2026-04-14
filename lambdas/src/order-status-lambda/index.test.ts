@@ -253,6 +253,17 @@ describe("Order Status Lambda Handler", () => {
       expect(result.statusCode).toBe(201);
     });
 
+    it(`should accept ${IncomingBusinessStatus.CONFIRMED} business status`, async () => {
+      mockEvent.body = JSON.stringify({
+        ...validTaskBody,
+        businessStatus: { text: IncomingBusinessStatus.CONFIRMED },
+      } satisfies Partial<OrderStatusFHIRTask>);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+    });
+
     it(`should accept ${IncomingBusinessStatus.RECEIVED_AT_LAB} business status`, async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
@@ -435,6 +446,24 @@ describe("Order Status Lambda Handler", () => {
       expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
+        }),
+      );
+    });
+
+    it("should delegate confirmed statuses to the notification service", async () => {
+      mockEvent.body = JSON.stringify({
+        ...validTaskBody,
+        businessStatus: {
+          text: IncomingBusinessStatus.CONFIRMED,
+        },
+      } satisfies Partial<OrderStatusFHIRTask>);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statusCode: businessStatusMapping[IncomingBusinessStatus.CONFIRMED],
         }),
       );
     });

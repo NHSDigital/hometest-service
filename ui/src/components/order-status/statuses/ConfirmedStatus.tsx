@@ -16,7 +16,7 @@ export function ConfirmedStatus({ maxDeliveryDays, supplier }: Readonly<Confirme
 
   return (
     <>
-      <Tag id="order-status-tag" modifier="purple" aria-label={`Order status: ${content.tag}`}>
+      <Tag id="order-status-tag" modifier="purple">
         {content.tag}
       </Tag>
       <h2 className="nhsuk-heading-m">{content.heading}</h2>

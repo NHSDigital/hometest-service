@@ -1,6 +1,7 @@
 import { Locator, Page } from "@playwright/test";
-import { BasePage } from "./BasePage";
+
 import { type Address } from "../models/Address";
+import { BasePage } from "./BasePage";
 
 export class EnterAddressManuallyPage extends BasePage {
   readonly addressLine1Input: Locator;
@@ -63,10 +64,10 @@ export class EnterAddressManuallyPage extends BasePage {
 
   async fillDeliveryAddressFields(deliveryAddress: Address): Promise<void> {
     await this.fillAddressLine1Field(deliveryAddress.addressLine1);
-    if (deliveryAddress.addressLine2 !== undefined)
+    if (deliveryAddress.addressLine2)
       await this.fillAddressLine2Field(deliveryAddress.addressLine2);
     await this.fillTownCityField(deliveryAddress.townCity);
-    if (deliveryAddress.addressLine3 !== undefined)
+    if (deliveryAddress.addressLine3)
       await this.fillAddressLine3Field(deliveryAddress.addressLine3);
     await this.fillPostCodeField(deliveryAddress.postCode);
   }

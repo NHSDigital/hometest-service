@@ -4,6 +4,7 @@ import { OrderStatusCodes } from "../../../db/order-status-db";
 import type { Patient, PatientDbClient } from "../../../db/patient-db-client";
 import { NotifyEventCode } from "../../../types/notify-message";
 import type { NotifyMessageBuilderDependencies } from "../base-notify-message-builder";
+import { OrderConfirmedMessageBuilder } from "./order-confirmed-message-builder";
 import { OrderDispatchedMessageBuilder } from "./order-dispatched-message-builder";
 import { OrderReceivedMessageBuilder } from "./order-received-message-builder";
 import { OrderResultAvailableMessageBuilder } from "./order-result-available-message-builder";
@@ -33,6 +34,25 @@ describe("Order status notify message builders", () => {
     mockGetOrderReferenceNumber.mockResolvedValue("100001");
     mockGetOrderStatusCreatedAt.mockResolvedValue("2026-08-06T10:00:00Z");
     mockGetOrderCreatedAt.mockResolvedValue("2026-08-05T10:00:00Z");
+  });
+
+  describe("OrderConfirmedMessageBuilder", () => {
+    it("builds confirmed notify message", async () => {
+      const result = await new OrderConfirmedMessageBuilder(deps).build({
+        patientId: "patient-1",
+        orderId: "order-4",
+        correlationId: "corr-4",
+      });
+
+      expect(result.eventCode).toBe(NotifyEventCode.OrderConfirmed);
+      expect(result.correlationId).toBe("corr-4");
+      expect(result.personalisation).toEqual({
+        orderedDate: "5 August 2026",
+        orderLinkUrl: "https://hometest.example.nhs.uk/orders/order-4/tracking",
+        referenceNumber: "100001",
+      });
+      expect(mockGetOrderCreatedAt).toHaveBeenCalledWith("order-4");
+    });
   });
 
   describe("OrderDispatchedMessageBuilder", () => {
