@@ -3,6 +3,7 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusCodes, OrderStatusService } from "../lib/db/order-status-db";
+import { type OrderStatusCode } from "../lib/db/order-status-db";
 import { OrderStatusReminderDbClient } from "../lib/db/order-status-reminder-db-client";
 import { PatientDbClient } from "../lib/db/patient-db-client";
 import { DispatchedReminderMessageBuilder } from "../lib/notify/message-builders/reminder/dispatched-reminder-message-builder";
@@ -10,14 +11,17 @@ import { ReminderNotifyService } from "../lib/notify/services/reminder-notify-se
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
+import { type ReminderConfiguration, getReminderDispatchConfigFromEnv } from "./dispatch-config";
 
 export interface Environment {
   reminderNotifyService: ReminderNotifyService;
   orderStatusReminderDbClient: OrderStatusReminderDbClient;
+  enabledReminderStatuses: ReadonlySet<OrderStatusCode>;
+  reminderConfiguration: ReminderConfiguration;
 }
 
 export function buildEnvironment(): Environment {
-  const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const awsRegion = retrieveMandatoryEnvVariable("AWS_REGION");
   const notifyMessagesQueueUrl = retrieveMandatoryEnvVariable("NOTIFY_MESSAGES_QUEUE_URL");
   const homeTestBaseUrl = retrieveMandatoryEnvVariable("HOME_TEST_BASE_URL");
 
@@ -43,9 +47,13 @@ export function buildEnvironment(): Environment {
     notifyMessagesQueueUrl,
   });
 
+  const { enabledReminderStatuses, reminderConfiguration } = getReminderDispatchConfigFromEnv();
+
   return {
     reminderNotifyService,
     orderStatusReminderDbClient,
+    enabledReminderStatuses,
+    reminderConfiguration,
   };
 }
 

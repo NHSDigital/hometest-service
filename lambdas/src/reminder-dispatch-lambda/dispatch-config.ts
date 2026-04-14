@@ -23,7 +23,7 @@ function parseEnabledReminderStatuses(rawValue: string): ReadonlySet<OrderStatus
   const parsed = JSON.parse(rawValue) as unknown;
 
   if (!Array.isArray(parsed)) {
-    throw new Error("REMINDER_ENABLED_STATUSES must be a JSON array of order status strings");
+    throw new TypeError("REMINDER_ENABLED_STATUSES must be a JSON array of order status strings");
   }
 
   const enabledStatuses = parsed.filter(

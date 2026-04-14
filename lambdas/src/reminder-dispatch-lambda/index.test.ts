@@ -2,7 +2,6 @@ import { Context, EventBridgeEvent } from "aws-lambda";
 
 import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { type OrderStatusReminderRecord } from "../lib/db/order-status-reminder-db-client";
-import { NotifyEventCode } from "../lib/types/notify-message";
 import { lambdaHandler } from "./index";
 import { init } from "./init";
 
@@ -52,14 +51,6 @@ describe("reminder-dispatch-lambda", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    process.env.REMINDER_ENABLED_STATUSES = JSON.stringify([OrderStatusCodes.DISPATCHED]);
-    process.env.REMINDER_INTERVAL_CONFIG = JSON.stringify({
-      [OrderStatusCodes.DISPATCHED]: [
-        { interval: 7, eventCode: NotifyEventCode.DispatchedInitialReminder },
-        { interval: 14, eventCode: NotifyEventCode.DispatchedSecondReminder },
-      ],
-    });
-
     mockGetScheduledReminders.mockResolvedValue([DISPATCHED_REMINDER_1, DISPATCHED_REMINDER_2]);
 
     mockedInit.mockReturnValue({
@@ -72,12 +63,14 @@ describe("reminder-dispatch-lambda", () => {
         markReminderAsFailed: mockMarkReminderAsFailed,
         scheduleReminder: mockScheduleReminder,
       },
+      enabledReminderStatuses: new Set([OrderStatusCodes.DISPATCHED]),
+      reminderConfiguration: {
+        [OrderStatusCodes.DISPATCHED]: [
+          { interval: 7, eventCode: "DISPATCHED_INITIAL_REMINDER" },
+          { interval: 14, eventCode: "DISPATCHED_SECOND_REMINDER" },
+        ],
+      },
     } as unknown as ReturnType<typeof init>);
-  });
-
-  afterEach(() => {
-    delete process.env.REMINDER_ENABLED_STATUSES;
-    delete process.env.REMINDER_INTERVAL_CONFIG;
   });
 
   it("calls notify for each pending reminder with the correct arguments", async () => {
@@ -90,7 +83,7 @@ describe("reminder-dispatch-lambda", () => {
       orderId: DISPATCHED_REMINDER_1.orderUid,
       correlationId: mockEvent.id,
       statusCode: OrderStatusCodes.DISPATCHED,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
     });
 
     expect(mockNotify.mock.calls[1][0]).toMatchObject({
@@ -98,7 +91,7 @@ describe("reminder-dispatch-lambda", () => {
       orderId: DISPATCHED_REMINDER_2.orderUid,
       correlationId: mockEvent.id,
       statusCode: OrderStatusCodes.DISPATCHED,
-      eventCode: NotifyEventCode.DispatchedSecondReminder,
+      eventCode: "DISPATCHED_SECOND_REMINDER",
     });
   });
 
@@ -144,7 +137,10 @@ describe("reminder-dispatch-lambda", () => {
   });
 
   it("skips reminders whose status is not in the enabled set", async () => {
-    process.env.REMINDER_ENABLED_STATUSES = JSON.stringify([OrderStatusCodes.RECEIVED]);
+    mockedInit.mockReturnValueOnce({
+      ...mockedInit(),
+      enabledReminderStatuses: new Set([OrderStatusCodes.RECEIVED]),
+    } as unknown as ReturnType<typeof init>);
 
     await lambdaHandler(mockEvent, {} as Context);
 
@@ -153,18 +149,19 @@ describe("reminder-dispatch-lambda", () => {
   });
 
   it("skips reminders with no matching event code in the configuration", async () => {
-    process.env.REMINDER_INTERVAL_CONFIG = JSON.stringify({
-      [OrderStatusCodes.DISPATCHED]: [
-        { interval: 7, eventCode: NotifyEventCode.DispatchedInitialReminder },
-      ],
-    });
+    mockedInit.mockReturnValueOnce({
+      ...mockedInit(),
+      reminderConfiguration: {
+        [OrderStatusCodes.DISPATCHED]: [{ interval: 7, eventCode: "DISPATCHED_INITIAL_REMINDER" }],
+      },
+    } as unknown as ReturnType<typeof init>);
 
     await lambdaHandler(mockEvent, {} as Context);
 
     expect(mockNotify).toHaveBeenCalledTimes(1);
     expect(mockNotify.mock.calls[0][0]).toMatchObject({
       reminderId: DISPATCHED_REMINDER_1.reminderId,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
     });
   });
 

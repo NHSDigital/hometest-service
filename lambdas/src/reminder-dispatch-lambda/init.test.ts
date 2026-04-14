@@ -38,6 +38,8 @@ describe("init", () => {
     AWS_REGION: "eu-west-2",
     NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
     HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
+    REMINDER_ENABLED_STATUSES: '["DISPATCHED"]',
+    REMINDER_INTERVAL_CONFIG: '{"DISPATCHED":[{"interval":7,"eventCode":"reminder.dispatched"}]}',
   };
 
   const mockPostgresConfig = {
@@ -66,6 +68,8 @@ describe("init", () => {
       expect(result).toEqual({
         reminderNotifyService: expect.any(ReminderNotifyService),
         orderStatusReminderDbClient: expect.any(OrderStatusReminderDbClient),
+        enabledReminderStatuses: expect.any(Set),
+        reminderConfiguration: expect.any(Object),
       });
     });
 
@@ -77,22 +81,10 @@ describe("init", () => {
       expect(AwsSecretsClient).toHaveBeenCalledWith("us-east-1");
     });
 
-    it("should fall back to AWS_DEFAULT_REGION when AWS_REGION is not set", () => {
+    it("should throw when AWS_REGION is not set", () => {
       delete process.env.AWS_REGION;
-      process.env.AWS_DEFAULT_REGION = "ap-southeast-1";
 
-      init();
-
-      expect(AwsSecretsClient).toHaveBeenCalledWith("ap-southeast-1");
-    });
-
-    it("should default to eu-west-2 when neither AWS_REGION nor AWS_DEFAULT_REGION is set", () => {
-      delete process.env.AWS_REGION;
-      delete process.env.AWS_DEFAULT_REGION;
-
-      init();
-
-      expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+      expect(() => init()).toThrow("Missing value for an environment variable AWS_REGION");
     });
 
     it("should throw when NOTIFY_MESSAGES_QUEUE_URL is not set", () => {

@@ -1,6 +1,5 @@
 import { NotificationAuditStatus } from "../../db/notification-audit-db-client";
 import { OrderStatusCodes } from "../../db/order-status-db";
-import { NotifyEventCode } from "../../types/notify-message";
 import {
   ReminderNotifyService,
   type ReminderNotifyServiceDependencies,
@@ -37,7 +36,7 @@ describe("ReminderNotifyService", () => {
     mockGetPatientIdFromOrder.mockResolvedValue("patient-123");
     mockBuildDispatchedReminderMessage.mockResolvedValue({
       messageReference: reminderId,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
       correlationId,
       recipient: { nhsNumber: "1234567890", dateOfBirth: "1990-01-02" },
       personalisation: {},
@@ -54,7 +53,7 @@ describe("ReminderNotifyService", () => {
       orderId,
       correlationId,
       statusCode: OrderStatusCodes.DISPATCHED,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
     });
 
     expect(mockBuildDispatchedReminderMessage).toHaveBeenCalledWith({
@@ -62,7 +61,7 @@ describe("ReminderNotifyService", () => {
       patientId: "patient-123",
       correlationId,
       orderId,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
     });
     expect(mockSendMessage).toHaveBeenCalledWith(
       "https://example.queue.local/notify",
@@ -70,7 +69,7 @@ describe("ReminderNotifyService", () => {
     );
     expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith({
       messageReference: reminderId,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
       correlationId,
       status: NotificationAuditStatus.QUEUED,
     });
@@ -82,7 +81,7 @@ describe("ReminderNotifyService", () => {
       orderId,
       correlationId,
       statusCode: OrderStatusCodes.SUBMITTED,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
+      eventCode: "DISPATCHED_INITIAL_REMINDER",
     });
 
     expect(mockGetPatientIdFromOrder).not.toHaveBeenCalled();
@@ -100,7 +99,7 @@ describe("ReminderNotifyService", () => {
         orderId,
         correlationId,
         statusCode: OrderStatusCodes.DISPATCHED,
-        eventCode: NotifyEventCode.DispatchedSecondReminder,
+        eventCode: "DISPATCHED_SECOND_REMINDER",
       }),
     ).rejects.toThrow(`Patient not found for orderId ${orderId}`);
 
@@ -118,7 +117,7 @@ describe("ReminderNotifyService", () => {
         orderId,
         correlationId,
         statusCode: OrderStatusCodes.DISPATCHED,
-        eventCode: NotifyEventCode.DispatchedInitialReminder,
+        eventCode: "DISPATCHED_INITIAL_REMINDER",
       }),
     ).rejects.toThrow("builder failed");
 
