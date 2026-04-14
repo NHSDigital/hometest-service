@@ -10,6 +10,7 @@ const mockInit = jest.fn();
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
+const mockHandleReminderOrderStatusUpdated = jest.fn();
 const mockHandleOrderStatusUpdated = jest.fn();
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
@@ -42,6 +43,7 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
+    mockHandleReminderOrderStatusUpdated.mockResolvedValue(undefined);
     mockHandleOrderStatusUpdated.mockResolvedValue(undefined);
 
     mockInit.mockReturnValue({
@@ -49,6 +51,9 @@ describe("Order Status Lambda Handler", () => {
         getPatientIdFromOrder: mockGetPatientIdFromOrder,
         checkIdempotency: mockCheckIdempotency,
         addOrderStatusUpdate: mockAddOrderStatusUpdate,
+      },
+      orderStatusReminderService: {
+        handleOrderStatusUpdated: mockHandleReminderOrderStatusUpdated,
       },
       orderStatusNotifyService: {
         handleOrderStatusUpdated: mockHandleOrderStatusUpdated,
@@ -288,6 +293,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
+      expect(mockHandleReminderOrderStatusUpdated).not.toHaveBeenCalled();
       expect(mockHandleOrderStatusUpdated).not.toHaveBeenCalled();
     });
 
@@ -432,6 +438,21 @@ describe("Order Status Lambda Handler", () => {
       );
     });
 
+    it("should delegate reminder scheduling to the reminder service", async () => {
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockHandleReminderOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderId: MOCK_ORDER_UID,
+          correlationId: MOCK_CORRELATION_ID,
+          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
+        }),
+      );
+    });
+
     it("should still delegate non-dispatched statuses to the notification service", async () => {
       mockEvent.body = JSON.stringify({
         ...validTaskBody,
@@ -443,6 +464,11 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
+      expect(mockHandleReminderOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
+        }),
+      );
       expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
@@ -461,11 +487,27 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
+      expect(mockHandleReminderOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statusCode: businessStatusMapping[IncomingBusinessStatus.CONFIRMED],
+        }),
+      );
       expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: businessStatusMapping[IncomingBusinessStatus.CONFIRMED],
         }),
       );
+    });
+
+    it("should continue with success when reminder service fails", async () => {
+      mockHandleReminderOrderStatusUpdated.mockRejectedValueOnce(new Error("Reminder failed"));
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(500);
+      expect(mockHandleReminderOrderStatusUpdated).toHaveBeenCalledTimes(1);
+      expect(mockHandleOrderStatusUpdated).not.toHaveBeenCalled();
     });
 
     it("should return 500 when notification service fails", async () => {

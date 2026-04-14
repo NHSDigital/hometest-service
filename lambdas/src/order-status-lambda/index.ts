@@ -42,7 +42,7 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderStatusDb, orderStatusNotifyService } = init();
+  const { orderStatusDb, orderStatusReminderService, orderStatusNotifyService } = init();
   commons.logInfo(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
@@ -160,6 +160,12 @@ export const lambdaHandler = async (
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
 
     commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
+
+    await orderStatusReminderService.handleOrderStatusUpdated({
+      orderId,
+      correlationId,
+      statusCode: statusOrderUpdateParams.statusCode,
+    });
 
     await orderStatusNotifyService.handleOrderStatusUpdated({
       orderId,
