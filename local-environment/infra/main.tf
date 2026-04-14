@@ -172,7 +172,10 @@ resource "aws_iam_role_policy" "lambdas_sqs_publish" {
         Action = [
           "sqs:SendMessage"
         ]
-        Resource = aws_sqs_queue.order_placement.arn
+        Resource = [
+          aws_sqs_queue.order_placement.arn,
+          aws_sqs_queue.notify_messages.arn,
+        ]
       }
     ]
   })
@@ -542,7 +545,7 @@ resource "aws_lambda_function" "reminder_dispatch_lambda" {
   handler          = "index.handler"
   runtime          = "nodejs24.x"
   source_code_hash = filebase64sha256("${path.module}/../../lambdas/dist/reminder-dispatch-lambda.zip")
-  timeout          = 60
+  timeout          = 180
 
   environment {
     variables = {
