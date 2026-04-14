@@ -6,11 +6,11 @@ export function MoreInformationLinks() {
   const content = commonContent.orderStatus.moreInformation;
 
   return (
-    <section aria-labelledby="more-info-heading">
+    <>
       <h2 id="more-info-heading" className="nhsuk-heading-m">
         {content.heading}
       </h2>
       <LearnMoreAboutHivAndAidsLink />
-    </section>
+    </>
   );
 }
