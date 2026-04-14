@@ -125,7 +125,7 @@
   },
   "pages": {
     "get-self-test-kit-for-HIV": {
-      "title": "Get a self-test kit for HIV",
+      "title": "Order a free HIV self-test kit",
       "ageRequirement": "You can use this service if you are aged 18 or over.",
       "availabilityNotice": "The kit is not yet available in all areas, so we'll need to check when you enter a postcode.",
       "urgentCard": {
@@ -135,11 +135,11 @@
         "aeAdvice": "You can also get emergency HIV medicine from your"
       },
       "infoBox": {
-        "text": "HIV antibodies take time to develop. The test is accurate if you take it 45 days or more after potential exposure."
+        "text": "HIV can take up to 45 days after exposure to show in a blood sample. It may be best to wait 45 days before taking the test for it to be accurate."
       },
       "howItWorks": {
         "heading": "How it works",
-        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within 5 working days. This does not have to be your usual address.",
+        "deliveryInfo": "The free kit will be delivered in plain packaging to the address you choose. This does not have to be your usual address. It can take up to 7 days to arrive but is usually quicker. Aim to do the test soon after receiving it.",
         "sampleInstructions": "You'll need to prick your finger and fill a tube with blood. Then send it to the address in the pre-paid envelope."
       },
       "dataSharing": {
@@ -396,22 +396,16 @@
       "suppliers": {
         "preventx": {
           "title": "Preventx terms of use",
-          "introduction": [
-            "This is introduction paragraph for Preventx. https://www.sh.uk/"
-          ],
+          "introduction": ["This is introduction paragraph for Preventx. https://www.sh.uk/"],
           "sections": [
             {
               "id": "preventx-first-section",
               "heading": "It is first section for Preventx",
-              "paragraphs": [
-                "It is example of content for Preventx."
-              ],
+              "paragraphs": ["It is example of content for Preventx."],
               "subsections": [
                 {
                   "heading": "It is the first subsection for Preventx",
-                  "paragraphs": [
-                    "It is example of content for Preventx."
-                  ]
+                  "paragraphs": ["It is example of content for Preventx."]
                 }
               ]
             }
@@ -419,22 +413,16 @@
         },
         "sh:24": {
           "title": "SH:24 terms of use",
-          "introduction": [
-            "This is introduction paragraph for SH:24. https://sh24.org.uk/"
-          ],
+          "introduction": ["This is introduction paragraph for SH:24. https://sh24.org.uk/"],
           "sections": [
             {
               "id": "sh24-first-section",
               "heading": "It is first section for SH:24 ",
-              "paragraphs": [
-                "It is example of content for SH:24."
-              ],
+              "paragraphs": ["It is example of content for SH:24."],
               "subsections": [
                 {
                   "heading": "It is the first subsection for SH:24",
-                  "paragraphs": [
-                    "It is example of content for SH:24."
-                  ]
+                  "paragraphs": ["It is example of content for SH:24."]
                 }
               ]
             }
@@ -454,15 +442,11 @@
             {
               "id": "preventx-first-section",
               "heading": "It is first privacy section for Preventx",
-              "paragraphs": [
-                "It is example of privacy policy content for Preventx."
-              ],
+              "paragraphs": ["It is example of privacy policy content for Preventx."],
               "subsections": [
                 {
                   "heading": "It is the first privacy subsection for Preventx",
-                  "paragraphs": [
-                    "It is example of privacy policy content for Preventx."
-                  ]
+                  "paragraphs": ["It is example of privacy policy content for Preventx."]
                 }
               ]
             }
@@ -477,15 +461,11 @@
             {
               "id": "sh24-first-section",
               "heading": "It is first privacy section for SH:24",
-              "paragraphs": [
-                "It is example of privacy policy content for SH:24."
-              ],
+              "paragraphs": ["It is example of privacy policy content for SH:24."],
               "subsections": [
                 {
                   "heading": "It is the first privacy subsection for SH:24",
-                  "paragraphs": [
-                    "It is example of privacy policy content for SH:24."
-                  ]
+                  "paragraphs": ["It is example of privacy policy content for SH:24."]
                 }
               ]
             }

@@ -18,27 +18,12 @@ export default function GetSelfTestKitPage() {
     <FormPageLayout>
       <h1>{content.title}</h1>
 
-      <p>{content.ageRequirement}</p>
-      <p>{content.availabilityNotice}</p>
-
-      <Card cardType="urgent">
-        <Card.Heading>{content.urgentCard.heading}</Card.Heading>
-        <ul>
-          <li>{content.urgentCard.exposureWarning}</li>
-        </ul>
-
-        <p>{content.urgentCard.clinicAdvice}</p>
-
-        <ActionLink href={commonContent.links.sexualHealthClinic.href}>
-          {commonContent.links.sexualHealthClinic.text}
-        </ActionLink>
-
-        <p>
-          {`${content.urgentCard.aeAdvice} `}
-          <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>
-          {"."}
-        </p>
-      </Card>
+      <p>You can use this service if:</p>
+      <ul className="nhsuk-list nhsuk-list--bullet">
+        <li>you're aged 18 or over</li>
+        <li>the kit's available in your area</li>
+        <li>you're ordering for yourself</li>
+      </ul>
 
       <div className="nhsuk-inset-text">
         <p>{content.infoBox.text}</p>
@@ -50,6 +35,11 @@ export default function GetSelfTestKitPage() {
         <Link to="blood-sample-guide">{commonContent.links.bloodSampleGuide.text}</Link>
       </p>
       <p>{content.howItWorks.sampleInstructions}</p>
+
+      <Details>
+        <Details.Summary>{content.dataSharing.summary}</Details.Summary>
+        <Details.Text>{content.dataSharing.details}</Details.Text>
+      </Details>
 
       <Details>
         <Details.Summary>{content.dataSharing.summary}</Details.Summary>
