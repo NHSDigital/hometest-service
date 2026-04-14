@@ -1,7 +1,7 @@
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderService } from "../lib/db/order-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { buildEnvironment, init } from "./init";
+import { init } from "./init";
 
 // Mock all external dependencies
 jest.mock("../lib/db/db-client");
