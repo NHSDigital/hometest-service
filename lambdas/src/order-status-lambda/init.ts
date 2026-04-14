@@ -3,15 +3,18 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { OrderStatusReminderDbClient } from "../lib/db/order-status-reminder-db-client";
 import { PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
 import { OrderStatusNotifyService } from "../lib/notify/notify-service";
+import { OrderStatusReminderService } from "../lib/reminder/order-status-reminder-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
   orderStatusDb: OrderStatusService;
+  orderStatusReminderService: OrderStatusReminderService;
   orderStatusNotifyService: OrderStatusNotifyService;
 }
 
@@ -22,6 +25,10 @@ export function buildEnvironment(): Environment {
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderStatusDb = new OrderStatusService(dbClient);
+  const orderStatusReminderDbClient = new OrderStatusReminderDbClient(dbClient);
+  const orderStatusReminderService = new OrderStatusReminderService({
+    orderStatusReminderDbClient,
+  });
   const patientDbClient = new PatientDbClient(dbClient);
   const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
@@ -41,6 +48,7 @@ export function buildEnvironment(): Environment {
 
   return {
     orderStatusDb,
+    orderStatusReminderService,
     orderStatusNotifyService,
   };
 }

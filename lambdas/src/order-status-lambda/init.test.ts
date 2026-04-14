@@ -3,9 +3,11 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
+import { OrderStatusReminderDbClient } from "../lib/db/order-status-reminder-db-client";
 import { PatientDbClient } from "../lib/db/patient-db-client";
 import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
 import { OrderStatusNotifyService } from "../lib/notify/notify-service";
+import { OrderStatusReminderService } from "../lib/reminder/order-status-reminder-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
@@ -13,6 +15,7 @@ import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environm
 import { buildEnvironment as init } from "./init";
 
 jest.mock("../lib/db/order-status-db");
+jest.mock("../lib/db/order-status-reminder-db-client");
 jest.mock("../lib/db/patient-db-client");
 jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/db/db-client");
@@ -21,6 +24,7 @@ jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/notify/notify-message-builder");
 jest.mock("../lib/notify/notify-service");
+jest.mock("../lib/reminder/order-status-reminder-service");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -99,6 +103,7 @@ describe("init", () => {
 
       expect(result).toEqual({
         orderStatusDb: expect.any(OrderStatusService),
+        orderStatusReminderService: expect.any(OrderStatusReminderService),
         orderStatusNotifyService: expect.any(OrderStatusNotifyService),
       });
     });
@@ -135,6 +140,18 @@ describe("init", () => {
             mock: OrderStatusService as jest.Mock,
             times: 1,
             calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: OrderStatusReminderDbClient as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: OrderStatusReminderService as jest.Mock,
+            times: 1,
+            calledWith: {
+              orderStatusReminderDbClient: expect.any(OrderStatusReminderDbClient),
+            },
           },
           {
             mock: PatientDbClient as jest.Mock,
