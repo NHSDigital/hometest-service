@@ -87,14 +87,14 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
+import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
   orderDbClient: OrderDbClient;
 }
 
 export function buildEnvironment(): Environment {
-  const awsRegion = process.env.AWS_REGION ?? "eu-west-2";
-  const secretsClient = new AwsSecretsClient(awsRegion);
+  const secretsClient = new AwsSecretsClient(retrieveMandatoryEnvVariable("AWS_REGION"));
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderDbClient = new OrderDbClient(dbClient);
   return { orderDbClient };
@@ -128,6 +128,40 @@ Rules:
 - Handlers must call `init()`, not `buildEnvironment()`.
 - Keep `buildEnvironment()` exported for focused `init.test.ts` coverage.
 - Use `??=` for singleton caching.
+
+## Environment Variables
+
+All environment variable reads in lambda code must go through the helpers in
+`../lib/utils/utils`. Never read `process.env` directly in handler or service code.
+
+| Helper                                                  | Use when                                                                     |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `retrieveMandatoryEnvVariable(name)`                    | Variable must be present; throws if absent or empty string                   |
+| `retrieveOptionalEnvVariable(name)`                     | Variable may be absent; returns `string \| undefined`, treats `""` as absent |
+| `retrieveOptionalEnvVariableWithDefault(name, default)` | Variable may be absent; returns the provided default when absent or empty    |
+
+Key rules:
+
+- All env var reads belong in `init.ts` / `buildEnvironment()`, not at module scope and not inside handlers.
+- `retrieveMandatoryEnvVariable` and `retrieveOptionalEnvVariableWithDefault` both treat an empty string the same as an absent variable — they will never return `""`.
+- `retrieveOptionalEnvVariable` also returns `undefined` for an empty string, so callers can use `??` safely.
+- Never use a default value for a mandatory variable. If the variable must be present in production, use `retrieveMandatoryEnvVariable`.
+- `AWS_REGION` is always mandatory — the Lambda runtime always provides it. Use `retrieveMandatoryEnvVariable("AWS_REGION")`.
+- The only permitted direct `process.env` reads are in `src/lib/utils/utils.ts` (the helpers themselves) and `src/lib/aws/aws-client-config.ts` is covered by `retrieveOptionalEnvVariable`.
+
+```typescript
+// init.ts — correct patterns
+import {
+  retrieveMandatoryEnvVariable,
+  retrieveOptionalEnvVariable,
+  retrieveOptionalEnvVariableWithDefault,
+} from "../lib/utils/utils";
+
+const region = retrieveMandatoryEnvVariable("AWS_REGION");
+const queueUrl = retrieveMandatoryEnvVariable("ORDER_PLACEMENT_QUEUE_URL");
+const sqsEndpoint = retrieveOptionalEnvVariable("SQS_ENDPOINT"); // string | undefined
+const timeoutMs = Number(retrieveOptionalEnvVariableWithDefault("TIMEOUT_MS", "5000"));
+```
 
 ## Request Validation
 
