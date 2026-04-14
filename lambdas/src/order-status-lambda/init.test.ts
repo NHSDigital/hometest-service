@@ -1,9 +1,11 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
-import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
+import { OrderDispatchedMessageBuilder } from "../lib/notify/message-builders/order-status/order-dispatched-message-builder";
+import { OrderReceivedMessageBuilder } from "../lib/notify/message-builders/order-status/order-received-message-builder";
+import { OrderResultAvailableMessageBuilder } from "../lib/notify/message-builders/order-status/order-result-available-message-builder";
 import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
@@ -170,17 +172,18 @@ describe("init", () => {
     it("should create OrderStatusNotifyService with notification dependencies", () => {
       init();
 
-      expect(OrderStatusNotifyService).toHaveBeenCalledWith({
-        builderDeps: {
-          patientDbClient: expect.any(PatientDbClient),
-          orderDbClient: expect.any(OrderDbClient),
-          homeTestBaseUrl: "https://hometest.example.nhs.uk",
-        },
-        orderStatusService: expect.any(OrderStatusService),
-        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
-        sqsClient: expect.any(AWSSQSClient),
-        notifyMessagesQueueUrl: "https://example.queue.local/notify",
-      });
+      expect(OrderStatusNotifyService).toHaveBeenCalledWith(
+        expect.objectContaining({
+          notifyMessageBuilders: expect.objectContaining({
+            DISPATCHED: expect.any(OrderDispatchedMessageBuilder),
+            RECEIVED: expect.any(OrderReceivedMessageBuilder),
+            COMPLETE: expect.any(OrderResultAvailableMessageBuilder),
+          }),
+          notificationAuditDbClient: expect.any(NotificationAuditDbClient),
+          sqsClient: expect.any(AWSSQSClient),
+          notifyMessagesQueueUrl: "https://example.queue.local/notify",
+        }),
+      );
     });
   });
 

@@ -1,14 +1,7 @@
 import { NotificationAuditStatus } from "../../db/notification-audit-db-client";
 import { OrderStatusCodes, OrderStatusUpdateParams } from "../../db/order-status-db";
 import { NotifyEventCode } from "../../types/notify-message";
-import { OrderDispatchedMessageBuilder } from "../message-builders/order-dispatched-message-builder";
-import { OrderReceivedMessageBuilder } from "../message-builders/order-received-message-builder";
-import { OrderResultAvailableMessageBuilder } from "../message-builders/order-result-available-message-builder";
 import { OrderStatusNotifyService } from "./order-status-notify-service";
-
-jest.mock("../message-builders/order-dispatched-message-builder");
-jest.mock("../message-builders/order-received-message-builder");
-jest.mock("../message-builders/order-result-available-message-builder");
 
 describe("OrderStatusNotifyService", () => {
   const mockBuildOrderDispatchedNotifyMessage = jest.fn();
@@ -28,16 +21,6 @@ describe("OrderStatusNotifyService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    (OrderDispatchedMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
-      build: mockBuildOrderDispatchedNotifyMessage,
-    }));
-    (OrderReceivedMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
-      build: mockBuildOrderReceivedNotifyMessage,
-    }));
-    (OrderResultAvailableMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
-      build: mockBuildOrderResultAvailableNotifyMessage,
-    }));
 
     mockBuildOrderDispatchedNotifyMessage.mockResolvedValue({
       messageReference: "123e4567-e89b-12d3-a456-426614174099",
@@ -73,12 +56,11 @@ describe("OrderStatusNotifyService", () => {
     mockInsertNotificationAuditEntry.mockResolvedValue(undefined);
 
     service = new OrderStatusNotifyService({
-      builderDeps: {
-        patientDbClient: {} as never,
-        orderDbClient: {} as never,
-        homeTestBaseUrl: "https://hometest.example.nhs.uk",
+      notifyMessageBuilders: {
+        [OrderStatusCodes.DISPATCHED]: { build: mockBuildOrderDispatchedNotifyMessage },
+        [OrderStatusCodes.RECEIVED]: { build: mockBuildOrderReceivedNotifyMessage },
+        [OrderStatusCodes.COMPLETE]: { build: mockBuildOrderResultAvailableNotifyMessage },
       },
-      orderStatusService: {} as never,
       notificationAuditDbClient: {
         insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       } as never,

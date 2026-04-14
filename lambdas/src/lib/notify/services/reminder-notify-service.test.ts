@@ -1,13 +1,10 @@
 import { NotificationAuditStatus } from "../../db/notification-audit-db-client";
 import { OrderStatusCodes } from "../../db/order-status-db";
 import { NotifyEventCode } from "../../types/notify-message";
-import { DispatchedReminderMessageBuilder } from "../message-builders/dispatched-reminder-message-builder";
 import {
   ReminderNotifyService,
   type ReminderNotifyServiceDependencies,
 } from "./reminder-notify-service";
-
-jest.mock("../message-builders/dispatched-reminder-message-builder");
 
 describe("ReminderNotifyService", () => {
   const mockGetPatientIdFromOrder = jest.fn();
@@ -23,29 +20,20 @@ describe("ReminderNotifyService", () => {
 
   const buildService = (deps?: Partial<ReminderNotifyServiceDependencies>): ReminderNotifyService =>
     new ReminderNotifyService({
-      builderDeps: {
-        patientDbClient: {} as never,
-        orderDbClient: {} as never,
-        homeTestBaseUrl: "https://hometest.example.nhs.uk",
+      notifyMessageBuilders: {
+        [OrderStatusCodes.DISPATCHED]: { build: mockBuildDispatchedReminderMessage },
       },
-      orderStatusService: {
-        getPatientIdFromOrder: mockGetPatientIdFromOrder,
-      } as never,
+      orderStatusService: { getPatientIdFromOrder: mockGetPatientIdFromOrder },
       notificationAuditDbClient: {
         insertNotificationAuditEntry: mockInsertNotificationAuditEntry,
       } as never,
-      sqsClient: {
-        sendMessage: mockSendMessage,
-      },
+      sqsClient: { sendMessage: mockSendMessage },
       notifyMessagesQueueUrl: "https://example.queue.local/notify",
       ...deps,
     });
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (DispatchedReminderMessageBuilder as unknown as jest.Mock).mockImplementation(() => ({
-      build: mockBuildDispatchedReminderMessage,
-    }));
     mockGetPatientIdFromOrder.mockResolvedValue("patient-123");
     mockBuildDispatchedReminderMessage.mockResolvedValue({
       messageReference: reminderId,

@@ -1,17 +1,12 @@
-import { OrderStatusCodes, OrderStatusService } from "../../db/order-status-db";
-import { NotifyEventCode, type NotifyMessage } from "../../types/notify-message";
+import { OrderStatusCodes, OrderStatusService } from "../../../db/order-status-db";
+import { NotifyEventCode, type NotifyMessage } from "../../../types/notify-message";
 import {
   BaseNotifyMessageBuilder,
   type NotifyMessageBuilderDependencies,
-} from "./base-notify-message-builder";
+} from "../base-notify-message-builder";
+import { type OrderStatusNotifyMessageBuilderInput } from "./order-status-notify-message-builder";
 
-export interface OrderDispatchedMessageBuilderInput {
-  patientId: string;
-  orderId: string;
-  correlationId: string;
-}
-
-export class OrderDispatchedMessageBuilder extends BaseNotifyMessageBuilder {
+export class OrderDispatchedMessageBuilder extends BaseNotifyMessageBuilder<OrderStatusNotifyMessageBuilderInput> {
   constructor(
     deps: NotifyMessageBuilderDependencies,
     private readonly orderStatusService: OrderStatusService,
@@ -19,7 +14,7 @@ export class OrderDispatchedMessageBuilder extends BaseNotifyMessageBuilder {
     super(deps);
   }
 
-  async build(input: OrderDispatchedMessageBuilderInput): Promise<NotifyMessage> {
+  async build(input: OrderStatusNotifyMessageBuilderInput): Promise<NotifyMessage> {
     const { patientId, orderId, correlationId } = input;
 
     const [recipient, referenceNumber, dispatchedAt] = await Promise.all([

@@ -1,9 +1,9 @@
-import { OrderStatusCodes, OrderStatusService } from "../../db/order-status-db";
-import { type NotifyMessage } from "../../types/notify-message";
+import { OrderStatusCodes, OrderStatusService } from "../../../db/order-status-db";
+import { type NotifyMessage } from "../../../types/notify-message";
 import {
   BaseNotifyMessageBuilder,
   type NotifyMessageBuilderDependencies,
-} from "./base-notify-message-builder";
+} from "../base-notify-message-builder";
 
 export interface DispatchedReminderMessageBuilderInput {
   reminderId: string;
@@ -13,7 +13,7 @@ export interface DispatchedReminderMessageBuilderInput {
   eventCode: string;
 }
 
-export class DispatchedReminderMessageBuilder extends BaseNotifyMessageBuilder {
+export class DispatchedReminderMessageBuilder extends BaseNotifyMessageBuilder<DispatchedReminderMessageBuilderInput> {
   constructor(
     deps: NotifyMessageBuilderDependencies,
     private readonly orderStatusService: OrderStatusService,

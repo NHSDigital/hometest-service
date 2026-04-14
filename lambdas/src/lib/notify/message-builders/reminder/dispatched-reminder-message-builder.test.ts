@@ -1,11 +1,11 @@
-import type { OrderDbClient } from "../../db/order-db-client";
-import type { OrderStatusService } from "../../db/order-status-db";
-import { OrderStatusCodes } from "../../db/order-status-db";
-import type { Patient, PatientDbClient } from "../../db/patient-db-client";
-import { NotifyEventCode } from "../../types/notify-message";
-import { OrderDispatchedMessageBuilder } from "./order-dispatched-message-builder";
+import type { OrderDbClient } from "../../../db/order-db-client";
+import type { OrderStatusService } from "../../../db/order-status-db";
+import { OrderStatusCodes } from "../../../db/order-status-db";
+import type { Patient, PatientDbClient } from "../../../db/patient-db-client";
+import { NotifyEventCode } from "../../../types/notify-message";
+import { DispatchedReminderMessageBuilder } from "./dispatched-reminder-message-builder";
 
-describe("OrderDispatchedMessageBuilder", () => {
+describe("DispatchedReminderMessageBuilder", () => {
   const mockGetPatient = jest.fn<Promise<Patient>, [string]>();
   const mockGetOrderReferenceNumber = jest.fn<Promise<string>, [string]>();
   const mockGetOrderStatusCreatedAt = jest.fn<Promise<string>, [string, string]>();
@@ -29,24 +29,26 @@ describe("OrderDispatchedMessageBuilder", () => {
     mockGetOrderStatusCreatedAt.mockResolvedValue("2026-08-06T10:00:00Z");
   });
 
-  it("builds dispatched notify message", async () => {
-    const builder = new OrderDispatchedMessageBuilder(deps, orderStatusService);
+  it("builds dispatched reminder message using reminder id as message reference", async () => {
+    const builder = new DispatchedReminderMessageBuilder(deps, orderStatusService);
 
     const result = await builder.build({
-      patientId: "patient-1",
-      orderId: "order-1",
-      correlationId: "corr-1",
+      reminderId: "rem-1",
+      patientId: "patient-3",
+      orderId: "order-4",
+      correlationId: "corr-4",
+      eventCode: NotifyEventCode.DispatchedInitialReminder,
     });
 
-    expect(result.eventCode).toBe(NotifyEventCode.OrderDispatched);
-    expect(result.correlationId).toBe("corr-1");
+    expect(result.eventCode).toBe(NotifyEventCode.DispatchedInitialReminder);
+    expect(result.messageReference).toBe("rem-1");
     expect(result.personalisation).toEqual({
       dispatchedDate: "6 August 2026",
-      orderLinkUrl: "https://hometest.example.nhs.uk/orders/order-1/tracking",
+      orderLinkUrl: "https://hometest.example.nhs.uk/orders/order-4/tracking",
       referenceNumber: "100001",
     });
     expect(mockGetOrderStatusCreatedAt).toHaveBeenCalledWith(
-      "order-1",
+      "order-4",
       OrderStatusCodes.DISPATCHED,
     );
   });
