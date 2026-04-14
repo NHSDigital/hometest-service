@@ -121,7 +121,6 @@ describe("order-result-lambda init", () => {
     expect(OrderStatusNotifyService).toHaveBeenCalledWith(
       expect.objectContaining({
         notifyMessagesQueueUrl: "https://example.queue.local/notify",
-        orderStatusDb: expect.any(OrderStatusService),
         notificationAuditDbClient: expect.any(NotificationAuditDbClient),
         sqsClient: expect.any(AWSSQSClient),
         notifyMessageBuilder: expect.any(NotifyMessageBuilder),
