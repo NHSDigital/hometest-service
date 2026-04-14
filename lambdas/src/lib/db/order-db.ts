@@ -76,7 +76,7 @@ export class OrderService {
         statusCode,
         resultStatus,
       });
-      throw error;
+      throw new Error(`Failed to update order and result status`, { cause: error });
     }
   }
 }

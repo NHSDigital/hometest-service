@@ -126,7 +126,7 @@ export const lambdaHandler = async (
   } catch (error) {
     console.error(name, "Failed to retrieve order details from database", {
       error,
-      orderUID: orderUid,
+      orderUid,
       correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
@@ -134,7 +134,7 @@ export const lambdaHandler = async (
 
   if (!patientFromOrder) {
     console.error(name, "Order not found for given order UID", {
-      orderUID: orderUid,
+      orderUid,
       correlationId,
     });
     return createFhirErrorResponse(404, "not-found", "Order not found", "error");
@@ -142,7 +142,7 @@ export const lambdaHandler = async (
 
   if (patientFromOrder !== patientUid) {
     console.error(name, "Patient UID in Task does not match order record", {
-      orderUID: orderUid,
+      orderUid,
       correlationId,
     });
     return createFhirErrorResponse(
@@ -154,8 +154,6 @@ export const lambdaHandler = async (
   }
 
   try {
-    // await resultService.updateResultStatus(orderUid, ResultStatus.Result_Available, correlationId);
-    //TODO: update order status
     await orderService.updateOrderStatusAndResultStatus(
       orderUid,
       OrderStatus.Complete,
@@ -165,14 +163,13 @@ export const lambdaHandler = async (
   } catch (error) {
     console.error(name, "Failed to update result status in database", {
       error,
-      orderUID: orderUid,
+      orderUid,
       correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
   //TODO: send notification in HOTE-982
-
   return createFhirResponse(201, task);
 };
 
