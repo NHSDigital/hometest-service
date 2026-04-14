@@ -15,17 +15,11 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     await homeTestStartPage.clickPrivacyPolicyLink();
     const actualHeaderText = await privacyPolicyPage.getHeaderText();
     expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
-    await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("href", makeAComplaintUrl);
-    await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("target", "_blank");
     const [newTab] = await Promise.all([
       context.waitForEvent("page"),
       privacyPolicyPage.clickMakeAComplaintLink(),
     ]);
-    await Promise.race([
-      newTab.waitForURL((url) => url.href !== "about:blank").catch(() => {}),
-      newTab.waitForEvent("close").catch(() => {}),
-    ]);
-    const finalUrl = newTab.url();
-    expect(finalUrl === "about:blank" || finalUrl === makeAComplaintUrl).toBeTruthy();
+    await newTab.waitForLoadState();
+    expect(newTab.url()).toBe(makeAComplaintUrl);
   });
 });
