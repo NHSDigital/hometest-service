@@ -24,6 +24,7 @@ export interface Config {
   reportingOutputDirectory: string;
   enableTracingOnGlobalSetup: boolean;
   wiremockBaseUrl: string;
+  wiremockJwtIssuer: string;
 }
 
 export type ConfigInterface = Config;
@@ -72,6 +73,7 @@ export class ConfigFactory {
       reportingOutputDirectory: "tests/testResults",
       enableTracingOnGlobalSetup: false,
       wiremockBaseUrl: "http://localhost:8080",
+      wiremockJwtIssuer: "http://wiremock:8080",
     };
   }
 
@@ -110,6 +112,10 @@ export class ConfigFactory {
       partial.authType = env[EnvironmentVariables.AUTH_TYPE] as AuthType;
     if (env[EnvironmentVariables.WIREMOCK_BASE_URL])
       partial.wiremockBaseUrl = env[EnvironmentVariables.WIREMOCK_BASE_URL];
+    if (env[EnvironmentVariables.WIREMOCK_JWT_ISSUER])
+      partial.wiremockJwtIssuer = env[EnvironmentVariables.WIREMOCK_JWT_ISSUER];
+    else if (env[EnvironmentVariables.WIREMOCK_BASE_URL])
+      partial.wiremockJwtIssuer = env[EnvironmentVariables.WIREMOCK_BASE_URL];
 
     return partial;
   }
