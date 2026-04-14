@@ -89,6 +89,41 @@ locals {
   resolved_supplier_service_url = var.local_supplier_service_url_override != null ? var.local_supplier_service_url_override : local.wiremock_container_base_url
 
   resolved_use_wiremock_auth = local.resolved_nhs_login_override_container_base_url != null ? length(regexall("wiremock", lower(local.resolved_nhs_login_override_container_base_url))) > 0 : local.use_wiremock_mode
+
+  # Common DB environment variables shared across multiple lambdas
+  common_db_env = {
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+  }
+
+  # Common base env for all lambdas
+  common_base_env = {
+    NODE_OPTIONS = "--enable-source-maps"
+    ALLOW_ORIGIN = "http://localhost:3000"
+  }
+
+  # Common CORS settings shared across multiple lambdas
+  common_cors = {
+    enable_cors            = true
+    cors_allow_origin      = "http://localhost:3000"
+    cors_allow_credentials = true
+  }
+
+  # Common lambda module parameters
+  common_lambda_params = {
+    project_name                 = var.project_name
+    lambda_role_arn              = aws_iam_role.lambda_role.arn
+    environment                  = var.environment
+    aws_region                   = var.aws_region
+    api_gateway_id               = aws_api_gateway_rest_api.api.id
+    api_gateway_root_resource_id = aws_api_gateway_rest_api.api.root_resource_id
+    api_gateway_execution_arn    = aws_api_gateway_rest_api.api.execution_arn
+  }
 }
 
 # Fail early if required secrets are missing
@@ -186,63 +221,51 @@ resource "aws_api_gateway_rest_api" "api" {
 module "eligibility_lookup_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "eligibility-lookup-lambda"
-  zip_path                      = "${path.module}/../../lambdas/dist/eligibility-lookup-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "eligibility-lookup"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
-  http_method                   = "GET"
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "eligibility-lookup-lambda"
+  zip_path                     = "${path.module}/../../lambdas/dist/eligibility-lookup-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "eligibility-lookup"
+  http_method                  = "GET"
 
-  enable_cors            = true
-  cors_allow_origin      = "http://localhost:3000"
+  enable_cors            = local.common_cors.enable_cors
+  cors_allow_origin      = local.common_cors.cors_allow_origin
   cors_allow_methods     = ["GET", "OPTIONS"]
   cors_allow_headers     = ["Content-Type", "Authorization"]
-  cors_allow_credentials = true
+  cors_allow_credentials = local.common_cors.cors_allow_credentials
 
-  environment_variables = {
-    NODE_OPTIONS   = "--enable-source-maps"
-    ALLOW_ORIGIN   = "http://localhost:3000"
-    DB_USERNAME    = "app_user"
-    DB_ADDRESS     = "postgres-db"
-    DB_PORT        = "5432"
-    DB_NAME        = "local_hometest_db"
-    DB_SCHEMA      = "hometest"
-    DB_SECRET_NAME = "postgres-db-password"
-    DB_SSL         = "false"
-  }
+  environment_variables = merge(local.common_base_env, local.common_db_env)
 }
 
 # Login Lambda
 module "login_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "login"
-  zip_path                      = "${path.module}/../../lambdas/dist/login-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "login"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
-  http_method                   = "POST"
-  timeout                       = 30
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "login"
+  zip_path                     = "${path.module}/../../lambdas/dist/login-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "login"
+  http_method                  = "POST"
+  timeout                      = 30
 
-  enable_cors            = true
-  cors_allow_origin      = "http://localhost:3000"
+  enable_cors            = local.common_cors.enable_cors
+  cors_allow_origin      = local.common_cors.cors_allow_origin
   cors_allow_methods     = ["POST", "OPTIONS"]
   cors_allow_headers     = ["Content-Type", "Authorization"]
-  cors_allow_credentials = true
+  cors_allow_credentials = local.common_cors.cors_allow_credentials
 
-  environment_variables = {
-    NODE_OPTIONS                               = "--enable-source-maps",
-    ALLOW_ORIGIN                               = "http://localhost:3000",
+  environment_variables = merge(local.common_base_env, {
     NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url,
     NHS_LOGIN_CLIENT_ID                        = "hometest",
     NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
@@ -252,58 +275,54 @@ module "login_lambda" {
     AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = "60",
     AUTH_COOKIE_SAME_SITE                      = "Lax"
     AUTH_COOKIE_SECURE                         = "false"
-  }
+  })
 }
 
 module "session_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "session"
-  zip_path                      = "${path.module}/../../lambdas/dist/session-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "session"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
-  http_method                   = "GET"
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "session"
+  zip_path                     = "${path.module}/../../lambdas/dist/session-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "session"
+  http_method                  = "GET"
 
-  enable_cors            = true
-  cors_allow_origin      = "http://localhost:3000"
+  enable_cors            = local.common_cors.enable_cors
+  cors_allow_origin      = local.common_cors.cors_allow_origin
   cors_allow_methods     = ["GET", "OPTIONS"]
   cors_allow_headers     = ["Content-Type", "Authorization"]
-  cors_allow_credentials = true
+  cors_allow_credentials = local.common_cors.cors_allow_credentials
 
-  environment_variables = {
-    NODE_OPTIONS                       = "--enable-source-maps"
-    ALLOW_ORIGIN                       = "http://localhost:3000"
+  environment_variables = merge(local.common_base_env, {
     AUTH_COOKIE_KEY_ID                 = "key"
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
     NHS_LOGIN_BASE_ENDPOINT_URL        = local.resolved_nhs_login_base_url,
-  }
+  })
 }
 
 # Postcode Lookup Lambda
 module "postcode_lookup_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "postcode-lookup"
-  zip_path                      = "${path.module}/../../lambdas/dist/postcode-lookup-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "postcode-lookup"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
-  http_method                   = "GET"
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "postcode-lookup"
+  zip_path                     = "${path.module}/../../lambdas/dist/postcode-lookup-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "postcode-lookup"
+  http_method                  = "GET"
 
-  environment_variables = {
-    NODE_OPTIONS                            = "--enable-source-maps",
-    ALLOW_ORIGIN                            = "http://localhost:3000",
+  environment_variables = merge(local.common_base_env, {
     POSTCODE_LOOKUP_CREDENTIALS_SECRET_NAME = "os-places-creds",
     POSTCODE_LOOKUP_BASE_URL                = local.resolved_postcode_lookup_base_url,
     POSTCODE_LOOKUP_TIMEOUT_MS              = "5000",
@@ -311,22 +330,22 @@ module "postcode_lookup_lambda" {
     POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",
     POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR    = "2",
     USE_STUB_POSTCODE_CLIENT                = false,
-  }
+  })
 }
 
 module "hello_world_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "hello-world"
-  zip_path                      = "${path.module}/../../lambdas/dist/hello-world-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "hello-world"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "hello-world"
+  zip_path                     = "${path.module}/../../lambdas/dist/hello-world-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "hello-world"
 
   environment_variables = {
     NODE_OPTIONS = "--enable-source-maps"
@@ -344,27 +363,20 @@ resource "aws_sqs_queue" "notify_messages" {
 module "order_router_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "order-router"
-  zip_path                      = "${path.module}/../../lambdas/dist/order-router-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "test-order/order"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "order-router"
+  zip_path                     = "${path.module}/../../lambdas/dist/order-router-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "test-order/order"
 
-  environment_variables = {
-    NODE_OPTIONS   = "--enable-source-maps"
-    DB_USERNAME    = "app_user"
-    DB_ADDRESS     = "postgres-db"
-    DB_PORT        = "5432"
-    DB_NAME        = "local_hometest_db"
-    DB_SCHEMA      = "hometest"
-    DB_SECRET_NAME = "postgres-db-password"
-    DB_SSL         = "false"
-  }
+  environment_variables = merge(local.common_db_env, {
+    NODE_OPTIONS = "--enable-source-maps"
+  })
 }
 
 resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
@@ -377,161 +389,114 @@ resource "aws_lambda_event_source_mapping" "order_router_order_placement" {
 module "order_result_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "order-result"
-  zip_path                      = "${path.module}/../../lambdas/dist/order-result-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "result"
-  http_method                   = "POST"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "order-result"
+  zip_path                     = "${path.module}/../../lambdas/dist/order-result-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "result"
+  http_method                  = "POST"
 
-  environment_variables = {
-    NODE_OPTIONS              = "--enable-source-maps"
-    ALLOW_ORIGIN              = "http://localhost:3000"
-    DB_USERNAME               = "app_user"
-    DB_ADDRESS                = "postgres-db"
-    DB_PORT                   = "5432"
-    DB_NAME                   = "local_hometest_db"
-    DB_SCHEMA                 = "hometest"
-    DB_SECRET_NAME            = "postgres-db-password"
-    DB_SSL                    = "false"
+  environment_variables = merge(local.common_base_env, local.common_db_env, {
     NOTIFY_MESSAGES_QUEUE_URL = aws_sqs_queue.notify_messages.url
     HOME_TEST_BASE_URL        = "http://localhost:3000"
-  }
+  })
 }
 
 module "order_service_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "order-service"
-  zip_path                      = "${path.module}/../../lambdas/dist/order-service-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "order"
-  http_method                   = "POST"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "order-service"
+  zip_path                     = "${path.module}/../../lambdas/dist/order-service-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "order"
+  http_method                  = "POST"
 
-  enable_cors            = true
-  cors_allow_origin      = "http://localhost:3000"
+  enable_cors            = local.common_cors.enable_cors
+  cors_allow_origin      = local.common_cors.cors_allow_origin
   cors_allow_methods     = ["POST", "OPTIONS"]
   cors_allow_headers     = ["Content-Type", "Authorization", "X-Correlation-ID"]
-  cors_allow_credentials = true
+  cors_allow_credentials = local.common_cors.cors_allow_credentials
 
-  environment_variables = {
-    NODE_OPTIONS              = "--enable-source-maps"
+  environment_variables = merge(local.common_base_env, local.common_db_env, {
     ORDER_PLACEMENT_QUEUE_URL = aws_sqs_queue.order_placement.url
-    ALLOW_ORIGIN              = "http://localhost:3000"
-    DB_USERNAME               = "app_user"
-    DB_ADDRESS                = "postgres-db"
-    DB_PORT                   = "5432"
-    DB_NAME                   = "local_hometest_db"
-    DB_SCHEMA                 = "hometest"
-    DB_SECRET_NAME            = "postgres-db-password"
-    DB_SSL                    = "false"
-  }
+  })
 }
 
 module "get_order_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "get-order"
-  zip_path                      = "${path.module}/../../lambdas/dist/get-order-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "get-order"
-  http_method                   = "GET"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "get-order"
+  zip_path                     = "${path.module}/../../lambdas/dist/get-order-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "get-order"
+  http_method                  = "GET"
 
-  enable_cors        = true
-  cors_allow_origin  = "http://localhost:3000"
+  enable_cors        = local.common_cors.enable_cors
+  cors_allow_origin  = local.common_cors.cors_allow_origin
   cors_allow_methods = ["GET", "OPTIONS"]
 
-  environment_variables = {
-    NODE_OPTIONS   = "--enable-source-maps"
-    ALLOW_ORIGIN   = "http://localhost:3000"
-    DB_USERNAME    = "app_user"
-    DB_ADDRESS     = "postgres-db"
-    DB_PORT        = "5432"
-    DB_NAME        = "local_hometest_db"
-    DB_SCHEMA      = "hometest"
-    DB_SECRET_NAME = "postgres-db-password"
-    DB_SSL         = "false"
-  }
+  environment_variables = merge(local.common_base_env, local.common_db_env)
 }
 
 module "get_results_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "get-results"
-  zip_path                      = "${path.module}/../../lambdas/dist/get-results-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "results"
-  http_method                   = "GET"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "get-results"
+  zip_path                     = "${path.module}/../../lambdas/dist/get-results-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "results"
+  http_method                  = "GET"
 
-  enable_cors        = true
-  cors_allow_origin  = "http://localhost:3000"
+  enable_cors        = local.common_cors.enable_cors
+  cors_allow_origin  = local.common_cors.cors_allow_origin
   cors_allow_methods = ["GET", "OPTIONS"]
   cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-ID"]
 
-  environment_variables = {
-    NODE_OPTIONS   = "--enable-source-maps"
-    DB_USERNAME    = "app_user"
-    DB_ADDRESS     = "postgres-db"
-    DB_PORT        = "5432"
-    DB_NAME        = "local_hometest_db"
-    DB_SCHEMA      = "hometest"
-    DB_SECRET_NAME = "postgres-db-password"
-    DB_SSL         = "false"
-    ALLOW_ORIGIN   = "http://localhost:3000"
-  }
+  environment_variables = merge(local.common_base_env, local.common_db_env)
 }
 
 module "order_status_lambda" {
   source = "./modules/lambda"
 
-  project_name                  = var.project_name
-  function_name                 = "order-status"
-  zip_path                      = "${path.module}/../../lambdas/dist/order-status-lambda.zip"
-  lambda_role_arn               = aws_iam_role.lambda_role.arn
-  environment                   = var.environment
-  api_gateway_id                = aws_api_gateway_rest_api.api.id
-  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
-  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
-  api_path                      = "test-order/status"
-  http_method                   = "POST"
-  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  project_name                 = local.common_lambda_params.project_name
+  aws_region                   = local.common_lambda_params.aws_region
+  function_name                = "order-status"
+  zip_path                     = "${path.module}/../../lambdas/dist/order-status-lambda.zip"
+  lambda_role_arn              = local.common_lambda_params.lambda_role_arn
+  environment                  = local.common_lambda_params.environment
+  api_gateway_id               = local.common_lambda_params.api_gateway_id
+  api_gateway_root_resource_id = local.common_lambda_params.api_gateway_root_resource_id
+  api_gateway_execution_arn    = local.common_lambda_params.api_gateway_execution_arn
+  api_path                     = "test-order/status"
+  http_method                  = "POST"
 
-  environment_variables = {
-    NODE_OPTIONS              = "--enable-source-maps"
-    ALLOW_ORIGIN              = "http://localhost:3000"
-    DB_USERNAME               = "app_user"
-    DB_ADDRESS                = "postgres-db"
-    DB_PORT                   = "5432"
-    DB_NAME                   = "local_hometest_db"
-    DB_SCHEMA                 = "hometest"
-    DB_SECRET_NAME            = "postgres-db-password"
-    DB_SSL                    = "false"
+  environment_variables = merge(local.common_base_env, local.common_db_env, {
     NOTIFY_MESSAGES_QUEUE_URL = aws_sqs_queue.notify_messages.url
     HOME_TEST_BASE_URL        = "http://localhost:3000"
-  }
+  })
 }
 
 # API Gateway deployment

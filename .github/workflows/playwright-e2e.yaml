@@ -99,6 +99,9 @@ jobs:
         if: env.TARGET_ENV == 'local'
         run: |
           npm run local:start
+        env:
+          BUILDKIT_PROGRESS: plain # or "quiet" to fully suppress build output
+          DOCKER_CLI_HINTS: false # removes "What's next?" hints
 
       - name: "Show application status"
         if: env.TARGET_ENV == 'local'
@@ -189,17 +192,17 @@ jobs:
             exit 0
           fi
 
-          # Extract flaky tests from Playwright JSON results
-          FLAKY_TESTS=$(jq -r '
-            [.suites[]? | .. | .tests?[]? | select(.status == "flaky")] |
-            if length > 0 then
-              .[] | "\(.title) (\(.location.file):\(.location.line))"
-            else
-              empty
-            end
-          ' "$RESULTS_FILE" 2>/dev/null)
+          # Check top-level stats for flaky count first
+          FLAKY_COUNT=$(jq '.stats.flaky // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+          echo "Flaky test count: $FLAKY_COUNT"
 
-          if [ -n "$FLAKY_TESTS" ]; then
+          if [ "$FLAKY_COUNT" -gt 0 ]; then
+            # Extract flaky test details: specs contain tests, status is on test objects
+            FLAKY_TESTS=$(jq -r '
+              [.. | .specs?[]? | {title: .title, file: .file, line: .line, tests: [.tests[]? | select(.status == "flaky") | .projectName]} | select(.tests | length > 0)]
+              | .[] | "[\(.tests | join(", "))] \(.title) (\(.file):\(.line))"
+            ' "$RESULTS_FILE" 2>/dev/null)
+
             echo "::warning::Flaky tests detected (passed on retry):"
             while IFS= read -r test; do
               echo "::warning::  Flaky: $test"
@@ -242,13 +245,16 @@ jobs:
           # Append flaky test details to summary
           RESULTS_FILE="tests/testResults/test-results.json"
           if [ -f "$RESULTS_FILE" ]; then
-            FLAKY_COUNT=$(jq '[.suites[]? | .. | .tests?[]? | select(.status == "flaky")] | length' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            FLAKY_COUNT=$(jq '.stats.flaky // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
             if [ "$FLAKY_COUNT" -gt 0 ]; then
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "### :warning: Flaky Tests ($FLAKY_COUNT)" >> $GITHUB_STEP_SUMMARY
               echo "These tests failed initially but passed on retry:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '[.suites[]? | .. | .tests?[]? | select(.status == "flaky")] | .[] | "- **\(.title)** (\(.location.file):\(.location.line))"' "$RESULTS_FILE" 2>/dev/null >> $GITHUB_STEP_SUMMARY
+              jq -r '
+                [.. | .specs?[]? | {title: .title, file: .file, line: .line, tests: [.tests[]? | select(.status == "flaky") | .projectName]} | select(.tests | length > 0)]
+                | .[] | "- **[\(.tests | join(", "))] \(.title)** (\(.file):\(.line))"
+              ' "$RESULTS_FILE" 2>/dev/null >> $GITHUB_STEP_SUMMARY
             fi
           fi
 
