@@ -49,7 +49,7 @@ export default function CannotUseServiceUnder18Page() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(RoutePath.GetSelfTestKitPage);
+          goToStep(RoutePath.BeforeYouStartPage);
         }
       }}
     >
