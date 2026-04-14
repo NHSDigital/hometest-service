@@ -91,16 +91,18 @@ describe("ReminderNotifyService", () => {
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
 
-  it("does not dispatch when patient is not found", async () => {
+  it("throws when patient is not found", async () => {
     mockGetPatientIdFromOrder.mockResolvedValueOnce(null);
 
-    await service.dispatch({
-      reminderId,
-      orderId,
-      correlationId,
-      statusCode: OrderStatusCodes.DISPATCHED,
-      eventCode: NotifyEventCode.DispatchedSecondReminder,
-    });
+    await expect(
+      service.dispatch({
+        reminderId,
+        orderId,
+        correlationId,
+        statusCode: OrderStatusCodes.DISPATCHED,
+        eventCode: NotifyEventCode.DispatchedSecondReminder,
+      }),
+    ).rejects.toThrow(`Patient not found for orderId ${orderId}`);
 
     expect(mockBuildDispatchedReminderMessage).not.toHaveBeenCalled();
     expect(mockSendMessage).not.toHaveBeenCalled();

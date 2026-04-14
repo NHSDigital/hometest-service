@@ -1,15 +1,7 @@
-import { ConsoleCommons } from "../../commons";
-import {
-  type OrderStatusCode,
-  OrderStatusCodes,
-  OrderStatusService,
-} from "../../db/order-status-db";
+import { type OrderStatusCode, OrderStatusService } from "../../db/order-status-db";
 import type { NotifyMessageBuilder } from "../message-builders/base-notify-message-builder";
 import type { DispatchedReminderMessageBuilderInput } from "../message-builders/reminder/dispatched-reminder-message-builder";
 import { BaseNotifyService, type NotifyServiceDependencies } from "./base-notify-service";
-
-const commons = new ConsoleCommons();
-const name = "reminder-notify-service";
 
 export interface ReminderNotifyServiceDependencies extends NotifyServiceDependencies {
   notifyMessageBuilders: Partial<
@@ -49,11 +41,7 @@ export class ReminderNotifyService extends BaseNotifyService {
     const patientId = await this.orderStatusService.getPatientIdFromOrder(orderId);
 
     if (!patientId) {
-      commons.logError(name, "Patient not found for reminder notification", {
-        correlationId,
-        orderId,
-      });
-      return;
+      throw new Error(`Patient not found for orderId ${orderId}`);
     }
 
     const notifyMessage = await notifyMessageBuilder.build({

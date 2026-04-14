@@ -142,7 +142,7 @@ describe("OrderStatusNotifyService", () => {
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
 
-  it("should swallow errors when sending the notify message fails", async () => {
+  it("should propagate errors when sending the notify message fails", async () => {
     mockSendMessage.mockRejectedValueOnce(new Error("SQS unavailable"));
 
     await expect(
@@ -152,7 +152,7 @@ describe("OrderStatusNotifyService", () => {
         correlationId: statusUpdate.correlationId,
         statusCode: OrderStatusCodes.DISPATCHED,
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("SQS unavailable");
 
     expect(mockInsertNotificationAuditEntry).not.toHaveBeenCalled();
   });
