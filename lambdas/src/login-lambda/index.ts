@@ -5,14 +5,8 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from "aws-lambda";
 
 import { securityHeaders } from "../lib/http/security-headers";
-import { retrieveMandatoryEnvVariable, retrieveOptionalEnvVariable } from "../lib/utils/utils";
 import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
-
-// ALPHA: This file will need revisiting.
-const authCookieSameSite = retrieveMandatoryEnvVariable("AUTH_COOKIE_SAME_SITE");
-const authCookieSecure =
-  retrieveOptionalEnvVariable("AUTH_COOKIE_SECURE", "true").toLowerCase() === "true";
 
 export interface LoginBody {
   code: string; // the auth code from NHS login
@@ -26,7 +20,7 @@ const className = "handler";
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { authTokenService, loginService } = await init();
+  const { authTokenService, loginService, authCookieSameSite, authCookieSecure } = await init();
   if (event.body === null) {
     return {
       statusCode: 400,

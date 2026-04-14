@@ -35,6 +35,7 @@ describe("order-result-lambda init", () => {
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
     ORDER_PLACEMENT_QUEUE_URL: "https://sqs.eu-west-2.amazonaws.com/123456789012/order-placement",
+    AWS_REGION: "eu-west-2",
     NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
     HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
   };
@@ -83,22 +84,10 @@ describe("order-result-lambda init", () => {
     expect(AwsSecretsClient).toHaveBeenCalledWith("us-east-1");
   });
 
-  it("should create AwsSecretsClient with AWS_DEFAULT_REGION when AWS_REGION is not set", () => {
+  it("should throw when AWS_REGION is not set", () => {
     delete process.env.AWS_REGION;
-    process.env.AWS_DEFAULT_REGION = "us-west-2";
 
-    init();
-
-    expect(AwsSecretsClient).toHaveBeenCalledWith("us-west-2");
-  });
-
-  it("should default to eu-west-2 when neither AWS_REGION nor AWS_DEFAULT_REGION is set", () => {
-    delete process.env.AWS_REGION;
-    delete process.env.AWS_DEFAULT_REGION;
-
-    init();
-
-    expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+    expect(() => init()).toThrow("Missing value for an environment variable AWS_REGION");
   });
 
   it("should create PostgresDbClient with correct configuration", () => {
