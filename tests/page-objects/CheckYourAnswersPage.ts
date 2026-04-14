@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+
 import { BasePage } from "./BasePage";
 
 export class CheckYourAnswersPage extends BasePage {
@@ -15,7 +16,9 @@ export class CheckYourAnswersPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.consentCheckbox = page.locator("#consent-1");
-    this.pageHeader = page.locator("h1", { hasText: "Check your answers before submitting your order" });
+    this.pageHeader = page.locator("h1", {
+      hasText: "Check your answers before submitting your order",
+    });
     this.submitOrderButton = page.getByRole("button", { name: "Submit order" });
     this.currentMobileNumber = page.locator("#mobile-number-value");
     this.currentAddress = page.locator("#delivery-address-value");
@@ -30,8 +33,9 @@ export class CheckYourAnswersPage extends BasePage {
   }
 
   async getAddressValue(): Promise<string[] | null> {
+    await this.currentAddress.waitFor({ state: "visible" });
     const currentAddressValue = await this.currentAddress.allInnerTexts();
-    return currentAddressValue[0].split("\n");
+    return currentAddressValue[0]?.split("\n") ?? null;
   }
 
   async getMobileNumberValue(): Promise<string | null> {

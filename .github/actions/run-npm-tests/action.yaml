@@ -27,9 +27,10 @@ runs:
   steps:
     - name: "Run test suite"
       shell: bash
-      run: mise exec -- npm --prefix ${{ inputs.working-directory }} run test -- --ci
       env:
         FORCE_COLOR: true
+        WORKING_DIR: ${{ inputs.working-directory }}
+      run: mise exec -- npm --prefix "$WORKING_DIR" run test -- --ci
 
     - name: "Upload test results"
       uses: actions/upload-artifact@v7
@@ -66,14 +67,18 @@ runs:
     - name: "Coverage Summary"
       if: always()
       shell: bash
+      env:
+        WORKING_DIR: ${{ inputs.working-directory }}
+        REPORT_TITLE: ${{ inputs.report-title }}
+        ARTIFACT_PREFIX: ${{ inputs.artifact-prefix }}
       run: |
-        COVERAGE_FILE="${{ inputs.working-directory }}/coverage/coverage-summary.json"
+        COVERAGE_FILE="${WORKING_DIR}/coverage/coverage-summary.json"
         LINES=$(jq '.total.lines.pct' "$COVERAGE_FILE")
         STATEMENTS=$(jq '.total.statements.pct' "$COVERAGE_FILE")
         FUNCTIONS=$(jq '.total.functions.pct' "$COVERAGE_FILE")
         BRANCHES=$(jq '.total.branches.pct' "$COVERAGE_FILE")
 
-        echo "### 📊 ${{ inputs.report-title }}" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 ${REPORT_TITLE}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
         echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
@@ -82,14 +87,16 @@ runs:
         echo "| Functions | ${FUNCTIONS}% |" >> $GITHUB_STEP_SUMMARY
         echo "| Branches | ${BRANCHES}% |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "📁 Download the **${{ inputs.artifact-prefix }}-coverage-report** artifact for detailed HTML report" >> $GITHUB_STEP_SUMMARY
+        echo "📁 Download the **${ARTIFACT_PREFIX}-coverage-report** artifact for detailed HTML report" >> $GITHUB_STEP_SUMMARY
 
     - name: "Check coverage threshold"
       if: inputs.coverage-threshold != '0'
       shell: bash
+      env:
+        WORKING_DIR: ${{ inputs.working-directory }}
+        THRESHOLD: ${{ inputs.coverage-threshold }}
       run: |
-        COVERAGE=$(jq '.total.lines.pct' ${{ inputs.working-directory }}/coverage/coverage-summary.json)
-        THRESHOLD=${{ inputs.coverage-threshold }}
+        COVERAGE=$(jq '.total.lines.pct' "${WORKING_DIR}/coverage/coverage-summary.json")
         echo "Line coverage: ${COVERAGE}%"
         if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
           echo "::error::Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
