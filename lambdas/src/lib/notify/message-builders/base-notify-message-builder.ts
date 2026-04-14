@@ -4,18 +4,24 @@ import type { OrderDbClient } from "../../db/order-db-client";
 import type { PatientDbClient } from "../../db/patient-db-client";
 import type { NotifyMessage, NotifyRecipient } from "../../types/notify-message";
 
+export interface NotifyMessageBuilder<TInput> {
+  build(input: TInput): Promise<NotifyMessage>;
+}
+
 export interface NotifyMessageBuilderDependencies {
   patientDbClient: PatientDbClient;
   orderDbClient: OrderDbClient;
   homeTestBaseUrl: string;
 }
 
-export abstract class BaseNotifyMessageBuilder {
+export abstract class BaseNotifyMessageBuilder<TInput> implements NotifyMessageBuilder<TInput> {
   private readonly normalizedHomeTestBaseUrl: string;
 
   constructor(protected readonly deps: NotifyMessageBuilderDependencies) {
     this.normalizedHomeTestBaseUrl = deps.homeTestBaseUrl.replaceAll(/\/$/g, "");
   }
+
+  abstract build(input: TInput): Promise<NotifyMessage>;
 
   protected async getRecipient(patientId: string): Promise<NotifyRecipient> {
     const patient = await this.deps.patientDbClient.get(patientId);

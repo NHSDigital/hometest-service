@@ -6,6 +6,9 @@ import { OrderService } from "../lib/db/order-db";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
+import { OrderDispatchedMessageBuilder } from "../lib/notify/message-builders/order-status/order-dispatched-message-builder";
+import { OrderReceivedMessageBuilder } from "../lib/notify/message-builders/order-status/order-received-message-builder";
+import { OrderResultAvailableMessageBuilder } from "../lib/notify/message-builders/order-status/order-result-available-message-builder";
 import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
@@ -118,12 +121,11 @@ describe("order-result-lambda init", () => {
 
     expect(OrderStatusNotifyService).toHaveBeenCalledWith(
       expect.objectContaining({
-        builderDeps: {
-          patientDbClient: expect.any(PatientDbClient),
-          orderDbClient: expect.any(OrderDbClient),
-          homeTestBaseUrl: "https://hometest.example.nhs.uk",
-        },
-        orderStatusService: expect.any(OrderStatusService),
+        notifyMessageBuilders: expect.objectContaining({
+          DISPATCHED: expect.any(OrderDispatchedMessageBuilder),
+          RECEIVED: expect.any(OrderReceivedMessageBuilder),
+          COMPLETE: expect.any(OrderResultAvailableMessageBuilder),
+        }),
         notifyMessagesQueueUrl: "https://example.queue.local/notify",
         notificationAuditDbClient: expect.any(NotificationAuditDbClient),
         sqsClient: expect.any(AWSSQSClient),

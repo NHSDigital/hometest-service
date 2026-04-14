@@ -2,9 +2,10 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
-import { OrderStatusService } from "../lib/db/order-status-db";
+import { OrderStatusCodes, OrderStatusService } from "../lib/db/order-status-db";
 import { OrderStatusReminderDbClient } from "../lib/db/order-status-reminder-db-client";
 import { PatientDbClient } from "../lib/db/patient-db-client";
+import { DispatchedReminderMessageBuilder } from "../lib/notify/message-builders/reminder/dispatched-reminder-message-builder";
 import { ReminderNotifyService } from "../lib/notify/services/reminder-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
@@ -28,8 +29,14 @@ export function buildEnvironment(): Environment {
   const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
   const sqsClient = new AWSSQSClient();
+  const builderDeps = { patientDbClient, orderDbClient, homeTestBaseUrl };
   const reminderNotifyService = new ReminderNotifyService({
-    builderDeps: { patientDbClient, orderDbClient, homeTestBaseUrl },
+    notifyMessageBuilders: {
+      [OrderStatusCodes.DISPATCHED]: new DispatchedReminderMessageBuilder(
+        builderDeps,
+        orderStatusDb,
+      ),
+    },
     orderStatusService: orderStatusDb,
     notificationAuditDbClient,
     sqsClient,

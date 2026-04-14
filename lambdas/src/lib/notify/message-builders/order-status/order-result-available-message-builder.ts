@@ -1,21 +1,16 @@
-import { NotifyEventCode, type NotifyMessage } from "../../types/notify-message";
+import { NotifyEventCode, type NotifyMessage } from "../../../types/notify-message";
 import {
   BaseNotifyMessageBuilder,
   type NotifyMessageBuilderDependencies,
-} from "./base-notify-message-builder";
+} from "../base-notify-message-builder";
+import { type OrderStatusNotifyMessageBuilderInput } from "./order-status-notify-message-builder";
 
-export interface OrderResultAvailableMessageBuilderInput {
-  patientId: string;
-  orderId: string;
-  correlationId: string;
-}
-
-export class OrderResultAvailableMessageBuilder extends BaseNotifyMessageBuilder {
+export class OrderResultAvailableMessageBuilder extends BaseNotifyMessageBuilder<OrderStatusNotifyMessageBuilderInput> {
   constructor(deps: NotifyMessageBuilderDependencies) {
     super(deps);
   }
 
-  async build(input: OrderResultAvailableMessageBuilderInput): Promise<NotifyMessage> {
+  async build(input: OrderStatusNotifyMessageBuilderInput): Promise<NotifyMessage> {
     const { patientId, orderId, correlationId } = input;
 
     const [recipient, referenceNumber, orderCreatedAt] = await Promise.all([
