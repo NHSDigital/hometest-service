@@ -106,5 +106,31 @@ describe("db-retry", () => {
       await expectedRejection;
       expect(operation).toHaveBeenCalledTimes(3);
     });
+
+    it("should fall back to the non-jittered delay when custom options produce an invalid jitter range", async () => {
+      const transientError = Object.assign(new Error("connection reset"), {
+        code: "ECONNRESET",
+      });
+      const operation = jest
+        .fn<Promise<string>, []>()
+        .mockRejectedValueOnce(transientError)
+        .mockResolvedValue("ok");
+
+      const promise = executeDbOperationWithRetry(operation, {
+        maxRetries: 1,
+        initialDelayMs: 0,
+        backoffFactor: 2,
+        maxDelayMs: 0,
+        jitter: true,
+      });
+
+      await Promise.resolve();
+      expect(operation).toHaveBeenCalledTimes(1);
+
+      await jest.advanceTimersByTimeAsync(0);
+
+      await expect(promise).resolves.toBe("ok");
+      expect(operation).toHaveBeenCalledTimes(2);
+    });
   });
 });

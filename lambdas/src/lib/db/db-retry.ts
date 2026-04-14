@@ -131,8 +131,21 @@ function getRetryDelayMs(retryCount: number, options: DbRetryOptions): number {
     return exponentialDelay;
   }
 
-  const jitterFloor = exponentialDelay / 2;
-  return randomInt(jitterFloor, exponentialDelay);
+  const jitterFloor = Math.max(0, Math.ceil(exponentialDelay / 2));
+  const jitterCeiling = Math.max(0, Math.ceil(exponentialDelay));
+
+  // randomInt() requires integer bounds with min < max. If a custom retry configuration
+  // produces a zero-width or non-integer range, fall back to the non-jittered delay rather
+  // than failing the retry path itself.
+  if (
+    !Number.isSafeInteger(jitterFloor) ||
+    !Number.isSafeInteger(jitterCeiling) ||
+    jitterFloor >= jitterCeiling
+  ) {
+    return exponentialDelay;
+  }
+
+  return randomInt(jitterFloor, jitterCeiling);
 }
 
 async function wait(delayMs: number): Promise<void> {
