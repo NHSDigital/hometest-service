@@ -86,7 +86,7 @@ export default function EnterDeliveryAddressPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(RoutePath.GetSelfTestKitPage);
+          goToStep(RoutePath.BeforeYouStartPage);
         }
       }}
     >

@@ -14,7 +14,7 @@ export default function OrderSubmittedPage() {
 
   useLayoutEffect(() => {
     if (orderAnswers.orderReferenceNumber == null) {
-      resetNavigation(RoutePath.GetSelfTestKitPage, { replace: true });
+      resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
     }
   }, [orderAnswers.orderReferenceNumber, resetNavigation]);
 
