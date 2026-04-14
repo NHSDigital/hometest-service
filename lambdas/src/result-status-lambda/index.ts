@@ -3,6 +3,7 @@ import cors from "@middy/http-cors";
 import httpErrorHandler from "@middy/http-error-handler";
 import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { OrderResultSummary } from "src/lib/db/order-db";
 
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
@@ -78,7 +79,7 @@ function extractOrderUidFromFHIRTask(task: FHIRTask): string {
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderService, orderStatusService } = init();
+  const { orderService } = init();
   let correlationId: string;
 
   try {
@@ -119,10 +120,10 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(400, "invalid", message, "error");
   }
 
-  let patientFromOrder: string | null;
+  let orderFromOrderUid: OrderResultSummary | null;
 
   try {
-    patientFromOrder = await orderStatusService.getPatientIdFromOrder(orderUid);
+    orderFromOrderUid = await orderService.retrieveOrderDetails(orderUid);
   } catch (error) {
     console.error(name, "Failed to retrieve order details from database", {
       error,
@@ -132,7 +133,7 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
-  if (!patientFromOrder) {
+  if (!orderFromOrderUid) {
     console.error(name, "Order not found for given order UID", {
       orderUid,
       correlationId,
@@ -140,7 +141,15 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(404, "not-found", "Order not found", "error");
   }
 
-  if (patientFromOrder !== patientUid) {
+  if (orderFromOrderUid.correlation_id === correlationId) {
+    console.info(name, "Duplicate request detected based on correlation ID", {
+      orderUid,
+      correlationId,
+    });
+    return createFhirResponse(200, task);
+  }
+
+  if (orderFromOrderUid.patient_uid !== patientUid) {
     console.error(name, "Patient UID in Task does not match order record", {
       orderUid,
       correlationId,

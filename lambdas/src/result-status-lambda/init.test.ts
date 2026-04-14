@@ -1,6 +1,5 @@
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderService } from "../lib/db/order-db";
-import { OrderStatusService } from "../lib/db/order-status-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { buildEnvironment, init } from "./init";
 
@@ -8,7 +7,6 @@ import { buildEnvironment, init } from "./init";
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/secrets/secrets-manager-client");
-jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/order-db");
 
 describe("init", () => {
@@ -58,9 +56,7 @@ describe("init", () => {
 
       const result = init();
 
-      expect(result).toHaveProperty("orderStatusService");
       expect(result).toHaveProperty("orderService");
-      expect(result.orderStatusService).toBeInstanceOf(OrderStatusService);
       expect(result.orderService).toBeInstanceOf(OrderService);
     });
 
@@ -89,25 +85,8 @@ describe("init", () => {
       const result = init();
 
       expect(result).toEqual({
-        orderStatusService: expect.any(OrderStatusService),
         orderService: expect.any(OrderService),
       });
-    });
-  });
-
-  describe("Integration of components", () => {
-    beforeEach(() => {
-      process.env.AWS_REGION = "us-east-1";
-    });
-
-    it("should create OrderStatusService and OrderService with the same dbClient instance", () => {
-      buildEnvironment();
-
-      // Extract the dbClient instances from the mocked constructors
-      const orderStatusServiceDbClient = (OrderStatusService as jest.Mock).mock.calls[0][0];
-      const orderServiceDbClient = (OrderService as jest.Mock).mock.calls[0][0];
-
-      expect(orderStatusServiceDbClient).toBe(orderServiceDbClient);
     });
   });
 

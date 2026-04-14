@@ -1,13 +1,11 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderService } from "../lib/db/order-db";
-import { OrderStatusService } from "../lib/db/order-status-db";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
   orderService: OrderService;
-  orderStatusService: OrderStatusService;
 }
 
 export function buildEnvironment(): Environment {
@@ -15,11 +13,9 @@ export function buildEnvironment(): Environment {
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
   const orderService = new OrderService(dbClient);
-  const orderStatusService = new OrderStatusService(dbClient);
 
   return {
     orderService,
-    orderStatusService,
   };
 }
 

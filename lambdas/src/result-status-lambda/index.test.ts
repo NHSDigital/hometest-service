@@ -4,16 +4,14 @@ import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-respons
 import { OrderStatus, ResultStatus } from "../lib/types/status";
 import { lambdaHandler } from "./index";
 
-const mockGetPatientIdFromOrder = jest.fn();
 const mockUpdateOrderStatusAndResultStatus = jest.fn();
+const mockRetrieveOrderDetails = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
-    orderStatusService: {
-      getPatientIdFromOrder: mockGetPatientIdFromOrder,
-    },
     orderService: {
       updateOrderStatusAndResultStatus: mockUpdateOrderStatusAndResultStatus,
+      retrieveOrderDetails: mockRetrieveOrderDetails,
     },
   })),
 }));
@@ -59,14 +57,14 @@ describe("result-status-lambda handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockGetPatientIdFromOrder.mockReset();
+    mockRetrieveOrderDetails.mockReset();
     mockUpdateOrderStatusAndResultStatus.mockReset();
 
     mockUpdateOrderStatusAndResultStatus.mockResolvedValue({
       order_uid: VALID_ORDER_UUID,
       patient_uid: VALID_PATIENT_UUID,
     });
-    mockGetPatientIdFromOrder.mockResolvedValue(undefined);
+    mockRetrieveOrderDetails.mockResolvedValue(undefined);
   });
 
   describe("request body parsing", () => {
@@ -211,7 +209,7 @@ describe("result-status-lambda handler", () => {
 
   describe("order lookup", () => {
     it("returns 500 when orderStatusService.getPatientIdFromOrder throws", async () => {
-      mockGetPatientIdFromOrder.mockRejectedValueOnce(new Error("DB connection failed"));
+      mockRetrieveOrderDetails.mockRejectedValueOnce(new Error("DB connection failed"));
 
       const res = await lambdaHandler(
         makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
@@ -227,7 +225,7 @@ describe("result-status-lambda handler", () => {
     });
 
     it("returns 404 when order is not found", async () => {
-      mockGetPatientIdFromOrder.mockResolvedValueOnce(null);
+      mockRetrieveOrderDetails.mockResolvedValueOnce(null);
 
       const res = await lambdaHandler(
         makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
@@ -245,7 +243,9 @@ describe("result-status-lambda handler", () => {
 
   describe("patient authorisation", () => {
     it("returns 403 when patient UID in task does not match order record", async () => {
-      mockGetPatientIdFromOrder.mockResolvedValueOnce("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
+      mockRetrieveOrderDetails.mockResolvedValueOnce({
+        patientId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      });
 
       const res = await lambdaHandler(
         makeEvent(JSON.stringify(validTask), { "X-Correlation-ID": VALID_CORRELATION_ID }),
@@ -263,7 +263,7 @@ describe("result-status-lambda handler", () => {
 
   describe("Order status update", () => {
     beforeEach(() => {
-      mockGetPatientIdFromOrder.mockResolvedValue(VALID_PATIENT_UUID);
+      mockRetrieveOrderDetails.mockResolvedValue({ patient_uid: VALID_PATIENT_UUID });
     });
 
     it("returns 500 when OrderService.updateOrderStatusAndResultStatus throws", async () => {
@@ -294,7 +294,7 @@ describe("result-status-lambda handler", () => {
 
   describe("success", () => {
     it("returns 201 with the original task on success", async () => {
-      mockGetPatientIdFromOrder.mockResolvedValue(VALID_PATIENT_UUID);
+      mockRetrieveOrderDetails.mockResolvedValue({ patient_uid: VALID_PATIENT_UUID });
 
       const res = await lambdaHandler(makeEvent(JSON.stringify(validTask), validEventHeaders));
 
