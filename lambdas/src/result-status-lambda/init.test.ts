@@ -75,27 +75,13 @@ describe("init", () => {
       });
     });
 
-    it("should create AwsSecretsClient with AWS_DEFAULT_REGION when AWS_REGION is not set", () => {
+    it("should throw when AWS_REGION is not set", () => {
       delete process.env.AWS_REGION;
-      process.env.AWS_DEFAULT_REGION = "us-west-2";
 
       jest.isolateModules(() => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { init: initModule } = require("./init");
-        initModule();
-        expect(AwsSecretsClient).toHaveBeenCalledWith("us-west-2");
-      });
-    });
-
-    it("should default to eu-west-2 when neither AWS_REGION nor AWS_DEFAULT_REGION is set", () => {
-      delete process.env.AWS_REGION;
-      delete process.env.AWS_DEFAULT_REGION;
-
-      jest.isolateModules(() => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { init: initModule } = require("./init");
-        initModule();
-        expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+        expect(() => initModule()).toThrow("Missing value for an environment variable AWS_REGION");
       });
     });
 
@@ -110,6 +96,10 @@ describe("init", () => {
   });
 
   describe("Integration of components", () => {
+    beforeEach(() => {
+      process.env.AWS_REGION = "us-east-1";
+    });
+
     it("should create OrderStatusService and OrderService with the same dbClient instance", () => {
       buildEnvironment();
 
@@ -131,6 +121,10 @@ describe("init", () => {
   });
 
   describe("rejection retry", () => {
+    beforeEach(() => {
+      process.env.AWS_REGION = "us-east-1";
+    });
+
     it("should allow retry after buildEnvironment throws", () => {
       jest.isolateModules(() => {
         jest.clearAllMocks();

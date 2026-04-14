@@ -7,10 +7,14 @@ describe("OrderService", () => {
   let dbClient: any;
   let orderService: OrderService;
 
+  const mockQuery = jest.fn();
+  const mockWithTransaction = jest.fn();
+
   beforeEach(() => {
+    mockQuery.mockClear();
     dbClient = {
-      query: jest.fn(),
-      withTransaction: jest.fn(),
+      query: mockQuery,
+      withTransaction: mockWithTransaction,
     };
     orderService = new OrderService(dbClient);
   });
@@ -98,11 +102,13 @@ describe("OrderService", () => {
             LIMIT 1)
           INSERT INTO order_status (order_uid, status_code, correlation_id)
           SELECT $1::uuid, $2::varchar(50), $3::uuid
-          WHERE NOT EXISTS (SELECT 1 FROM latest WHERE latest.status_code = $2::varchar(50));
+          WHERE NOT EXISTS (SELECT 1 FROM latest WHERE latest.status_code = $2::varchar(50))
+          ON CONFLICT (correlation_id) DO NOTHING;
           `;
       const expectedResultStatusQuery = `
           INSERT INTO result_status (order_uid, status, correlation_id)
-          VALUES ($1::uuid, $2, $3::uuid);`;
+          VALUES ($1::uuid, $2, $3::uuid)
+          ON CONFLICT (correlation_id) DO NOTHING;`;
 
       await orderService.updateOrderStatusAndResultStatus(
         "order-1",
@@ -139,7 +145,30 @@ describe("OrderService", () => {
           ResultStatus.Result_Available,
           "corr-1",
         ),
-      ).rejects.toThrow(error);
+      ).rejects.toThrow("Failed to update order and result status");
+    });
+
+    it("should handle idempotent updates correctly", async () => {
+      // Simulate a conflict due to duplicate correlation ID — ON CONFLICT DO NOTHING returns rowCount: 0
+      const tx = {
+        query: mockQuery.mockResolvedValue({ rows: [], rowCount: 0 }),
+      };
+      mockWithTransaction.mockImplementation(
+        async (callback: (client: typeof tx) => Promise<void>) => callback(tx),
+      );
+
+      await orderService.updateOrderStatusAndResultStatus(
+        "order-1",
+        OrderStatus.Complete,
+        ResultStatus.Result_Available,
+        "corr-1",
+      );
+
+      expect(tx.query).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO result_status"), [
+        "order-1",
+        ResultStatus.Result_Available,
+        "corr-1",
+      ]);
     });
   });
 });
