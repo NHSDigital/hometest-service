@@ -97,7 +97,7 @@ jobs:
       - name: "Start the application"
         if: env.TARGET_ENV == 'local'
         run: |
-          npm run start
+          npm run local:start
 
       - name: "Show application status"
         if: env.TARGET_ENV == 'local'
@@ -179,6 +179,34 @@ jobs:
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
           done
 
+      - name: "Detect flaky tests"
+        if: always()
+        run: |
+          RESULTS_FILE="tests/testResults/test-results.json"
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "No test results JSON found, skipping flaky detection"
+            exit 0
+          fi
+
+          # Extract flaky tests from Playwright JSON results
+          FLAKY_TESTS=$(jq -r '
+            [.suites[]? | .. | .tests?[]? | select(.status == "flaky")] |
+            if length > 0 then
+              .[] | "\(.title) (\(.location.file):\(.location.line))"
+            else
+              empty
+            end
+          ' "$RESULTS_FILE" 2>/dev/null)
+
+          if [ -n "$FLAKY_TESTS" ]; then
+            echo "::warning::Flaky tests detected (passed on retry):"
+            while IFS= read -r test; do
+              echo "::warning::  Flaky: $test"
+            done <<< "$FLAKY_TESTS"
+          else
+            echo "No flaky tests detected"
+          fi
+
       - name: "Publish Test Results"
         uses: dorny/test-reporter@v3
         if: always()
@@ -208,6 +236,19 @@ jobs:
             echo "| :stopwatch: Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
           else
             echo ":warning: No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Append flaky test details to summary
+          RESULTS_FILE="tests/testResults/test-results.json"
+          if [ -f "$RESULTS_FILE" ]; then
+            FLAKY_COUNT=$(jq '[.suites[]? | .. | .tests?[]? | select(.status == "flaky")] | length' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            if [ "$FLAKY_COUNT" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### :warning: Flaky Tests ($FLAKY_COUNT)" >> $GITHUB_STEP_SUMMARY
+              echo "These tests failed initially but passed on retry:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '[.suites[]? | .. | .tests?[]? | select(.status == "flaky")] | .[] | "- **\(.title)** (\(.location.file):\(.location.line))"' "$RESULTS_FILE" 2>/dev/null >> $GITHUB_STEP_SUMMARY
+            fi
           fi
 
       - name: "Upload test results"
