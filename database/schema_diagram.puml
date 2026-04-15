@@ -107,6 +107,18 @@ entity "session" as session {
   unique(refresh_token_id)
 }
 
+entity "order_status_reminder" as order_status_reminder {
+  **reminder_id : uuid**
+  *order_uid : uuid*
+  *trigger_status : varchar(50)*
+  reminder_number : smallint
+  status : reminder_status
+  triggered_at : timestamp
+  sent_at : timestamp
+  created_at : timestamp
+  unique(order_uid, trigger_status, reminder_number)
+}
+
 ' Relationships
 patient ||--o{ orders : "patient_uid"
 supplier ||--o{ orders : "supplier_id"
@@ -118,8 +130,10 @@ test ||--o{ offering : "test_code"
 orders ||--o{ order_status : "order_uid"
 orders ||--o{ result_status : "order_uid"
 orders ||--o| consent : "order_uid"
+orders ||--o{ order_status_reminder : "order_uid"
 
 status_type ||--o{ order_status : "status_code"
+status_type ||--o{ order_status_reminder : "trigger_status"
 result_type ||--o{ result_status : "status"
 
 @enduml
