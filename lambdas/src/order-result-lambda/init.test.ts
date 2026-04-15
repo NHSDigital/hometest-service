@@ -3,11 +3,6 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderService } from "../lib/db/order-db";
-import { OrderDbClient } from "../lib/db/order-db-client";
-import { OrderStatusService } from "../lib/db/order-status-db";
-import { PatientDbClient } from "../lib/db/patient-db-client";
-import { OrderDispatchedMessageBuilder } from "../lib/notify/message-builders/order-status/order-dispatched-message-builder";
-import { OrderReceivedMessageBuilder } from "../lib/notify/message-builders/order-status/order-received-message-builder";
 import { OrderResultAvailableMessageBuilder } from "../lib/notify/message-builders/order-status/order-result-available-message-builder";
 import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
@@ -17,7 +12,6 @@ import { buildEnvironment as init } from "./init";
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/db/order-db");
-jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/patient-db-client");
 jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/commons");
@@ -111,8 +105,6 @@ describe("order-result-lambda init", () => {
     expect(OrderStatusNotifyService).toHaveBeenCalledWith(
       expect.objectContaining({
         notifyMessageBuilders: expect.objectContaining({
-          DISPATCHED: expect.any(OrderDispatchedMessageBuilder),
-          RECEIVED: expect.any(OrderReceivedMessageBuilder),
           COMPLETE: expect.any(OrderResultAvailableMessageBuilder),
         }),
         notifyMessagesQueueUrl: "https://example.queue.local/notify",
