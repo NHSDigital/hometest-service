@@ -16,6 +16,7 @@ export interface HandleOrderStatusReminderInput {
   orderId: string;
   correlationId: string;
   statusCode: OrderStatusCode;
+  triggeredAt: string;
 }
 
 type ReminderHandlerByStatus = Partial<
@@ -30,13 +31,13 @@ export class OrderStatusReminderService {
     const { orderStatusReminderDbClient } = this.dependencies;
 
     const handleReminderByStatus: ReminderHandlerByStatus = {
-      [OrderStatusCodes.DISPATCHED]: async ({ orderId }) => {
+      [OrderStatusCodes.DISPATCHED]: async ({ orderId, triggeredAt }) => {
         await orderStatusReminderDbClient.insertOrderStatusReminder({
           orderId,
           triggerStatus: OrderStatusCodes.DISPATCHED,
           reminderNumber: 1,
           status: OrderStatusReminderStatus.SCHEDULED,
-          triggeredAt: new Date().toISOString(),
+          triggeredAt,
         });
       },
     };

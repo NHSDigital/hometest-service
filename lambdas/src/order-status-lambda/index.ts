@@ -165,6 +165,7 @@ export const lambdaHandler = async (
       orderId,
       correlationId,
       statusCode: statusOrderUpdateParams.statusCode,
+      triggeredAt: statusOrderUpdateParams.createdAt,
     });
 
     await orderStatusNotifyService.handleOrderStatusUpdated({

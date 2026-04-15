@@ -24,16 +24,20 @@ describe("OrderStatusReminderService", () => {
       orderId: "550e8400-e29b-41d4-a716-446655440000",
       correlationId: "123e4567-e89b-12d3-a456-426614174000",
       statusCode: OrderStatusCodes.CONFIRMED,
+      triggeredAt: "2024-01-15T10:00:00Z",
     });
 
     expect(mockInsertOrderStatusReminder).not.toHaveBeenCalled();
   });
 
   it("should schedule initial reminder for dispatched status", async () => {
+    const triggeredAt = "2024-01-15T10:00:00Z";
+
     await service.handleOrderStatusUpdated({
       orderId: "550e8400-e29b-41d4-a716-446655440000",
       correlationId: "123e4567-e89b-12d3-a456-426614174000",
       statusCode: OrderStatusCodes.DISPATCHED,
+      triggeredAt,
     });
 
     expect(mockInsertOrderStatusReminder).toHaveBeenCalledWith(
@@ -45,9 +49,7 @@ describe("OrderStatusReminderService", () => {
       }),
     );
     expect(mockInsertOrderStatusReminder).toHaveBeenCalledWith(
-      expect.objectContaining({
-        triggeredAt: expect.any(String),
-      }),
+      expect.objectContaining({ triggeredAt }),
     );
   });
 
@@ -59,6 +61,7 @@ describe("OrderStatusReminderService", () => {
         orderId: "550e8400-e29b-41d4-a716-446655440000",
         correlationId: "123e4567-e89b-12d3-a456-426614174000",
         statusCode: OrderStatusCodes.DISPATCHED,
+        triggeredAt: "2024-01-15T10:00:00Z",
       }),
     ).resolves.toBeUndefined();
 
