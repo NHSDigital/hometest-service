@@ -91,5 +91,9 @@ export default defineConfig({
       name: "mobileSafari",
       use: { ...devices["iPhone 12"] },
     },
+    {
+      name: "mobileEdge",
+      use: { ...devices["iPhone 12"], channel: "msedge" },
+    },
   ],
 });

@@ -16,10 +16,9 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     const actualHeaderText = await privacyPolicyPage.getHeaderText();
     expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
     const [newTab] = await Promise.all([
-      context.waitForEvent("page"),
+      context.waitForEvent("page", (page) => page.url() !== "about:blank"),
       privacyPolicyPage.clickMakeAComplaintLink(),
     ]);
-    await newTab.waitForLoadState();
-    expect(newTab.url()).toBe(makeAComplaintUrl);
+    await newTab.waitForURL(makeAComplaintUrl, { waitUntil: "commit" });
   });
 });
