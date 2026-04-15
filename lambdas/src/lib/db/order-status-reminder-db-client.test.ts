@@ -1,3 +1,4 @@
+import { NotifyEventCode } from "../types/notify-message";
 import { type DBClient } from "./db-client";
 import { OrderStatusCodes } from "./order-status-db";
 import {
@@ -29,13 +30,13 @@ describe("OrderStatusReminderDbClient", () => {
         triggerStatus: OrderStatusCodes.DISPATCHED,
         reminderNumber: 1,
         intervalDays: 7,
-        eventCode: "dispatched-initial-reminder",
+        eventCode: NotifyEventCode.DispatchedInitialReminder,
       },
       {
         triggerStatus: OrderStatusCodes.DISPATCHED,
         reminderNumber: 2,
         intervalDays: 14,
-        eventCode: "dispatched-second-reminder",
+        eventCode: NotifyEventCode.DispatchedSecondReminder,
       },
     ];
 

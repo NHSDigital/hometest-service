@@ -1,5 +1,5 @@
 import { OrderStatusCodes, OrderStatusService } from "../../../db/order-status-db";
-import { type NotifyMessage } from "../../../types/notify-message";
+import { NotifyEventCode, type NotifyMessage } from "../../../types/notify-message";
 import {
   BaseNotifyMessageBuilder,
   type NotifyMessageBuilderDependencies,
@@ -10,7 +10,7 @@ export interface DispatchedReminderMessageBuilderInput {
   patientId: string;
   orderId: string;
   correlationId: string;
-  eventCode: string;
+  eventCode: NotifyEventCode;
 }
 
 export class DispatchedReminderMessageBuilder extends BaseNotifyMessageBuilder<DispatchedReminderMessageBuilderInput> {

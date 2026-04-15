@@ -1,3 +1,4 @@
+import { NotifyEventCode } from "../../../../lib/types/notify-message";
 import type { OrderDbClient } from "../../../db/order-db-client";
 import type { OrderStatusService } from "../../../db/order-status-db";
 import { OrderStatusCodes } from "../../../db/order-status-db";
@@ -36,10 +37,10 @@ describe("DispatchedReminderMessageBuilder", () => {
       patientId: "patient-3",
       orderId: "order-4",
       correlationId: "corr-4",
-      eventCode: "DISPATCHED_INITIAL_REMINDER",
+      eventCode: NotifyEventCode.DispatchedInitialReminder,
     });
 
-    expect(result.eventCode).toBe("DISPATCHED_INITIAL_REMINDER");
+    expect(result.eventCode).toBe(NotifyEventCode.DispatchedInitialReminder);
     expect(result.messageReference).toBe("rem-1");
     expect(result.personalisation).toEqual({
       dispatchedDate: "6 August 2026",

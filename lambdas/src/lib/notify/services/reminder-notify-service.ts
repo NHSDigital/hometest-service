@@ -1,3 +1,4 @@
+import { NotifyEventCode } from "../../../lib/types/notify-message";
 import { type OrderStatusCode, OrderStatusService } from "../../db/order-status-db";
 import type { NotifyMessageBuilder } from "../message-builders/base-notify-message-builder";
 import type { DispatchedReminderMessageBuilderInput } from "../message-builders/reminder/dispatched-reminder-message-builder";
@@ -15,7 +16,7 @@ export interface ReminderNotifyInput {
   orderId: string;
   correlationId: string;
   statusCode: OrderStatusCode;
-  eventCode: string;
+  eventCode: NotifyEventCode;
 }
 
 export class ReminderNotifyService extends BaseNotifyService {

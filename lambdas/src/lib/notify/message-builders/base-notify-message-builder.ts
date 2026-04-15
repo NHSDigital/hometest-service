@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import type { OrderDbClient } from "../../db/order-db-client";
 import type { PatientDbClient } from "../../db/patient-db-client";
-import type { NotifyMessage, NotifyRecipient } from "../../types/notify-message";
+import type { NotifyEventCode, NotifyMessage, NotifyRecipient } from "../../types/notify-message";
 
 export interface NotifyMessageBuilder<TInput> {
   build(input: TInput): Promise<NotifyMessage>;
@@ -42,7 +42,7 @@ export abstract class BaseNotifyMessageBuilder<TInput> implements NotifyMessageB
 
   protected buildMessage(params: {
     correlationId: string;
-    eventCode: string;
+    eventCode: NotifyEventCode;
     recipient: NotifyRecipient;
     personalisation: Record<string, string>;
     messageReference?: string;

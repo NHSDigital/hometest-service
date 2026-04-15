@@ -47,24 +47,21 @@ describe("getReminderDispatchConfigFromEnv", () => {
       );
     });
 
-    it("throws when REMINDER_ENABLED_STATUSES contains no valid statuses", () => {
-      process.env.REMINDER_ENABLED_STATUSES = '["UNKNOWN_STATUS"]';
+    it("throws when REMINDER_ENABLED_STATUSES is an empty array", () => {
+      process.env.REMINDER_ENABLED_STATUSES = "[]";
 
       expect(() => getReminderDispatchConfigFromEnv()).toThrow(
         "REMINDER_ENABLED_STATUSES must contain at least one valid order status",
       );
     });
 
-    it("silently drops unrecognised statuses, keeping valid ones", () => {
+    it("throws when REMINDER_ENABLED_STATUSES contains an unrecognised status", () => {
       process.env.REMINDER_ENABLED_STATUSES = JSON.stringify([
         OrderStatusCodes.DISPATCHED,
         "NOT_A_REAL_STATUS",
       ]);
 
-      const { enabledReminderStatuses } = getReminderDispatchConfigFromEnv();
-
-      expect(enabledReminderStatuses.has(OrderStatusCodes.DISPATCHED)).toBe(true);
-      expect(enabledReminderStatuses.size).toBe(1);
+      expect(() => getReminderDispatchConfigFromEnv()).toThrow("is not a valid order status code");
     });
   });
 
@@ -94,17 +91,15 @@ describe("getReminderDispatchConfigFromEnv", () => {
       );
     });
 
-    it("silently drops entries with an unrecognised status key", () => {
+    it("throws when REMINDER_INTERVAL_CONFIG contains an unrecognised status key", () => {
       process.env.REMINDER_INTERVAL_CONFIG = JSON.stringify({
         UNKNOWN_STATUS: [{ interval: 7, eventCode: "SOME_CODE" }],
       });
 
-      const { reminderConfiguration } = getReminderDispatchConfigFromEnv();
-
-      expect(Object.keys(reminderConfiguration)).toHaveLength(0);
+      expect(() => getReminderDispatchConfigFromEnv()).toThrow("Invalid key in record");
     });
 
-    it("silently drops schedule entries with a non-positive interval", () => {
+    it("throws when a schedule entry has a non-positive interval", () => {
       process.env.REMINDER_INTERVAL_CONFIG = JSON.stringify({
         [OrderStatusCodes.DISPATCHED]: [
           { interval: 0, eventCode: "DISPATCHED_INITIAL_REMINDER" },
@@ -112,14 +107,12 @@ describe("getReminderDispatchConfigFromEnv", () => {
         ],
       });
 
-      const { reminderConfiguration } = getReminderDispatchConfigFromEnv();
-
-      expect(reminderConfiguration[OrderStatusCodes.DISPATCHED]).toEqual([
-        { interval: 7, eventCode: "DISPATCHED_SECOND_REMINDER" },
-      ]);
+      expect(() => getReminderDispatchConfigFromEnv()).toThrow(
+        "interval must be a positive number, received: 0",
+      );
     });
 
-    it("silently drops schedule entries with a blank eventCode", () => {
+    it("throws when a schedule entry has an invalid eventCode", () => {
       process.env.REMINDER_INTERVAL_CONFIG = JSON.stringify({
         [OrderStatusCodes.DISPATCHED]: [
           { interval: 7, eventCode: "" },
@@ -127,11 +120,9 @@ describe("getReminderDispatchConfigFromEnv", () => {
         ],
       });
 
-      const { reminderConfiguration } = getReminderDispatchConfigFromEnv();
-
-      expect(reminderConfiguration[OrderStatusCodes.DISPATCHED]).toEqual([
-        { interval: 14, eventCode: "DISPATCHED_SECOND_REMINDER" },
-      ]);
+      expect(() => getReminderDispatchConfigFromEnv()).toThrow(
+        "eventCode must be a valid NotifyEventCode",
+      );
     });
   });
 });
