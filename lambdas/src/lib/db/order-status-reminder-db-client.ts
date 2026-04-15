@@ -1,3 +1,4 @@
+import { NotifyEventCode } from "../types/notify-message";
 import { type DBClient } from "./db-client";
 import { type OrderStatusCode } from "./order-status-db";
 
@@ -13,7 +14,7 @@ export interface ReminderScheduleTuple {
   triggerStatus: string;
   reminderNumber: number;
   intervalDays: number;
-  eventCode: string;
+  eventCode: NotifyEventCode;
 }
 
 export class OrderStatusReminderDbClient {

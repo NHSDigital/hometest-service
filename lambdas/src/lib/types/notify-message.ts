@@ -1,7 +1,7 @@
 export interface NotifyMessage {
   correlationId: string;
   messageReference: string;
-  eventCode: NotifyEventCode | string;
+  eventCode: NotifyEventCode;
   recipient: NotifyRecipient;
   personalisation?: Record<string, unknown>;
 }
@@ -16,4 +16,7 @@ export enum NotifyEventCode {
   OrderDispatched = "ORDER_DISPATCHED",
   OrderReceived = "ORDER_RECEIVED",
   ResultReady = "RESULT_READY",
+  DispatchedInitialReminder = "DISPATCHED_INITIAL_REMINDER",
+  DispatchedSecondReminder = "DISPATCHED_SECOND_REMINDER",
+  DispatchedThirdReminder = "DISPATCHED_THIRD_REMINDER",
 }

@@ -39,7 +39,8 @@ describe("init", () => {
     NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
     HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
     REMINDER_ENABLED_STATUSES: '["DISPATCHED"]',
-    REMINDER_INTERVAL_CONFIG: '{"DISPATCHED":[{"interval":7,"eventCode":"reminder.dispatched"}]}',
+    REMINDER_INTERVAL_CONFIG:
+      '{"DISPATCHED":[{"interval":7,"eventCode":"DISPATCHED_INITIAL_REMINDER"}]}',
   };
 
   const mockPostgresConfig = {
