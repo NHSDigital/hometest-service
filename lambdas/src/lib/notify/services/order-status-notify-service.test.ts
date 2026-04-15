@@ -124,6 +124,31 @@ describe("OrderStatusNotifyService", () => {
     });
   });
 
+  it("should send and audit an order confirmed notification", async () => {
+    await service.dispatch({
+      orderId: statusUpdate.orderId,
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      statusCode: OrderStatusCodes.CONFIRMED,
+    });
+
+    expect(mockBuildOrderConfirmedNotifyMessage).toHaveBeenCalledWith({
+      patientId: "patient-123",
+      correlationId: statusUpdate.correlationId,
+      orderId: statusUpdate.orderId,
+    });
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      "https://example.queue.local/notify",
+      expect.any(String),
+    );
+    expect(mockInsertNotificationAuditEntry).toHaveBeenCalledWith({
+      messageReference: "123e4567-e89b-12d3-a456-426614174089",
+      eventCode: NotifyEventCode.OrderConfirmed,
+      correlationId: statusUpdate.correlationId,
+      status: NotificationAuditStatus.QUEUED,
+    });
+  });
+
   it("should propagate errors when building the notify message fails", async () => {
     mockBuildOrderDispatchedNotifyMessage.mockRejectedValueOnce(
       new Error("Notify payload build failed"),

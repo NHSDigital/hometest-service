@@ -1,8 +1,8 @@
-import { NotifyEventCode } from "../../../../lib/types/notify-message";
 import type { OrderDbClient } from "../../../db/order-db-client";
 import type { OrderStatusService } from "../../../db/order-status-db";
 import { OrderStatusCodes } from "../../../db/order-status-db";
 import type { Patient, PatientDbClient } from "../../../db/patient-db-client";
+import { NotifyEventCode } from "../../../types/notify-message";
 import { DispatchedReminderMessageBuilder } from "./dispatched-reminder-message-builder";
 
 describe("DispatchedReminderMessageBuilder", () => {

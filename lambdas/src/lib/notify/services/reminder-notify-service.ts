@@ -1,5 +1,5 @@
-import { NotifyEventCode } from "../../../lib/types/notify-message";
 import { type OrderStatusCode, OrderStatusService } from "../../db/order-status-db";
+import { NotifyEventCode } from "../../types/notify-message";
 import type { NotifyMessageBuilder } from "../message-builders/base-notify-message-builder";
 import type { DispatchedReminderMessageBuilderInput } from "../message-builders/reminder/dispatched-reminder-message-builder";
 import { BaseNotifyService, type NotifyServiceDependencies } from "./base-notify-service";

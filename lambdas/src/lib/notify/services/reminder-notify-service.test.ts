@@ -1,6 +1,6 @@
-import { NotifyEventCode } from "../../../lib/types/notify-message";
 import { NotificationAuditStatus } from "../../db/notification-audit-db-client";
 import { OrderStatusCodes } from "../../db/order-status-db";
+import { NotifyEventCode } from "../../types/notify-message";
 import {
   ReminderNotifyService,
   type ReminderNotifyServiceDependencies,
