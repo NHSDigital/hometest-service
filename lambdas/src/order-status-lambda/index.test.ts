@@ -502,7 +502,7 @@ describe("Order Status Lambda Handler", () => {
       );
     });
 
-    it("should continue with success when reminder service fails", async () => {
+    it("should return 500 when reminder service fails", async () => {
       mockHandleReminderOrderStatusUpdated.mockRejectedValueOnce(new Error("Reminder failed"));
       mockEvent.body = JSON.stringify(validTaskBody);
 
