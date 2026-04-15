@@ -26,11 +26,21 @@ export class OrderService {
               r.correlation_id,
               os.status_code AS order_status_code
             FROM test_order o
-            LEFT JOIN result_status r ON o.order_uid = r.order_uid
-            LEFT JOIN order_status os ON o.order_uid = os.order_uid
-            WHERE o.order_uid = $1::uuid
-            ORDER BY os.created_at DESC
-            LIMIT 1;
+            LEFT JOIN Lateral (
+              SELECT
+                r.status,
+                r.correlation_id
+              FROM result_status r
+              WHERE o.order_uid = r.order_uid
+              ORDER BY r.created_at DESC LIMIT 1
+            ) r ON true
+            LEFT JOIN Lateral (
+              SELECT os.status_code
+              FROM order_status os
+              WHERE o.order_uid = os.order_uid
+              ORDER BY os.created_at DESC LIMIT 1
+            ) os ON true
+            WHERE o.order_uid = $1::uuid;
         `;
 
     try {

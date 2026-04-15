@@ -17,7 +17,7 @@ import { resultStatusFHIRTaskSchema } from "./schemas";
 
 const name = "result-status-lambda";
 
-function parseAndValidateTask(body: string | null): FHIRTask {
+function parseAndValidateTask(body: string | null, correlationId: string): FHIRTask {
   let parsedTask: unknown;
 
   if (!body) {
@@ -28,7 +28,7 @@ function parseAndValidateTask(body: string | null): FHIRTask {
   try {
     parsedTask = JSON.parse(body);
   } catch (error) {
-    console.error(name, "Invalid JSON in request body", { error });
+    console.error(name, "Invalid JSON in request body", { error, correlationId });
     throw new Error("Invalid JSON in request body", { cause: error });
   }
 
@@ -36,7 +36,7 @@ function parseAndValidateTask(body: string | null): FHIRTask {
 
   if (!validationResult.success) {
     const errorDetails = generateReadableError(validationResult.error);
-    console.error(name, "Task validation failed", { error: errorDetails });
+    console.error(name, "Task validation failed", { error: errorDetails, correlationId });
     throw new Error(`Task validation failed: ${errorDetails}`);
   }
 
@@ -100,7 +100,7 @@ export const lambdaHandler = async (
   let task: FHIRTask;
 
   try {
-    task = parseAndValidateTask(event.body);
+    task = parseAndValidateTask(event.body, correlationId);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid request body";
     return createFhirErrorResponse(400, "invalid", message, "error");
@@ -141,14 +141,6 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(404, "not-found", "Order not found", "error");
   }
 
-  if (orderFromOrderUid.correlation_id === correlationId) {
-    console.info(name, "Duplicate request detected based on correlation ID", {
-      orderUid,
-      correlationId,
-    });
-    return createFhirResponse(200, task);
-  }
-
   if (orderFromOrderUid.patient_uid !== patientUid) {
     console.error(name, "Patient UID in Task does not match order record", {
       orderUid,
@@ -160,6 +152,14 @@ export const lambdaHandler = async (
       "Patient UID does not match order record",
       "error",
     );
+  }
+
+  if (orderFromOrderUid.correlation_id === correlationId) {
+    console.info(name, "Duplicate request detected based on correlation ID", {
+      orderUid,
+      correlationId,
+    });
+    return createFhirResponse(200, task);
   }
 
   try {

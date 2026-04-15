@@ -64,7 +64,7 @@ describe("result-status-lambda handler", () => {
       order_uid: VALID_ORDER_UUID,
       patient_uid: VALID_PATIENT_UUID,
     });
-    mockRetrieveOrderDetails.mockResolvedValue(undefined);
+    mockRetrieveOrderDetails.mockResolvedValue(null);
   });
 
   describe("request body parsing", () => {
@@ -244,7 +244,7 @@ describe("result-status-lambda handler", () => {
   describe("patient authorisation", () => {
     it("returns 403 when patient UID in task does not match order record", async () => {
       mockRetrieveOrderDetails.mockResolvedValueOnce({
-        patientId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        patient_uid: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       });
 
       const res = await lambdaHandler(
