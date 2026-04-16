@@ -17,7 +17,7 @@ paths:
         content:
           application/fhir+json:
             schema:
-              $ref: '#/components/schemas/FHIRServiceRequest'
+              $ref: "#/components/schemas/FHIRServiceRequest"
             example:
               resourceType: "ServiceRequest"
               id: "550e8400-e29b-41d4-a716-446655440000"
@@ -65,12 +65,12 @@ paths:
                   type: "Organization"
                   display: "Test Supplier Ltd"
       responses:
-        '201':
+        "201":
           description: Order created successfully
           content:
             application/fhir+json:
               schema:
-                $ref: '#/components/schemas/FHIRServiceRequest'
+                $ref: "#/components/schemas/FHIRServiceRequest"
               example:
                 resourceType: "ServiceRequest"
                 id: "550e8400-e29b-41d4-a716-446655440000"
@@ -98,10 +98,10 @@ paths:
                           code: "order-received"
                           display: "Order received and validated"
                       text: "order-received"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
   /get-order:
     get:
       summary: Retrieve Orders
@@ -115,7 +115,7 @@ paths:
           description: NHS number to retrieve orders for
           schema:
             type: string
-            pattern: '^[0-9]{10}$'
+            pattern: "^[0-9]{10}$"
             example: "9876543210"
         - name: date_of_birth
           in: query
@@ -134,12 +134,12 @@ paths:
             format: uuid
             example: "550e8400-e29b-41d4-a716-446655440000"
       responses:
-        '200':
+        "200":
           description: Orders retrieved successfully
           content:
             application/fhir+json:
               schema:
-                $ref: '#/components/schemas/FHIRBundleSearchsetServiceRequest'
+                $ref: "#/components/schemas/FHIRBundleSearchsetServiceRequest"
               example:
                 resourceType: "Bundle"
                 type: "searchset"
@@ -180,10 +180,10 @@ paths:
                                 code: "dispatched"
                                 display: "Kit dispatched to patient"
                             text: "dispatched"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /results:
     get:
@@ -214,7 +214,7 @@ paths:
           description: NHS number for identity verification
           schema:
             type: string
-            pattern: '^[0-9]{10}$'
+            pattern: "^[0-9]{10}$"
             example: "9876543210"
         - name: date_of_birth
           in: query
@@ -225,12 +225,12 @@ paths:
             format: date
             example: "1990-01-01"
       responses:
-        '200':
+        "200":
           description: Results retrieved successfully
           content:
             application/fhir+json:
               schema:
-                $ref: '#/components/schemas/FHIRObservation'
+                $ref: "#/components/schemas/FHIRObservation"
               example:
                 resourceType: "Observation"
                 id: "550e8400-e29b-41d4-a716-446655440001"
@@ -261,12 +261,80 @@ paths:
                         code: "N"
                         display: "Normal"
                     text: "Normal"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /result/status:
+    post:
+      summary: Update Result Status
+      description: Update the status of a test result
+      tags:
+        - Result Service
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema:
+              $ref: "#/components/schemas/FHIRTask"
+            example:
+              resourceType: "Task"
+              identifier:
+                - system: "https://fhir.hometest.nhs.uk/Id/order-id"
+                  value: "550e8400-e29b-41d4-a716-446655440000"
+              status: "completed"
+              intent: "order"
+              basedOn:
+                - reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
+                  type: "ServiceRequest"
+              requester:
+                reference: "Organization/ORG001"
+              for:
+                reference: "Patient/123e4567-e89b-12d3-a456-426614174000"
+              businessStatus:
+                coding:
+                  - system: "https://fhir.hometest.nhs.uk/CodeSystem/result-business-status"
+                    code: "result-available"
+                    display: "Result available to patient"
+              text: "result-available"
+              lastModified: "2026-02-05T12:00:00Z"
+
+      responses:
+        "201":
+          description: Result status updated successfully
+          content:
+            application/fhir+json:
+              schema:
+                $ref: "#/components/schemas/FHIRTask"
+              example:
+                resourceType: "Task"
+                identifier:
+                  - system: "https://fhir.hometest.nhs.uk/Id/order-id"
+                    value: "550e8400-e29b-41d4-a716-446655440000"
+                status: "completed"
+                intent: "order"
+                basedOn:
+                  - reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000"
+                    type: "ServiceRequest"
+                requester:
+                  reference: "Organization/ORG001"
+                for:
+                  reference: "Patient/123e4567-e89b-12d3-a456-426614174000"
+                businessStatus:
+                  coding:
+                    - system: "https://fhir.hometest.nhs.uk/CodeSystem/result-business-status"
+                      code: "result-available"
+                      display: "Result available to patient"
+                text: "result-available"
+                lastModified: "2026-02-05T12:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
 components:
   schemas:
@@ -294,7 +362,7 @@ components:
           type: array
           description: List of identifiers for this order (including external order id)
           items:
-            $ref: '#/components/schemas/FHIRIdentifier'
+            $ref: "#/components/schemas/FHIRIdentifier"
         authoredOn:
           type: string
           format: date
@@ -325,23 +393,23 @@ components:
                 type: array
                 description: NHS number and other identifiers
                 items:
-                  $ref: '#/components/schemas/FHIRIdentifier'
+                  $ref: "#/components/schemas/FHIRIdentifier"
               name:
                 type: array
                 description: Patient name(s)
                 items:
-                  $ref: '#/components/schemas/FHIRHumanName'
+                  $ref: "#/components/schemas/FHIRHumanName"
               telecom:
                 type: array
                 description: Contact details - must include both phone and email for delivery coordination and customer communication
                 minItems: 2
                 items:
-                  $ref: '#/components/schemas/FHIRContactPoint'
+                  $ref: "#/components/schemas/FHIRContactPoint"
               address:
                 type: array
                 description: Patient address(es)
                 items:
-                  $ref: '#/components/schemas/FHIRAddress'
+                  $ref: "#/components/schemas/FHIRAddress"
               birthDate:
                 type: string
                 format: date
@@ -355,11 +423,22 @@ components:
         intent:
           type: string
           description: Intent of the service request
-          enum: [proposal, plan, directive, order, original-order, reflex-order, filler-order, instance-order, option]
+          enum:
+            [
+              proposal,
+              plan,
+              directive,
+              order,
+              original-order,
+              reflex-order,
+              filler-order,
+              instance-order,
+              option,
+            ]
           example: "order"
         code:
           allOf:
-            - $ref: '#/components/schemas/FHIRCodeableConcept'
+            - $ref: "#/components/schemas/FHIRCodeableConcept"
             - description: What is being requested/ordered (SNOMED CT)
               example:
                 coding:
@@ -369,13 +448,13 @@ components:
                 text: "HIV antigen test"
         subject:
           allOf:
-            - $ref: '#/components/schemas/FHIRReference'
+            - $ref: "#/components/schemas/FHIRReference"
             - description: Individual or Entity the service is ordered for
               example:
                 reference: "#patient-1"
         requester:
           allOf:
-            - $ref: '#/components/schemas/FHIRReference'
+            - $ref: "#/components/schemas/FHIRReference"
             - description: Individual making the request
               example:
                 reference: "Organization/ORG001"
@@ -384,7 +463,7 @@ components:
           description: Requested performer (supplier organization)
           items:
             allOf:
-              - $ref: '#/components/schemas/FHIRReference'
+              - $ref: "#/components/schemas/FHIRReference"
               - example:
                   reference: "Organization/SUPP001"
                   type: "Organization"
@@ -416,7 +495,7 @@ components:
                       example: "2026-02-05"
               valueCodeableConcept:
                 allOf:
-                  - $ref: '#/components/schemas/FHIRCodeableConcept'
+                  - $ref: "#/components/schemas/FHIRCodeableConcept"
                   - description: Business workflow status
                     example:
                       coding:
@@ -459,15 +538,25 @@ components:
           type: array
           description: Reference to the ServiceRequest this observation fulfills
           items:
-            $ref: '#/components/schemas/FHIRReference'
+            $ref: "#/components/schemas/FHIRReference"
         status:
           type: string
           description: Status of the observation result
-          enum: [registered, preliminary, final, amended, corrected, cancelled, entered-in-error, unknown]
+          enum:
+            [
+              registered,
+              preliminary,
+              final,
+              amended,
+              corrected,
+              cancelled,
+              entered-in-error,
+              unknown,
+            ]
           example: "final"
         code:
           allOf:
-            - $ref: '#/components/schemas/FHIRCodeableConcept'
+            - $ref: "#/components/schemas/FHIRCodeableConcept"
             - description: Type of observation (SNOMED CT or LOINC)
               example:
                 coding:
@@ -477,7 +566,7 @@ components:
                 text: "HIV antigen test"
         subject:
           allOf:
-            - $ref: '#/components/schemas/FHIRReference'
+            - $ref: "#/components/schemas/FHIRReference"
             - description: Who and/or what the observation is about
               example:
                 reference: "Patient/123e4567-e89b-12d3-a456-426614174000"
@@ -495,10 +584,10 @@ components:
           type: array
           description: Who is responsible for the observation
           items:
-            $ref: '#/components/schemas/FHIRReference'
+            $ref: "#/components/schemas/FHIRReference"
         valueCodeableConcept:
           allOf:
-            - $ref: '#/components/schemas/FHIRCodeableConcept'
+            - $ref: "#/components/schemas/FHIRCodeableConcept"
             - description: Actual result value (for coded results)
               example:
                 coding:
@@ -513,7 +602,7 @@ components:
           type: array
           description: High, low, normal, etc.
           items:
-            $ref: '#/components/schemas/FHIRCodeableConcept'
+            $ref: "#/components/schemas/FHIRCodeableConcept"
         referenceRange:
           type: array
           description: Provides guide for interpretation
@@ -586,7 +675,7 @@ components:
                 format: uri
                 example: "urn:uuid:550e8400-e29b-41d4-a716-446655440000"
               resource:
-                $ref: '#/components/schemas/FHIRServiceRequest'
+                $ref: "#/components/schemas/FHIRServiceRequest"
 
     FHIRReference:
       type: object
@@ -613,7 +702,7 @@ components:
           type: array
           description: Code defined by a terminology system
           items:
-            $ref: '#/components/schemas/FHIRCoding'
+            $ref: "#/components/schemas/FHIRCoding"
         text:
           type: string
           description: Plain text representation of the concept
@@ -770,11 +859,44 @@ components:
               code:
                 type: string
                 description: Error or warning code
-                enum: [invalid, structure, required, value, invariant, security, login, unknown, expired, forbidden, suppressed, processing, not-supported, duplicate, multiple-matches, not-found, deleted, too-long, code-invalid, extension, too-costly, business-rule, conflict, transient, lock-error, no-store, exception, timeout, incomplete, throttled, informational]
+                enum:
+                  [
+                    invalid,
+                    structure,
+                    required,
+                    value,
+                    invariant,
+                    security,
+                    login,
+                    unknown,
+                    expired,
+                    forbidden,
+                    suppressed,
+                    processing,
+                    not-supported,
+                    duplicate,
+                    multiple-matches,
+                    not-found,
+                    deleted,
+                    too-long,
+                    code-invalid,
+                    extension,
+                    too-costly,
+                    business-rule,
+                    conflict,
+                    transient,
+                    lock-error,
+                    no-store,
+                    exception,
+                    timeout,
+                    incomplete,
+                    throttled,
+                    informational,
+                  ]
                 example: "business-rule"
               details:
                 allOf:
-                  - $ref: '#/components/schemas/FHIRCodeableConcept'
+                  - $ref: "#/components/schemas/FHIRCodeableConcept"
                   - description: Additional details about the error
                     example:
                       coding:
@@ -799,7 +921,7 @@ components:
       content:
         application/fhir+json:
           schema:
-            $ref: '#/components/schemas/FHIROperationOutcome'
+            $ref: "#/components/schemas/FHIROperationOutcome"
           example:
             resourceType: "OperationOutcome"
             issue:
@@ -814,7 +936,7 @@ components:
       content:
         application/fhir+json:
           schema:
-            $ref: '#/components/schemas/FHIROperationOutcome'
+            $ref: "#/components/schemas/FHIROperationOutcome"
           example:
             resourceType: "OperationOutcome"
             issue:
@@ -829,7 +951,7 @@ components:
       content:
         application/fhir+json:
           schema:
-            $ref: '#/components/schemas/FHIROperationOutcome'
+            $ref: "#/components/schemas/FHIROperationOutcome"
           example:
             resourceType: "OperationOutcome"
             issue:
@@ -844,7 +966,7 @@ components:
       content:
         application/fhir+json:
           schema:
-            $ref: '#/components/schemas/FHIROperationOutcome'
+            $ref: "#/components/schemas/FHIROperationOutcome"
           example:
             resourceType: "OperationOutcome"
             issue:

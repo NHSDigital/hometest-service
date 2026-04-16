@@ -1,42 +1,50 @@
-import { OrderResultSummary, OrderService } from "./order-db";
 import { OrderStatus, ResultStatus } from "../types/status";
-
-import { Commons } from "../commons";
+import { OrderResultSummary, OrderService } from "./order-db";
 
 const normalizeWhitespace = (sql: string): string => sql.replace(/\s+/g, " ").trim();
 
 describe("OrderService", () => {
   let dbClient: any;
-  let commons: Pick<Commons, "logError">;
   let orderService: OrderService;
 
+  const mockQuery = jest.fn();
+  const mockWithTransaction = jest.fn();
+
   beforeEach(() => {
+    mockQuery.mockClear();
     dbClient = {
-      query: jest.fn(),
-      withTransaction: jest.fn(),
+      query: mockQuery,
+      withTransaction: mockWithTransaction,
     };
-    commons = {
-      logError: jest.fn(),
-    };
-    orderService = new OrderService(dbClient, commons as any as Commons);
+    orderService = new OrderService(dbClient);
   });
 
   describe("retrieveOrderDetails", () => {
     const expectedRetrieveOrderDetailsQuery = `
-            SELECT
-              o.order_uid,
-              o.supplier_id,
-              o.patient_uid,
-              r.status AS result_status,
-              r.correlation_id,
-              os.status_code AS order_status_code
-            FROM test_order o
-            LEFT JOIN result_status r ON o.order_uid = r.order_uid
-            LEFT JOIN order_status os ON o.order_uid = os.order_uid
-            WHERE o.order_uid = $1::uuid
-            ORDER BY os.created_at DESC
-            LIMIT 1;
-        `;
+      SELECT
+        o.order_uid,
+        o.supplier_id,
+        o.patient_uid,
+        r.status AS result_status,
+        r.correlation_id,
+        os.status_code AS order_status_code
+      FROM test_order o
+      LEFT JOIN Lateral (
+        SELECT
+          r.status,
+          r.correlation_id
+        FROM result_status r
+        WHERE o.order_uid = r.order_uid
+        ORDER BY r.created_at DESC LIMIT 1
+      ) r ON true
+      LEFT JOIN Lateral (
+        SELECT os.status_code
+        FROM order_status os
+        WHERE o.order_uid = os.order_uid
+        ORDER BY os.created_at DESC LIMIT 1
+      ) os ON true
+      WHERE o.order_uid = $1::uuid;
+    `;
 
     it("should return order details when found", async () => {
       const mockSummary: OrderResultSummary = {
@@ -72,7 +80,7 @@ describe("OrderService", () => {
       expect(result).toBeNull();
     });
 
-    it("should log and rethrow when retrieving order details fails", async () => {
+    it("should rethrow when retrieving order details fails", async () => {
       const error = new Error("query failed");
       dbClient.query.mockRejectedValue(error);
 
@@ -83,14 +91,6 @@ describe("OrderService", () => {
         normalizeWhitespace(expectedRetrieveOrderDetailsQuery),
       );
       expect(dbClient.query.mock.calls[0][1]).toEqual(["order-500"]);
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-db",
-        "Failed to retrieve order details",
-        {
-          error,
-          orderUid: "order-500",
-        },
-      );
     });
   });
 
@@ -116,7 +116,8 @@ describe("OrderService", () => {
           `;
       const expectedResultStatusQuery = `
           INSERT INTO result_status (order_uid, status, correlation_id)
-          VALUES ($1::uuid, $2, $3::uuid);`;
+          VALUES ($1::uuid, $2, $3::uuid);
+          `;
 
       await orderService.updateOrderStatusAndResultStatus(
         "order-1",
@@ -142,7 +143,7 @@ describe("OrderService", () => {
       ]);
     });
 
-    it("should log and rethrow when the transaction fails", async () => {
+    it("should rethrow when the transaction fails", async () => {
       const error = new Error("transaction failed");
       dbClient.withTransaction.mockRejectedValue(error);
 
@@ -153,16 +154,7 @@ describe("OrderService", () => {
           ResultStatus.Result_Available,
           "corr-1",
         ),
-      ).rejects.toThrow(error);
-
-      expect(commons.logError).toHaveBeenCalledWith(
-        "order-db",
-        "Failed to update order and result status",
-        {
-          error,
-          orderUid: "order-1",
-        },
-      );
+      ).rejects.toThrow("Failed to update order and result status");
     });
   });
 });
