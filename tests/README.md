@@ -7,7 +7,7 @@ This directory contains the Playwright test framework for the hometest-service p
 1. Install dependencies:
 
    ```bash
-   cd test
+   cd tests
    pnpm install
    pnpm exec playwright install
    ```
