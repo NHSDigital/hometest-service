@@ -1,7 +1,5 @@
 import { Locator, Page } from "@playwright/test";
-
 import { AuthenticatedPage } from "./AuthenticatedPage";
-
 export class BeforeYouStartPage extends AuthenticatedPage {
   private static readonly startPagePath = "/before-you-start";
   readonly pageHeader: Locator;
