@@ -11,7 +11,7 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     privacyPolicyPage,
   }) => {
     await beforeYouStartPage.navigate();
-    await beforeYouStartPage.clickContinueToOrderaKitButton();
+    await beforeYouStartPage.clickContinueToOrderKitButton();
     await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
     await getSelfTestKitPage.clickPrivacyPolicyLink();
     const actualHeaderText = await privacyPolicyPage.getHeaderText();

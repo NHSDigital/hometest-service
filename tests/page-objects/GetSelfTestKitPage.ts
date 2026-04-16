@@ -38,10 +38,6 @@ export class GetSelfTestKitPage extends AuthenticatedPage {
     await this.pageHeader.waitFor({ state: "visible" });
   }
 
-  // async navigate(): Promise<void> {
-  //   await this.navigateToProtectedPath(GetSelfTestKitPage.startPagePath, this.pageHeader);
-  // }
-
   async clickFindClinicLink(expectedUrl: string): Promise<void> {
     await this.findClinicLink.click();
     await this.page.waitForURL(expectedUrl);

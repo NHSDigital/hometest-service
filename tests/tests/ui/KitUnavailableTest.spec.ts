@@ -39,7 +39,7 @@ test.describe(
       const unavailablePostcode = "SW1A 1AA";
 
       await beforeYouStartPage.navigate();
-      await beforeYouStartPage.clickContinueToOrderaKitButton();
+      await beforeYouStartPage.clickContinueToOrderKitButton();
       await getSelfTestKitPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue({
         addressLine1: "",

@@ -19,7 +19,7 @@ test.describe(
       goToClinicPage,
     }) => {
       await beforeYouStartPage.navigate();
-      await beforeYouStartPage.clickContinueToOrderaKitButton();
+      await beforeYouStartPage.clickContinueToOrderKitButton();
       await getSelfTestKitPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.waitUntilPageLoaded();

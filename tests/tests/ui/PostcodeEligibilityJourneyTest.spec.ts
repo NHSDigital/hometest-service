@@ -60,7 +60,7 @@ test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
 
     // --- Act: navigate through the journey ---
     await beforeYouStartPage.navigate();
-    await beforeYouStartPage.clickContinueToOrderaKitButton();
+    await beforeYouStartPage.clickContinueToOrderKitButton();
     await getSelfTestKitPage.clickStartNowButton();
 
     await enterDeliveryAddressPage.waitUntilPageLoaded();
