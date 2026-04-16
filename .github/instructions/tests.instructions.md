@@ -97,7 +97,7 @@ class wraps one backend endpoint group (e.g. `OrderApiResource`, `HIVResultsApiR
 ### Writing API Tests
 
 ```typescript
-import { test, expect } from "../../fixtures/IntegrationFixture";
+import { expect, test } from "../../fixtures/IntegrationFixture";
 import { OrderTestData } from "../../test-data/OrderTestData";
 import { headersOrder } from "../../utils/ApiRequestHelper";
 
@@ -145,6 +145,7 @@ All page interactions go through Page Object classes in `page-objects/`, each ex
 
 ```typescript
 import { Locator, Page } from "@playwright/test";
+
 import { ConfigFactory } from "../configuration/EnvironmentConfiguration";
 import { BasePage } from "./BasePage";
 
@@ -200,8 +201,9 @@ page.locator(".nhsuk-button");
 ### Writing Frontend Tests
 
 ```typescript
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 
 test.describe("Order journey — delivery address", { tag: "@ui" }, () => {
   test.beforeEach(async ({ homeTestStartPage }) => {
@@ -237,12 +239,14 @@ directly in the test file and connected via `beforeAll`.
 ### Writing Integration Tests
 
 ```typescript
+import { randomUUID } from "crypto";
+
 import { expect } from "@playwright/test";
-import { test } from "../../fixtures/CombinedTestFixture";
+
 import { TestOrderDbClient } from "../../db/TestOrderDbClient";
+import { test } from "../../fixtures/CombinedTestFixture";
 import { OrderBuilder } from "../../test-data/OrderBuilder";
 import { headersTestResults } from "../../utils/ApiRequestHelper";
-import { randomUUID } from "crypto";
 
 const dbClient = new TestOrderDbClient();
 
@@ -264,7 +268,10 @@ test.describe("Results flow — order status update", { tag: "@integration" }, (
     hivResultsApi,
   }) => {
     const correlationId = randomUUID();
-    const response = await hivResultsApi.submitTestResults(testData, headersTestResults(correlationId));
+    const response = await hivResultsApi.submitTestResults(
+      testData,
+      headersTestResults(correlationId),
+    );
     expect(response.status()).toBe(201);
     expect(await dbClient.getLatestOrderStatusByOrderUid(orderId)).toEqual("COMPLETE");
   });

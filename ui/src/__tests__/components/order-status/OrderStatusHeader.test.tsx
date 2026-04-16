@@ -1,7 +1,7 @@
-import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
 
 import { OrderStatusHeader } from "@/components/order-status";
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 
 describe("OrderStatusHeader", () => {
   const mockOrder: OrderDetails = {

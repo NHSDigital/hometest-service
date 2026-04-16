@@ -1,3 +1,10 @@
+import { APIGatewayProxyEvent } from "aws-lambda";
+import { Observation } from "fhir/r4";
+
+import { ConsoleCommons } from "../lib/commons";
+import { OrderResultSummary } from "../lib/db/order-db";
+import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
+import { generateReadableError } from "../lib/utils/validation-utils";
 import {
   Identifiers,
   InterpretationCode,
@@ -5,13 +12,6 @@ import {
   resultCodeMapping,
 } from "./models";
 import { ValidationResult, ValidationResultError, errorResult, successResult } from "./validation";
-import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
-
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { ConsoleCommons } from "../lib/commons";
-import { Observation } from "fhir/r4";
-import { OrderResultSummary } from "../lib/db/order-db";
-import { generateReadableError } from "../lib/utils/validation-utils";
 
 function invalidErrorResult(errorMessage: string): ValidationResultError {
   return errorResult({

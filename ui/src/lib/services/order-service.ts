@@ -20,8 +20,8 @@ export interface OrderServicePatient {
     city?: string;
     postalCode: string;
     country?: string;
-    use?: 'home' | 'work' | 'temp' | 'old' | 'billing';
-    type?: 'postal' | 'physical' | 'both';
+    use?: "home" | "work" | "temp" | "old" | "billing";
+    type?: "postal" | "physical" | "both";
   };
   birthDate: string;
   nhsNumber: string;
@@ -61,9 +61,7 @@ class OrderService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Failed to submit order: ${response.status}`
-      );
+      throw new Error(errorData.message || `Failed to submit order: ${response.status}`);
     }
 
     return response.json();

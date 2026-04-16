@@ -1,7 +1,7 @@
-import { LoginService } from "./login-service";
-import { type ITokenService } from "../lib/login/token-service";
 import { type INhsLoginClient } from "../lib/login/nhs-login-client";
+import { type ITokenService } from "../lib/login/token-service";
 import { type INhsUserInfoResponseModel } from "../lib/models/nhs-login/nhs-login-user-info-response-model";
+import { LoginService } from "./login-service";
 
 function createUserInfo(
   overrides: Partial<INhsUserInfoResponseModel> = {},

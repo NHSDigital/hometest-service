@@ -1,3 +1,7 @@
+import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { type INhsLoginClient } from "./nhs-login-client";
+import { TokenService } from "./token-service";
+
 const mockDecode = jest.fn();
 const mockVerify = jest.fn();
 
@@ -8,10 +12,6 @@ jest.mock("jsonwebtoken", () => ({
     verify: mockVerify,
   },
 }));
-
-import { TokenService } from "./token-service";
-import { type INhsLoginClient } from "./nhs-login-client";
-import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
 
 describe("TokenService", () => {
   const nhsLoginConfig: INhsLoginConfig = {

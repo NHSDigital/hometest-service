@@ -1,9 +1,8 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import GoToClinicPage from "@/routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 import { usePageContent } from "@/hooks";
+import GoToClinicPage from "@/routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
 
 const mockGoToStep = jest.fn();
 const mockGoBack = jest.fn();

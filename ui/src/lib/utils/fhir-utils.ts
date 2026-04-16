@@ -16,29 +16,19 @@ export class FhirUtils {
     resourceType: T["resourceType"],
   ): T | null {
     return (
-      (bundle.entry?.find((e) => e.resource?.resourceType === resourceType)
-        ?.resource as T) ?? null
+      (bundle.entry?.find((e) => e.resource?.resourceType === resourceType)?.resource as T) ?? null
     );
   }
 
-  static findExtension(
-    resource: { extension?: Extension[] },
-    url: string,
-  ): Extension | null {
+  static findExtension(resource: { extension?: Extension[] }, url: string): Extension | null {
     return resource.extension?.find((ext) => ext.url === url) ?? null;
   }
 
-  static findCoding(
-    concept: CodeableConcept | undefined,
-    system: string,
-  ): Coding | null {
+  static findCoding(concept: CodeableConcept | undefined, system: string): Coding | null {
     return concept?.coding?.find((c) => c.system === system) ?? null;
   }
 
-  static findSubExtension(
-    ext: Extension | null,
-    url: string,
-  ): Extension | null {
+  static findSubExtension(ext: Extension | null, url: string): Extension | null {
     return ext?.extension?.find((e) => e.url === url) ?? null;
   }
 

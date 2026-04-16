@@ -1,8 +1,8 @@
-import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 import EnterMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
-import { MemoryRouter } from "react-router-dom";
+import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>

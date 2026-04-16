@@ -1,4 +1,4 @@
-export type ResultStatus = 'RESULT_AVAILABLE' | 'RESULT_WITHHELD';
+export type ResultStatus = "RESULT_AVAILABLE" | "RESULT_WITHHELD";
 
 export interface TestResult {
   order_uid: string;

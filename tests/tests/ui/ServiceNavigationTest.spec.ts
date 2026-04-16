@@ -1,7 +1,8 @@
-import { test } from "../../fixtures/CombinedTestFixture";
 import { expect } from "@playwright/test";
-import { PersonalDetailsModel } from "../../models/PersonalDetails";
+
+import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
+import { PersonalDetailsModel } from "../../models/PersonalDetails";
 
 const randomAddress = AddressModel.getRandomAddress();
 const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();

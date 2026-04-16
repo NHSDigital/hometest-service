@@ -1,7 +1,9 @@
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
 
 // stub, will be replaced later
-export function NearestSexualHealthClinicSection({ showTitle = true }: Readonly<{ showTitle?: boolean }>) {
+export function NearestSexualHealthClinicSection({
+  showTitle = true,
+}: Readonly<{ showTitle?: boolean }>) {
   return (
     <>
       {showTitle && <h2>Contact your nearest sexual health clinic</h2>}

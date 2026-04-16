@@ -206,9 +206,7 @@ describe("Get Order Lambda Handler", () => {
         code: "invalid",
       });
       expect(responseBody.issue[0].diagnostics).toContain("order_id");
-      expect(responseBody.issue[0].diagnostics).toContain(
-        "Invalid order id format",
-      );
+      expect(responseBody.issue[0].diagnostics).toContain("Invalid order id format");
     });
 
     test("should return 400 when order_id is empty string", async () => {
@@ -482,14 +480,11 @@ describe("Get Order Lambda Handler", () => {
 
       const businessStatusExtension = serviceRequest.extension.find(
         (ext: any) =>
-          ext.url ===
-          "https://fhir.hometest.nhs.uk/StructureDefinition/business-status",
+          ext.url === "https://fhir.hometest.nhs.uk/StructureDefinition/business-status",
       );
 
       expect(businessStatusExtension).toBeDefined();
-      expect(
-        businessStatusExtension.valueCodeableConcept.coding[0],
-      ).toMatchObject({
+      expect(businessStatusExtension.valueCodeableConcept.coding[0]).toMatchObject({
         system: "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
         code: "DISPATCHED",
         display: "Order dispatched",

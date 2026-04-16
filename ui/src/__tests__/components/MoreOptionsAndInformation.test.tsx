@@ -24,9 +24,6 @@ describe("MoreOptionsAndInformation", () => {
     });
 
     expect(hivLink).toBeInTheDocument();
-    expect(hivLink).toHaveAttribute(
-      "href",
-      "https://www.nhs.uk/conditions/hiv-and-aids/",
-    );
+    expect(hivLink).toHaveAttribute("href", "https://www.nhs.uk/conditions/hiv-and-aids/");
   });
 });

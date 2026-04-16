@@ -1,13 +1,10 @@
-import { mapTelecomToFhirContactPoints, buildFhirServiceRequest } from "./fhir-mapper";
+import { buildFhirServiceRequest, mapTelecomToFhirContactPoints } from "./fhir-mapper";
 import type { OrderServiceRequest } from "./order-service-request-type";
 
 describe("fhir-mapper", () => {
   describe("mapTelecomToFhirContactPoints", () => {
     it("should map phone and email to FHIR contact points", () => {
-      const telecom = [
-        { phone: "01234567890" },
-        { email: "test@example.com" },
-      ];
+      const telecom = [{ phone: "01234567890" }, { email: "test@example.com" }];
 
       const result = mapTelecomToFhirContactPoints(telecom);
 
@@ -18,10 +15,7 @@ describe("fhir-mapper", () => {
     });
 
     it("should handle multiple contact types in one entry", () => {
-      const telecom = [
-        { phone: "01234567890", fax: "09876543210" },
-        { email: "test@example.com" },
-      ];
+      const telecom = [{ phone: "01234567890", fax: "09876543210" }, { email: "test@example.com" }];
 
       const result = mapTelecomToFhirContactPoints(telecom);
 
@@ -92,11 +86,7 @@ describe("fhir-mapper", () => {
       const patientUid = "patient-123";
       const orderUid = "order-456";
 
-      const result = buildFhirServiceRequest(
-        mockOrderRequest,
-        patientUid,
-        orderUid,
-      );
+      const result = buildFhirServiceRequest(mockOrderRequest, patientUid, orderUid);
 
       expect(result).toEqual({
         resourceType: "ServiceRequest",
@@ -168,11 +158,7 @@ describe("fhir-mapper", () => {
         },
       };
 
-      const result = buildFhirServiceRequest(
-        minimalRequest,
-        "patient-123",
-        "order-456",
-      );
+      const result = buildFhirServiceRequest(minimalRequest, "patient-123", "order-456");
 
       expect(result.contained[0].address[0]).toEqual({
         use: undefined,
@@ -186,11 +172,7 @@ describe("fhir-mapper", () => {
 
     it("should correctly map patient reference", () => {
       const patientUid = "unique-patient-id";
-      const result = buildFhirServiceRequest(
-        mockOrderRequest,
-        patientUid,
-        "order-456",
-      );
+      const result = buildFhirServiceRequest(mockOrderRequest, patientUid, "order-456");
 
       expect(result.subject.reference).toBe(`#${patientUid}`);
       expect(result.contained[0].id).toBe(patientUid);
@@ -203,11 +185,7 @@ describe("fhir-mapper", () => {
         supplierId,
       };
 
-      const result = buildFhirServiceRequest(
-        requestWithCustomSupplier,
-        "patient-123",
-        "order-456",
-      );
+      const result = buildFhirServiceRequest(requestWithCustomSupplier, "patient-123", "order-456");
 
       expect(result.performer?.[0].reference).toBe(supplierId);
     });

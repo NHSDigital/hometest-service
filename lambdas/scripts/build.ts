@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
+import { join } from "path";
 
 import { build } from "esbuild";
-import { join } from "path";
 
 interface BuildOptions {
   specificLambda?: string;

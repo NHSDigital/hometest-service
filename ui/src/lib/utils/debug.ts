@@ -3,7 +3,7 @@ declare global {
 }
 
 export function registerDebugState(slice: string, getValue: () => unknown) {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   globalThis.__appDebug ??= {};
   Object.defineProperty(globalThis.__appDebug, slice, {
@@ -14,7 +14,7 @@ export function registerDebugState(slice: string, getValue: () => unknown) {
 }
 
 export function unregisterDebugState(slice: string) {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   if (globalThis.__appDebug) {
     delete globalThis.__appDebug[slice];

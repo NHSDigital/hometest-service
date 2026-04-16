@@ -2,18 +2,13 @@ import type {
   FHIRContactPoint,
   FHIRServiceRequest,
 } from "../lib/models/fhir/fhir-service-request-type";
-import type {
-  OrderServiceRequest,
-  OrderServiceTelecom,
-} from "./order-service-request-type";
+import type { OrderServiceRequest, OrderServiceTelecom } from "./order-service-request-type";
 
 export const mapTelecomToFhirContactPoints = (
   telecom: OrderServiceTelecom[],
 ): FHIRContactPoint[] => {
   const result: FHIRContactPoint[] = [];
-  const mappings: Array<
-    [keyof OrderServiceTelecom, FHIRContactPoint["system"]]
-  > = [
+  const mappings: Array<[keyof OrderServiceTelecom, FHIRContactPoint["system"]]> = [
     ["phone", "phone"],
     ["fax", "fax"],
     ["email", "email"],

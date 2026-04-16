@@ -1,5 +1,5 @@
-import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
 import type { ValidationMessages } from "@/content";
+import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
 
 const mockValidationMessages: ValidationMessages = {
   postcode: {
@@ -39,8 +39,8 @@ const mockValidationMessages: ValidationMessages = {
     invalid: "Enter a UK mobile phone number",
   },
   consent: {
-    required: ""
-  }
+    required: "",
+  },
 };
 
 describe("mobile number Zod schema", () => {
@@ -50,17 +50,13 @@ describe("mobile number Zod schema", () => {
     it("should return error for empty string", () => {
       const result = schema.safeParse("");
       if (result.success) return fail("Expected failure for empty string");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.required
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.required);
     });
 
     it("should return error for string with only spaces", () => {
       const result = schema.safeParse("   ");
       if (result.success) return fail("Expected failure for spaces");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.required
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.required);
     });
   });
 
@@ -124,41 +120,31 @@ describe("mobile number Zod schema", () => {
     it("should reject UK landline numbers (01xxx)", () => {
       const result = schema.safeParse("01234567890");
       if (result.success) return fail("Expected failure for 01xxx");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject UK landline numbers (02xxx)", () => {
       const result = schema.safeParse("02071234567");
       if (result.success) return fail("Expected failure for 02xxx");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject numbers with non-UK mobile prefix (06xxx)", () => {
       const result = schema.safeParse("06777900900");
       if (result.success) return fail("Expected failure for 06xxx");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject numbers with non-UK mobile prefix (08xxx)", () => {
       const result = schema.safeParse("08777900900");
       if (result.success) return fail("Expected failure for 08xxx");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject numbers with non-UK mobile prefix (09xxx)", () => {
       const result = schema.safeParse("09777900900");
       if (result.success) return fail("Expected failure for 09xxx");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
   });
 
@@ -166,9 +152,7 @@ describe("mobile number Zod schema", () => {
     it("should reject numbers with letters", () => {
       const result = schema.safeParse("07771ABC900");
       if (result.success) return fail("Expected failure for letters");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject numbers with special characters (not allowed)", () => {
@@ -183,38 +167,26 @@ describe("mobile number Zod schema", () => {
       invalidNumbers.forEach((number) => {
         const result = schema.safeParse(number);
         if (result.success) return fail(`Expected failure for ${number}`);
-        expect(result.error.issues[0].message).toBe(
-          mockValidationMessages.mobileNumber.invalid
-        );
+        expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
       });
     });
   });
 
   describe("Length Validation", () => {
     it("should reject numbers with too few digits", () => {
-      const shortNumbers = [
-        "077",
-        "07771",
-        "07771 900",
-        "+44 7",
-        "077719009",
-      ];
+      const shortNumbers = ["077", "07771", "07771 900", "+44 7", "077719009"];
 
       shortNumbers.forEach((number) => {
         const result = schema.safeParse(number);
         if (result.success) return fail(`Expected failure for ${number}`);
-        expect(result.error.issues[0].message).toBe(
-          mockValidationMessages.mobileNumber.invalid
-        );
+        expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
       });
     });
 
     it("should reject numbers with more than 15 digits", () => {
       const result = schema.safeParse("07771900900123456");
       if (result.success) return fail("Expected failure for too many digits");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should accept numbers with exactly 10 digits (07 + 9 digits)", () => {
@@ -234,33 +206,25 @@ describe("mobile number Zod schema", () => {
     it("should reject non-UK international numbers (US)", () => {
       const result = schema.safeParse("+1 555 123 4567");
       if (result.success) return fail("Expected failure for US number");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject non-UK international numbers (Ireland)", () => {
       const result = schema.safeParse("+353 87 123 4567");
       if (result.success) return fail("Expected failure for Ireland number");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject non-UK international numbers (France)", () => {
       const result = schema.safeParse("+33 6 12 34 56 78");
       if (result.success) return fail("Expected failure for France number");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject non-UK international numbers (Australia)", () => {
       const result = schema.safeParse("+61 412 345 678");
       if (result.success) return fail("Expected failure for Australia number");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
   });
 
@@ -274,17 +238,13 @@ describe("mobile number Zod schema", () => {
     it("should handle number with leading zeros correctly", () => {
       const result = schema.safeParse("007771900900");
       if (result.success) return fail("Expected failure for leading zeros");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
 
     it("should reject number missing leading 0 from 07xxx format", () => {
       const result = schema.safeParse("7771900900");
       if (result.success) return fail("Expected failure for missing leading 0");
-      expect(result.error.issues[0].message).toBe(
-        mockValidationMessages.mobileNumber.invalid
-      );
+      expect(result.error.issues[0].message).toBe(mockValidationMessages.mobileNumber.invalid);
     });
   });
 });

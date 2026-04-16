@@ -1,8 +1,8 @@
 import { Observation, OperationOutcome } from "fhir/r4";
 
-import { FhirUtils } from "@/lib/utils/fhir-utils";
 import { Patient } from "@/lib/models/patient";
 import { TestResult } from "@/lib/models/test-result";
+import { FhirUtils } from "@/lib/utils/fhir-utils";
 import { backendUrl } from "@/settings";
 
 class TestResultsService {
@@ -17,10 +17,7 @@ class TestResultsService {
       const operationOutcome: OperationOutcome = await response.json();
       const issue = operationOutcome.issue?.[0];
       const errorMessage =
-        issue?.details?.text ??
-        issue?.diagnostics ??
-        issue?.code ??
-        "Unknown error";
+        issue?.details?.text ?? issue?.diagnostics ?? issue?.code ?? "Unknown error";
 
       throw new Error(errorMessage);
     }
@@ -33,10 +30,7 @@ class TestResultsService {
     };
   }
 
-  private async getResultFromApi(
-    orderId: string,
-    patient: Patient,
-  ): Promise<Response> {
+  private async getResultFromApi(orderId: string, patient: Patient): Promise<Response> {
     const url = new URL(`${backendUrl}/results`);
     url.searchParams.append("nhs_number", patient.nhsNumber);
     url.searchParams.append("date_of_birth", patient.dateOfBirth);

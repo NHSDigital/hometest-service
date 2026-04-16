@@ -1,11 +1,10 @@
 import "@testing-library/jest-dom";
-
-import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
-import { MemoryRouter, useLocation } from "react-router-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { useEffect } from "react";
+import { MemoryRouter, useLocation } from "react-router-dom";
 
 import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
-import { useEffect } from "react";
+import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
 
 jest.mock("@/hooks", () => ({
   useContent: () => ({

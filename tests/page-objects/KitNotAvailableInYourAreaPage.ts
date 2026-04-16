@@ -11,7 +11,9 @@ export class KitNotAvailableInYourAreaPage extends BasePage {
     this.findAnotherSexualHealthClinicLink = page.getByRole("link", {
       name: "Find another sexual health clinic",
     });
-    this.pageHeader = page.locator("h1", { hasText: "Free HIV self-test kits are not available in your area using this service" });
+    this.pageHeader = page.locator("h1", {
+      hasText: "Free HIV self-test kits are not available in your area using this service",
+    });
   }
 
   async waitUntilPageLoaded(): Promise<void> {

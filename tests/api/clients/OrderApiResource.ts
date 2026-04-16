@@ -1,26 +1,20 @@
-import { APIResponse, expect } from '@playwright/test';
-import { BaseApiClient } from './BaseApiClient';
-import { API_ENDPOINTS } from '../Endpoints';
-import { OrderPayload } from '../../test-data/OrderTestData';
-import type { ApiHeaders } from '../../utils';
-import { OrderStatusCode } from '../../models/TestOrder';
+import { APIResponse, expect } from "@playwright/test";
+
+import { OrderStatusCode } from "../../models/TestOrder";
+import { OrderPayload } from "../../test-data/OrderTestData";
+import type { ApiHeaders } from "../../utils";
+import { API_ENDPOINTS } from "../Endpoints";
+import { BaseApiClient } from "./BaseApiClient";
 
 export class OrderApiResource extends BaseApiClient {
-  async createOrder(
-    payload: OrderPayload,
-    headers: ApiHeaders,
-  ): Promise<APIResponse> {
+  async createOrder(payload: OrderPayload, headers: ApiHeaders): Promise<APIResponse> {
     return this.post(API_ENDPOINTS.order.create, {
       headers,
       data: payload,
     });
   }
 
-  async getOrder(
-    nhsNumber: string,
-    dateOfBirth: string,
-    orderId: string,
-  ): Promise<APIResponse> {
+  async getOrder(nhsNumber: string, dateOfBirth: string, orderId: string): Promise<APIResponse> {
     return this.get(API_ENDPOINTS.order.get, {
       params: {
         nhs_number: nhsNumber,
@@ -32,8 +26,7 @@ export class OrderApiResource extends BaseApiClient {
 
   extractOrderStatus(responseBody: Record<string, unknown>): string {
     const body = responseBody as any;
-    return body.entry[0].resource.extension[0].valueCodeableConcept.coding[0]
-      .code;
+    return body.entry[0].resource.extension[0].valueCodeableConcept.coding[0].code;
   }
 
   async assertOrderHasStatus(

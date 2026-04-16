@@ -4,10 +4,10 @@
 
 export { content, getCommonContent, getPageContent } from "./ContentService";
 export {
-    validateContent,
-    isValidContentFile,
-    assertValidContent,
-    assertValidPrivacyPolicyContent,
-    assertValidTermsOfUseContent,
+  validateContent,
+  isValidContentFile,
+  assertValidContent,
+  assertValidPrivacyPolicyContent,
+  assertValidTermsOfUseContent,
 } from "./ContentValidator";
 export * from "./schema";

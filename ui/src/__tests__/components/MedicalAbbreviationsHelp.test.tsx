@@ -7,9 +7,7 @@ describe("MedicalAbbreviationsHelp", () => {
     render(<MedicalAbbreviationsHelp />);
 
     expect(
-      screen.getByText(
-        "You may see medical abbreviations you are not familiar with.",
-      ),
+      screen.getByText("You may see medical abbreviations you are not familiar with."),
     ).toBeInTheDocument();
 
     const link = screen.getByRole("link", {

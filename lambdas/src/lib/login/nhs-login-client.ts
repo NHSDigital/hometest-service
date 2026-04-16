@@ -1,8 +1,9 @@
+import { type JwksClient } from "jwks-rsa";
+
 import { type HttpClient } from "../http/login-http-client";
 import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
 import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
-import { type JwksClient } from "jwks-rsa";
 import { type NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
 import { enrichUserInfoWithTestFirstName } from "./test-user-mapping";
 

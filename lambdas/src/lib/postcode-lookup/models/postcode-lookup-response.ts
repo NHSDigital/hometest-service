@@ -9,9 +9,8 @@ export interface Address {
   fullAddress: string;
 }
 
-
 export interface PostcodeLookupResponse {
   postcode: string;
   addresses: Address[] | null;
-  status: 'found' | 'not_found' | 'error';
+  status: "found" | "not_found" | "error";
 }

@@ -1,10 +1,11 @@
+import { Resolver } from "node:dns";
+
 import axios, {
-  type RawAxiosResponseHeaders,
   type AddressFamily,
   type LookupAddress,
   type RawAxiosRequestHeaders,
+  type RawAxiosResponseHeaders,
 } from "axios";
-import { Resolver } from "node:dns";
 
 export interface HttpErrorDetails {
   httpCode?: number;
@@ -33,10 +34,7 @@ export class HttpClient {
   // ALPHA: Removed commons use. To be reintroduced for logging later.
   constructor(options?: HttpClientOptions) {
     this.options = options;
-    if (
-      options?.additionalDnsServers !== undefined &&
-      options.additionalDnsServers.length > 0
-    ) {
+    if (options?.additionalDnsServers !== undefined && options.additionalDnsServers.length > 0) {
       this.customLookup = this.getCustomLookup(options.additionalDnsServers);
     }
   }
@@ -112,14 +110,10 @@ export class HttpClient {
     headers: RawAxiosRequestHeaders = {},
   ): Promise<TResponse> {
     const defaultHeaders = this.getDefaultRequestHeaders();
-    const response = await this.doPutRequestWithStatus<TBody, TResponse>(
-      endpointUrl,
-      body,
-      {
-        ...defaultHeaders,
-        ...headers,
-      },
-    );
+    const response = await this.doPutRequestWithStatus<TBody, TResponse>(endpointUrl, body, {
+      ...defaultHeaders,
+      ...headers,
+    });
 
     return response.data;
   }
@@ -161,10 +155,10 @@ export class HttpClient {
   ): Promise<TResponse> {
     try {
       const defaultHeaders = this.getDefaultRequestHeaders();
-      const response = await this.doGetRequestWithHeaders<TResponse>(
-        endpointUrl,
-        { ...defaultHeaders, ...headers },
-      );
+      const response = await this.doGetRequestWithHeaders<TResponse>(endpointUrl, {
+        ...defaultHeaders,
+        ...headers,
+      });
 
       return response.data;
     } catch (error: any) {
@@ -234,10 +228,7 @@ export class HttpClient {
     };
   }
 
-  private createErrorWithDetails(
-    apiMethod: string,
-    errorDetails: Record<string, any>,
-  ): Error {
+  private createErrorWithDetails(apiMethod: string, errorDetails: Record<string, any>): Error {
     return new Error(`${apiMethod} API call failure`, {
       cause: {
         details: errorDetails,
@@ -246,9 +237,7 @@ export class HttpClient {
   }
 
   static isHttpError(error: any): boolean {
-    return (
-      axios.isAxiosError(error) || error.cause?.details?.isHttpError === true
-    );
+    return axios.isAxiosError(error) || error.cause?.details?.isHttpError === true;
   }
 
   static getHttpErrorDetails(error: any): HttpErrorDetails {

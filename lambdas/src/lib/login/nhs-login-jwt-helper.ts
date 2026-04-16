@@ -1,6 +1,7 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
-import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
 import { v4 as uuidv4 } from "uuid";
+
+import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
 
 export interface INhsLoginJwtHelper {
   createClientAuthJwt: () => string;

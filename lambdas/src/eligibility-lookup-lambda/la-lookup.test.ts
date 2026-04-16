@@ -1,11 +1,15 @@
 import { LaLookupService } from "./la-lookup";
 
-jest.mock("../__mocks__/postcode-la-mapping.json", () => ({
-  TN377PT: { localAuthorityCode: "1440", region: "East Sussex" },
-  BN108QN: { localAuthorityCode: "1440", region: "East Sussex" },
-  M503UQ: { localAuthorityCode: "4230", region: "Salford" },
-  M275AW: { localAuthorityCode: "4230", region: "Salford" },
-}), { virtual: true });
+jest.mock(
+  "../__mocks__/postcode-la-mapping.json",
+  () => ({
+    TN377PT: { localAuthorityCode: "1440", region: "East Sussex" },
+    BN108QN: { localAuthorityCode: "1440", region: "East Sussex" },
+    M503UQ: { localAuthorityCode: "4230", region: "Salford" },
+    M275AW: { localAuthorityCode: "4230", region: "Salford" },
+  }),
+  { virtual: true },
+);
 
 describe("LaLookupService", () => {
   let service: LaLookupService;

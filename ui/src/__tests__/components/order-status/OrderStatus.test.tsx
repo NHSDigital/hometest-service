@@ -1,8 +1,8 @@
-import { OrderDetails, OrderStatus as OrderStatusEnum } from "@/lib/models/order-details";
 import { render, screen } from "@testing-library/react";
-
 import { MemoryRouter } from "react-router-dom";
+
 import { OrderStatus } from "@/components/order-status";
+import { OrderDetails, OrderStatus as OrderStatusEnum } from "@/lib/models/order-details";
 
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<MemoryRouter>{component}</MemoryRouter>);

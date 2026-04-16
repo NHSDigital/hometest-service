@@ -1,16 +1,15 @@
-import "@testing-library/jest-dom";
-
-import { AuthUser, useAuth } from "@/state";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
-import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
-
-import TestResultsPage from "@/routes/TestResultsPage";
 import { act } from "react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+import { OrderDetails, OrderStatus } from "@/lib/models/order-details";
 import orderDetailsService from "@/lib/services/order-details-service";
 import testResultsService from "@/lib/services/test-results-service";
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
+import TestResultsPage from "@/routes/TestResultsPage";
+import { AuthUser, useAuth } from "@/state";
 
 jest.mock("@/lib/services/order-details-service", () => ({
   __esModule: true,

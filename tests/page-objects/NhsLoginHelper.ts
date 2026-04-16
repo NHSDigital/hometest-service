@@ -1,11 +1,9 @@
-import { type Page } from '@playwright/test';
-import {
-  ConfigFactory,
-  type ConfigInterface
-} from '../configuration/EnvironmentConfiguration';
-import type { NHSLoginUser } from '../utils/users';
-import { NHSEmailAndPasswordPage } from './NHSLogin/NHSEmailAndPasswordPage';
-import { CodeSecurityPage } from './NHSLogin/CodeSecurityPage';
+import { type Page } from "@playwright/test";
+
+import { ConfigFactory, type ConfigInterface } from "../configuration/EnvironmentConfiguration";
+import type { NHSLoginUser } from "../utils/users";
+import { CodeSecurityPage } from "./NHSLogin/CodeSecurityPage";
+import { NHSEmailAndPasswordPage } from "./NHSLogin/NHSEmailAndPasswordPage";
 
 export default class NhsLoginHelper {
   readonly config: ConfigInterface;
@@ -15,7 +13,7 @@ export default class NhsLoginHelper {
 
   public async fillNhsLoginFormsAndWaitForStartPage(
     nhsLoginUser: NHSLoginUser,
-    page: Page
+    page: Page,
   ): Promise<void> {
     const loginPage = new NHSEmailAndPasswordPage(page);
     const codeSecurityPage = new CodeSecurityPage(page);
@@ -25,10 +23,8 @@ export default class NhsLoginHelper {
     console.log(`Redirected to NHS Login: ${page.url()}`);
 
     await loginPage.fillAuthFormWithCredentialsAndClickContinue(nhsLoginUser);
-    await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(
-      nhsLoginUser.otp
-    );
-    await page.waitForURL('**/get-self-test-kit-for-HIV');
+    await codeSecurityPage.fillAuthOneTimePasswordAndClickContinue(nhsLoginUser.otp);
+    await page.waitForURL("**/get-self-test-kit-for-HIV");
   }
 
   public async loginNhsUser(page: Page, user: NHSLoginUser): Promise<Page> {

@@ -1,8 +1,9 @@
-import { BaseUserManager } from "./BaseUserManager";
-import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
-import type { NHSLoginUser } from "./BaseUser";
-import NhsLoginHelper from "../../page-objects/NhsLoginHelper";
 import type { Page } from "@playwright/test";
+
+import { ConfigFactory } from "../../configuration/EnvironmentConfiguration";
+import NhsLoginHelper from "../../page-objects/NhsLoginHelper";
+import type { NHSLoginUser } from "./BaseUser";
+import { BaseUserManager } from "./BaseUserManager";
 import { SpecialUserKey } from "./SpecialUserKey";
 
 export class SandBoxUserManager extends BaseUserManager<NHSLoginUser> {

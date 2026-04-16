@@ -1,11 +1,10 @@
 import "@testing-library/jest-dom";
-
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
-import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import GetSelfTestKitPage from "@/routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
-import { MemoryRouter } from "react-router-dom";
+import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV"]}>

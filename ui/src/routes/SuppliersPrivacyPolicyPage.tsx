@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import PageLayout from "@/layouts/PageLayout";
 import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
+import PageLayout from "@/layouts/PageLayout";
 
 export default function SuppliersPrivacyPolicyPage() {
   const navigate = useNavigate();

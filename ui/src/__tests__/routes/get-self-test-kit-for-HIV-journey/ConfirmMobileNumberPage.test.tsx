@@ -1,11 +1,10 @@
 import "@testing-library/jest-dom";
-
-import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
 import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
+import { MemoryRouter } from "react-router-dom";
 
 import ConfirmMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
-import { MemoryRouter } from "react-router-dom";
-import React from "react";
+import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
