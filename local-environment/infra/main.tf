@@ -592,7 +592,8 @@ resource "aws_lambda_function" "reminder_dispatch_lambda" {
         {
           DISPATCHED = [
             { interval = 7, eventCode = "DISPATCHED_INITIAL_REMINDER" },
-            { interval = 15, eventCode = "DISPATCHED_SECOND_REMINDER" }
+            { interval = 15, eventCode = "DISPATCHED_SECOND_REMINDER" },
+            { interval = 30, eventCode = "DISPATCHED_THIRD_REMINDER" }
           ]
         }
       )
