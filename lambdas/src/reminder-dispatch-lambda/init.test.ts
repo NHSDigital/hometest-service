@@ -8,13 +8,19 @@ import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { MarkReminderAsFailedCommand } from "./db/commands/mark-reminder-as-failed";
+import { MarkReminderAsQueuedCommand } from "./db/commands/mark-reminder-as-queued";
+import { ScheduleReminderCommand } from "./db/commands/schedule-reminder";
+import { GetScheduledRemindersQuery } from "./db/queries/get-scheduled-reminders";
 import { buildEnvironment as init } from "./init";
-import { DispatchedReminderMessageBuilder } from "./services/dispatched-reminder-message-builder";
-import { OrderStatusReminderDbClient } from "./services/order-status-reminder-db-client";
-import { ReminderNotifyService } from "./services/reminder-notify-service";
+import { DispatchedReminderMessageBuilder } from "./notify/dispatched-reminder-message-builder";
+import { ReminderNotifyService } from "./notify/reminder-notify-service";
 
 jest.mock("../lib/db/order-status-db");
-jest.mock("./services/order-status-reminder-db-client");
+jest.mock("./db/queries/get-scheduled-reminders");
+jest.mock("./db/commands/mark-reminder-as-queued");
+jest.mock("./db/commands/mark-reminder-as-failed");
+jest.mock("./db/commands/schedule-reminder");
 jest.mock("../lib/db/patient-db-client");
 jest.mock("../lib/db/order-db-client");
 jest.mock("../lib/db/notification-audit-db-client");
@@ -22,8 +28,8 @@ jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
-jest.mock("./services/reminder-notify-service");
-jest.mock("./services/dispatched-reminder-message-builder");
+jest.mock("./notify/reminder-notify-service");
+jest.mock("./notify/dispatched-reminder-message-builder");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -68,7 +74,10 @@ describe("init", () => {
 
       expect(result).toEqual({
         reminderNotifyService: expect.any(ReminderNotifyService),
-        orderStatusReminderDbClient: expect.any(OrderStatusReminderDbClient),
+        getScheduledRemindersQuery: expect.any(GetScheduledRemindersQuery),
+        markReminderAsQueuedCommand: expect.any(MarkReminderAsQueuedCommand),
+        markReminderAsFailedCommand: expect.any(MarkReminderAsFailedCommand),
+        scheduleReminderCommand: expect.any(ScheduleReminderCommand),
         enabledReminderStatuses: expect.any(Set),
         reminderConfiguration: expect.any(Object),
       });
@@ -135,7 +144,22 @@ describe("init", () => {
             calledWith: expect.any(PostgresDbClient),
           },
           {
-            mock: OrderStatusReminderDbClient as jest.Mock,
+            mock: GetScheduledRemindersQuery as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: MarkReminderAsQueuedCommand as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: MarkReminderAsFailedCommand as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: ScheduleReminderCommand as jest.Mock,
             times: 1,
             calledWith: expect.any(PostgresDbClient),
           },

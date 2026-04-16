@@ -2,21 +2,22 @@ import { Context, EventBridgeEvent } from "aws-lambda";
 
 import { ConsoleCommons } from "../lib/commons";
 import { type OrderStatusCode } from "../lib/db/order-status-db";
+import { type MarkReminderAsFailedCommand } from "./db/commands/mark-reminder-as-failed";
+import { type MarkReminderAsQueuedCommand } from "./db/commands/mark-reminder-as-queued";
+import { type ScheduleReminderCommand } from "./db/commands/schedule-reminder";
+import { type OrderStatusReminderRecord, type ReminderScheduleTuple } from "./db/types";
 import { type ReminderConfiguration } from "./dispatch-config";
 import { init } from "./init";
-import {
-  type OrderStatusReminderDbClient,
-  type OrderStatusReminderRecord,
-  type ReminderScheduleTuple,
-} from "./services/order-status-reminder-db-client";
-import { type ReminderNotifyService } from "./services/reminder-notify-service";
+import { type ReminderNotifyService } from "./notify/reminder-notify-service";
 
 const commons = new ConsoleCommons();
 const name = "reminder-dispatch-lambda";
 
 interface ProcessReminderDeps {
   reminderNotifyService: ReminderNotifyService;
-  orderStatusReminderDbClient: OrderStatusReminderDbClient;
+  markReminderAsQueuedCommand: MarkReminderAsQueuedCommand;
+  markReminderAsFailedCommand: MarkReminderAsFailedCommand;
+  scheduleReminderCommand: ScheduleReminderCommand;
   schedules: ReminderScheduleTuple[];
   enabledReminderStatuses: ReadonlySet<OrderStatusCode>;
   correlationId: string;
@@ -41,11 +42,14 @@ async function processReminder(
 ): Promise<ReminderOutcome> {
   const {
     reminderNotifyService,
-    orderStatusReminderDbClient,
+    markReminderAsQueuedCommand,
+    markReminderAsFailedCommand,
+    scheduleReminderCommand,
     schedules,
     enabledReminderStatuses,
     correlationId,
   } = deps;
+
   const logContext = {
     correlationId,
     reminderId: reminder.reminderId,
@@ -82,7 +86,7 @@ async function processReminder(
   } catch (error) {
     commons.logError(name, "Failed to dispatch reminder", { ...logContext, error });
     try {
-      await orderStatusReminderDbClient.markReminderAsFailed(reminder.reminderId);
+      await markReminderAsFailedCommand.execute(reminder.reminderId);
     } catch (dbError) {
       commons.logError(name, "Failed to mark reminder as failed", {
         ...logContext,
@@ -93,7 +97,7 @@ async function processReminder(
   }
 
   try {
-    await orderStatusReminderDbClient.markReminderAsQueued(reminder.reminderId);
+    await markReminderAsQueuedCommand.execute(reminder.reminderId);
   } catch (dbError) {
     commons.logError(name, "Failed to mark reminder as queued", { ...logContext, error: dbError });
     return "failed";
@@ -111,7 +115,7 @@ async function processReminder(
 
   if (nextSchedule) {
     try {
-      await orderStatusReminderDbClient.scheduleReminder(
+      await scheduleReminderCommand.execute(
         reminder.orderUid,
         reminder.triggerStatus,
         nextSchedule.reminderNumber,
@@ -135,7 +139,10 @@ export const lambdaHandler = async (
 ): Promise<void> => {
   const {
     reminderNotifyService,
-    orderStatusReminderDbClient,
+    getScheduledRemindersQuery,
+    markReminderAsQueuedCommand,
+    markReminderAsFailedCommand,
+    scheduleReminderCommand,
     enabledReminderStatuses,
     reminderConfiguration,
   } = init();
@@ -151,13 +158,15 @@ export const lambdaHandler = async (
 
     // cleanup stale rows HOTE-1136
     const schedules = buildSchedules(reminderConfiguration);
-    const reminders = await orderStatusReminderDbClient.getScheduledReminders(schedules);
+    const reminders = await getScheduledRemindersQuery.execute(schedules);
 
     const settledOutcomes = await Promise.allSettled(
       reminders.map((reminder) =>
         processReminder(reminder, {
           reminderNotifyService,
-          orderStatusReminderDbClient,
+          markReminderAsQueuedCommand,
+          markReminderAsFailedCommand,
+          scheduleReminderCommand,
           schedules,
           enabledReminderStatuses,
           correlationId,
