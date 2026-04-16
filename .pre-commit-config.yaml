@@ -27,7 +27,18 @@ repos:
     hooks:
       - id: grype
         name: Grype filesystem vulnerability scan
-        entry: bash -c 'echo $PWD; whereis grype; grype --version; grype "dir:$PWD" --quiet -o template -t $PWD/scripts/config/grype-table.tmpl --name hometest-service -c $PWD/scripts/config/grype.yaml'
+        entry: grype
+        args:
+          - dir:.
+          - --quiet
+          - -o
+          - template
+          - -t
+          - scripts/config/grype-table.tmpl
+          - --name
+          - hometest-service
+          - -c
+          - scripts/config/grype.yaml
         language: system
         pass_filenames: false
 
