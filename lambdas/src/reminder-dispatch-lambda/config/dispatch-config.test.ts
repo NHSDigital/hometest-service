@@ -1,5 +1,8 @@
-import { OrderStatusCodes } from "../lib/db/order-status-db";
-import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { OrderStatusCodes } from "../../lib/db/order-status-db";
+import {
+  restoreEnvironment,
+  setupEnvironment,
+} from "../../lib/test-utils/environment-test-helpers";
 import { getReminderDispatchConfigFromEnv } from "./dispatch-config";
 
 describe("getReminderDispatchConfigFromEnv", () => {
@@ -109,6 +112,18 @@ describe("getReminderDispatchConfigFromEnv", () => {
 
       expect(() => getReminderDispatchConfigFromEnv()).toThrow(
         "interval must be a positive number, received: 0",
+      );
+    });
+
+    it("throws when a schedule entry has a non-number interval", () => {
+      process.env.REMINDER_INTERVAL_CONFIG = JSON.stringify({
+        [OrderStatusCodes.DISPATCHED]: [
+          { interval: "seven", eventCode: "DISPATCHED_INITIAL_REMINDER" },
+        ],
+      });
+
+      expect(() => getReminderDispatchConfigFromEnv()).toThrow(
+        "interval must be a number, received: seven",
       );
     });
 

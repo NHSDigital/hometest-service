@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { type OrderStatusCode, OrderStatusCodes } from "../lib/db/order-status-db";
-import { NotifyEventCode } from "../lib/types/notify-message";
-import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
+import { type OrderStatusCode, OrderStatusCodes } from "../../lib/db/order-status-db";
+import { NotifyEventCode } from "../../lib/types/notify-message";
+import { retrieveMandatoryEnvVariable } from "../../lib/utils/utils";
 
 const REMINDER_ENABLED_STATUSES = "REMINDER_ENABLED_STATUSES";
 const REMINDER_INTERVAL_CONFIG = "REMINDER_INTERVAL_CONFIG";

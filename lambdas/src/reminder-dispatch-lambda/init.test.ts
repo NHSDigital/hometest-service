@@ -15,6 +15,7 @@ import { GetScheduledRemindersQuery } from "./db/queries/get-scheduled-reminders
 import { buildEnvironment as init } from "./init";
 import { DispatchedReminderMessageBuilder } from "./notify/dispatched-reminder-message-builder";
 import { ReminderNotifyService } from "./notify/reminder-notify-service";
+import { ReminderProcessor } from "./processor/reminder-processor";
 
 jest.mock("../lib/db/order-status-db");
 jest.mock("./db/queries/get-scheduled-reminders");
@@ -30,6 +31,7 @@ jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
 jest.mock("./notify/reminder-notify-service");
 jest.mock("./notify/dispatched-reminder-message-builder");
+jest.mock("./processor/reminder-processor");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -73,13 +75,12 @@ describe("init", () => {
       const result = init();
 
       expect(result).toEqual({
-        reminderNotifyService: expect.any(ReminderNotifyService),
+        reminderProcessor: expect.any(ReminderProcessor),
         getScheduledRemindersQuery: expect.any(GetScheduledRemindersQuery),
-        markReminderAsQueuedCommand: expect.any(MarkReminderAsQueuedCommand),
-        markReminderAsFailedCommand: expect.any(MarkReminderAsFailedCommand),
-        scheduleReminderCommand: expect.any(ScheduleReminderCommand),
-        enabledReminderStatuses: expect.any(Set),
-        reminderConfiguration: expect.any(Object),
+        reminderDispatchConfig: expect.objectContaining({
+          enabledReminderStatuses: expect.any(Set),
+          reminderConfiguration: expect.any(Object),
+        }),
       });
     });
 
@@ -186,8 +187,25 @@ describe("init", () => {
             mock: ReminderNotifyService as jest.Mock,
             times: 1,
           },
+          {
+            mock: ReminderProcessor as jest.Mock,
+            times: 1,
+          },
         ],
       });
+    });
+
+    it("should create ReminderProcessor with the commands and notify service", () => {
+      init();
+
+      expect(ReminderProcessor).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reminderNotifyService: expect.any(ReminderNotifyService),
+          markReminderAsQueuedCommand: expect.any(MarkReminderAsQueuedCommand),
+          markReminderAsFailedCommand: expect.any(MarkReminderAsFailedCommand),
+          scheduleReminderCommand: expect.any(ScheduleReminderCommand),
+        }),
+      );
     });
 
     it("should create ReminderNotifyService with notification dependencies", () => {
