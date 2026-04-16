@@ -1,5 +1,4 @@
 import { expect } from "@playwright/test";
-
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 import { PersonalDetailsModel } from "../../models/PersonalDetails";
@@ -11,7 +10,10 @@ const cyberAwareUrl = "https://www.ncsc.gov.uk/cyberaware/home";
 const helpAndSupportUrl = "https://www.nhs.uk/nhs-app/help/";
 
 test.describe("Editing during the order flow", { tag: "@ui" }, () => {
-  test.beforeEach(async ({ beforeYouStartPage, getSelfTestKitPage }) => {
+  test.beforeEach(async ({
+    beforeYouStartPage,
+    getSelfTestKitPage
+  }) => {
     await beforeYouStartPage.navigate();
     await beforeYouStartPage.clickContinueToOrderKitButton();
     await getSelfTestKitPage.clickStartNowButton();
