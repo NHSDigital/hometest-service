@@ -5,7 +5,6 @@ import { AuthenticatedPage } from "./AuthenticatedPage";
 export class OrderStatusPage extends AuthenticatedPage {
   readonly statusTag: Locator;
   readonly orderedDate: Locator;
-  readonly referenceNumber: Locator;
   readonly orderReference: Locator;
   readonly suppliersTermsOfUseLink: Locator;
   readonly suppliersPrivacyPolicyLink: Locator;
@@ -14,9 +13,8 @@ export class OrderStatusPage extends AuthenticatedPage {
   constructor(page: Page) {
     super(page);
     this.statusTag = page.locator("#order-status-tag");
-    this.orderedDate = page.getByLabel(/Order date/);
-    this.referenceNumber = page.locator("#reference-number");
-    this.orderReference = page.getByLabel(/^Reference number:/);
+    this.orderedDate = page.locator("p", { hasText: /^Ordered/ });
+    this.orderReference = page.locator("p", { hasText: /^Reference number/ });
     this.suppliersTermsOfUseLink = page.locator('a[href*="suppliers-terms-conditions"]');
     this.suppliersPrivacyPolicyLink = page.locator('a[href*="suppliers-privacy-policy"]');
     this.pageHeader = page.locator("h1", { hasText: "HIV self-test" });

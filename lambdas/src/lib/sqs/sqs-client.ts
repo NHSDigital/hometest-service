@@ -15,11 +15,11 @@ export interface SQSClientInterface {
 export class AWSSQSClient implements SQSClientInterface {
   private readonly client: SQSClient;
 
-  constructor(region: string = process.env.AWS_REGION || "eu-west-1") {
+  constructor(region: string, sqsEndpoint?: string) {
     this.client = new SQSClient({
       region,
       maxAttempts: 3,
-      endpoint: process.env.SQS_ENDPOINT,
+      endpoint: sqsEndpoint,
     });
   }
 

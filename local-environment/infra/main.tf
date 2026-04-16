@@ -311,7 +311,6 @@ module "postcode_lookup_lambda" {
     POSTCODE_LOOKUP_RETRY_DELAY_MS          = "1000",
     POSTCODE_LOOKUP_RETRY_BACKOFF_FACTOR    = "2",
     USE_STUB_POSTCODE_CLIENT                = false,
-    POSTCODE_LOOKUP_REJECT_UNAUTHORIZED     = false,
   }
 }
 
@@ -535,6 +534,34 @@ module "order_status_lambda" {
   }
 }
 
+module "result_status_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "result-status"
+  zip_path                      = "${path.module}/../../lambdas/dist/result-status-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "result/status"
+  http_method                   = "POST"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+
+  environment_variables = {
+    NODE_OPTIONS   = "--enable-source-maps"
+    ALLOW_ORIGIN   = "http://localhost:3000"
+    DB_USERNAME    = "app_user"
+    DB_ADDRESS     = "postgres-db"
+    DB_PORT        = "5432"
+    DB_NAME        = "local_hometest_db"
+    DB_SCHEMA      = "hometest"
+    DB_SECRET_NAME = "postgres-db-password"
+    DB_SSL         = "false"
+  }
+}
+
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
@@ -548,7 +575,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.order_service_lambda,
     module.session_lambda,
     module.order_status_lambda,
-    module.postcode_lookup_lambda
+    module.postcode_lookup_lambda,
+    module.result_status_lambda
   ]
 
   triggers = {
@@ -561,7 +589,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.order_service_lambda,
       module.session_lambda,
       module.order_status_lambda,
-      module.postcode_lookup_lambda
+      module.postcode_lookup_lambda,
+      module.result_status_lambda
     ]))
   }
 

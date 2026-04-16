@@ -31,6 +31,26 @@ export class NotifyMessageBuilder {
     this.normalizedHomeTestBaseUrl = homeTestBaseUrl.replaceAll(/\/$/g, "");
   }
 
+  async buildOrderConfirmedNotifyMessage(
+    input: BuildOrderNotifyMessageInput,
+  ): Promise<NotifyMessage> {
+    const { patientId, correlationId, orderId } = input;
+
+    const orderCreatedAt = await this.orderDbClient.getOrderCreatedAt(orderId);
+    const trackingUrl = this.buildOrderTrackingUrl(orderId);
+
+    return this.buildOrderStatusNotifyMessage({
+      patientId,
+      correlationId,
+      orderId,
+      eventCode: NotifyEventCode.OrderConfirmed,
+      personalisation: {
+        orderedDate: formatStatusDate(orderCreatedAt),
+        orderLinkUrl: trackingUrl,
+      },
+    });
+  }
+
   async buildOrderDispatchedNotifyMessage(
     input: BuildOrderNotifyMessageInput,
   ): Promise<NotifyMessage> {
@@ -85,7 +105,6 @@ export class NotifyMessageBuilder {
     const { patientId, correlationId, orderId } = input;
 
     const orderCreatedAt = await this.orderDbClient.getOrderCreatedAt(orderId);
-
     const resultsUrl = this.buildOrderResultsUrl(orderId);
 
     return this.buildOrderStatusNotifyMessage({
@@ -124,7 +143,7 @@ export class NotifyMessageBuilder {
       recipient,
       personalisation: {
         ...personalisation,
-        referenceNumber: referenceNumber,
+        referenceNumber,
       },
     };
   }

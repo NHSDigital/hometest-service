@@ -1,9 +1,9 @@
-import { Address, PostcodeLookupResponse } from "../models/postcode-lookup-response";
-import { FetchHttpClient, HttpError } from "../../http/http-client";
-
-import { OSPlacesResponse } from "./models/osplaces-response";
-import { PostcodeLookupClient } from "../postcode-lookup-client-interface";
 import { PostcodeLookupClientConfig } from "src/lib/models/postcode-lookup-client-config";
+
+import { FetchHttpClient, HttpError } from "../../http/http-client";
+import { Address, PostcodeLookupResponse } from "../models/postcode-lookup-response";
+import { PostcodeLookupClient } from "../postcode-lookup-client-interface";
+import { OSPlacesResponse } from "./models/osplaces-response";
 
 export class OSPlacesClient implements PostcodeLookupClient {
   private readonly client: FetchHttpClient;
@@ -11,7 +11,7 @@ export class OSPlacesClient implements PostcodeLookupClient {
 
   constructor(config: PostcodeLookupClientConfig) {
     this.config = config;
-    this.client = new FetchHttpClient({ rejectUnauthorized: config.rejectUnauthorized });
+    this.client = new FetchHttpClient();
   }
 
   async lookupPostcode(postcode: string): Promise<PostcodeLookupResponse> {

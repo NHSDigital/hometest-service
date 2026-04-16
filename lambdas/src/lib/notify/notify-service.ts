@@ -3,7 +3,7 @@ import {
   NotificationAuditDbClient,
   NotificationAuditStatus,
 } from "../db/notification-audit-db-client";
-import { OrderStatusCode, OrderStatusCodes, OrderStatusService } from "../db/order-status-db";
+import { OrderStatusCode, OrderStatusCodes } from "../db/order-status-db";
 import { SQSClientInterface } from "../sqs/sqs-client";
 import type { NotifyMessage } from "../types/notify-message";
 import { NotifyMessageBuilder } from "./notify-message-builder";
@@ -12,7 +12,6 @@ const commons = new ConsoleCommons();
 const name = "notify-service";
 
 export interface OrderStatusNotifyServiceDependencies {
-  orderStatusDb: OrderStatusService;
   notificationAuditDbClient: NotificationAuditDbClient;
   sqsClient: SQSClientInterface;
   notifyMessageBuilder: NotifyMessageBuilder;
@@ -46,6 +45,12 @@ export class OrderStatusNotifyService {
     const { notifyMessageBuilder } = this.dependencies;
 
     const buildNotifyMessageByStatus: NotifyMessageBuilderByStatus = {
+      [OrderStatusCodes.CONFIRMED]: ({ patientId, correlationId, orderId }) =>
+        notifyMessageBuilder.buildOrderConfirmedNotifyMessage({
+          patientId,
+          correlationId,
+          orderId,
+        }),
       [OrderStatusCodes.DISPATCHED]: ({ patientId, correlationId, orderId }) =>
         notifyMessageBuilder.buildOrderDispatchedNotifyMessage({
           patientId,

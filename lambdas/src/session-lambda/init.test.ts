@@ -5,7 +5,6 @@ import type { buildEnvironment } from "./init";
 export type BuildEnvironmentFn = typeof buildEnvironment;
 
 const mockRetrieveMandatoryEnvVariable = jest.fn();
-const mockRetrieveOptionalEnvVariable = jest.fn();
 const mockGetSecretValue = jest.fn();
 
 const mockAuthTokenVerifierInstance = { verifyToken: jest.fn() };
@@ -13,7 +12,6 @@ const mockNhsLoginClientInstance = { getUserInfo: jest.fn() };
 
 jest.mock("../lib/utils/utils", () => ({
   retrieveMandatoryEnvVariable: (...args: unknown[]) => mockRetrieveMandatoryEnvVariable(...args),
-  retrieveOptionalEnvVariable: (...args: unknown[]) => mockRetrieveOptionalEnvVariable(...args),
 }));
 
 jest.mock("../lib/secrets/secrets-manager-client", () => ({
@@ -42,6 +40,8 @@ describe("session-lambda init", () => {
   const baseEnvValues: Record<string, string> = {
     AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME: "auth-cookie-public-key-secret",
     NHS_LOGIN_BASE_ENDPOINT_URL: "https://nhs-login.example",
+    AUTH_COOKIE_KEY_ID: "test-key-id",
+    AWS_REGION: "eu-west-2",
   };
 
   function setEnvVariableMocks(overrides: Record<string, string> = {}): void {
@@ -52,18 +52,11 @@ describe("session-lambda init", () => {
       if (!value) throw new Error(`Missing environment variable: ${key}`);
       return value;
     });
-
-    mockRetrieveOptionalEnvVariable.mockImplementation((_key: string, defaultVal: string = "") => {
-      return defaultVal;
-    });
   }
 
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-
-    process.env.AWS_REGION = "eu-west-2";
-    delete process.env.AWS_DEFAULT_REGION;
 
     setEnvVariableMocks();
     mockGetSecretValue.mockResolvedValue("test-public-key");
@@ -80,8 +73,8 @@ describe("session-lambda init", () => {
     expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
     expect(mockGetSecretValue).toHaveBeenCalledWith("auth-cookie-public-key-secret");
     expect(AuthTokenVerifier).toHaveBeenCalledWith({
-      keyId: "key",
-      publicKeys: { key: "test-public-key" },
+      keyId: "test-key-id",
+      publicKeys: { "test-key-id": "test-public-key" },
     });
     expect(NhsLoginClient).toHaveBeenCalledTimes(1);
 
@@ -91,8 +84,8 @@ describe("session-lambda init", () => {
     });
   });
 
-  it("uses AWS_REGION when set", async () => {
-    process.env.AWS_REGION = "eu-central-1";
+  it("uses the AWS_REGION value from mandatory env variable", async () => {
+    setEnvVariableMocks({ AWS_REGION: "eu-central-1" });
 
     const { buildEnvironment: init } = await import("./init");
     await init();
@@ -101,26 +94,11 @@ describe("session-lambda init", () => {
     expect(AwsSecretsClient).toHaveBeenCalledWith("eu-central-1");
   });
 
-  it("uses AWS_DEFAULT_REGION when AWS_REGION is not set", async () => {
-    delete process.env.AWS_REGION;
-    process.env.AWS_DEFAULT_REGION = "ap-southeast-2";
+  it("throws when AWS_REGION is missing", async () => {
+    setEnvVariableMocks({ AWS_REGION: "" });
 
     const { buildEnvironment: init } = await import("./init");
-    await init();
-
-    const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
-    expect(AwsSecretsClient).toHaveBeenCalledWith("ap-southeast-2");
-  });
-
-  it("falls back to eu-west-2 when no AWS region env vars are set", async () => {
-    delete process.env.AWS_REGION;
-    delete process.env.AWS_DEFAULT_REGION;
-
-    const { buildEnvironment: init } = await import("./init");
-    await init();
-
-    const { AwsSecretsClient } = await import("../lib/secrets/secrets-manager-client");
-    expect(AwsSecretsClient).toHaveBeenCalledWith("eu-west-2");
+    await expect(init()).rejects.toThrow("Missing environment variable: AWS_REGION");
   });
 
   describe("singleton protection", () => {

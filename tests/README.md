@@ -309,6 +309,48 @@ The configuration automatically adjusts for CI environments:
 - Workers: 1 worker on CI, unlimited locally
 - ForbidOnly: Fails build if `test.only` is found in CI
 
+## Pushing WireMock Mappings to UAT
+
+Before running tests against the UAT environment, you need to push the baseline WireMock stubs (NHS Login auth, supplier, OS Places) to the remote WireMock instance.
+
+### Prerequisites
+
+- Node.js and npm installed
+- Network access to the WireMock instance at `https://wiremock-uat.poc.hometest.service.nhs.uk`
+
+### Push mappings
+
+From the `tests/` directory:
+
+```bash
+WIREMOCK_BASE_URL=https://wiremock-uat.poc.hometest.service.nhs.uk npm run wiremock:push
+```
+
+This will:
+
+1. Generate fresh RSA key pairs and JWTs for all test users
+2. Reset all existing WireMock mappings
+3. Push NHS Login stubs (JWKS, `/authorize`, `/token`, `/userinfo`)
+4. Push supplier OAuth and order stubs
+5. Push an OS Places postcode-lookup catch-all stub
+
+### Environment variables
+
+| Variable              | Description                       | Default                           |
+| --------------------- | --------------------------------- | --------------------------------- |
+| `WIREMOCK_BASE_URL`   | Base URL of the WireMock instance | `http://localhost:8080`           |
+| `WIREMOCK_JWT_ISSUER` | Value used as the JWT `iss` claim | Falls back to `WIREMOCK_BASE_URL` |
+
+For UAT, both the Lambda and the browser share the same public WireMock URL, so `WIREMOCK_JWT_ISSUER` does not need to be set explicitly. For local Docker, the default issuer is `http://wiremock:8080` (Docker-internal), which differs from the localhost URL used by the test runner.
+
+### Running tests against UAT
+
+After pushing mappings:
+
+```bash
+ENV=uat PLAYWRIGHT_HTML_OPEN=never npx playwright test --project=chromium --grep-invert @db
+```
+
 ## Resources
 
 - [Playwright Documentation](https://playwright.dev/)

@@ -20,18 +20,17 @@ export interface Environment {
 
 export function buildEnvironment(): Environment {
   const commons = new ConsoleCommons();
-  const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "eu-west-2";
+  const awsRegion = retrieveMandatoryEnvVariable("AWS_REGION");
   const notifyMessagesQueueUrl = retrieveMandatoryEnvVariable("NOTIFY_MESSAGES_QUEUE_URL");
   const homeTestBaseUrl = retrieveMandatoryEnvVariable("HOME_TEST_BASE_URL");
-
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
-  const orderService = new OrderService(dbClient, commons);
+  const orderService = new OrderService(dbClient);
   const orderStatusDb = new OrderStatusService(dbClient);
   const patientDbClient = new PatientDbClient(dbClient);
   const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
-  const sqsClient = new AWSSQSClient();
+  const sqsClient = new AWSSQSClient(awsRegion);
   const notifyMessageBuilder = new NotifyMessageBuilder(
     patientDbClient,
     orderDbClient,
@@ -39,7 +38,6 @@ export function buildEnvironment(): Environment {
     homeTestBaseUrl,
   );
   const orderStatusNotifyService = new OrderStatusNotifyService({
-    orderStatusDb,
     notificationAuditDbClient,
     sqsClient,
     notifyMessageBuilder,

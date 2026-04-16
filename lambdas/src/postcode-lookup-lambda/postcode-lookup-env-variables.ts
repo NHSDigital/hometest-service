@@ -6,5 +6,4 @@ export interface PostcodeLookupEnvVariables {
   postcodeLookupRetryDelayMs: number;
   postcodeLookupRetryBackoffFactor: number;
   useStubClient: boolean;
-  rejectUnauthorized: boolean;
 }

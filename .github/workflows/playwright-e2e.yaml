@@ -1,11 +1,14 @@
 ---
 name: "Playwright E2E Tests"
-run-name: "E2E Tests: browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
+run-name: "E2E Tests: env: ${{ inputs.environment || 'local' }}, browser: ${{ inputs.browser || 'chromium' }}, filter: ${{ inputs.test_filter && format(' - {0}', inputs.test_filter) || '' }}"
 
 # Add concurrency to prevent multiple runs for the same branch/PR and reduce noise in CI
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  TARGET_ENV: ${{ inputs.environment || 'local' }}
 
 on:
   push:
@@ -27,6 +30,14 @@ on:
           - firefox
           - webkit
           - all
+      environment:
+        description: "Target environment to run tests against"
+        required: false
+        default: "local"
+        type: choice
+        options:
+          - local
+          - uat
       test_filter:
         description: "Test filter pattern (e.g., 'HomeTest' or leave empty for all)"
         required: false
@@ -46,37 +57,60 @@ jobs:
         uses: ./.github/actions/init-mise
 
       - name: "Create nhs login private key file"
+        if: env.TARGET_ENV == 'local'
+        env:
+          NHS_LOGIN_PRIVATE_KEY: ${{ secrets.NHS_LOGIN_PRIVATE_KEY }}
         run: |
           mkdir -p local-environment/infra/resources/secrets
-          echo '${{ secrets.NHS_LOGIN_PRIVATE_KEY }}' > local-environment/infra/resources/secrets/nhs-login-private-key.pem
+          echo "$NHS_LOGIN_PRIVATE_KEY" > local-environment/infra/resources/secrets/nhs-login-private-key.pem
 
       - name: "Create credentials file"
+        env:
+          PLAYWRIGHT_PASSWORD: ${{ secrets.PLAYWRIGHT_PASSWORD }}
+          PLAYWRIGHT_OTP: ${{ secrets.PLAYWRIGHT_OTP }}
         run: |
-          cat > tests/credentials.ts << 'CREDENTIALS'
-          export const userPasswordGeneric = '${{ secrets.PLAYWRIGHT_PASSWORD }}';
-          export const OTP = '${{ secrets.PLAYWRIGHT_OTP }}';
+          cat > tests/credentials.ts << CREDENTIALS
+          export const userPasswordGeneric = '${PLAYWRIGHT_PASSWORD}';
+          export const OTP = '${PLAYWRIGHT_OTP}';
           CREDENTIALS
           sed -i 's/^          //' tests/credentials.ts
 
       - name: "Create os-places-creds file"
+        if: env.TARGET_ENV == 'local'
         run: |
           mkdir -p local-environment/infra/resources/secrets
           echo '{"apiKey":"test-api-key"}' > local-environment/infra/resources/secrets/os-places-creds.json
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: |
+            /home/runner/.cache/ms-playwright/
+          key: playwright-${{ runner.os }}-${{ hashFiles('tests/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
       - name: "Install Playwright browsers"
+        timeout-minutes: 3
         working-directory: tests
         run: pnpm exec playwright install --with-deps
 
       - name: "Start the application"
+        if: env.TARGET_ENV == 'local'
         run: |
           pnpm run local:start
+        env:
+          BUILDKIT_PROGRESS: plain # or "quiet" to fully suppress build output
+          DOCKER_CLI_HINTS: false # removes "What's next?" hints
 
       - name: "Show application status"
+        if: env.TARGET_ENV == 'local'
         run: |
           docker compose -f local-environment/docker-compose.yml ps
           docker logs ui
 
       - name: "Get terraform outputs"
+        if: env.TARGET_ENV == 'local'
         id: terraform
         run: |
           UI_URL=$(terraform -chdir=local-environment/infra output -raw ui_url)
@@ -87,8 +121,11 @@ jobs:
           echo "API URL: $API_URL"
 
       - name: "Wait for UI to be reachable"
+        if: env.TARGET_ENV == 'local'
+        env:
+          TERRAFORM_UI_URL: ${{ steps.terraform.outputs.ui_url }}
         run: |
-          UI_URL="${{ steps.terraform.outputs.ui_url }}"
+          UI_URL="${TERRAFORM_UI_URL}"
           echo "Waiting for UI to be reachable at $UI_URL..."
           timeout=120
           elapsed=0
@@ -107,9 +144,9 @@ jobs:
       - name: "Run Playwright tests"
         working-directory: tests
         run: |
-          BROWSER="${{ inputs.browser }}"
+          BROWSER="${INPUT_BROWSER}"
           BROWSER="${BROWSER:-chromium}"
-          FILTER="${{ inputs.test_filter }}"
+          FILTER="${INPUT_TEST_FILTER}"
 
           # Build the command
           CMD="pnpm exec playwright test"
@@ -117,6 +154,11 @@ jobs:
           # Add browser project
           if [ "$BROWSER" != "all" ]; then
             CMD="$CMD --project=$BROWSER"
+          fi
+
+          # Exclude @db tests when running against UAT
+          if [ "$TARGET_ENV" = "uat" ]; then
+            CMD="$CMD --grep-invert @db"
           fi
 
           # Add filter if provided
@@ -127,16 +169,47 @@ jobs:
           echo "Running: $CMD"
           eval $CMD
         env:
+          ENV: ${{ env.TARGET_ENV }}
           CI: true
           FORCE_COLOR: true
           PLAYWRIGHT_HTML_OPEN: never
+          INPUT_BROWSER: ${{ inputs.browser }}
+          INPUT_TEST_FILTER: ${{ inputs.test_filter }}
 
       - name: "Grab docker compose logs"
+        if: always() && env.TARGET_ENV == 'local'
         run: |
           for service in $(docker compose -f local-environment/docker-compose.yml ps --services); do
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
           done
+
+      - name: "Detect flaky tests"
         if: always()
+        run: |
+          RESULTS_FILE="tests/testResults/test-results.json"
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "No test results JSON found, skipping flaky detection"
+            exit 0
+          fi
+
+          # Check top-level stats for flaky count first
+          FLAKY_COUNT=$(jq '.stats.flaky // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+          echo "Flaky test count: $FLAKY_COUNT"
+
+          if [ "$FLAKY_COUNT" -gt 0 ]; then
+            # Extract flaky test details: specs contain tests, status is on test objects
+            FLAKY_TESTS=$(jq -r '
+              [.. | .specs?[]? | {title: .title, file: .file, line: .line, tests: [.tests[]? | select(.status == "flaky") | .projectName]} | select(.tests | length > 0)]
+              | .[] | "[\(.tests | join(", "))] \(.title) (\(.file):\(.line))"
+            ' "$RESULTS_FILE" 2>/dev/null)
+
+            echo "::warning::Flaky tests detected (passed on retry):"
+            while IFS= read -r test; do
+              echo "::warning::  Flaky: $test"
+            done <<< "$FLAKY_TESTS"
+          else
+            echo "No flaky tests detected"
+          fi
 
       - name: "Publish Test Results"
         uses: dorny/test-reporter@v3
@@ -167,6 +240,22 @@ jobs:
             echo "| :stopwatch: Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
           else
             echo ":warning: No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Append flaky test details to summary
+          RESULTS_FILE="tests/testResults/test-results.json"
+          if [ -f "$RESULTS_FILE" ]; then
+            FLAKY_COUNT=$(jq '.stats.flaky // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            if [ "$FLAKY_COUNT" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### :warning: Flaky Tests ($FLAKY_COUNT)" >> $GITHUB_STEP_SUMMARY
+              echo "These tests failed initially but passed on retry:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '
+                [.. | .specs?[]? | {title: .title, file: .file, line: .line, tests: [.tests[]? | select(.status == "flaky") | .projectName]} | select(.tests | length > 0)]
+                | .[] | "- **[\(.tests | join(", "))] \(.title)** (\(.file):\(.line))"
+              ' "$RESULTS_FILE" 2>/dev/null >> $GITHUB_STEP_SUMMARY
+            fi
           fi
 
       - name: "Upload test results"
