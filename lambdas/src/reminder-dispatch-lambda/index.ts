@@ -15,7 +15,6 @@ function countOutcomes(
     dispatched: 0,
     failed: 0,
     skipped_disabled: 0,
-    skipped_no_config: 0,
   };
 
   return outcomes.reduce((counts, outcome) => {
@@ -69,7 +68,6 @@ export const lambdaHandler = async (
       dispatchedCount: counts.dispatched,
       failedCount: counts.failed,
       skippedDisabledCount: counts.skipped_disabled,
-      skippedNoConfigCount: counts.skipped_no_config,
     });
   } catch (error) {
     commons.logError(name, "Reminder dispatch failed", { correlationId, error });

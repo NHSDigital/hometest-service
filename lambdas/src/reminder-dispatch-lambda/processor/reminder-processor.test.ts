@@ -161,25 +161,5 @@ describe("ReminderProcessor", () => {
       expect(result).toBe("skipped_disabled");
       expect(mockNotify).not.toHaveBeenCalled();
     });
-
-    it("returns 'skipped_no_config' when no schedule matches the reminder number", async () => {
-      const context: ReminderProcessorContext = {
-        ...defaultContext,
-        schedules: [
-          {
-            triggerStatus: OrderStatusCodes.DISPATCHED,
-            reminderNumber: 1,
-            intervalDays: 7,
-            eventCode: NotifyEventCode.DispatchedInitialReminder,
-          },
-        ],
-      };
-      const reminder: OrderStatusReminderRecord = { ...reminder1, reminderNumber: 2 };
-
-      const result = await buildProcessor().process(reminder, context);
-
-      expect(result).toBe("skipped_no_config");
-      expect(mockNotify).not.toHaveBeenCalled();
-    });
   });
 });

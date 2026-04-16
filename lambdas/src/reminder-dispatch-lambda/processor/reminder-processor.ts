@@ -7,11 +7,7 @@ import { type OrderStatusReminderRecord } from "../db/types";
 import { type ReminderNotifyService } from "../notify/reminder-notify-service";
 import { type ReminderSchedule } from "./schedules";
 
-export type ReminderProcessorOutcome =
-  | "dispatched"
-  | "skipped_disabled"
-  | "skipped_no_config"
-  | "failed";
+export type ReminderProcessorOutcome = "dispatched" | "skipped_disabled" | "failed";
 
 export interface ReminderProcessorDeps {
   reminderNotifyService: ReminderNotifyService;
@@ -50,25 +46,20 @@ export class ReminderProcessor {
     const logContext = {
       correlationId,
       reminderId: reminder.reminderId,
-      orderUid: reminder.orderUid,
-      triggerStatus: reminder.triggerStatus,
-      reminderNumber: reminder.reminderNumber,
     };
 
     if (!enabledReminderStatuses.has(reminder.triggerStatus)) {
-      commons.logInfo(name, "Reminder skipped for disabled trigger status", logContext);
+      commons.logInfo(name, "Reminder skipped for disabled trigger status", {
+        ...logContext,
+        triggerStatus: reminder.triggerStatus,
+      });
       return "skipped_disabled";
     }
 
     const reminderEventCode = schedules.find(
       (s) =>
         s.triggerStatus === reminder.triggerStatus && s.reminderNumber === reminder.reminderNumber,
-    )?.eventCode;
-
-    if (!reminderEventCode) {
-      commons.logInfo(name, "No reminder event code configured", logContext);
-      return "skipped_no_config";
-    }
+    )!.eventCode;
 
     commons.logInfo(name, "Processing reminder", logContext);
 

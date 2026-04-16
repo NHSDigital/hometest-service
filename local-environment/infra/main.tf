@@ -545,7 +545,7 @@ resource "aws_lambda_function" "reminder_dispatch_lambda" {
   handler          = "index.handler"
   runtime          = "nodejs24.x"
   source_code_hash = filebase64sha256("${path.module}/../../lambdas/dist/reminder-dispatch-lambda.zip")
-  timeout          = 180
+  timeout          = 60
 
   environment {
     variables = {
@@ -570,7 +570,7 @@ resource "aws_lambda_function" "reminder_dispatch_lambda" {
 resource "aws_cloudwatch_event_rule" "reminder_dispatch_schedule" {
   name                = "${var.project_name}-reminder-dispatch-schedule"
   description         = "Triggers reminder-dispatch-lambda on a scheduled interval"
-  schedule_expression = "rate(5 minutes)"
+  schedule_expression = "rate(2 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "reminder_dispatch_lambda_target" {
