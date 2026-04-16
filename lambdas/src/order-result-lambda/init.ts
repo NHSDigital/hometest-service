@@ -26,7 +26,7 @@ export function buildEnvironment(): Environment {
 
   const secretsClient = new AwsSecretsClient(awsRegion);
   const dbClient = new PostgresDbClient(postgresConfigFromEnv(secretsClient));
-  const orderService = new OrderService(dbClient, commons);
+  const orderService = new OrderService(dbClient);
   const patientDbClient = new PatientDbClient(dbClient);
   const orderDbClient = new OrderDbClient(dbClient);
   const notificationAuditDbClient = new NotificationAuditDbClient(dbClient);
