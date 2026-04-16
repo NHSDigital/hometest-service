@@ -2,6 +2,7 @@ export const API_ENDPOINTS = {
   results: {
     base: "/result",
     get: "/results",
+    status: "/result/status",
   },
   order: {
     create: "/order",
