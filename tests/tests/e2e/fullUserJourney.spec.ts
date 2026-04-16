@@ -106,15 +106,15 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
   ): Promise<APIResponse> {
     const observation = isNormal
       ? ResultsObservationData.buildNormalObservation(
-        orderData.orderId,
-        orderData.patientId,
-        orderData.supplierId,
-      )
+          orderData.orderId,
+          orderData.patientId,
+          orderData.supplierId,
+        )
       : ResultsObservationData.buildAbnormalObservation(
-        orderData.orderId,
-        orderData.patientId,
-        orderData.supplierId,
-      );
+          orderData.orderId,
+          orderData.patientId,
+          orderData.supplierId,
+        );
 
     return await hivResultsApi.submitTestResults(observation, headersTestResults(randomUUID()));
   }
