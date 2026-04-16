@@ -1,8 +1,8 @@
-import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 import EnterMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
-import { MemoryRouter } from "react-router-dom";
+import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>
@@ -23,10 +23,10 @@ describe("EnterMobileNumberPage", () => {
       expect(heading).toBeInTheDocument();
     });
 
-    it("renders the description text", () => {
+    it("renders the hint text", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
-      expect(screen.getByText(/you'll get updates to this number/i)).toBeInTheDocument();
+      expect(screen.getByText(/will send updates to this number/i)).toBeInTheDocument();
     });
 
     it("renders all form elements", () => {
