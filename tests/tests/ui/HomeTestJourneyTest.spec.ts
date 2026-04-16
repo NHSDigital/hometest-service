@@ -11,10 +11,10 @@ const cyberAwareUrl = "https://www.ncsc.gov.uk/cyberaware/home";
 const helpAndSupportUrl = "https://www.nhs.uk/nhs-app/help/";
 
 test.describe("Editing during the order flow", { tag: "@ui" }, () => {
-  test.beforeEach(async ({ homeTestStartPage }) => {
-    await homeTestStartPage.navigate();
-    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-    await homeTestStartPage.clickStartNowButton();
+  test.beforeEach(async ({ beforeYouStartPage, getSelfTestKitPage }) => {
+    await beforeYouStartPage.navigate();
+    await beforeYouStartPage.clickContinueToOrderaKitButton();
+    await getSelfTestKitPage.clickStartNowButton();
   });
 
   test("Updated address reflected after editing postcode during the flow", async ({
@@ -60,7 +60,8 @@ test.describe("Editing during the order flow", { tag: "@ui" }, () => {
 test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
   test.beforeEach(
     async ({
-      homeTestStartPage,
+      beforeYouStartPage,
+      getSelfTestKitPage,
       bloodSampleGuidePage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
@@ -68,12 +69,13 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
       confirmMobileNumberPage,
       checkYourAnswersPage,
     }) => {
-      await homeTestStartPage.navigate();
-      await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-      await homeTestStartPage.clickBloodSampleGuideLink();
+      await beforeYouStartPage.navigate();
+      await beforeYouStartPage.clickContinueToOrderaKitButton();
+      await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+      await getSelfTestKitPage.clickBloodSampleGuideLink();
       await bloodSampleGuidePage.waitUntilPageLoaded();
       await bloodSampleGuidePage.clickBackLink();
-      await homeTestStartPage.clickStartNowButton();
+      await getSelfTestKitPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.selectAddressAndContinue();
       await howComfortablePrickingFingerPage.selectYesOptionAndContinue();
@@ -110,23 +112,26 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
   });
 });
 
-test("Verify Privacy Policy page", async ({ homeTestStartPage, privacyPolicyPage }) => {
-  await homeTestStartPage.navigate();
-  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-  await homeTestStartPage.clickPrivacyPolicyLink();
+test("Verify Privacy Policy page", async ({ beforeYouStartPage, getSelfTestKitPage, privacyPolicyPage }) => {
+  await beforeYouStartPage.navigate();
+  await beforeYouStartPage.clickContinueToOrderaKitButton();
+  await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await getSelfTestKitPage.clickPrivacyPolicyLink();
   const actualHeaderText = await privacyPolicyPage.getHeaderText();
   expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
   await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("href", makeAComplaintUrl);
 });
 
 test("Verify Terms of Use page", async ({
-  homeTestStartPage,
+  beforeYouStartPage,
+  getSelfTestKitPage,
   termsOfUsePage,
   privacyPolicyPage,
 }) => {
-  await homeTestStartPage.navigate();
-  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-  await homeTestStartPage.clickTermsOfUseLink();
+  await beforeYouStartPage.navigate();
+  await beforeYouStartPage.clickContinueToOrderaKitButton();
+  await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await getSelfTestKitPage.clickTermsOfUseLink();
   await termsOfUsePage.waitUntilPageLoaded();
 
   await expect(termsOfUsePage.cyberAwareLink).toHaveAttribute("href", cyberAwareUrl);
@@ -137,5 +142,5 @@ test("Verify Terms of Use page", async ({
   await privacyPolicyPage.clickBackLink();
   await termsOfUsePage.waitUntilPageLoaded();
   await termsOfUsePage.clickBackLink();
-  await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
 });

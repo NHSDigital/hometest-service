@@ -11,14 +11,16 @@ test.describe(
   },
   () => {
     test("should display nearest clinic details", async ({
-      homeTestStartPage,
+      beforeYouStartPage,
+      getSelfTestKitPage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
       goToClinicPage,
     }) => {
-      await homeTestStartPage.navigate();
-      await homeTestStartPage.clickStartNowButton();
+      await beforeYouStartPage.navigate();
+      await beforeYouStartPage.clickContinueToOrderaKitButton();
+      await getSelfTestKitPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();
