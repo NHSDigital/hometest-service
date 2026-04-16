@@ -12,7 +12,7 @@ let patientId: string;
 const supplierName = "Preventx";
 let supplierId: string;
 
-test.describe("Results Flow - Update Order Results Logic", { tag: "@db" }, () => {
+test.describe("Results Flow - Update Order Results Logic", { tag: ["@api", "@db"] }, () => {
   test.beforeEach("Create a patient, order, order status", async ({ testedUser, testOrderDb }) => {
     const result = await testOrderDb.createOrderWithPatientAndStatus(
       new OrderBuilder()
