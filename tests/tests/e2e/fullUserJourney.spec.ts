@@ -31,7 +31,8 @@ interface OrderData {
 
 test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
   async function completeOrderJourney(context: {
-    homeTestStartPage: any;
+    beforeYouStartPage: any;
+    getSelfTestKitPage: any;
     enterDeliveryAddressPage: any;
     selectDeliveryAddressPage: any;
     howComfortablePrickingFingerPage: any;
@@ -39,12 +40,13 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
     checkYourAnswersPage: any;
     orderSubmittedPage: any;
   }): Promise<void> {
-    await context.homeTestStartPage.navigate();
-    await expect(context.homeTestStartPage.headerText).toHaveText(EXPECTED_TEXTS.HIV_KIT_HEADER);
-    await context.homeTestStartPage.clickStartNowButton();
+    await context.beforeYouStartPage.navigate();
+    await context.beforeYouStartPage.clickContinueToOrderaKitButton();
+    await expect(context.getSelfTestKitPage.headerText).toHaveText(EXPECTED_TEXTS.HIV_KIT_HEADER);
+    await context.getSelfTestKitPage.clickStartNowButton();
     await context.enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
     await context.selectDeliveryAddressPage.selectAddressAndContinue();
-    await expect(context.homeTestStartPage.headerText).toHaveText(
+    await expect(context.getSelfTestKitPage.headerText).toHaveText(
       EXPECTED_TEXTS.BLOOD_SAMPLE_HEADER,
     );
     await context.howComfortablePrickingFingerPage.selectYesOptionAndContinue();
@@ -104,15 +106,15 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
   ): Promise<APIResponse> {
     const observation = isNormal
       ? ResultsObservationData.buildNormalObservation(
-          orderData.orderId,
-          orderData.patientId,
-          orderData.supplierId,
-        )
+        orderData.orderId,
+        orderData.patientId,
+        orderData.supplierId,
+      )
       : ResultsObservationData.buildAbnormalObservation(
-          orderData.orderId,
-          orderData.patientId,
-          orderData.supplierId,
-        );
+        orderData.orderId,
+        orderData.patientId,
+        orderData.supplierId,
+      );
 
     return await hivResultsApi.submitTestResults(observation, headersTestResults(randomUUID()));
   }
@@ -139,7 +141,8 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
       orderStatusApi,
       hivResultsApi,
       negativeResultPage,
-      homeTestStartPage,
+      beforeYouStartPage,
+      getSelfTestKitPage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
@@ -150,7 +153,8 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
       testOrderDb,
     }) => {
       await completeOrderJourney({
-        homeTestStartPage,
+        beforeYouStartPage,
+        getSelfTestKitPage,
         enterDeliveryAddressPage,
         selectDeliveryAddressPage,
         howComfortablePrickingFingerPage,
@@ -193,9 +197,10 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
       testedUser,
       orderStatusApi,
       hivResultsApi,
+      beforeYouStartPage,
       negativeResultPage,
       orderStatusPage,
-      homeTestStartPage,
+      getSelfTestKitPage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
@@ -205,7 +210,8 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
       testOrderDb,
     }) => {
       await completeOrderJourney({
-        homeTestStartPage,
+        beforeYouStartPage,
+        getSelfTestKitPage,
         enterDeliveryAddressPage,
         selectDeliveryAddressPage,
         howComfortablePrickingFingerPage,

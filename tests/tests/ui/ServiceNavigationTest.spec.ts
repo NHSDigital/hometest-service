@@ -7,10 +7,11 @@ const randomAddress = AddressModel.getRandomAddress();
 const personalDetails = PersonalDetailsModel.getRandomPersonalDetails();
 
 test.describe("Reaching Check Your Answers page", { tag: "@ui" }, () => {
-  test.beforeEach(async ({ homeTestStartPage }) => {
-    await homeTestStartPage.navigate();
-    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-    await homeTestStartPage.clickStartNowButton();
+  test.beforeEach(async ({ beforeYouStartPage, getSelfTestKitPage }) => {
+    await beforeYouStartPage.navigate();
+    await beforeYouStartPage.clickContinueToOrderaKitButton();
+    await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+    await getSelfTestKitPage.clickStartNowButton();
   });
 
   test("Via postcode entry and confirming the default phone number", async ({

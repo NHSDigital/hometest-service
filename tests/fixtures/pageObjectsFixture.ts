@@ -1,7 +1,8 @@
 import { test as base } from "@playwright/test";
 
 // Page Objects
-import { HomeTestStartPage } from "../page-objects/HomeTestStartPage";
+import { BeforeYouStartPage } from "../page-objects/BeforeYouStartPage";
+import { GetSelfTestKitPage } from "../page-objects/GetSelfTestKitPage";
 import { EnterDeliveryAddressPage } from "../page-objects/EnterDeliveryAddressPage";
 import { BloodSampleGuidePage } from "../page-objects/BloodSampleGuidePage";
 import { CheckYourAnswersPage } from "../page-objects/CheckYourAnswersPage";
@@ -24,7 +25,8 @@ import { GoToClinicPage } from "../page-objects/GoToClinicPage";
 import { SuppliersPrivacyPolicyPage } from "../page-objects/SuppliersPrivacyPolicyPage";
 
 export interface MyFixtures {
-  homeTestStartPage: HomeTestStartPage;
+  beforeYouStartPage: BeforeYouStartPage;
+  getSelfTestKitPage: GetSelfTestKitPage;
   enterDeliveryAddressPage: EnterDeliveryAddressPage;
   enterAddressManuallyPage: EnterAddressManuallyPage;
   selectDeliveryAddressPage: SelectDeliveryAddressPage;
@@ -48,8 +50,12 @@ export interface MyFixtures {
 }
 
 export const pageObjectFixture = base.extend<MyFixtures>({
-  homeTestStartPage: async ({ page }, use) => {
-    await use(new HomeTestStartPage(page));
+  beforeYouStartPage: async ({ page }, use) => {
+    await use(new BeforeYouStartPage(page));
+  },
+
+  getSelfTestKitPage: async ({ page }, use) => {
+    await use(new GetSelfTestKitPage(page));
   },
 
   enterDeliveryAddressPage: async ({ page }, use) => {

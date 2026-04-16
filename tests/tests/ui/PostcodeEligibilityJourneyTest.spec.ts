@@ -25,7 +25,8 @@ const TEST_POSTCODE = "TN37 7PT";
 
 test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
   test("should look up a postcode, select an address and reach the pricking-finger page", async ({
-    homeTestStartPage,
+    beforeYouStartPage,
+    getSelfTestKitPage,
     enterDeliveryAddressPage,
     selectDeliveryAddressPage,
     howComfortablePrickingFingerPage,
@@ -58,9 +59,9 @@ test.describe("Postcode Eligibility Journey", { tag: "@ui" }, () => {
     await wiremock.createMapping(osPlacesMapping);
 
     // --- Act: navigate through the journey ---
-    await homeTestStartPage.navigate();
-    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-    await homeTestStartPage.clickStartNowButton();
+    await beforeYouStartPage.navigate();
+    await beforeYouStartPage.clickContinueToOrderaKitButton();
+    await getSelfTestKitPage.clickStartNowButton();
 
     await enterDeliveryAddressPage.waitUntilPageLoaded();
     await enterDeliveryAddressPage.postCodeInput.fill(TEST_POSTCODE);
