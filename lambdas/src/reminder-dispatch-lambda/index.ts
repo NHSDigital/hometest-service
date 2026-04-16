@@ -1,11 +1,9 @@
 import { Context, EventBridgeEvent } from "aws-lambda";
 
-import { ConsoleCommons } from "../lib/commons";
 import { init } from "./init";
 import { type ReminderProcessorOutcome } from "./processor/reminder-processor";
 import { buildSchedules } from "./processor/schedules";
 
-const commons = new ConsoleCommons();
 const name = "reminder-dispatch-lambda";
 
 function countOutcomes(
@@ -33,7 +31,7 @@ export const lambdaHandler = async (
   const correlationId = event.id;
 
   try {
-    commons.logInfo(name, "Reminder dispatch event received", {
+    console.info(name, "Reminder dispatch event received", {
       correlationId,
       source: event.source,
       detailType: event["detail-type"],
@@ -51,7 +49,7 @@ export const lambdaHandler = async (
 
     const outcomes: ReminderProcessorOutcome[] = settledOutcomes.map((result) => {
       if (result.status === "rejected") {
-        commons.logError(name, "Reminder processing threw unexpectedly", {
+        console.error(name, "Reminder processing threw unexpectedly", {
           correlationId,
           error: result.reason,
         });
@@ -62,7 +60,7 @@ export const lambdaHandler = async (
 
     const counts = countOutcomes(outcomes);
 
-    commons.logInfo(name, "Reminder dispatch completed", {
+    console.info(name, "Reminder dispatch completed", {
       correlationId,
       totalCount: reminders.length,
       dispatchedCount: counts.dispatched,
@@ -70,7 +68,7 @@ export const lambdaHandler = async (
       skippedDisabledCount: counts.skipped_disabled,
     });
   } catch (error) {
-    commons.logError(name, "Reminder dispatch failed", { correlationId, error });
+    console.error(name, "Reminder dispatch failed", { correlationId, error });
     throw error;
   }
 };
