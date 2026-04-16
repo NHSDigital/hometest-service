@@ -1,11 +1,12 @@
 import { type DBClient } from "../../../lib/db/db-client";
 import { type OrderStatusCode } from "../../../lib/db/order-status-db";
-import { type OrderStatusReminderRecord, type ReminderScheduleTuple } from "../types";
+import { type ReminderSchedule } from "../../processor/schedules";
+import { type OrderStatusReminderRecord } from "../types";
 
 export class GetScheduledRemindersQuery {
   constructor(private readonly dbClient: DBClient) {}
 
-  async execute(schedules: ReminderScheduleTuple[]): Promise<OrderStatusReminderRecord[]> {
+  async execute(schedules: ReminderSchedule[]): Promise<OrderStatusReminderRecord[]> {
     if (schedules.length === 0) {
       return [];
     }

@@ -1,7 +1,7 @@
 import { type DBClient } from "../../../lib/db/db-client";
 import { OrderStatusCodes } from "../../../lib/db/order-status-db";
 import { NotifyEventCode } from "../../../lib/types/notify-message";
-import { type ReminderScheduleTuple } from "../types";
+import { type ReminderSchedule } from "../../processor/schedules";
 import { GetScheduledRemindersQuery } from "./get-scheduled-reminders";
 
 const normalizeWhitespace = (sql: string): string => sql.replace(/\s+/g, " ").trim();
@@ -22,7 +22,7 @@ describe("GetScheduledRemindersQuery", () => {
     query = new GetScheduledRemindersQuery(dbClient as DBClient);
   });
 
-  const schedules: ReminderScheduleTuple[] = [
+  const schedules: ReminderSchedule[] = [
     {
       triggerStatus: OrderStatusCodes.DISPATCHED,
       reminderNumber: 1,

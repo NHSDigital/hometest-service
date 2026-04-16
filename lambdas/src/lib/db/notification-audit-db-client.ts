@@ -1,4 +1,4 @@
-import { NotifyEventCode } from "../types/notify-message";
+import { type NotifyEventCode } from "../types/notify-message";
 import { type DBClient } from "./db-client";
 
 export enum NotificationAuditStatus {

@@ -2,31 +2,27 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
-import {
-  type OrderStatusCode,
-  OrderStatusCodes,
-  OrderStatusService,
-} from "../lib/db/order-status-db";
+import { OrderStatusCodes, OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
+import {
+  type ReminderDispatchConfig,
+  getReminderDispatchConfigFromEnv,
+} from "./config/dispatch-config";
 import { MarkReminderAsFailedCommand } from "./db/commands/mark-reminder-as-failed";
 import { MarkReminderAsQueuedCommand } from "./db/commands/mark-reminder-as-queued";
 import { ScheduleReminderCommand } from "./db/commands/schedule-reminder";
 import { GetScheduledRemindersQuery } from "./db/queries/get-scheduled-reminders";
-import { type ReminderConfiguration, getReminderDispatchConfigFromEnv } from "./dispatch-config";
 import { DispatchedReminderMessageBuilder } from "./notify/dispatched-reminder-message-builder";
 import { ReminderNotifyService } from "./notify/reminder-notify-service";
+import { ReminderProcessor } from "./processor/reminder-processor";
 
 export interface Environment {
-  reminderNotifyService: ReminderNotifyService;
+  reminderProcessor: ReminderProcessor;
   getScheduledRemindersQuery: GetScheduledRemindersQuery;
-  markReminderAsQueuedCommand: MarkReminderAsQueuedCommand;
-  markReminderAsFailedCommand: MarkReminderAsFailedCommand;
-  scheduleReminderCommand: ScheduleReminderCommand;
-  enabledReminderStatuses: ReadonlySet<OrderStatusCode>;
-  reminderConfiguration: ReminderConfiguration;
+  reminderDispatchConfig: ReminderDispatchConfig;
 }
 
 export function buildEnvironment(): Environment {
@@ -59,16 +55,17 @@ export function buildEnvironment(): Environment {
     notifyMessagesQueueUrl,
   });
 
-  const { enabledReminderStatuses, reminderConfiguration } = getReminderDispatchConfigFromEnv();
-
-  return {
+  const reminderProcessor = new ReminderProcessor({
     reminderNotifyService,
-    getScheduledRemindersQuery,
     markReminderAsQueuedCommand,
     markReminderAsFailedCommand,
     scheduleReminderCommand,
-    enabledReminderStatuses,
-    reminderConfiguration,
+  });
+
+  return {
+    reminderProcessor,
+    getScheduledRemindersQuery,
+    reminderDispatchConfig: getReminderDispatchConfigFromEnv(),
   };
 }
 

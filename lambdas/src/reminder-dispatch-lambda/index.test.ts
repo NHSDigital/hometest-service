@@ -28,11 +28,11 @@ const DISPATCHED_REMINDER_2: OrderStatusReminderRecord = {
 };
 
 describe("reminder-dispatch-lambda", () => {
-  const mockNotify = jest.fn<Promise<void>, [unknown]>().mockResolvedValue(undefined);
+  const mockProcessReminder = jest.fn<
+    Promise<"dispatched">,
+    [OrderStatusReminderRecord, unknown]
+  >();
   const mockGetScheduledReminders = jest.fn<Promise<OrderStatusReminderRecord[]>, [unknown]>();
-  const mockMarkReminderAsQueued = jest.fn<Promise<void>, [string]>().mockResolvedValue(undefined);
-  const mockMarkReminderAsFailed = jest.fn<Promise<void>, [string]>().mockResolvedValue(undefined);
-  const mockScheduleReminder = jest.fn<Promise<void>, [unknown]>().mockResolvedValue(undefined);
 
   const mockedInit = jest.mocked(init);
 
@@ -52,130 +52,66 @@ describe("reminder-dispatch-lambda", () => {
     jest.clearAllMocks();
 
     mockGetScheduledReminders.mockResolvedValue([DISPATCHED_REMINDER_1, DISPATCHED_REMINDER_2]);
+    mockProcessReminder.mockResolvedValue("dispatched");
 
     mockedInit.mockReturnValue({
-      reminderNotifyService: {
-        dispatch: mockNotify,
+      reminderProcessor: { process: mockProcessReminder },
+      getScheduledRemindersQuery: { execute: mockGetScheduledReminders },
+      reminderDispatchConfig: {
+        enabledReminderStatuses: new Set([OrderStatusCodes.DISPATCHED]),
+        reminderConfiguration: {
+          [OrderStatusCodes.DISPATCHED]: [
+            { interval: 7, eventCode: "DISPATCHED_INITIAL_REMINDER" },
+            { interval: 14, eventCode: "DISPATCHED_SECOND_REMINDER" },
+          ],
+        },
       },
-      getScheduledRemindersQuery: {
-        execute: mockGetScheduledReminders,
-      },
-      markReminderAsQueuedCommand: {
-        execute: mockMarkReminderAsQueued,
-      },
-      markReminderAsFailedCommand: {
-        execute: mockMarkReminderAsFailed,
-      },
-      scheduleReminderCommand: {
-        execute: mockScheduleReminder,
-      },
+    } as unknown as ReturnType<typeof init>);
+  });
+
+  it("creates the processor context with the correct invocation values", async () => {
+    await lambdaHandler(mockEvent, {} as Context);
+
+    const expectedContext = {
+      schedules: [
+        {
+          triggerStatus: OrderStatusCodes.DISPATCHED,
+          reminderNumber: 1,
+          intervalDays: 7,
+          eventCode: "DISPATCHED_INITIAL_REMINDER",
+        },
+        {
+          triggerStatus: OrderStatusCodes.DISPATCHED,
+          reminderNumber: 2,
+          intervalDays: 14,
+          eventCode: "DISPATCHED_SECOND_REMINDER",
+        },
+      ],
       enabledReminderStatuses: new Set([OrderStatusCodes.DISPATCHED]),
-      reminderConfiguration: {
-        [OrderStatusCodes.DISPATCHED]: [
-          { interval: 7, eventCode: "DISPATCHED_INITIAL_REMINDER" },
-          { interval: 14, eventCode: "DISPATCHED_SECOND_REMINDER" },
-        ],
-      },
-    } as unknown as ReturnType<typeof init>);
-  });
-
-  it("calls notify for each pending reminder with the correct arguments", async () => {
-    await lambdaHandler(mockEvent, {} as Context);
-
-    expect(mockNotify).toHaveBeenCalledTimes(2);
-
-    expect(mockNotify.mock.calls[0][0]).toMatchObject({
-      reminderId: DISPATCHED_REMINDER_1.reminderId,
-      orderId: DISPATCHED_REMINDER_1.orderUid,
       correlationId: mockEvent.id,
-      statusCode: OrderStatusCodes.DISPATCHED,
-      eventCode: "DISPATCHED_INITIAL_REMINDER",
-    });
+    };
 
-    expect(mockNotify.mock.calls[1][0]).toMatchObject({
-      reminderId: DISPATCHED_REMINDER_2.reminderId,
-      orderId: DISPATCHED_REMINDER_2.orderUid,
-      correlationId: mockEvent.id,
-      statusCode: OrderStatusCodes.DISPATCHED,
-      eventCode: "DISPATCHED_SECOND_REMINDER",
-    });
+    expect(mockProcessReminder).toHaveBeenCalledWith(expect.anything(), expectedContext);
   });
 
-  it("marks each reminder as queued after successful dispatch", async () => {
+  it("calls process for each scheduled reminder", async () => {
     await lambdaHandler(mockEvent, {} as Context);
 
-    expect(mockMarkReminderAsQueued).toHaveBeenCalledTimes(2);
-    expect(mockMarkReminderAsQueued).toHaveBeenCalledWith(DISPATCHED_REMINDER_1.reminderId);
-    expect(mockMarkReminderAsQueued).toHaveBeenCalledWith(DISPATCHED_REMINDER_2.reminderId);
+    expect(mockProcessReminder).toHaveBeenCalledTimes(2);
+    expect(mockProcessReminder).toHaveBeenCalledWith(DISPATCHED_REMINDER_1, expect.any(Object));
+    expect(mockProcessReminder).toHaveBeenCalledWith(DISPATCHED_REMINDER_2, expect.any(Object));
   });
 
-  it("schedules the next reminder when another exists in the series", async () => {
-    await lambdaHandler(mockEvent, {} as Context);
+  it("counts as failed and does not throw when process rejects unexpectedly", async () => {
+    mockProcessReminder.mockRejectedValueOnce(new Error("unexpected error"));
 
-    expect(mockScheduleReminder).toHaveBeenCalledTimes(1);
-    expect(mockScheduleReminder).toHaveBeenCalledWith(
-      DISPATCHED_REMINDER_1.orderUid,
-      OrderStatusCodes.DISPATCHED,
-      2,
-      TRIGGERED_AT,
-    );
+    await expect(lambdaHandler(mockEvent, {} as Context)).resolves.toBeUndefined();
   });
 
-  it("does not schedule next reminder for the last in the series", async () => {
-    mockGetScheduledReminders.mockResolvedValueOnce([DISPATCHED_REMINDER_2]);
-
-    await lambdaHandler(mockEvent, {} as Context);
-
-    expect(mockScheduleReminder).not.toHaveBeenCalled();
-  });
-
-  it("marks reminder as failed and continues to next when dispatch throws", async () => {
-    const dispatchError = new Error("Notify service unavailable");
-    mockNotify.mockRejectedValueOnce(dispatchError);
-
-    await lambdaHandler(mockEvent, {} as Context);
-
-    expect(mockMarkReminderAsFailed).toHaveBeenCalledTimes(1);
-    expect(mockMarkReminderAsFailed).toHaveBeenCalledWith(DISPATCHED_REMINDER_1.reminderId);
-
-    expect(mockMarkReminderAsQueued).toHaveBeenCalledTimes(1);
-    expect(mockMarkReminderAsQueued).toHaveBeenCalledWith(DISPATCHED_REMINDER_2.reminderId);
-  });
-
-  it("skips reminders whose status is not in the enabled set", async () => {
-    mockedInit.mockReturnValueOnce({
-      ...mockedInit(),
-      enabledReminderStatuses: new Set([OrderStatusCodes.RECEIVED]),
-    } as unknown as ReturnType<typeof init>);
-
-    await lambdaHandler(mockEvent, {} as Context);
-
-    expect(mockNotify).not.toHaveBeenCalled();
-    expect(mockMarkReminderAsQueued).not.toHaveBeenCalled();
-  });
-
-  it("skips reminders with no matching event code in the configuration", async () => {
-    mockedInit.mockReturnValueOnce({
-      ...mockedInit(),
-      reminderConfiguration: {
-        [OrderStatusCodes.DISPATCHED]: [{ interval: 7, eventCode: "DISPATCHED_INITIAL_REMINDER" }],
-      },
-    } as unknown as ReturnType<typeof init>);
-
-    await lambdaHandler(mockEvent, {} as Context);
-
-    expect(mockNotify).toHaveBeenCalledTimes(1);
-    expect(mockNotify.mock.calls[0][0]).toMatchObject({
-      reminderId: DISPATCHED_REMINDER_1.reminderId,
-      eventCode: "DISPATCHED_INITIAL_REMINDER",
-    });
-  });
-
-  it("throws and re-throws when getScheduledReminders rejects", async () => {
-    const error = new Error("DB connection failed");
-    mockGetScheduledReminders.mockRejectedValueOnce(error);
+  it("throws and re-throws when getScheduledRemindersQuery rejects", async () => {
+    mockGetScheduledReminders.mockRejectedValueOnce(new Error("DB connection failed"));
 
     await expect(lambdaHandler(mockEvent, {} as Context)).rejects.toThrow("DB connection failed");
-    expect(mockNotify).not.toHaveBeenCalled();
+    expect(mockProcessReminder).not.toHaveBeenCalled();
   });
 });
