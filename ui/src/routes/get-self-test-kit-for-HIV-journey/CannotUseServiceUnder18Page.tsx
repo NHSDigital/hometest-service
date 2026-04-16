@@ -28,7 +28,7 @@ export const NHS_LINKS = {
 };
 
 export default function CannotUseServiceUnder18Page() {
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { resetNavigation, goBack, stepHistory } = useJourneyNavigationContext();
   const { "cannot-use-service-under-18": content } = useContent();
   const { orderAnswers } = useCreateOrderContext();
 
@@ -49,7 +49,7 @@ export default function CannotUseServiceUnder18Page() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(RoutePath.BeforeYouStartPage);
+          resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
         }
       }}
     >

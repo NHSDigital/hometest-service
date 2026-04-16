@@ -252,10 +252,10 @@ describe("Back Navigation", () => {
     fireEvent.click(screen.getByText("Back"));
 
     expect(goBackMock).toHaveBeenCalledTimes(1);
-    expect(goToStepMock).not.toHaveBeenCalled();
+    expect(resetNavigationMock).not.toHaveBeenCalled();
   });
 
-  it("calls goToStep when there is no previous step", () => {
+  it("calls resetNavigation when there is no previous step", () => {
     renderWithProviders(<CannotUseServiceUnder18Page />, {
       stepHistory: [JourneyStepNames.CannotUseServiceUnder18],
     });
@@ -263,6 +263,8 @@ describe("Back Navigation", () => {
     fireEvent.click(screen.getByText("Back"));
 
     expect(goBackMock).not.toHaveBeenCalled();
-    expect(goToStepMock).toHaveBeenCalledWith(RoutePath.BeforeYouStartPage);
+    expect(resetNavigationMock).toHaveBeenCalledWith(RoutePath.BeforeYouStartPage, {
+      replace: true,
+    });
   });
 });

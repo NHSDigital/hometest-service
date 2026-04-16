@@ -8,7 +8,7 @@ import { RoutePath } from "@/lib/models/route-paths";
 import { useJourneyNavigationContext } from "@/state";
 
 export default function BloodSampleGuidePage() {
-  const { goBack, stepHistory, goToStep } = useJourneyNavigationContext();
+  const { goBack, stepHistory, resetNavigation } = useJourneyNavigationContext();
   const { "blood-sample-guide": content } = useContent();
 
   return (
@@ -18,7 +18,7 @@ export default function BloodSampleGuidePage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(RoutePath.BeforeYouStartPage);
+          resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
         }
       }}
     >
