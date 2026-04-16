@@ -3,18 +3,18 @@ import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
-import { OrderStatusReminderDbClient } from "../lib/db/order-status-reminder-db-client";
 import { PatientDbClient } from "../lib/db/patient-db-client";
-import { DispatchedReminderMessageBuilder } from "../lib/notify/message-builders/reminder/dispatched-reminder-message-builder";
-import { ReminderNotifyService } from "../lib/notify/services/reminder-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
 import { buildEnvironment as init } from "./init";
+import { DispatchedReminderMessageBuilder } from "./services/dispatched-reminder-message-builder";
+import { OrderStatusReminderDbClient } from "./services/order-status-reminder-db-client";
+import { ReminderNotifyService } from "./services/reminder-notify-service";
 
 jest.mock("../lib/db/order-status-db");
-jest.mock("../lib/db/order-status-reminder-db-client");
+jest.mock("./services/order-status-reminder-db-client");
 jest.mock("../lib/db/patient-db-client");
 jest.mock("../lib/db/order-db-client");
 jest.mock("../lib/db/notification-audit-db-client");
@@ -22,8 +22,8 @@ jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
-jest.mock("../lib/notify/services/reminder-notify-service");
-jest.mock("../lib/notify/message-builders/reminder/dispatched-reminder-message-builder");
+jest.mock("./services/reminder-notify-service");
+jest.mock("./services/dispatched-reminder-message-builder");
 
 describe("init", () => {
   const originalEnv = process.env;

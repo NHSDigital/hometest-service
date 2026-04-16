@@ -1,6 +1,6 @@
-import { NotifyEventCode } from "../types/notify-message";
-import { type DBClient } from "./db-client";
-import { type OrderStatusCode } from "./order-status-db";
+import { type DBClient } from "../../lib/db/db-client";
+import { type OrderStatusCode } from "../../lib/db/order-status-db";
+import { NotifyEventCode } from "../../lib/types/notify-message";
 
 export interface OrderStatusReminderRecord {
   reminderId: string;

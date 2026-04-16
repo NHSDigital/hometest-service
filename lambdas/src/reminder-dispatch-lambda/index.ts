@@ -2,14 +2,14 @@ import { Context, EventBridgeEvent } from "aws-lambda";
 
 import { ConsoleCommons } from "../lib/commons";
 import { type OrderStatusCode } from "../lib/db/order-status-db";
+import { type ReminderConfiguration } from "./dispatch-config";
+import { init } from "./init";
 import {
   type OrderStatusReminderDbClient,
   type OrderStatusReminderRecord,
   type ReminderScheduleTuple,
-} from "../lib/db/order-status-reminder-db-client";
-import { type ReminderNotifyService } from "../lib/notify/services/reminder-notify-service";
-import { type ReminderConfiguration } from "./dispatch-config";
-import { init } from "./init";
+} from "./services/order-status-reminder-db-client";
+import { type ReminderNotifyService } from "./services/reminder-notify-service";
 
 const commons = new ConsoleCommons();
 const name = "reminder-dispatch-lambda";
@@ -81,11 +81,23 @@ async function processReminder(
     });
   } catch (error) {
     commons.logError(name, "Failed to dispatch reminder", { ...logContext, error });
-    await orderStatusReminderDbClient.markReminderAsFailed(reminder.reminderId);
+    try {
+      await orderStatusReminderDbClient.markReminderAsFailed(reminder.reminderId);
+    } catch (dbError) {
+      commons.logError(name, "Failed to mark reminder as failed", {
+        ...logContext,
+        error: dbError,
+      });
+    }
     return "failed";
   }
 
-  await orderStatusReminderDbClient.markReminderAsQueued(reminder.reminderId);
+  try {
+    await orderStatusReminderDbClient.markReminderAsQueued(reminder.reminderId);
+  } catch (dbError) {
+    commons.logError(name, "Failed to mark reminder as queued", { ...logContext, error: dbError });
+    return "failed";
+  }
   commons.logInfo(name, "Reminder dispatched successfully", {
     ...logContext,
     eventCode: reminderEventCode,
@@ -98,16 +110,20 @@ async function processReminder(
   );
 
   if (nextSchedule) {
-    await orderStatusReminderDbClient.scheduleReminder(
-      reminder.orderUid,
-      reminder.triggerStatus,
-      nextSchedule.reminderNumber,
-      reminder.triggeredAt,
-    );
-    commons.logInfo(name, "Next reminder scheduled", {
-      ...logContext,
-      reminderNumber: nextSchedule.reminderNumber,
-    });
+    try {
+      await orderStatusReminderDbClient.scheduleReminder(
+        reminder.orderUid,
+        reminder.triggerStatus,
+        nextSchedule.reminderNumber,
+        reminder.triggeredAt,
+      );
+      commons.logInfo(name, "Next reminder scheduled", {
+        ...logContext,
+        reminderNumber: nextSchedule.reminderNumber,
+      });
+    } catch (dbError) {
+      commons.logError(name, "Failed to schedule next reminder", { ...logContext, error: dbError });
+    }
   }
 
   return "dispatched";
@@ -137,18 +153,27 @@ export const lambdaHandler = async (
     const schedules = buildSchedules(reminderConfiguration);
     const reminders = await orderStatusReminderDbClient.getScheduledReminders(schedules);
 
-    const outcomes: ReminderOutcome[] = [];
-    for (const reminder of reminders) {
-      outcomes.push(
-        await processReminder(reminder, {
+    const settledOutcomes = await Promise.allSettled(
+      reminders.map((reminder) =>
+        processReminder(reminder, {
           reminderNotifyService,
           orderStatusReminderDbClient,
           schedules,
           enabledReminderStatuses,
           correlationId,
         }),
-      );
-    }
+      ),
+    );
+    const outcomes: ReminderOutcome[] = settledOutcomes.map((result) => {
+      if (result.status === "rejected") {
+        commons.logError(name, "Reminder processing threw unexpectedly", {
+          correlationId,
+          error: result.reason,
+        });
+        return "failed";
+      }
+      return result.value;
+    });
 
     const countFunc = (outcome: ReminderOutcome) => outcomes.filter((o) => o === outcome).length;
 

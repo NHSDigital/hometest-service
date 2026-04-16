@@ -4,14 +4,14 @@ import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-clien
 import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusCodes, OrderStatusService } from "../lib/db/order-status-db";
 import { type OrderStatusCode } from "../lib/db/order-status-db";
-import { OrderStatusReminderDbClient } from "../lib/db/order-status-reminder-db-client";
 import { PatientDbClient } from "../lib/db/patient-db-client";
-import { DispatchedReminderMessageBuilder } from "../lib/notify/message-builders/reminder/dispatched-reminder-message-builder";
-import { ReminderNotifyService } from "../lib/notify/services/reminder-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 import { type ReminderConfiguration, getReminderDispatchConfigFromEnv } from "./dispatch-config";
+import { DispatchedReminderMessageBuilder } from "./services/dispatched-reminder-message-builder";
+import { OrderStatusReminderDbClient } from "./services/order-status-reminder-db-client";
+import { ReminderNotifyService } from "./services/reminder-notify-service";
 
 export interface Environment {
   reminderNotifyService: ReminderNotifyService;
