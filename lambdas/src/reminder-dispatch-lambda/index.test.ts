@@ -1,9 +1,9 @@
 import { Context, EventBridgeEvent } from "aws-lambda";
 
 import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { type OrderStatusReminderRecord } from "./db/types";
 import { lambdaHandler } from "./index";
 import { init } from "./init";
-import { type OrderStatusReminderRecord } from "./services/order-status-reminder-db-client";
 
 jest.mock("./init", () => ({
   init: jest.fn(),
@@ -57,11 +57,17 @@ describe("reminder-dispatch-lambda", () => {
       reminderNotifyService: {
         dispatch: mockNotify,
       },
-      orderStatusReminderDbClient: {
-        getScheduledReminders: mockGetScheduledReminders,
-        markReminderAsQueued: mockMarkReminderAsQueued,
-        markReminderAsFailed: mockMarkReminderAsFailed,
-        scheduleReminder: mockScheduleReminder,
+      getScheduledRemindersQuery: {
+        execute: mockGetScheduledReminders,
+      },
+      markReminderAsQueuedCommand: {
+        execute: mockMarkReminderAsQueued,
+      },
+      markReminderAsFailedCommand: {
+        execute: mockMarkReminderAsFailed,
+      },
+      scheduleReminderCommand: {
+        execute: mockScheduleReminder,
       },
       enabledReminderStatuses: new Set([OrderStatusCodes.DISPATCHED]),
       reminderConfiguration: {
