@@ -24,7 +24,6 @@ import {
 
 let orderId: string;
 let patientId: string;
-let correlationId: string;
 const supplierId = OrderTestData.PREVENTX_SUPPLIER_ID;
 const POLL_TIMEOUT_MS = 15000;
 
@@ -100,7 +99,6 @@ test.describe("Full Order E2E API", { tag: ["@API", "@db"] }, () => {
     const orderBody = CreateOrderResponseModel.fromJson(await orderResponse.json());
 
     orderId = orderBody.orderUid;
-    correlationId = randomUUID();
 
     patientId = (await testOrderDb.getPatientUidByNhsNumber(testedUser.nhsNumber!))!;
 
@@ -170,7 +168,7 @@ test.describe("Full Order E2E API", { tag: ["@API", "@db"] }, () => {
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
     const response = await hivResultsApi.submitTestResults(
       testData,
-      headersTestResults(correlationId),
+      headersTestResults(randomUUID()),
     );
     expect(response.status()).toBe(201);
 
@@ -181,13 +179,13 @@ test.describe("Full Order E2E API", { tag: ["@API", "@db"] }, () => {
       testedUser.nhsNumber!,
       testedUser.dob!,
       orderId,
-      correlationId,
+      randomUUID(),
       200,
     );
 
     const resultResponse = await hivResultsApi.getResult(
       createGetResultParams(testedUser.nhsNumber!, testedUser.dob!, orderId),
-      createGetResultHeaders(correlationId),
+      createGetResultHeaders(randomUUID()),
     );
     hivResultsApi.validateStatus(resultResponse, 200);
     const resultBody = (await resultResponse.json()) as {
@@ -263,7 +261,7 @@ test.describe("Full Order E2E API", { tag: ["@API", "@db"] }, () => {
     );
     const response = await hivResultsApi.submitTestResults(
       testData,
-      headersTestResults(correlationId),
+      headersTestResults(randomUUID()),
     );
     expect(response.status()).toBe(201);
 
@@ -276,7 +274,7 @@ test.describe("Full Order E2E API", { tag: ["@API", "@db"] }, () => {
       testedUser.nhsNumber!,
       testedUser.dob!,
       orderId,
-      correlationId,
+      randomUUID(),
       404,
     );
   });
