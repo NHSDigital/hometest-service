@@ -1,4 +1,3 @@
-import { ConsoleCommons } from "../../commons";
 import {
   NotificationAuditDbClient,
   NotificationAuditStatus,
@@ -6,7 +5,6 @@ import {
 import { SQSClientInterface } from "../../sqs/sqs-client";
 import { type NotifyMessage } from "../../types/notify-message";
 
-const commons = new ConsoleCommons();
 const name = "notify-service";
 
 export interface NotifyServiceDependencies {
@@ -41,7 +39,7 @@ export abstract class BaseNotifyService {
         status: NotificationAuditStatus.QUEUED,
       });
 
-      commons.logInfo(name, "Notification dispatched", {
+      console.info(name, "Notification dispatched", {
         correlationId,
         orderId,
         eventCode: notifyMessage.eventCode,
@@ -49,7 +47,7 @@ export abstract class BaseNotifyService {
         messageReference: notifyMessage.messageReference,
       });
     } catch (error) {
-      commons.logError(name, "Failed to dispatch notification", {
+      console.error(name, "Failed to dispatch notification", {
         correlationId,
         orderId,
         eventCode: notifyMessage.eventCode,

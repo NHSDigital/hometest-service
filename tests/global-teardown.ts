@@ -7,7 +7,22 @@ import { cleanupWireMockAuthState } from "./utils/users/wiremockAuthMappings";
 
 async function globalTeardown(config: FullConfig) {
   console.log("🧹 Global teardown started");
-  console.log(`Completed tests in ${config.projects.length} project(s)`);
+
+  const projectFilter: string[] = [];
+  for (let i = 0; i < process.argv.length; i++) {
+    const arg = process.argv[i];
+    if (arg === "--project" && process.argv[i + 1]) projectFilter.push(process.argv[i + 1]);
+    if (arg.startsWith("--project=")) projectFilter.push(arg.slice("--project=".length));
+  }
+
+  const executedProjects =
+    projectFilter.length > 0
+      ? config.projects.filter((p) => projectFilter.includes(p.name))
+      : config.projects;
+
+  console.log(
+    `Completed tests in ${executedProjects.length} project(s): ${executedProjects.map((p) => p.name).join(", ")}`,
+  );
 
   const testConfig = ConfigFactory.getConfig();
 
