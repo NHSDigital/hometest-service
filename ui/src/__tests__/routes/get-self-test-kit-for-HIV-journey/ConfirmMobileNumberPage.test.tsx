@@ -4,7 +4,13 @@ import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import ConfirmMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/ConfirmMobileNumberPage";
-import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
+import {
+  AuthProvider,
+  CreateOrderProvider,
+  JourneyNavigationProvider,
+  useAuth,
+  useCreateOrderContext,
+} from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
@@ -411,6 +417,58 @@ describe("ConfirmMobileNumberPage", () => {
         /uk mobile phone number/i,
       ) as HTMLInputElement;
       expect(alternativeInputAgain.value).toBe("07999 888 777");
+    });
+  });
+
+  describe("Supplier Name Substitution in Hint", () => {
+    const createWrapperWithSupplier = (supplierName: string) => {
+      const WrapperWithSupplier = ({ children }: { children: React.ReactNode }) => {
+        const SeedSupplier = () => {
+          const { updateOrderAnswers } = useCreateOrderContext();
+
+          React.useEffect(() => {
+            updateOrderAnswers({
+              supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
+            });
+          }, [updateOrderAnswers]);
+
+          return <>{children}</>;
+        };
+
+        return (
+          <MemoryRouter
+            initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
+          >
+            <AuthProvider>
+              <JourneyNavigationProvider>
+                <CreateOrderProvider>
+                  <SeedSupplier />
+                </CreateOrderProvider>
+              </JourneyNavigationProvider>
+            </AuthProvider>
+          </MemoryRouter>
+        );
+      };
+
+      return WrapperWithSupplier;
+    };
+
+    it("renders the radio-group hint with the supplier name substituted", () => {
+      render(<ConfirmMobileNumberPage />, { wrapper: createWrapperWithSupplier("SHL") });
+
+      expect(
+        screen.getByText("SHL will send updates to this number. It must be your own number."),
+      ).toBeInTheDocument();
+    });
+
+    it("renders a fallback placeholder when no supplier is set", () => {
+      render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
+
+      expect(
+        screen.getByText(
+          "[Supplier] will send updates to this number. It must be your own number.",
+        ),
+      ).toBeInTheDocument();
     });
   });
 

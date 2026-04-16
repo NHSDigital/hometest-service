@@ -298,6 +298,7 @@ export interface ConfirmMobilePhoneNumberContent {
     alternativeInputLabel: string;
     alternativeInputHint: string;
   };
+  radioLegend: string;
 }
 
 export interface ServiceErrorContent {

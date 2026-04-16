@@ -1,8 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import EnterMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
-import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
+import { CreateOrderProvider, JourneyNavigationProvider, useCreateOrderContext } from "@/state";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>
@@ -23,7 +24,7 @@ describe("EnterMobileNumberPage", () => {
       expect(heading).toBeInTheDocument();
     });
 
-    it("renders the hint text", () => {
+    it("renders the page hint text", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       expect(screen.getByText(/will send updates to this number/i)).toBeInTheDocument();
@@ -36,7 +37,7 @@ describe("EnterMobileNumberPage", () => {
       expect(screen.getByRole("button", { name: /continue/i })).toBeInTheDocument();
     });
 
-    it("renders the hint text", () => {
+    it("renders the input hint text", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       expect(
@@ -394,6 +395,52 @@ describe("EnterMobileNumberPage", () => {
       fireEvent.click(submitButton);
 
       expect(mobileInput.value).toBe(inputValue);
+    });
+  });
+
+  describe("Supplier Name Substitution in Hint", () => {
+    const createWrapperWithSupplier = (supplierName: string) => {
+      const WrapperWithSupplier = ({ children }: { children: React.ReactNode }) => {
+        const SeedSupplier = () => {
+          const { updateOrderAnswers } = useCreateOrderContext();
+
+          React.useEffect(() => {
+            updateOrderAnswers({
+              supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
+            });
+          }, [updateOrderAnswers]);
+
+          return <>{children}</>;
+        };
+
+        return (
+          <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>
+            <JourneyNavigationProvider>
+              <CreateOrderProvider>
+                <SeedSupplier />
+              </CreateOrderProvider>
+            </JourneyNavigationProvider>
+          </MemoryRouter>
+        );
+      };
+
+      return WrapperWithSupplier;
+    };
+
+    it("renders the hint text with the supplier name substituted", () => {
+      render(<EnterMobileNumberPage />, { wrapper: createWrapperWithSupplier("SHL") });
+
+      expect(
+        screen.getByText("SHL will send updates to this number. It must be your own number."),
+      ).toBeInTheDocument();
+    });
+
+    it("renders a fallback placeholder when no supplier is set", () => {
+      render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
+
+      expect(
+        screen.getByText("[Supplier] will send updates to this number. It must be your own number."),
+      ).toBeInTheDocument();
     });
   });
 

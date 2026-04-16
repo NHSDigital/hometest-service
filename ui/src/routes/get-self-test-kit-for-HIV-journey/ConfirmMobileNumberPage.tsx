@@ -118,6 +118,8 @@ export default function ConfirmMobileNumberPage() {
           id="phone-confirmation"
           error={error || undefined}
           hint={content.hint.replace("{supplier}", supplierName)}
+          legend={content.radioLegend}
+          legendProps={{ className: "nhsuk-u-visually-hidden" }}
         >
           <Radios.Item
             id="phone-confirmation-1"
