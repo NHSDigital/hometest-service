@@ -1,4 +1,5 @@
 import type { CodeableConcept, Reference } from "./ResultsObservationData";
+
 export interface Identifier {
   system: string;
   value: string;
