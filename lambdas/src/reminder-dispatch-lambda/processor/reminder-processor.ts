@@ -1,4 +1,3 @@
-import { ConsoleCommons } from "../../lib/commons";
 import { type OrderStatusCode } from "../../lib/db/order-status-db";
 import { type MarkReminderAsFailedCommand } from "../db/commands/mark-reminder-as-failed";
 import { type MarkReminderAsQueuedCommand } from "../db/commands/mark-reminder-as-queued";
@@ -22,7 +21,6 @@ export interface ReminderProcessorContext {
   correlationId: string;
 }
 
-const commons = new ConsoleCommons();
 const name = "reminder-dispatch-lambda";
 
 export class ReminderProcessor {
@@ -49,7 +47,7 @@ export class ReminderProcessor {
     };
 
     if (!enabledReminderStatuses.has(reminder.triggerStatus)) {
-      commons.logInfo(name, "Reminder skipped for disabled trigger status", {
+      console.info(name, "Reminder skipped for disabled trigger status", {
         ...logContext,
         triggerStatus: reminder.triggerStatus,
       });
@@ -61,7 +59,7 @@ export class ReminderProcessor {
         s.triggerStatus === reminder.triggerStatus && s.reminderNumber === reminder.reminderNumber,
     )!.eventCode;
 
-    commons.logInfo(name, "Processing reminder", logContext);
+    console.info(name, "Processing reminder", logContext);
 
     try {
       await this.reminderNotifyService.dispatch({
@@ -72,11 +70,11 @@ export class ReminderProcessor {
         eventCode: reminderEventCode,
       });
     } catch (error) {
-      commons.logError(name, "Failed to dispatch reminder", { ...logContext, error });
+      console.error(name, "Failed to dispatch reminder", { ...logContext, error });
       try {
         await this.markReminderAsFailedCommand.execute(reminder.reminderId);
       } catch (dbError) {
-        commons.logError(name, "Failed to mark reminder as failed", {
+        console.error(name, "Failed to mark reminder as failed", {
           ...logContext,
           error: dbError,
         });
@@ -87,14 +85,14 @@ export class ReminderProcessor {
     try {
       await this.markReminderAsQueuedCommand.execute(reminder.reminderId);
     } catch (dbError) {
-      commons.logError(name, "Failed to mark reminder as queued", {
+      console.error(name, "Failed to mark reminder as queued", {
         ...logContext,
         error: dbError,
       });
       return "failed";
     }
 
-    commons.logInfo(name, "Reminder dispatched successfully", {
+    console.info(name, "Reminder dispatched successfully", {
       ...logContext,
       eventCode: reminderEventCode,
     });
@@ -114,12 +112,12 @@ export class ReminderProcessor {
           reminder.triggeredAt,
         );
 
-        commons.logInfo(name, "Next reminder scheduled", {
+        console.info(name, "Next reminder scheduled", {
           ...logContext,
           reminderNumber: nextSchedule.reminderNumber,
         });
       } catch (dbError) {
-        commons.logError(name, "Failed to schedule next reminder", {
+        console.error(name, "Failed to schedule next reminder", {
           ...logContext,
           error: dbError,
         });
