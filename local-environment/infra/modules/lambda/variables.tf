@@ -3,6 +3,11 @@ variable "function_name" { type = string }
 variable "environment" { type = string }
 variable "zip_path" { type = string }
 variable "lambda_role_arn" { type = string }
+variable "aws_region" {
+  type        = string
+  default     = ""
+  description = "AWS region. If empty, falls back to data.aws_region lookup."
+}
 variable "handler" {
   type    = string
   default = "index.handler"
@@ -29,7 +34,6 @@ variable "authorization" {
   type    = string
   default = "NONE"
 }
-variable "lambda_role_policy_attachment" {}
 
 variable "enable_cors" {
   type    = bool

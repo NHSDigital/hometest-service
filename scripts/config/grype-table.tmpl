@@ -1,0 +1,4 @@
+NAME{{"\t"}}INSTALLED{{"\t"}}FIXED IN{{"\t"}}TYPE{{"\t"}}VULNERABILITY{{"\t"}}SEVERITY{{"\t"}}LOCATION
+{{- range .Matches}}
+{{.Artifact.Name}}{{"\t"}}{{.Artifact.Version}}{{"\t"}}{{if .Vulnerability.Fix.Versions}}{{index .Vulnerability.Fix.Versions 0}}{{end}}{{"\t"}}{{.Artifact.Type}}{{"\t"}}{{.Vulnerability.ID}}{{"\t"}}{{.Vulnerability.Severity}}{{"\t"}}{{if .Artifact.Locations}}{{(index .Artifact.Locations 0).Path}}{{end}}
+{{- end}}

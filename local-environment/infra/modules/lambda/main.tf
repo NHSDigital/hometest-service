@@ -10,8 +10,6 @@ resource "aws_lambda_function" "this" {
   environment {
     variables = var.environment_variables
   }
-
-  depends_on = [var.lambda_role_policy_attachment]
 }
 
 locals {
@@ -52,7 +50,7 @@ resource "aws_api_gateway_integration" "this" {
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:${data.aws_region.current.id}:lambda:path/2015-03-31/functions/${aws_lambda_function.this.arn}/invocations"
+  uri                     = "arn:aws:apigateway:${local.resolved_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.this.arn}/invocations"
 }
 
 resource "aws_lambda_permission" "this" {
@@ -63,9 +61,12 @@ resource "aws_lambda_permission" "this" {
   source_arn    = "${var.api_gateway_execution_arn}/*/*"
 }
 
-data "aws_region" "current" {}
+data "aws_region" "current" {
+  count = var.aws_region == "" ? 1 : 0
+}
 
 locals {
+  resolved_region    = var.aws_region != "" ? var.aws_region : data.aws_region.current[0].id
   cors_allow_methods = join(", ", var.cors_allow_methods)
   cors_allow_headers = join(", ", [for header in var.cors_allow_headers : lower(header)])
 }

@@ -30,7 +30,7 @@
     "local:service:localstack:start": "npm run local:compose:up -- localstack",
     "local:service:localstack:stop": "npm run local:compose:down -- localstack",
     "local:terraform": "terraform -chdir=local-environment/infra",
-    "local:terraform:init": "npm run local:terraform -- init",
+    "local:terraform:init": "npm run local:terraform -- init -input=false",
     "local:terraform:plan": "npm run local:terraform -- plan",
     "local:terraform:apply": "bash local-environment/scripts/localstack/ensure-localstack-running.sh && npm run local:terraform -- apply -auto-approve -parallelism=30 && npm run local:terraform:env",
     "local:terraform:destroy": "npm run local:terraform -- destroy -auto-approve -parallelism=30",

@@ -8,19 +8,46 @@ repos:
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: check-yaml
+        args: [--allow-multiple-documents]
       - id: check-json
+      - id: check-toml
       - id: check-added-large-files
+        args: ["--maxkb=500"]
       - id: check-case-conflict
       - id: check-merge-conflict
+      - id: check-symlinks
       - id: detect-private-key
       - id: check-executables-have-shebangs
-      - id: forbid-submodules
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master, --branch, develop]
+
+  # # https://github.com/google/osv-scanner/releases
+  # - repo: https://github.com/google/osv-scanner
+  #   rev: v2.3.5
+  #   hooks:
+  #     - id: osv-scanner
 
   - repo: local
     hooks:
-      - id: trivy-fs-scan
-        name: Trivy filesystem scan
-        entry: trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
+      # - id: grype-fs-scan
+      #   name: Grype filesystem vulnerability scan
+      #   entry: scripts/grype-scan.sh
+      #   language: script
+      #   pass_filenames: false
+      #   always_run: true
+      #   require_serial: true
+
+      # - id: osv-scanner
+      #   name: OSV-Scanner dependency vulnerability scan
+      #   entry: osv-scanner scan --recursive --format table .
+      #   language: system
+      #   pass_filenames: false
+
+      - id: grype
+        name: grype
+        entry: bash -c 'echo $PWD; whereis grype; grype --version; grype "dir:$PWD" --quiet -o template -t $PWD/scripts/config/grype-table.tmpl --name hometest-service -c $PWD/scripts/config/grype.yaml'
         language: system
         pass_filenames: false
 
@@ -103,6 +130,22 @@ repos:
         args:
           - --args=-recursive
 
+      - id: terraform_docs
+        files: ^local-environment/infra
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+          - --hook-config=--recursive
+          - --hook-config=--recursive-path=modules
+          - --hook-config=--output-file=README.md
+          - --hook-config=--output-mode=inject
+          - --hook-config=--output-template='<!-- BEGIN_TF_DOCS -->\n{{ .Content }}\n<!-- END_TF_DOCS -->'
+          - --hook-config=--working-dir=terraform
+
+      - id: terraform_validate
+        files: ^local-environment/infra
+
   - repo: https://github.com/sqlfluff/sqlfluff
     rev: 4.1.0 # pin to a specific version
     hooks:
@@ -110,3 +153,8 @@ repos:
         args: ["--config", ".sqlfluff"] # optional, if you keep config elsewhere
       - id: sqlfluff-fix
         args: ["--config", ".sqlfluff"] # auto-fix style issues
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
