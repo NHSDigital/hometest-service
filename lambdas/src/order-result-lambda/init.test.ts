@@ -63,10 +63,8 @@ describe("order-result-lambda init", () => {
 
     const result = init();
 
-    expect(result).toHaveProperty("commons");
     expect(result).toHaveProperty("orderService");
     expect(result).toHaveProperty("orderStatusNotifyService");
-    expect(result.commons).toBeInstanceOf(ConsoleCommons);
     expect(result.orderService).toBeInstanceOf(OrderService);
     expect(result.orderStatusNotifyService).toBeInstanceOf(OrderStatusNotifyService);
   });
@@ -93,12 +91,6 @@ describe("order-result-lambda init", () => {
     expect(PostgresDbClient).toHaveBeenCalledWith(mockPostgresConfig);
   });
 
-  it("should create ConsoleCommons", () => {
-    init();
-
-    expect(ConsoleCommons).toHaveBeenCalledWith();
-  });
-
   it("should create OrderStatusNotifyService with notifyMessagesQueueUrl", () => {
     init();
 
@@ -119,7 +111,6 @@ describe("order-result-lambda init", () => {
 
     expect(result).toEqual({
       orderService: expect.any(OrderService),
-      commons: expect.any(ConsoleCommons),
       orderStatusNotifyService: expect.any(OrderStatusNotifyService),
     });
   });
