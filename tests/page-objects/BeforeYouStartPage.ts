@@ -1,5 +1,7 @@
 import { Locator, Page } from "@playwright/test";
+
 import { AuthenticatedPage } from "./AuthenticatedPage";
+
 export class BeforeYouStartPage extends AuthenticatedPage {
   private static readonly startPagePath = "/before-you-start";
   readonly pageHeader: Locator;
@@ -7,8 +9,13 @@ export class BeforeYouStartPage extends AuthenticatedPage {
 
   constructor(page: Page) {
     super(page);
-    this.continueToOrderKitButton = this.page.getByRole("button", { name: "Continue to order a kit" });
-    this.pageHeader = page.getByRole("heading", { name: "Before you order a free HIV self-test kit", level: 1 });
+    this.continueToOrderKitButton = this.page.getByRole("button", {
+      name: "Continue to order a kit",
+    });
+    this.pageHeader = page.getByRole("heading", {
+      name: "Before you order a free HIV self-test kit",
+      level: 1,
+    });
   }
 
   async waitUntilPageLoaded(): Promise<void> {
