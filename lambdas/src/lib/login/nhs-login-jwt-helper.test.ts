@@ -1,18 +1,21 @@
-import { NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
-const mockSign = jest.fn();
-const mockUuid = jest.fn();
+import { NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
 
 jest.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    sign: mockSign,
+    sign: jest.fn(),
   },
 }));
 
 jest.mock("uuid", () => ({
-  v4: mockUuid,
+  v4: jest.fn(),
 }));
+
+const mockSign = jwt.sign as jest.Mock;
+const mockUuid = uuidv4 as jest.Mock;
 
 describe("NhsLoginJwtHelper", () => {
   const nhsLoginConfig = {
