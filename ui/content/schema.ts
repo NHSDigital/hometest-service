@@ -283,7 +283,7 @@ export interface CannotUseServiceUnder18Content {
 
 export interface EnterMobilePhoneNumberContent {
   title: string;
-  description: string;
+  hint: string;
   form: {
     label: string;
     hint: string;
@@ -292,7 +292,7 @@ export interface EnterMobilePhoneNumberContent {
 
 export interface ConfirmMobilePhoneNumberContent {
   title: string;
-  description: string;
+  hint: string;
   form: {
     alternativeLabel: string;
     alternativeInputLabel: string;
@@ -521,8 +521,7 @@ export interface ContentFile {
 
 export type MainPagesContent = Omit<
   PagesContent,
-  | "home-test-privacy-policy"
-  | "home-test-terms-of-use"
+  "home-test-privacy-policy" | "home-test-terms-of-use"
 >;
 
 export interface MainContentFile {
