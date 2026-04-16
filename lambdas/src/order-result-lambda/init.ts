@@ -1,4 +1,3 @@
-import { Commons, ConsoleCommons } from "../lib/commons";
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
@@ -13,13 +12,11 @@ import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 
 export interface Environment {
-  commons: Commons;
   orderService: OrderService;
   orderStatusNotifyService: OrderStatusNotifyService;
 }
 
 export function buildEnvironment(): Environment {
-  const commons = new ConsoleCommons();
   const awsRegion = retrieveMandatoryEnvVariable("AWS_REGION");
   const notifyMessagesQueueUrl = retrieveMandatoryEnvVariable("NOTIFY_MESSAGES_QUEUE_URL");
   const homeTestBaseUrl = retrieveMandatoryEnvVariable("HOME_TEST_BASE_URL");
@@ -42,7 +39,6 @@ export function buildEnvironment(): Environment {
   });
 
   return {
-    commons,
     orderService,
     orderStatusNotifyService,
   };
