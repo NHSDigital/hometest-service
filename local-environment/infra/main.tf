@@ -588,7 +588,14 @@ resource "aws_lambda_function" "reminder_dispatch_lambda" {
       NOTIFY_MESSAGES_QUEUE_URL = aws_sqs_queue.notify_messages.url
       HOME_TEST_BASE_URL        = "http://localhost:3000"
       REMINDER_ENABLED_STATUSES = jsonencode(["DISPATCHED"])
-      REMINDER_INTERVAL_CONFIG  = jsonencode({ DISPATCHED = [{ interval = 7, eventCode = "DISPATCHED_INITIAL_REMINDER" }, { interval = 15, eventCode = "DISPATCHED_SECOND_REMINDER" }] })
+      REMINDER_INTERVAL_CONFIG = jsonencode(
+        {
+          DISPATCHED = [
+            { interval = 7, eventCode = "DISPATCHED_INITIAL_REMINDER" },
+            { interval = 15, eventCode = "DISPATCHED_SECOND_REMINDER" }
+          ]
+        }
+      )
     }
   }
 
