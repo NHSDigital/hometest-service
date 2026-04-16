@@ -6,10 +6,6 @@ install_before = "7d"
 [settings.python]
 compile = false
 
-# Disable to avoid calling Github API
-[settings.aqua]
-cosign = false
-
 [tools]
 # Custom registries are not included in mise-versions
 # https://mise-versions.jdx.dev/
@@ -40,8 +36,9 @@ python = "3.14.2"
 
 ## Security scanning
 
-# https://github.com/aquasecurity/trivy/releases
-"aqua:aquasecurity/trivy" = "v0.69.3"
+# https://github.com/anchore/grype/releases
+grype = "0.111.0"
+
 
 # https://github.com/gitleaks/gitleaks/releases
 gitleaks = "8.30.1"

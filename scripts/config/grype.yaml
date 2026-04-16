@@ -2,6 +2,13 @@
 # If using SBOM input, automatically generate CPEs when packages have none
 add-cpes-if-none: true
 
+# Fail with exit code 2 when vulnerabilities >= this severity are found
+# options: negligible, low, medium, high, critical
+fail-on-severity: high
+
+exclude:
+  - ./**/.terraform/**
+
 # ignore:
 #   # This is the full set of supported rule fields:
 #   - vulnerability: CVE-2008-4318
