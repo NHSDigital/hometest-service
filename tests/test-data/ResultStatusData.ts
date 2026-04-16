@@ -1,19 +1,4 @@
-export interface Coding {
-  system: string;
-  code: string;
-  display: string;
-}
-
-export interface CodeableConcept {
-  coding: Coding[];
-  text?: string;
-}
-
-export interface Reference {
-  reference: string;
-  display?: string;
-}
-
+import type { CodeableConcept, Reference } from "./ResultsObservationData";
 export interface Identifier {
   system: string;
   value: string;
