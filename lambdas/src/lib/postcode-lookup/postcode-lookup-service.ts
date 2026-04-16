@@ -1,5 +1,5 @@
-import { PostcodeLookupClient } from "./postcode-lookup-client-interface";
 import { PostcodeLookupResponse } from "./models/postcode-lookup-response";
+import { PostcodeLookupClient } from "./postcode-lookup-client-interface";
 
 export class PostcodeLookupService {
   private readonly client: PostcodeLookupClient;

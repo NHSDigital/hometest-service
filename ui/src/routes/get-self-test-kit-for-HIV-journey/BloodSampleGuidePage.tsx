@@ -2,9 +2,9 @@
 
 import { Details, Images } from "nhsuk-react-components";
 
+import { useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
-import { useContent } from "@/hooks";
 import { useJourneyNavigationContext } from "@/state";
 
 export default function BloodSampleGuidePage() {

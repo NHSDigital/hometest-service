@@ -15,12 +15,7 @@ export interface RdsIamAuthClient {
 export class AwsRdsIamAuthClient implements RdsIamAuthClient {
   private readonly signer: Signer;
 
-  constructor(options: {
-    hostname: string;
-    port: number;
-    username: string;
-    region: string;
-  }) {
+  constructor(options: { hostname: string; port: number; username: string; region: string }) {
     this.signer = new Signer(options);
   }
 

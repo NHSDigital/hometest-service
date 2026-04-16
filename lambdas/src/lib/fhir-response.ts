@@ -1,5 +1,5 @@
 import { APIGatewayProxyResult } from "aws-lambda";
-import { Resource, OperationOutcome, OperationOutcomeIssue } from "fhir/r4";
+import { OperationOutcome, OperationOutcomeIssue, Resource } from "fhir/r4";
 
 const FHIR_CONTENT_TYPE = "application/fhir+json";
 

@@ -1,4 +1,5 @@
 import { Observation } from "fhir/r4";
+
 import { ObservationValidation } from "./observation-validation";
 
 describe("ObservationValidation", () => {
@@ -12,8 +13,7 @@ describe("ObservationValidation", () => {
           {
             coding: [
               {
-                system:
-                  "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                 code: "N",
                 display: "Normal",
               },
@@ -34,8 +34,7 @@ describe("ObservationValidation", () => {
           {
             coding: [
               {
-                system:
-                  "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                 code: "A",
                 display: "Abnormal",
               },
@@ -90,8 +89,7 @@ describe("ObservationValidation", () => {
                 display: "Other",
               },
               {
-                system:
-                  "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                 code: "N",
                 display: "Normal",
               },
@@ -121,8 +119,7 @@ describe("ObservationValidation", () => {
           {
             coding: [
               {
-                system:
-                  "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                 code: "N",
                 display: "Normal",
               },
@@ -143,8 +140,7 @@ describe("ObservationValidation", () => {
           {
             coding: [
               {
-                system:
-                  "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
                 code: "H",
                 display: "High",
               },

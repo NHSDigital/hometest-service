@@ -1,6 +1,7 @@
 import jwt, { type Jwt } from "jsonwebtoken";
-import { type INhsLoginClient } from "./nhs-login-client";
+
 import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { type INhsLoginClient } from "./nhs-login-client";
 
 export interface ITokenService {
   verifyToken: (encodedToken: string) => Promise<Jwt>;

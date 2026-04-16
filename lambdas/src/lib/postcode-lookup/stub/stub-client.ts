@@ -1,6 +1,7 @@
-import { PostcodeLookupClient } from "../postcode-lookup-client-interface";
 import { PostcodeLookupClientConfig } from "src/lib/models/postcode-lookup-client-config";
+
 import { PostcodeLookupResponse } from "../models/postcode-lookup-response";
+import { PostcodeLookupClient } from "../postcode-lookup-client-interface";
 
 /**
  * Stub implementation of PostcodeLookupClient for testing and development

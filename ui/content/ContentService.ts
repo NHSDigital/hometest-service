@@ -6,12 +6,19 @@
  *
  * The content is validated on import to ensure structural integrity.
  */
-
-import type { ContentFile, HomeTestPrivacyPolicyContent, HomeTestTermsOfUseContent } from "./schema";
-import { assertValidContent, assertValidPrivacyPolicyContent, assertValidTermsOfUseContent } from "./ContentValidator";
+import {
+  assertValidContent,
+  assertValidPrivacyPolicyContent,
+  assertValidTermsOfUseContent,
+} from "./ContentValidator";
 import contentData from "./content.json";
 import privacyPolicyData from "./hometest-privacy-policy.json";
 import termsOfUseData from "./hometest-terms-of-use.json";
+import type {
+  ContentFile,
+  HomeTestPrivacyPolicyContent,
+  HomeTestTermsOfUseContent,
+} from "./schema";
 
 assertValidContent(contentData);
 assertValidPrivacyPolicyContent(privacyPolicyData);

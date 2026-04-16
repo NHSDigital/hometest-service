@@ -1,5 +1,5 @@
-import { TestResultDbClient, type TestResult } from "./test-result-db-client";
 import { type DBClient } from "./db-client";
+import { type TestResult, TestResultDbClient } from "./test-result-db-client";
 
 describe("TestResultDbClient", () => {
   let testResultDbClient: TestResultDbClient;
@@ -36,11 +36,7 @@ describe("TestResultDbClient", () => {
         rowCount: 1,
       });
 
-      const result = await testResultDbClient.getResult(
-        orderId,
-        nhsNumber,
-        dateOfBirth,
-      );
+      const result = await testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth);
 
       expect(result).toEqual(mockTestResult);
       expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
@@ -56,11 +52,7 @@ describe("TestResultDbClient", () => {
         rowCount: 0,
       });
 
-      const result = await testResultDbClient.getResult(
-        orderId,
-        nhsNumber,
-        dateOfBirth,
-      );
+      const result = await testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth);
 
       expect(result).toBeNull();
       expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
@@ -82,11 +74,7 @@ describe("TestResultDbClient", () => {
         rowCount: 1,
       });
 
-      const result = await testResultDbClient.getResult(
-        orderId,
-        nhsNumber,
-        dateOfBirth,
-      );
+      const result = await testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth);
 
       expect(result).toEqual(mockTestResult);
       expect(result?.status).toBe("RESULT_WITHHELD");
@@ -125,8 +113,7 @@ describe("TestResultDbClient", () => {
       const actualQuery = mockDbClient.query.mock.calls[0][0];
 
       // Normalize whitespace for comparison
-      const normalizeQuery = (query: string) =>
-        query.replace(/\s+/g, " ").trim();
+      const normalizeQuery = (query: string) => query.replace(/\s+/g, " ").trim();
 
       expect(normalizeQuery(actualQuery)).toBe(normalizeQuery(expectedQuery));
       expect(mockDbClient.query).toHaveBeenCalledWith(expect.any(String), [
@@ -159,9 +146,9 @@ describe("TestResultDbClient", () => {
       const dbError = new Error("Database connection failed");
       mockDbClient.query.mockRejectedValue(dbError);
 
-      await expect(
-        testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth),
-      ).rejects.toThrow("Database connection failed");
+      await expect(testResultDbClient.getResult(orderId, nhsNumber, dateOfBirth)).rejects.toThrow(
+        "Database connection failed",
+      );
     });
   });
 });

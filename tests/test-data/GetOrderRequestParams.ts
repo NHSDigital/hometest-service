@@ -7,7 +7,7 @@ export interface GetOrderParams extends Record<string, string | number | boolean
 export const createGetOrderParams = (
   nhsNumber: string,
   dateOfBirth: string,
-  orderId: string
+  orderId: string,
 ): GetOrderParams => ({
   nhs_number: nhsNumber,
   date_of_birth: dateOfBirth,

@@ -1,7 +1,6 @@
 import "@testing-library/jest-dom";
-
-import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import SuppliersTermsConditionsPage from "@/routes/SuppliersTermsConditionsPage";
 

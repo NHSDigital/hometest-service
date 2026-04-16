@@ -23,9 +23,7 @@ export interface ComponentOrderTestConfig {
  * Test that components are created in the correct order
  * @param config - Configuration for the component order test
  */
-export function testComponentCreationOrder(
-  config: ComponentOrderTestConfig,
-): void {
+export function testComponentCreationOrder(config: ComponentOrderTestConfig): void {
   config.initFn();
 
   config.components.forEach(({ mock, times = 1, calledWith }) => {

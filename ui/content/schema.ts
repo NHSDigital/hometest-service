@@ -521,8 +521,7 @@ export interface ContentFile {
 
 export type MainPagesContent = Omit<
   PagesContent,
-  | "home-test-privacy-policy"
-  | "home-test-terms-of-use"
+  "home-test-privacy-policy" | "home-test-terms-of-use"
 >;
 
 export interface MainContentFile {

@@ -1,5 +1,6 @@
-import { PostgresDbClient } from "./db-client";
 import { Pool } from "pg";
+
+import { PostgresDbClient } from "./db-client";
 
 jest.mock("pg", () => {
   const mPool = {
@@ -15,15 +16,13 @@ describe("PostgresDbClient", () => {
   let mockPool: jest.Mocked<Pool>;
 
   beforeEach(() => {
-    client = new PostgresDbClient(
-      {
-        user: "test-user",
-        host: "test-host",
-        port: 5432,
-        database: "test-db",
-        password: "test-password",
-      }
-    );
+    client = new PostgresDbClient({
+      user: "test-user",
+      host: "test-host",
+      port: 5432,
+      database: "test-db",
+      password: "test-password",
+    });
     mockPool = (client as any).pool;
   });
 
@@ -39,19 +38,13 @@ describe("PostgresDbClient", () => {
       };
       (mockPool.query as jest.Mock).mockResolvedValue(mockResult);
 
-      const result = await client.query(
-        "SELECT * FROM users WHERE id = $1",
-        [1],
-      );
+      const result = await client.query("SELECT * FROM users WHERE id = $1", [1]);
 
       expect(result).toEqual({
         rows: [{ id: 1, name: "Test" }],
         rowCount: 1,
       });
-      expect(mockPool.query).toHaveBeenCalledWith(
-        "SELECT * FROM users WHERE id = $1",
-        [1],
-      );
+      expect(mockPool.query).toHaveBeenCalledWith("SELECT * FROM users WHERE id = $1", [1]);
     });
 
     it("should handle queries with no values", async () => {
@@ -64,10 +57,7 @@ describe("PostgresDbClient", () => {
       const result = await client.query("SELECT COUNT(*) FROM users");
 
       expect(result.rows).toEqual([{ count: 5 }]);
-      expect(mockPool.query).toHaveBeenCalledWith(
-        "SELECT COUNT(*) FROM users",
-        undefined as any,
-      );
+      expect(mockPool.query).toHaveBeenCalledWith("SELECT COUNT(*) FROM users", undefined as any);
     });
 
     it("should handle empty result sets", async () => {
@@ -77,10 +67,7 @@ describe("PostgresDbClient", () => {
       };
       (mockPool.query as jest.Mock).mockResolvedValue(mockResult);
 
-      const result = await client.query(
-        "SELECT * FROM users WHERE id = $1",
-        [999],
-      );
+      const result = await client.query("SELECT * FROM users WHERE id = $1", [999]);
 
       expect(result.rows).toEqual([]);
       expect(result.rowCount).toBe(0);
@@ -90,9 +77,7 @@ describe("PostgresDbClient", () => {
       const error = new Error("Connection failed");
       (mockPool.query as jest.Mock).mockRejectedValue(error);
 
-      await expect(client.query("SELECT * FROM users")).rejects.toThrow(
-        "Connection failed",
-      );
+      await expect(client.query("SELECT * FROM users")).rejects.toThrow("Connection failed");
     });
   });
 
@@ -155,7 +140,9 @@ describe("PostgresDbClient", () => {
       ).rejects.toThrow("Query failed");
 
       expect(mockClient.query).toHaveBeenNthCalledWith(1, "BEGIN");
-      expect(mockClient.query).toHaveBeenNthCalledWith(2, "INSERT INTO users (name) VALUES ($1)", ["Test"]);
+      expect(mockClient.query).toHaveBeenNthCalledWith(2, "INSERT INTO users (name) VALUES ($1)", [
+        "Test",
+      ]);
       expect(mockClient.query).toHaveBeenNthCalledWith(3, "ROLLBACK");
       expect(mockClient.release).toHaveBeenCalledTimes(1);
     });

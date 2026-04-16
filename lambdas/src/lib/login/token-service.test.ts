@@ -1,17 +1,19 @@
-const mockDecode = jest.fn();
-const mockVerify = jest.fn();
+import jwt from "jsonwebtoken";
+
+import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+import { type INhsLoginClient } from "./nhs-login-client";
+import { TokenService } from "./token-service";
 
 jest.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    decode: mockDecode,
-    verify: mockVerify,
+    decode: jest.fn(),
+    verify: jest.fn(),
   },
 }));
 
-import { TokenService } from "./token-service";
-import { type INhsLoginClient } from "./nhs-login-client";
-import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
+const mockDecode = jwt.decode as jest.Mock;
+const mockVerify = jwt.verify as jest.Mock;
 
 describe("TokenService", () => {
   const nhsLoginConfig: INhsLoginConfig = {

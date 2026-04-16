@@ -25,9 +25,7 @@
           ]
         },
         {
-          "paragraphs": [
-            "Further details are set out in the Hometest Terms of Use [LINK]."
-          ]
+          "paragraphs": ["Further details are set out in the Hometest Terms of Use [LINK]."]
         }
       ]
     },
@@ -115,9 +113,7 @@
         {
           "heading": "Health Data",
           "inlineHeading": true,
-          "paragraphs": [
-            "Special category data may also be collected, including test results."
-          ]
+          "paragraphs": ["Special category data may also be collected, including test results."]
         },
         {
           "heading": "Technical Data",
@@ -129,9 +125,7 @@
         {
           "heading": "Preference Data",
           "inlineHeading": true,
-          "paragraphs": [
-            "This includes your preferences on receiving communications from us."
-          ]
+          "paragraphs": ["This includes your preferences on receiving communications from us."]
         },
         {
           "heading": "Usage Data",

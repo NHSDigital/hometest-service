@@ -1,7 +1,7 @@
-import { CreateOrderProvider, JourneyNavigationProvider, PostcodeLookupProvider } from "@/state";
+import { Outlet } from "react-router-dom";
 
 import { JourneyDevtools } from "@/lib/utils/JourneyDevtools";
-import { Outlet } from "react-router-dom";
+import { CreateOrderProvider, JourneyNavigationProvider, PostcodeLookupProvider } from "@/state";
 
 export default function JourneyLayout() {
   return (

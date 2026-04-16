@@ -88,9 +88,7 @@ describe("FetchHttpClient", () => {
       text: async () => "bad gateway",
     });
 
-    await expect(
-      client.postRaw("https://example.com", "payload"),
-    ).rejects.toEqual(
+    await expect(client.postRaw("https://example.com", "payload")).rejects.toEqual(
       expect.objectContaining<HttpError>({
         name: "HttpError",
         message: "HTTP POST request failed with status: 502",

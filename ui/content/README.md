@@ -240,7 +240,7 @@ Content is validated at build time. The validator checks:
 ### Running Validation Manually
 
 ```ts
-import { validateContent, assertValidContent } from "@/content";
+import { assertValidContent, validateContent } from "@/content";
 import contentData from "@/content/content.json";
 
 // Returns { valid: boolean, errors: string[] }

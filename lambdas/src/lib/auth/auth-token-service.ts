@@ -1,4 +1,5 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
+
 import { type IAuthConfig } from "../models/auth/auth-config";
 import {
   type AuthAccessTokenConfig,

@@ -51,7 +51,7 @@ error summaries, back links, etc.). Do not create custom implementations of comp
 exist in the NHS component library.
 
 ```typescript
-import { Button, Input, ErrorSummary, BackLink } from "nhsuk-react-components";
+import { BackLink, Button, ErrorSummary, Input } from "nhsuk-react-components";
 ```
 
 For custom layouts or spacing not covered by NHS components, use **Tailwind CSS utility
@@ -62,12 +62,12 @@ classes**. Never use inline `style={{...}}` props.
 The application uses React Context for shared state. Providers are composed in layout
 components. The existing providers are:
 
-| Provider | File | Purpose |
-|---|---|---|
+| Provider                    | File     | Purpose                             |
+| --------------------------- | -------- | ----------------------------------- |
 | `JourneyNavigationProvider` | `state/` | Multi-step journey navigation state |
-| `CreateOrderProvider` | `state/` | Order creation form state |
-| `PostcodeLookupProvider` | `state/` | Postcode lookup state |
-| `AuthProvider` | `state/` | NHS Login authentication state |
+| `CreateOrderProvider`       | `state/` | Order creation form state           |
+| `PostcodeLookupProvider`    | `state/` | Postcode lookup state               |
+| `AuthProvider`              | `state/` | NHS Login authentication state      |
 
 New providers should follow the same pattern: a context object, a typed interface, and a
 `use<Name>` hook that asserts the context is not null.
@@ -131,6 +131,7 @@ When wrapping a service call in a React component, use **TanStack React Query**
 
 ```typescript
 import { useQuery } from "@tanstack/react-query";
+
 import orderDetailsService from "@/lib/services/order-details-service";
 
 const { data, isLoading, error } = useQuery({

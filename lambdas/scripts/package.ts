@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
-import {createWriteStream, existsSync, readdirSync, rmSync, statSync} from 'fs';
-import {join} from 'path';
-import archiver from 'archiver';
+import { createWriteStream, existsSync, readdirSync, rmSync, statSync } from "fs";
+import { join } from "path";
+
+import archiver from "archiver";
 
 interface PackageOptions {
   specificLambda?: string;
 }
 
 const LAMBDAS_DIR = process.cwd();
-const DIST_DIR = join(LAMBDAS_DIR, 'dist');
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const DIST_DIR = join(LAMBDAS_DIR, "dist");
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 function parseArgs(): PackageOptions {
   const args = process.argv.slice(2);
@@ -18,26 +19,24 @@ function parseArgs(): PackageOptions {
   let specificLambda: string | undefined;
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--lambda':
+      case "--lambda":
         specificLambda = args[++i];
         if (!specificLambda) {
-          console.error('Error: --lambda requires a lambda name');
+          console.error("Error: --lambda requires a lambda name");
           process.exit(1);
         }
         break;
       default:
         console.error(`Unknown option: ${args[i]}`);
-        console.error('Usage: package.ts [--lambda <lambda-name>]');
+        console.error("Usage: package.ts [--lambda <lambda-name>]");
         process.exit(1);
     }
-
   }
-  return {specificLambda};
-
+  return { specificLambda };
 }
 
-const LAMBDA_INDEX = 'index.js';
-const LAMBDA_INDEX_MAP = 'index.js.map';
+const LAMBDA_INDEX = "index.js";
+const LAMBDA_INDEX_MAP = "index.js.map";
 
 async function createLambdaZip(lambda: string): Promise<void> {
   console.log(`Creating deployment zip for ${lambda}...`);
@@ -58,20 +57,20 @@ async function createLambdaZip(lambda: string): Promise<void> {
 
   return new Promise((resolve, reject) => {
     const output = createWriteStream(zipPath);
-    const archive = archiver('zip', {zlib: {level: 9}});
+    const archive = archiver("zip", { zlib: { level: 9 } });
 
-    output.on('close', () => {
+    output.on("close", () => {
       console.log(`Created ${zipPath} (${archive.pointer()} bytes)`);
       resolve();
     });
 
-    archive.on('error', reject);
+    archive.on("error", reject);
     archive.pipe(output);
 
-    archive.file(indexPath, {name: LAMBDA_INDEX});
+    archive.file(indexPath, { name: LAMBDA_INDEX });
 
     if (!IS_PRODUCTION && existsSync(sourcemapPath)) {
-      archive.file(sourcemapPath, {name: LAMBDA_INDEX_MAP});
+      archive.file(sourcemapPath, { name: LAMBDA_INDEX_MAP });
       console.log(`Including sourcemap for debugging`);
     }
 
@@ -81,8 +80,8 @@ async function createLambdaZip(lambda: string): Promise<void> {
 
 function getLambdas(): string[] {
   return readdirSync(DIST_DIR)
-  .filter(name => name.endsWith('lambda'))
-  .filter(name => statSync(join(DIST_DIR, name)).isDirectory());
+    .filter((name) => name.endsWith("lambda"))
+    .filter((name) => statSync(join(DIST_DIR, name)).isDirectory());
 }
 
 async function main(): Promise<void> {
@@ -97,7 +96,7 @@ async function main(): Promise<void> {
     const lambdas: string[] = options.specificLambda ? [options.specificLambda] : getLambdas();
 
     if (lambdas.length === 0) {
-      console.log('No lambda directories found');
+      console.log("No lambda directories found");
       return;
     }
 
@@ -105,12 +104,11 @@ async function main(): Promise<void> {
       await createLambdaZip(lambdaDir);
     }
 
-
     console.log(`Deployment packages ready in ${DIST_DIR}`);
   } catch (error) {
-    console.error('Packaging failed:', error);
+    console.error("Packaging failed:", error);
     process.exit(1);
   }
 }
 
-await main()
+await main();

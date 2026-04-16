@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 import { AboutService } from "@/components/AboutService";
-import { MemoryRouter } from "react-router-dom";
 
 describe("AboutService", () => {
   it('renders the "About this service" heading', () => {

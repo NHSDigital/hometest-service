@@ -1,6 +1,7 @@
-import PageLayout from "@/layouts/PageLayout";
-import { useContent } from "@/hooks";
 import { useLocation } from "react-router-dom";
+
+import { useContent } from "@/hooks";
+import PageLayout from "@/layouts/PageLayout";
 
 export default function ServiceErrorPage() {
   const { "service-error": content } = useContent();

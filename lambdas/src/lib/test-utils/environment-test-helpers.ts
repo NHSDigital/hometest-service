@@ -7,9 +7,7 @@
  * @param mockEnvVariables - Object containing environment variables to set
  * @returns The original environment for restoration
  */
-export function setupEnvironment(
-  mockEnvVariables: Record<string, string>,
-): NodeJS.ProcessEnv {
+export function setupEnvironment(mockEnvVariables: Record<string, string>): NodeJS.ProcessEnv {
   const originalEnv = process.env;
   process.env = { ...originalEnv };
   Object.assign(process.env, mockEnvVariables);

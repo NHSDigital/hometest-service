@@ -56,10 +56,7 @@ describe("FhirUtils", () => {
         extension: [{ url: "https://example.test/other" }, expected],
       };
 
-      const result = FhirUtils.findExtension(
-        resource,
-        "https://example.test/target",
-      );
+      const result = FhirUtils.findExtension(resource, "https://example.test/target");
 
       expect(result).toEqual(expected);
     });
@@ -80,10 +77,7 @@ describe("FhirUtils", () => {
         ],
       };
 
-      const result = FhirUtils.findCoding(
-        concept,
-        "https://example.test/target",
-      );
+      const result = FhirUtils.findCoding(concept, "https://example.test/target");
 
       expect(result).toEqual({
         system: "https://example.test/target",
@@ -92,10 +86,7 @@ describe("FhirUtils", () => {
     });
 
     it("returns null when concept is undefined", () => {
-      const result = FhirUtils.findCoding(
-        undefined,
-        "https://example.test/target",
-      );
+      const result = FhirUtils.findCoding(undefined, "https://example.test/target");
 
       expect(result).toBeNull();
     });
@@ -132,10 +123,7 @@ describe("FhirUtils", () => {
         ],
       };
 
-      const result = FhirUtils.findIdentifier(
-        resource,
-        "https://example.test/target",
-      );
+      const result = FhirUtils.findIdentifier(resource, "https://example.test/target");
 
       expect(result).toEqual({
         system: "https://example.test/target",
@@ -144,10 +132,7 @@ describe("FhirUtils", () => {
     });
 
     it("returns null when identifier is missing", () => {
-      const result = FhirUtils.findIdentifier(
-        {},
-        "https://example.test/target",
-      );
+      const result = FhirUtils.findIdentifier({}, "https://example.test/target");
 
       expect(result).toBeNull();
     });

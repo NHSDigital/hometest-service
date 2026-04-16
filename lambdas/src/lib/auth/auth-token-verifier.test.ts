@@ -1,20 +1,23 @@
-const mockDecode = jest.fn();
-const mockVerify = jest.fn();
-const mockCleanupKey = jest.fn();
+import jwt from "jsonwebtoken";
+
+import { AuthTokenVerifier } from "./auth-token-verifier";
+import { cleanupKey } from "./auth-utils";
 
 jest.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    decode: mockDecode,
-    verify: mockVerify,
+    decode: jest.fn(),
+    verify: jest.fn(),
   },
 }));
 
 jest.mock("./auth-utils", () => ({
-  cleanupKey: mockCleanupKey,
+  cleanupKey: jest.fn(),
 }));
 
-import { AuthTokenVerifier } from "./auth-token-verifier";
+const mockDecode = jwt.decode as jest.Mock;
+const mockVerify = jwt.verify as jest.Mock;
+const mockCleanupKey = cleanupKey as jest.Mock;
 
 describe("AuthTokenVerifier", () => {
   const authConfig = {

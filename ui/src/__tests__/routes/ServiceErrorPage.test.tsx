@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
-
-import { MemoryRouter } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+
 import ServiceErrorPage from "@/routes/ServiceErrorPage";
 
 jest.mock("@/hooks", () => ({
@@ -54,10 +54,7 @@ describe("ServiceErrorPage", () => {
 
     renderWithState({ errorMessage: "Something went wrong" });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "[ServiceErrorPage]",
-      "Something went wrong",
-    );
+    expect(consoleSpy).toHaveBeenCalledWith("[ServiceErrorPage]", "Something went wrong");
 
     consoleSpy.mockRestore();
   });

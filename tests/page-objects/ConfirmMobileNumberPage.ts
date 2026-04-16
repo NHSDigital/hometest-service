@@ -1,6 +1,7 @@
 import { Locator, Page } from "@playwright/test";
-import { BasePage } from "./BasePage";
+
 import { PersonalDetailsModel } from "../models/PersonalDetails";
+import { BasePage } from "./BasePage";
 
 export class ConfirmMobileNumberPage extends BasePage {
   readonly mobileNumberInput: Locator;

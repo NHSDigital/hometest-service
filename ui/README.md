@@ -52,7 +52,7 @@ This builds the application and serves it at [http://localhost:8085](http://loca
 
 The application requires the following environment variables:
 
-- `NEXT_PUBLIC_BACKEND_URL` - The backend API  URL
+- `NEXT_PUBLIC_BACKEND_URL` - The backend API URL
 
 ### Local Development
 
@@ -72,10 +72,10 @@ the technologies used in this project:
 In development, all React context state is accessible via `globalThis.__appDebug` in the browser console. Values are evaluated lazily via property getters, so you always see the current state. This is a no-op in production.
 
 ```js
-__appDebug.order      // OrderContext — order answers collected through the journey
-__appDebug.auth       // AuthContext — authenticated user
-__appDebug.navigation // NavigationContext — current step and step history
-__appDebug.postcode   // PostcodeLookupContext — address lookup results
+__appDebug.order; // OrderContext — order answers collected through the journey
+__appDebug.auth; // AuthContext — authenticated user
+__appDebug.navigation; // NavigationContext — current step and step history
+__appDebug.postcode; // PostcodeLookupContext — address lookup results
 ```
 
 Debug registration follows a **boundary-style devtools pattern** — state providers contain no debug code. Instead, two dedicated devtools components handle all registration:

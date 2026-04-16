@@ -7,7 +7,6 @@ import type {
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
-  ServiceErrorContent,
   GoToClinicContent,
   HomeTestPrivacyPolicyContent,
   HomeTestTermsOfUseContent,
@@ -17,11 +16,11 @@ import type {
   OrderSubmittedContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
+  ServiceErrorContent,
   StartPageContent,
   SuppliersLegalDocumentsContent,
   TestResultsContent,
 } from "@/content";
-
 import { content } from "@/content";
 
 export const PageKeys = {

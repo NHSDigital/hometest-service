@@ -1,13 +1,12 @@
-import * as utils from "../lib/utils/utils";
-import * as validation from "./validation-service";
-import * as validationUtils from "../lib/utils/validation-utils";
-
-import { InterpretationCode, orderResultFHIRObservationSchema } from "./models";
-
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { ConsoleCommons } from "../lib/commons";
 import { Observation } from "fhir/r4";
+
+import { ConsoleCommons } from "../lib/commons";
 import { ResultStatus } from "../lib/types/status";
+import * as utils from "../lib/utils/utils";
+import * as validationUtils from "../lib/utils/validation-utils";
+import { InterpretationCode, orderResultFHIRObservationSchema } from "./models";
+import * as validation from "./validation-service";
 
 describe("validation-service", () => {
   let commons: jest.Mocked<ConsoleCommons>;

@@ -1,6 +1,6 @@
-jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
-
 import testResultsService from "@/lib/services/test-results-service";
+
+jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
 
 const mockFetch = jest.fn();
 globalThis.fetch = mockFetch;
@@ -30,8 +30,7 @@ describe("TestResultsService", () => {
         {
           coding: [
             {
-              system:
-                "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
               code: "N",
             },
           ],
@@ -77,8 +76,7 @@ describe("TestResultsService", () => {
         {
           coding: [
             {
-              system:
-                "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+              system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
               code: "A",
             },
           ],

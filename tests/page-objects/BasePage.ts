@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+
 export abstract class BasePage {
   readonly page: Page;
   readonly headerText: Locator;
@@ -6,7 +7,7 @@ export abstract class BasePage {
 
   constructor(page: Page) {
     this.headerText = page.locator("h1");
-    this.backLink = page.getByText('Back', { exact: true });
+    this.backLink = page.getByText("Back", { exact: true });
     this.page = page;
   }
 

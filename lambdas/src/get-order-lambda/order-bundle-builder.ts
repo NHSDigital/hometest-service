@@ -72,8 +72,7 @@ export class OrderBundleBuilder {
       valueCodeableConcept: {
         coding: [
           {
-            system:
-              "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
+            system: "https://fhir.hometest.nhs.uk/CodeSystem/order-business-status",
             code: order.status_code,
             display: order.status_description,
           },
@@ -117,10 +116,7 @@ export class OrderBundleBuilder {
     };
   }
 
-  private static buildBundleEntry(
-    order: Order,
-    serviceRequest: ServiceRequest,
-  ): BundleEntry {
+  private static buildBundleEntry(order: Order, serviceRequest: ServiceRequest): BundleEntry {
     return {
       fullUrl: `urn:uuid:${order.id}`,
       resource: serviceRequest,

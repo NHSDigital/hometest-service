@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { OrderServiceRequestSchema } from "./order-service-request-schema";
+
 import { OrderStatusCodes } from "../lib/db/order-status-db";
+import { OrderServiceRequestSchema } from "./order-service-request-schema";
 
 const mockInit = jest.fn();
 const mockCreatePatientOrderAndConsent = jest.fn();

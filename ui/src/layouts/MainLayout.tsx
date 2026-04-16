@@ -1,13 +1,14 @@
-import { Container, Footer, Header } from "nhsuk-react-components";
-import { Outlet, ScrollRestoration } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Container, Footer, Header } from "nhsuk-react-components";
+import type React from "react";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 
 import { AuthLoader } from "@/lib/auth/AuthLoader";
 import { AppDevtools } from "@/lib/utils/AppDevtools";
 import { AuthProvider } from "@/state";
-import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
-import type React from "react";
+
 import { RoutePath } from "../lib/models/route-paths";
+import { DEFAULT_PAGE_TITLE } from "../lib/utils/page-title";
 
 // it will be improved in future
 const isNhsApp = true;

@@ -18,10 +18,6 @@ export class CreateOrderResponseModel {
   }
 
   isValidResponse(): boolean {
-    return (
-      !!this.orderUid &&
-      !!this.orderReference &&
-      !!this.message
-    );
+    return !!this.orderUid && !!this.orderReference && !!this.message;
   }
 }

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router-dom";
+
 import { RoutePath } from "@/lib/models/route-paths";
 
 function getErrorMessage(error: unknown): string {

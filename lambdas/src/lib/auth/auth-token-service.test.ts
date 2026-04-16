@@ -1,18 +1,21 @@
-const mockSign = jest.fn();
-const mockCleanupKey = jest.fn();
+import jwt from "jsonwebtoken";
+
+import { AuthTokenService } from "./auth-token-service";
+import { cleanupKey } from "./auth-utils";
 
 jest.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    sign: mockSign,
+    sign: jest.fn(),
   },
 }));
 
 jest.mock("./auth-utils", () => ({
-  cleanupKey: mockCleanupKey,
+  cleanupKey: jest.fn(),
 }));
 
-import { AuthTokenService } from "./auth-token-service";
+const mockSign = jwt.sign as jest.Mock;
+const mockCleanupKey = cleanupKey as jest.Mock;
 
 describe("AuthTokenService", () => {
   const authConfig = {

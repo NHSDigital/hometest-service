@@ -1,8 +1,7 @@
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
+import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function FormSuppliersTermsConditionsPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();

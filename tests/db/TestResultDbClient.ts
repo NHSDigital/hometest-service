@@ -1,6 +1,6 @@
-import { BaseDbClient } from "./BaseDbClient";
 import { UUID } from "../models/TestOrder";
 import { ResultStatus, TestResult } from "../models/TestResult";
+import { BaseDbClient } from "./BaseDbClient";
 
 export class TestResultDbClient extends BaseDbClient {
   async insertStatusResult(

@@ -1,12 +1,12 @@
 "use client";
 
 import { Button, ErrorSummary, Images, Radios } from "nhsuk-react-components";
-import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
+import { useState } from "react";
 
+import { useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import { useContent } from "@/hooks";
-import { useState } from "react";
+import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function HowComfortablePrickingFingerPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =

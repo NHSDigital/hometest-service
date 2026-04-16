@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
-
-import { act } from "react";
 import { render } from "@testing-library/react";
+import { act } from "react";
+
 import ErrorRedirect from "@/components/ErrorRedirect";
 
 const mockNavigate = jest.fn();

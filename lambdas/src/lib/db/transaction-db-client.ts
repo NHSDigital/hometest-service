@@ -1,6 +1,6 @@
+import { ConsentService } from "./consent-db";
 import { DBClient } from "./db-client";
 import { OrderStatusCodes, OrderStatusService } from "./order-status-db";
-import { ConsentService } from "./consent-db";
 
 export interface TransactionServiceProperties {
   dbClient: DBClient;

@@ -1,3 +1,5 @@
+import { AwsSecretsClient } from "./secrets-manager-client";
+
 const mockSend = jest.fn();
 
 jest.mock("@aws-sdk/client-secrets-manager", () => {
@@ -8,8 +10,6 @@ jest.mock("@aws-sdk/client-secrets-manager", () => {
     GetSecretValueCommand: jest.fn().mockImplementation((params) => params),
   };
 });
-
-import { AwsSecretsClient } from "./secrets-manager-client";
 
 describe("AwsSecretsClient", () => {
   let client: AwsSecretsClient;
@@ -30,17 +30,13 @@ describe("AwsSecretsClient", () => {
       const result = await client.getSecretString("my-secret");
 
       expect(result).toBe("plain-secret");
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({ SecretId: "my-secret" }),
-      );
+      expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({ SecretId: "my-secret" }));
     });
 
     it("should throw when secret string is empty", async () => {
       mockSend.mockResolvedValue({ SecretString: "" });
 
-      await expect(client.getSecretString("my-secret")).rejects.toThrow(
-        "Secret string is empty",
-      );
+      await expect(client.getSecretString("my-secret")).rejects.toThrow("Secret string is empty");
     });
   });
 

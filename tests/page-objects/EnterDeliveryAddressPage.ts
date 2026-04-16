@@ -1,6 +1,7 @@
 import { Locator, Page } from "@playwright/test";
-import { BasePage } from "./BasePage";
+
 import { Address } from "../models/Address";
+import { BasePage } from "./BasePage";
 
 export class EnterDeliveryAddressPage extends BasePage {
   readonly postCodeInput: Locator;

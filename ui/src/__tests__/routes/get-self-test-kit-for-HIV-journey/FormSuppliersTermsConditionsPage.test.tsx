@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import FormSuppliersTermsConditionsPage from "@/routes/get-self-test-kit-for-HIV-journey/FormSuppliersTermsConditionsPage";

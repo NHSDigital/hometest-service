@@ -1,9 +1,9 @@
-jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
-
 import orderService, {
   OrderServiceRequest,
   OrderServiceResponse,
 } from "@/lib/services/order-service";
+
+jest.mock("@/settings", () => ({ backendUrl: "http://mock-backend" }));
 
 const mockFetch = jest.fn();
 globalThis.fetch = mockFetch as typeof fetch;
@@ -45,9 +45,7 @@ describe("OrderService", () => {
   });
 
   beforeEach(() => {
-    randomUUIDSpy = jest
-      .spyOn(globalThis.crypto, "randomUUID")
-      .mockReturnValue("test-uuid");
+    randomUUIDSpy = jest.spyOn(globalThis.crypto, "randomUUID").mockReturnValue("test-uuid");
   });
 
   afterEach(() => {
@@ -88,9 +86,7 @@ describe("OrderService", () => {
       json: async () => ({ message: "Bad request" }),
     });
 
-    await expect(orderService.submitOrder(request)).rejects.toThrow(
-      "Bad request",
-    );
+    await expect(orderService.submitOrder(request)).rejects.toThrow("Bad request");
   });
 
   it("should throw a fallback error when the response has no message", async () => {
@@ -102,8 +98,6 @@ describe("OrderService", () => {
       },
     });
 
-    await expect(orderService.submitOrder(request)).rejects.toThrow(
-      "Failed to submit order: 500",
-    );
+    await expect(orderService.submitOrder(request)).rejects.toThrow("Failed to submit order: 500");
   });
 });
