@@ -430,6 +430,25 @@ describe("CheckYourAnswersPage", () => {
       });
     });
 
+    it("navigates to order-submitted when submission succeeds after a page refresh (POP navigation type)", async () => {
+      mockNavigationType = "POP";
+      mockSubmitOrder.mockResolvedValueOnce({
+        orderReference: 456,
+        orderUid: "test-uid",
+        message: "Order submitted successfully",
+      });
+
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      fireEvent.click(screen.getByRole("checkbox"));
+      submitForm();
+
+      await waitFor(() => {
+        expect(mockGoToStep).toHaveBeenCalledWith("order-submitted");
+        expect(mockResetNavigation).not.toHaveBeenCalled();
+      });
+    });
+
     it("shows the error boundary when submitOrder rejects", async () => {
       mockSubmitOrder.mockRejectedValueOnce(new Error("Network error"));
 
