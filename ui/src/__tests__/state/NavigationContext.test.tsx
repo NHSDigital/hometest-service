@@ -17,6 +17,14 @@ function TestWrapper({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
+function BeforeYouStartWrapper({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <MemoryRouter initialEntries={[RoutePath.BeforeYouStartPage]}>
+      <JourneyNavigationProvider>{children}</JourneyNavigationProvider>
+    </MemoryRouter>
+  );
+}
+
 describe("NavigationContext", () => {
   beforeEach(() => {
     globalThis.sessionStorage.clear();
@@ -108,6 +116,59 @@ describe("NavigationContext", () => {
 
       expect(result.current.stepHistory).toEqual([RoutePath.GetSelfTestKitPage]);
       expect(globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation)).toBeNull();
+    });
+
+    describe("BeforeYouStartPage step", () => {
+      it("resolves BeforeYouStartPage as the current step when the URL matches", () => {
+        const { result } = renderHook(() => useJourneyNavigationContext(), {
+          wrapper: BeforeYouStartWrapper,
+        });
+
+        expect(result.current.currentStep).toBe(RoutePath.BeforeYouStartPage);
+        expect(result.current.stepHistory).toEqual([RoutePath.BeforeYouStartPage]);
+      });
+
+      it("goToStep navigates to BeforeYouStartPage without a journey prefix", () => {
+        const { result } = renderHook(() => useJourneyNavigationContext(), {
+          wrapper: TestWrapper,
+        });
+
+        act(() => {
+          result.current.goToStep(RoutePath.BeforeYouStartPage);
+        });
+
+        expect(result.current.currentStep).toBe(RoutePath.BeforeYouStartPage);
+      });
+
+      it("resetNavigation to BeforeYouStartPage clears history and storage", async () => {
+        const { result } = renderHook(() => useJourneyNavigationContext(), {
+          wrapper: TestWrapper,
+        });
+
+        act(() => {
+          result.current.setReturnToStep(JourneyStepNames.CheckYourAnswers);
+        });
+
+        await waitFor(() => {
+          expect(
+            globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation),
+          ).not.toBeNull();
+        });
+
+        act(() => {
+          result.current.resetNavigation(RoutePath.BeforeYouStartPage);
+        });
+
+        await waitFor(() => {
+          expect(result.current.currentStep).toBe(RoutePath.BeforeYouStartPage);
+        });
+
+        expect(result.current.returnToStep).toBeNull();
+        expect(result.current.stepHistory).toEqual([RoutePath.BeforeYouStartPage]);
+        expect(
+          globalThis.sessionStorage.getItem(SESSION_STORAGE_KEYS.journeyNavigation),
+        ).toBeNull();
+      });
     });
   });
 
