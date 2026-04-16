@@ -439,7 +439,9 @@ describe("EnterMobileNumberPage", () => {
       render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
 
       expect(
-        screen.getByText("[Supplier] will send updates to this number. It must be your own number."),
+        screen.getByText(
+          "[Supplier] will send updates to this number. It must be your own number.",
+        ),
       ).toBeInTheDocument();
     });
   });

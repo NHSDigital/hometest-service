@@ -436,9 +436,7 @@ describe("ConfirmMobileNumberPage", () => {
         };
 
         return (
-          <MemoryRouter
-            initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}
-          >
+          <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
             <AuthProvider>
               <JourneyNavigationProvider>
                 <CreateOrderProvider>
