@@ -41,7 +41,7 @@ test.describe("Home test E2E tests", { tag: ["@e2e", "@db"] }, () => {
     orderSubmittedPage: any;
   }): Promise<void> {
     await context.beforeYouStartPage.navigate();
-    await context.beforeYouStartPage.clickContinueToOrderaKitButton();
+    await context.beforeYouStartPage.clickContinueToOrderKitButton();
     await expect(context.getSelfTestKitPage.headerText).toHaveText(EXPECTED_TEXTS.HIV_KIT_HEADER);
     await context.getSelfTestKitPage.clickStartNowButton();
     await context.enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);

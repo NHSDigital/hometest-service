@@ -21,10 +21,7 @@ export class BeforeYouStartPage extends AuthenticatedPage {
     await this.navigateToProtectedPath(BeforeYouStartPage.startPagePath, this.pageHeader);
   }
 
-  async clickContinueToOrderaKitButton(): Promise<void> {
+  async clickContinueToOrderKitButton(): Promise<void> {
     await this.continueToOrderKitButton.click();
   }
-
-
-
 }

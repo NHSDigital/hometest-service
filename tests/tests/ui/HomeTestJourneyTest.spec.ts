@@ -13,7 +13,7 @@ const helpAndSupportUrl = "https://www.nhs.uk/nhs-app/help/";
 test.describe("Editing during the order flow", { tag: "@ui" }, () => {
   test.beforeEach(async ({ beforeYouStartPage, getSelfTestKitPage }) => {
     await beforeYouStartPage.navigate();
-    await beforeYouStartPage.clickContinueToOrderaKitButton();
+    await beforeYouStartPage.clickContinueToOrderKitButton();
     await getSelfTestKitPage.clickStartNowButton();
   });
 
@@ -70,7 +70,7 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
       checkYourAnswersPage,
     }) => {
       await beforeYouStartPage.navigate();
-      await beforeYouStartPage.clickContinueToOrderaKitButton();
+      await beforeYouStartPage.clickContinueToOrderKitButton();
       await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
       await getSelfTestKitPage.clickBloodSampleGuideLink();
       await bloodSampleGuidePage.waitUntilPageLoaded();
@@ -114,7 +114,7 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
 
 test("Verify Privacy Policy page", async ({ beforeYouStartPage, getSelfTestKitPage, privacyPolicyPage }) => {
   await beforeYouStartPage.navigate();
-  await beforeYouStartPage.clickContinueToOrderaKitButton();
+  await beforeYouStartPage.clickContinueToOrderKitButton();
   await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
   await getSelfTestKitPage.clickPrivacyPolicyLink();
   const actualHeaderText = await privacyPolicyPage.getHeaderText();
@@ -129,7 +129,7 @@ test("Verify Terms of Use page", async ({
   privacyPolicyPage,
 }) => {
   await beforeYouStartPage.navigate();
-  await beforeYouStartPage.clickContinueToOrderaKitButton();
+  await beforeYouStartPage.clickContinueToOrderKitButton();
   await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
   await getSelfTestKitPage.clickTermsOfUseLink();
   await termsOfUsePage.waitUntilPageLoaded();
