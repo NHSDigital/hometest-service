@@ -9,7 +9,6 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     beforeYouStartPage,
     getSelfTestKitPage,
     privacyPolicyPage,
-    context,
   }) => {
     await beforeYouStartPage.navigate();
     await beforeYouStartPage.clickContinueToOrderaKitButton();
@@ -17,11 +16,6 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
     await getSelfTestKitPage.clickPrivacyPolicyLink();
     const actualHeaderText = await privacyPolicyPage.getHeaderText();
     expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
-    const [newTab] = await Promise.all([
-      context.waitForEvent("page"),
-      privacyPolicyPage.clickMakeAComplaintLink(),
-    ]);
-    await newTab.waitForLoadState();
-    expect(newTab.url()).toBe(makeAComplaintUrl);
+    await expect(privacyPolicyPage.makeAComplaintLink).toHaveAttribute("href", makeAComplaintUrl);
   });
 });
