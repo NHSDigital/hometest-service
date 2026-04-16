@@ -4,7 +4,7 @@ add-cpes-if-none: true
 
 # Fail with exit code 2 when vulnerabilities >= this severity are found
 # options: negligible, low, medium, high, critical
-fail-on-severity: low
+fail-on-severity: high
 
 exclude:
   - ./**/.terraform/**
