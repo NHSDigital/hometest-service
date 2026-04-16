@@ -1,10 +1,10 @@
-import { NotifyEventCode } from "../types/notify-message";
-import { type DBClient } from "./db-client";
-import { OrderStatusCodes } from "./order-status-db";
+import { type DBClient } from "../../lib/db/db-client";
+import { OrderStatusCodes } from "../../lib/db/order-status-db";
+import { NotifyEventCode } from "../../lib/types/notify-message";
 import {
   OrderStatusReminderDbClient,
   type ReminderScheduleTuple,
-} from "./order-status-reminder-db-client";
+} from "../../reminder-dispatch-lambda/services/order-status-reminder-db-client";
 
 const normalizeWhitespace = (sql: string): string => sql.replace(/\s+/g, " ").trim();
 

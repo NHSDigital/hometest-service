@@ -1,9 +1,9 @@
 import { Context, EventBridgeEvent } from "aws-lambda";
 
 import { OrderStatusCodes } from "../lib/db/order-status-db";
-import { type OrderStatusReminderRecord } from "../lib/db/order-status-reminder-db-client";
 import { lambdaHandler } from "./index";
 import { init } from "./init";
+import { type OrderStatusReminderRecord } from "./services/order-status-reminder-db-client";
 
 jest.mock("./init", () => ({
   init: jest.fn(),

@@ -1,8 +1,11 @@
-import { type OrderStatusCode, OrderStatusService } from "../../db/order-status-db";
-import { NotifyEventCode } from "../../types/notify-message";
-import type { NotifyMessageBuilder } from "../message-builders/base-notify-message-builder";
-import type { DispatchedReminderMessageBuilderInput } from "../message-builders/reminder/dispatched-reminder-message-builder";
-import { BaseNotifyService, type NotifyServiceDependencies } from "./base-notify-service";
+import { type OrderStatusCode, OrderStatusService } from "../../lib/db/order-status-db";
+import type { NotifyMessageBuilder } from "../../lib/notify/message-builders/base-notify-message-builder";
+import {
+  BaseNotifyService,
+  type NotifyServiceDependencies,
+} from "../../lib/notify/services/base-notify-service";
+import { NotifyEventCode } from "../../lib/types/notify-message";
+import type { DispatchedReminderMessageBuilderInput } from "./dispatched-reminder-message-builder";
 
 export interface ReminderNotifyServiceDependencies extends NotifyServiceDependencies {
   notifyMessageBuilders: Partial<
