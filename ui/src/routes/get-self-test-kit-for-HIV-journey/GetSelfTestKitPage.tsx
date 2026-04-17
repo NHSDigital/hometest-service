@@ -11,8 +11,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function GetSelfTestKitPage() {
   const { updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory } =
-    useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
   usePageTitle(content.pageTitle);
@@ -26,7 +25,8 @@ export default function GetSelfTestKitPage() {
         } else {
           goToStep(JourneyStepNames.BeforeYouStart);
         }
-      }}>
+      }}
+    >
       <h1>{content.title}</h1>
 
       <p>{content.eligibility.intro}</p>
@@ -53,11 +53,15 @@ export default function GetSelfTestKitPage() {
           <p>{content.resultsAndTimescales.intro}</p>
           <ul>
             <li>
-              <span className="nhsuk-u-font-weight-bold">{content.resultsAndTimescales.negative.label}</span>
+              <span className="nhsuk-u-font-weight-bold">
+                {content.resultsAndTimescales.negative.label}
+              </span>
               {`: ${content.resultsAndTimescales.negative.description}`}
             </li>
             <li>
-              <span className="nhsuk-u-font-weight-bold">{content.resultsAndTimescales.reactive.label}</span>
+              <span className="nhsuk-u-font-weight-bold">
+                {content.resultsAndTimescales.reactive.label}
+              </span>
               {`: ${content.resultsAndTimescales.reactive.description}`}
             </li>
           </ul>
@@ -92,13 +96,6 @@ export default function GetSelfTestKitPage() {
       </p>
 
       <h2>{content.otherOptions.heading}</h2>
-      <p>
-        {`${content.otherOptions.otherTests} `}
-        <a href={content.otherOptions.otherTestsLink.href}>
-          {content.otherOptions.otherTestsLink.text}
-        </a>
-        {"."}
-      </p>
       <p>
         {`${content.otherOptions.clinicText} `}
         <a href={commonContent.links.sexualHealthClinic.href}>
