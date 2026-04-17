@@ -27,7 +27,7 @@ runs:
   steps:
     - name: "Run test suite"
       shell: bash
-      run: mise exec -- pnpm -C ${{ inputs.working-directory }} run test -- --ci
+      run: mise exec -- pnpm -C ${{ inputs.working-directory }} run test --ci
       env:
         FORCE_COLOR: true
         WORKING_DIR: ${{ inputs.working-directory }}
