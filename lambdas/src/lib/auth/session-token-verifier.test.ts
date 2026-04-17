@@ -1,202 +1,210 @@
-import { JsonWebTokenError, TokenExpiredError, type VerifyOptions } from "jsonwebtoken";
+import { generateKeyPairSync } from "node:crypto";
+
+import jwt, { type SignOptions, type VerifyOptions } from "jsonwebtoken";
 
 import { SessionTokenVerifier } from "./session-token-verifier";
 
-const mockCleanupKey = jest.fn();
+interface RsaKeyPair {
+  privateKey: string;
+  publicKey: string;
+}
 
-jest.mock("jsonwebtoken", () => ({
-  __esModule: true,
-  JsonWebTokenError: class JsonWebTokenError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "JsonWebTokenError";
-    }
-  },
-  TokenExpiredError: class TokenExpiredError extends Error {
-    expiredAt: Date;
+function createRsaKeyPair(): RsaKeyPair {
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    privateKeyEncoding: {
+      format: "pem",
+      type: "pkcs8",
+    },
+    publicKeyEncoding: {
+      format: "pem",
+      type: "spki",
+    },
+  });
 
-    constructor(message: string, expiredAt: Date) {
-      super(message);
-      this.name = "TokenExpiredError";
-      this.expiredAt = expiredAt;
-    }
-  },
-  decode: jest.fn(),
-  verify: jest.fn(),
-  default: {
-    decode: jest.fn(),
-    verify: jest.fn(),
-  },
-}));
+  return { privateKey, publicKey };
+}
 
-jest.mock("./auth-utils", () => ({
-  cleanupKey: (key: string) => mockCleanupKey(key),
-}));
+function compactPem(pem: string): string {
+  return pem.replaceAll("\r", "").replaceAll("\n", "");
+}
 
-const mockJwtModule = jest.requireMock("jsonwebtoken") as {
-  default: {
-    decode: jest.Mock;
-    verify: jest.Mock;
-  };
-};
-
-const mockDecode = mockJwtModule.default.decode;
-const mockVerify = mockJwtModule.default.verify;
+function signToken(
+  payload: Record<string, string>,
+  privateKey: string,
+  options?: Omit<SignOptions, "algorithm">,
+): string {
+  return jwt.sign(payload, privateKey, {
+    algorithm: "RS512",
+    ...options,
+  });
+}
 
 describe("SessionTokenVerifier", () => {
+  const primaryKeys = createRsaKeyPair();
+  const secondaryKeys = createRsaKeyPair();
+
   const verifierConfig = {
     keyId: "default-key-id",
     publicKeys: {
-      "decoded-kid": "raw-public-key-from-decoded-kid",
-      "default-key-id": "raw-public-key-from-default-kid",
+      "decoded-kid": compactPem(primaryKeys.publicKey),
+      "default-key-id": compactPem(secondaryKeys.publicKey),
     },
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCleanupKey.mockReturnValue("clean-public-key");
-  });
-
   it("verifies an access token and returns verified claims", async () => {
     const verifier = new SessionTokenVerifier(verifierConfig);
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
-        kid: "decoded-kid",
-      },
-      payload: {},
-      signature: "signature",
-    });
-    mockVerify.mockReturnValue({
-      sessionId: "session-123",
-      sessionCreatedAt: "2026-04-17T09:00:00.000Z",
-      exp: 1,
-      iat: 1,
-    });
-
-    const result = await verifier.verifyAccessToken("encoded-token");
-
-    expect(mockCleanupKey).toHaveBeenCalledWith("raw-public-key-from-decoded-kid");
-    expect(mockVerify).toHaveBeenCalledWith("encoded-token", "clean-public-key", {
-      algorithms: ["RS512"],
-    });
-    expect(result).toEqual({
-      success: true,
-      header: {
-        alg: "RS512",
-        kid: "decoded-kid",
-      },
-      payload: {
+    const token = signToken(
+      {
         sessionId: "session-123",
         sessionCreatedAt: "2026-04-17T09:00:00.000Z",
-        exp: 1,
-        iat: 1,
       },
-    });
+      primaryKeys.privateKey,
+      {
+        expiresIn: "1h",
+        header: {
+          alg: "RS512",
+          kid: "decoded-kid",
+        },
+      },
+    );
+
+    const result = await verifier.verifyAccessToken(token);
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      throw new Error("Expected successful verification result");
+    }
+
+    expect(result.header).toEqual(
+      expect.objectContaining({
+        alg: "RS512",
+        kid: "decoded-kid",
+      }),
+    );
+    expect(result.payload).toEqual(
+      expect.objectContaining({
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      }),
+    );
+    expect(result.payload.exp).toEqual(expect.any(Number));
+    expect(result.payload.iat).toEqual(expect.any(Number));
   });
 
   it("supports ignoreExpiration for refresh-flow access token checks", async () => {
-    const verifier = new SessionTokenVerifier(verifierConfig);
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
+    const verifier = new SessionTokenVerifier({
+      publicKeys: {
+        "only-key": compactPem(primaryKeys.publicKey),
       },
-      payload: {},
-      signature: "signature",
     });
-    mockVerify.mockReturnValue({
-      sessionId: "session-123",
-      sessionCreatedAt: "2026-04-17T09:00:00.000Z",
-    });
+    const expiredToken = signToken(
+      {
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      },
+      primaryKeys.privateKey,
+      {
+        expiresIn: "-10s",
+      },
+    );
 
-    await verifier.verifyAccessToken("encoded-token", {
+    const result = await verifier.verifyAccessToken(expiredToken, {
       ignoreExpiration: true,
-    } satisfies VerifyOptions);
+    } as VerifyOptions);
 
-    expect(mockVerify).toHaveBeenCalledWith("encoded-token", "clean-public-key", {
-      algorithms: ["RS512"],
-      ignoreExpiration: true,
-    });
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      throw new Error("Expected ignoreExpiration to allow verification to succeed");
+    }
+
+    expect(result.payload).toEqual(
+      expect.objectContaining({
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      }),
+    );
   });
 
   it("falls back to the configured keyId when the token does not include kid", async () => {
-    const verifier = new SessionTokenVerifier(verifierConfig);
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
+    const verifier = new SessionTokenVerifier({
+      keyId: "default-key-id",
+      publicKeys: {
+        "default-key-id": compactPem(primaryKeys.publicKey),
       },
-      payload: {},
-      signature: "signature",
     });
-    mockVerify.mockReturnValue({
-      refreshTokenId: "refresh-token-123",
-    });
-
-    const result = await verifier.verifyRefreshToken("encoded-token");
-
-    expect(mockCleanupKey).toHaveBeenCalledWith("raw-public-key-from-default-kid");
-    expect(result).toEqual({
-      success: true,
-      header: {
-        alg: "RS512",
-      },
-      payload: {
+    const token = signToken(
+      {
         refreshTokenId: "refresh-token-123",
       },
-    });
+      primaryKeys.privateKey,
+    );
+
+    const result = await verifier.verifyRefreshToken(token);
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      throw new Error("Expected configured keyId fallback to verify the token");
+    }
+
+    expect(result.header).toEqual(
+      expect.objectContaining({
+        alg: "RS512",
+      }),
+    );
+    expect(result.payload).toEqual(
+      expect.objectContaining({
+        refreshTokenId: "refresh-token-123",
+      }),
+    );
   });
 
   it("uses the only configured key when no kid or default keyId is provided", async () => {
     const verifier = new SessionTokenVerifier({
       publicKeys: {
-        "only-key": "raw-public-key",
+        "only-key": compactPem(primaryKeys.publicKey),
       },
     });
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
-      },
-      payload: {},
-      signature: "signature",
-    });
-    mockVerify.mockReturnValue({
-      sessionId: "session-123",
-      sessionCreatedAt: "2026-04-17T09:00:00.000Z",
-    });
-
-    const result = await verifier.verifyAccessToken("encoded-token");
-
-    expect(mockCleanupKey).toHaveBeenCalledWith("raw-public-key");
-    expect(result).toEqual({
-      success: true,
-      header: {
-        alg: "RS512",
-      },
-      payload: {
+    const token = signToken(
+      {
         sessionId: "session-123",
         sessionCreatedAt: "2026-04-17T09:00:00.000Z",
       },
-    });
+      primaryKeys.privateKey,
+    );
+
+    const result = await verifier.verifyAccessToken(token);
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      throw new Error("Expected single configured key fallback to verify the token");
+    }
+
+    expect(result.payload).toEqual(
+      expect.objectContaining({
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      }),
+    );
   });
 
   it("returns UNKNOWN_KEY when no matching verification key is available", async () => {
     const verifier = new SessionTokenVerifier({
       publicKeys: {
-        "first-key": "raw-public-key-1",
-        "second-key": "raw-public-key-2",
+        "first-key": compactPem(primaryKeys.publicKey),
+        "second-key": compactPem(secondaryKeys.publicKey),
       },
     });
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
+    const token = signToken(
+      {
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
       },
-      payload: {},
-      signature: "signature",
-    });
+      primaryKeys.privateKey,
+    );
 
-    const result = await verifier.verifyAccessToken("encoded-token");
+    const result = await verifier.verifyAccessToken(token);
 
-    expect(mockVerify).not.toHaveBeenCalled();
     expect(result).toEqual({
       success: false,
       error: {
@@ -207,20 +215,23 @@ describe("SessionTokenVerifier", () => {
   });
 
   it("returns TOKEN_EXPIRED for expired tokens", async () => {
-    const verifier = new SessionTokenVerifier(verifierConfig);
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
-        kid: "decoded-kid",
+    const verifier = new SessionTokenVerifier({
+      publicKeys: {
+        "only-key": compactPem(primaryKeys.publicKey),
       },
-      payload: {},
-      signature: "signature",
     });
-    mockVerify.mockImplementation(() => {
-      throw new TokenExpiredError("jwt expired", new Date());
-    });
+    const expiredToken = signToken(
+      {
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      },
+      primaryKeys.privateKey,
+      {
+        expiresIn: "-10s",
+      },
+    );
 
-    const result = await verifier.verifyAccessToken("encoded-token");
+    const result = await verifier.verifyAccessToken(expiredToken);
 
     expect(result).toEqual({
       success: false,
@@ -232,20 +243,26 @@ describe("SessionTokenVerifier", () => {
   });
 
   it("returns INVALID_SIGNATURE for invalid signatures", async () => {
-    const verifier = new SessionTokenVerifier(verifierConfig);
-    mockDecode.mockReturnValue({
-      header: {
-        alg: "RS512",
-        kid: "decoded-kid",
+    const verifier = new SessionTokenVerifier({
+      publicKeys: {
+        "decoded-kid": compactPem(primaryKeys.publicKey),
       },
-      payload: {},
-      signature: "signature",
     });
-    mockVerify.mockImplementation(() => {
-      throw new JsonWebTokenError("invalid signature");
-    });
+    const token = signToken(
+      {
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      },
+      secondaryKeys.privateKey,
+      {
+        header: {
+          alg: "RS512",
+          kid: "decoded-kid",
+        },
+      },
+    );
 
-    const result = await verifier.verifyAccessToken("encoded-token");
+    const result = await verifier.verifyAccessToken(token);
 
     expect(result).toEqual({
       success: false,
@@ -258,11 +275,9 @@ describe("SessionTokenVerifier", () => {
 
   it("returns MALFORMED_TOKEN for malformed tokens", async () => {
     const verifier = new SessionTokenVerifier(verifierConfig);
-    mockDecode.mockReturnValue(null);
 
-    const result = await verifier.verifyAccessToken("encoded-token");
+    const result = await verifier.verifyAccessToken("not-a-jwt");
 
-    expect(mockVerify).not.toHaveBeenCalled();
     expect(result).toEqual({
       success: false,
       error: {
