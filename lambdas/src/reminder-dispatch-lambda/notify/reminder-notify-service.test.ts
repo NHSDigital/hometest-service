@@ -76,14 +76,16 @@ describe("ReminderNotifyService", () => {
     });
   });
 
-  it("does nothing for a status code with no strategy", async () => {
-    await service.dispatch({
-      reminderId,
-      orderId,
-      correlationId,
-      statusCode: OrderStatusCodes.SUBMITTED,
-      eventCode: NotifyEventCode.DispatchedInitialReminder,
-    });
+  it("throws when there is no message builder for the given status code", async () => {
+    await expect(
+      service.dispatch({
+        reminderId,
+        orderId,
+        correlationId,
+        statusCode: OrderStatusCodes.SUBMITTED,
+        eventCode: NotifyEventCode.DispatchedInitialReminder,
+      }),
+    ).rejects.toThrow("No message builder registered for status code: SUBMITTED");
 
     expect(mockGetPatientIdFromOrder).not.toHaveBeenCalled();
     expect(mockBuildDispatchedReminderMessage).not.toHaveBeenCalled();

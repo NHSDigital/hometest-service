@@ -39,7 +39,7 @@ export class ReminderNotifyService extends BaseNotifyService {
 
     const notifyMessageBuilder = this.notifyMessageBuilders[statusCode];
     if (!notifyMessageBuilder) {
-      return;
+      throw new Error(`No message builder registered for status code: ${statusCode}`);
     }
 
     const patientId = await this.orderStatusService.getPatientIdFromOrder(orderId);
