@@ -361,7 +361,7 @@ describe("CheckYourAnswersPage", () => {
 
       await waitFor(() => {
         expect(mockClearAddresses).toHaveBeenCalled();
-        expect(mockResetNavigation).toHaveBeenCalledWith(RoutePath.GetSelfTestKitPage, {
+        expect(mockResetNavigation).toHaveBeenCalledWith(RoutePath.BeforeYouStartPage, {
           replace: true,
         });
         expect(screen.getByTestId("order-reference")).toHaveTextContent("");

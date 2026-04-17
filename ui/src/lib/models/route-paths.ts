@@ -3,6 +3,7 @@ export enum RoutePath {
   HomePage = "/",
   LoginPage = "/login",
   CallbackPage = "/callback",
+  BeforeYouStartPage = "/before-you-start",
   GetSelfTestKitPage = "/get-self-test-kit-for-HIV",
   OrderTrackingPage = "/orders/:orderId/tracking",
   TestResultsPage = "/orders/:orderId/results",
