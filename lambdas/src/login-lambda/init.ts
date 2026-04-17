@@ -1,7 +1,7 @@
 import { JwksClient } from "jwks-rsa";
 
 import { AuthTokenService } from "../lib/auth/auth-token-service";
-import { HttpClient } from "../lib/http/login-http-client";
+import { FetchHttpClient } from "../lib/http/http-client";
 import { NhsLoginClient } from "../lib/login/nhs-login-client";
 import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { TokenService } from "../lib/login/token-service";
@@ -14,45 +14,55 @@ import {
 } from "../lib/utils/utils";
 import { type ILoginService, LoginService, type LoginServiceParams } from "./login-service";
 
-// ALPHA: This file will need revisiting.
-const envVars: LoginEnvVariables = {
-  // ALPHA: Uncomment when environment variables are properly set up. Currently using hardcoded values for development and testing.
-  nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_BASE_ENDPOINT_URL"),
-  nhsLoginJwksUri: retrieveOptionalEnvVariable("NHS_LOGIN_JWKS_URI"),
-  nhsLoginClientId: retrieveMandatoryEnvVariable("NHS_LOGIN_CLIENT_ID"),
-  nhsLoginRedirectUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_REDIRECT_URL"),
-  nhsLoginPrivateKeySecretName: retrieveMandatoryEnvVariable("NHS_LOGIN_PRIVATE_KEY_SECRET_NAME"),
-  // ALPHA: Uncomment when authCookiePrivateKeySecret is properly retrieved.
-  // authCookiePrivateKeysSecretName: retrieveMandatoryEnvVariable(
-  //   'AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME'
-  // ),
-  authSessionMaxDurationMinutes: Number.parseInt(
-    retrieveMandatoryEnvVariable("AUTH_SESSION_MAX_DURATION_MINUTES"),
-  ),
-  authAccessTokenExpiryDurationMinutes: Number.parseInt(
-    retrieveMandatoryEnvVariable("AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES"),
-  ),
-  authRefreshTokenExpiryDurationMinutes: Number.parseInt(
-    retrieveMandatoryEnvVariable("AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES"),
-  ),
-  authCookieSameSite: retrieveMandatoryEnvVariable("AUTH_COOKIE_SAME_SITE"),
-  authCookieSecure:
-    retrieveOptionalEnvVariableWithDefault("AUTH_COOKIE_SECURE", "true").toLowerCase() === "true",
-};
-
 interface LoginEnvVariables {
+  awsRegion: string;
   nhsLoginBaseEndpointUrl: string;
   nhsLoginJwksUri: string | undefined;
   nhsLoginClientId: string;
   nhsLoginRedirectUrl: string;
   nhsLoginPrivateKeySecretName: string;
-  // ALPHA: Uncomment when authCookiePrivateKeySecret is properly retrieved.
-  // authCookiePrivateKeysSecretName: string;
+  authCookiePrivateKeysSecretName: string;
   authSessionMaxDurationMinutes: number;
   authAccessTokenExpiryDurationMinutes: number;
   authRefreshTokenExpiryDurationMinutes: number;
   authCookieSameSite: string;
   authCookieSecure: boolean;
+}
+
+function parseAuthCookiePrivateKeys(secretValue: string): Record<string, string> {
+  try {
+    const parsedSecret = JSON.parse(secretValue) as Record<string, unknown>;
+    const privateKeys = Object.entries(parsedSecret).reduce<Record<string, string>>(
+      (accumulator, [key, value]) => {
+        if (typeof value === "string" && value.length > 0) {
+          accumulator[key] = value;
+        }
+
+        return accumulator;
+      },
+      {},
+    );
+
+    if (typeof privateKeys.key === "string" && privateKeys.key.length > 0) {
+      return privateKeys;
+    }
+    throw new Error(
+      "AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME must be either a non-JSON private key string or a JSON object containing a non-empty 'key' entry.",
+    );
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) {
+      throw error;
+    }
+    // Non-JSON values are treated as a single key.
+  }
+
+  if (secretValue.trim().length === 0) {
+    throw new Error("AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME secret value must not be empty.");
+  }
+
+  return {
+    key: secretValue,
+  };
 }
 
 export interface LoginLambdaDependencies {
@@ -62,27 +72,47 @@ export interface LoginLambdaDependencies {
   authCookieSecure: boolean;
 }
 
-// ALPHA: Removed commons temporarily.
-export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
-  const secretManagerClient = new AwsSecretsClient(retrieveMandatoryEnvVariable("AWS_REGION"));
-  const authCookiePrivateKeySecret = { key: "" } as Record<string, string>;
-  // ALPHA: Requires a proper private key for cookie signing. Currently reusing nhs login key. Fix soon.
-  // await secretManagerClient.getSecretKeyValuePair(
-  // envVars.authCookiePrivateKeysSecretName
-  // );
+function loadEnv(): LoginEnvVariables {
+  return {
+    awsRegion: retrieveMandatoryEnvVariable("AWS_REGION"),
+    nhsLoginBaseEndpointUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_BASE_ENDPOINT_URL"),
+    nhsLoginJwksUri: retrieveOptionalEnvVariable("NHS_LOGIN_JWKS_URI"),
+    nhsLoginClientId: retrieveMandatoryEnvVariable("NHS_LOGIN_CLIENT_ID"),
+    nhsLoginRedirectUrl: retrieveMandatoryEnvVariable("NHS_LOGIN_REDIRECT_URL"),
+    nhsLoginPrivateKeySecretName: retrieveMandatoryEnvVariable("NHS_LOGIN_PRIVATE_KEY_SECRET_NAME"),
+    authCookiePrivateKeysSecretName: retrieveMandatoryEnvVariable(
+      "AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME",
+    ),
+    authSessionMaxDurationMinutes: Number.parseInt(
+      retrieveMandatoryEnvVariable("AUTH_SESSION_MAX_DURATION_MINUTES"),
+    ),
+    authAccessTokenExpiryDurationMinutes: Number.parseInt(
+      retrieveMandatoryEnvVariable("AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES"),
+    ),
+    authRefreshTokenExpiryDurationMinutes: Number.parseInt(
+      retrieveMandatoryEnvVariable("AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES"),
+    ),
+    authCookieSameSite: retrieveMandatoryEnvVariable("AUTH_COOKIE_SAME_SITE"),
+    authCookieSecure:
+      retrieveOptionalEnvVariableWithDefault("AUTH_COOKIE_SECURE", "true").toLowerCase() === "true",
+  };
+}
 
+export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
+  const envVars = loadEnv();
+  const secretManagerClient = new AwsSecretsClient(envVars.awsRegion);
   const nhsLoginPrivateKey = await secretManagerClient.getSecretValue(
     envVars.nhsLoginPrivateKeySecretName,
   );
-
-  // ALPHA: Remove when authCookiePrivateKeySecret is properly retrieved.
-  authCookiePrivateKeySecret["key"] = nhsLoginPrivateKey;
+  const authCookiePrivateKeySecret = await secretManagerClient.getSecretValue(
+    envVars.authCookiePrivateKeysSecretName,
+  );
 
   const authTokenService = new AuthTokenService({
     sessionMaxDurationMinutes: envVars.authSessionMaxDurationMinutes,
     accessTokenExpiryDurationMinutes: envVars.authAccessTokenExpiryDurationMinutes,
     refreshTokenExpiryDurationMinutes: envVars.authRefreshTokenExpiryDurationMinutes,
-    privateKeys: authCookiePrivateKeySecret,
+    privateKeys: parseAuthCookiePrivateKeys(authCookiePrivateKeySecret),
     publicKeys: {},
   });
 
@@ -97,7 +127,7 @@ export async function buildEnvironment(): Promise<LoginLambdaDependencies> {
 
   const nhsLoginJwtHelper: NhsLoginJwtHelper = new NhsLoginJwtHelper(nhsLoginConfig);
 
-  const httpClient = new HttpClient();
+  const httpClient = new FetchHttpClient();
   const jwksClient = new JwksClient({
     cache: true,
     rateLimit: true,
