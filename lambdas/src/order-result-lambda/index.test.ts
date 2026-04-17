@@ -16,7 +16,7 @@ jest.mock("./init", () => {
       updateOrderStatusAndResultStatus: jest.fn(),
     },
     orderStatusNotifyService: {
-      handleOrderStatusUpdated: jest.fn(),
+      dispatch: jest.fn(),
     },
   };
   return {
@@ -74,7 +74,7 @@ const { initMock } = jest.requireMock("./init") as {
       updateOrderStatusAndResultStatus: jest.Mock;
     };
     orderStatusNotifyService: {
-      handleOrderStatusUpdated: jest.Mock;
+      dispatch: jest.Mock;
     };
   };
 };
@@ -125,7 +125,7 @@ describe("order-result-lambda handler", () => {
     validateDBDataMock.mockResolvedValue({ success: true, data: { isIdempotent: false } });
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
-    initMock.orderStatusNotifyService.handleOrderStatusUpdated.mockResolvedValue(undefined);
+    initMock.orderStatusNotifyService.dispatch.mockResolvedValue(undefined);
   });
 
   it("returns 201 and resource on success", async () => {
@@ -192,7 +192,7 @@ describe("order-result-lambda handler", () => {
       ResultStatus.Result_Available,
       identifiers.correlationId,
     );
-    expect(initMock.orderStatusNotifyService.handleOrderStatusUpdated).toHaveBeenCalledWith(
+    expect(initMock.orderStatusNotifyService.dispatch).toHaveBeenCalledWith(
       expect.objectContaining({
         orderId: identifiers.orderUid,
         patientId: expect.any(String),
@@ -213,7 +213,7 @@ describe("order-result-lambda handler", () => {
       ResultStatus.Result_Withheld,
       identifiers.correlationId,
     );
-    expect(initMock.orderStatusNotifyService.handleOrderStatusUpdated).not.toHaveBeenCalled();
+    expect(initMock.orderStatusNotifyService.dispatch).not.toHaveBeenCalled();
   });
 
   it("returns 500 if updateDatabase throws", async () => {

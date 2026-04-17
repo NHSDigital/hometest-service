@@ -3,11 +3,8 @@ import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderService } from "../lib/db/order-db";
-import { OrderDbClient } from "../lib/db/order-db-client";
-import { OrderStatusService } from "../lib/db/order-status-db";
-import { PatientDbClient } from "../lib/db/patient-db-client";
-import { NotifyMessageBuilder } from "../lib/notify/notify-message-builder";
-import { OrderStatusNotifyService } from "../lib/notify/notify-service";
+import { OrderResultAvailableMessageBuilder } from "../lib/notify/message-builders/order-status/order-result-available-message-builder";
+import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { buildEnvironment as init } from "./init";
@@ -15,14 +12,12 @@ import { buildEnvironment as init } from "./init";
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/db/order-db");
-jest.mock("../lib/db/order-status-db");
 jest.mock("../lib/db/patient-db-client");
 jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/commons");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
-jest.mock("../lib/notify/notify-message-builder");
-jest.mock("../lib/notify/notify-service");
+jest.mock("../lib/notify/services/order-status-notify-service");
 
 describe("order-result-lambda init", () => {
   const originalEnv = process.env;
@@ -68,10 +63,8 @@ describe("order-result-lambda init", () => {
 
     const result = init();
 
-    expect(result).toHaveProperty("commons");
     expect(result).toHaveProperty("orderService");
     expect(result).toHaveProperty("orderStatusNotifyService");
-    expect(result.commons).toBeInstanceOf(ConsoleCommons);
     expect(result.orderService).toBeInstanceOf(OrderService);
     expect(result.orderStatusNotifyService).toBeInstanceOf(OrderStatusNotifyService);
   });
@@ -98,32 +91,17 @@ describe("order-result-lambda init", () => {
     expect(PostgresDbClient).toHaveBeenCalledWith(mockPostgresConfig);
   });
 
-  it("should create ConsoleCommons", () => {
-    init();
-
-    expect(ConsoleCommons).toHaveBeenCalledWith();
-  });
-
-  it("should create NotifyMessageBuilder with homeTestBaseUrl", () => {
-    init();
-
-    expect(NotifyMessageBuilder).toHaveBeenCalledWith(
-      expect.any(PatientDbClient),
-      expect.any(OrderDbClient),
-      expect.any(OrderStatusService),
-      "https://hometest.example.nhs.uk",
-    );
-  });
-
   it("should create OrderStatusNotifyService with notifyMessagesQueueUrl", () => {
     init();
 
     expect(OrderStatusNotifyService).toHaveBeenCalledWith(
       expect.objectContaining({
+        notifyMessageBuilders: expect.objectContaining({
+          COMPLETE: expect.any(OrderResultAvailableMessageBuilder),
+        }),
         notifyMessagesQueueUrl: "https://example.queue.local/notify",
         notificationAuditDbClient: expect.any(NotificationAuditDbClient),
         sqsClient: expect.any(AWSSQSClient),
-        notifyMessageBuilder: expect.any(NotifyMessageBuilder),
       }),
     );
   });
@@ -133,7 +111,6 @@ describe("order-result-lambda init", () => {
 
     expect(result).toEqual({
       orderService: expect.any(OrderService),
-      commons: expect.any(ConsoleCommons),
       orderStatusNotifyService: expect.any(OrderStatusNotifyService),
     });
   });
