@@ -12,7 +12,9 @@ import {
   validateDBData,
 } from "./validation-service";
 
-const { commons, orderService, orderStatusNotifyService } = init();
+const name = "order-result-lambda";
+
+const { orderService, orderStatusNotifyService } = init();
 
 async function updateDatabase(
   identifiers: Identifiers,
@@ -43,12 +45,12 @@ async function updateDatabase(
  * Returns appropriate FHIR responses for success and error cases.
  */
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  commons.logInfo("order-result-lambda", "Received result submission request", {
+  console.info(name, "Received result submission request", {
     path: event.path,
     method: event.httpMethod,
   });
 
-  const validationResult = extractAndValidateObservationFields(event, commons);
+  const validationResult = extractAndValidateObservationFields(event);
   if (!validationResult.success) {
     const error = validationResult.error;
     return createFhirErrorResponse(
@@ -66,7 +68,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   try {
     testOrderResult = await orderService.retrieveOrderDetails(identifiers.orderUid);
   } catch (error) {
-    commons.logError("order-result-lambda", "Failed to retrieve order details", {
+    console.error(name, "Failed to retrieve order details", {
       error,
       orderUid: identifiers.orderUid,
     });
@@ -74,7 +76,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 
   if (!testOrderResult) {
-    commons.logError("order-result-lambda", "Test order not found for orderUid", {
+    console.error(name, "Test order not found for orderUid", {
       orderUid: identifiers.orderUid,
     });
     return createFhirErrorResponse(
@@ -85,12 +87,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     );
   }
 
-  const dbValidationResult = await validateDBData(
-    identifiers,
-    observation,
-    testOrderResult,
-    commons,
-  );
+  const dbValidationResult = await validateDBData(identifiers, observation, testOrderResult);
 
   if (!dbValidationResult.success) {
     const error = dbValidationResult.error;
@@ -111,17 +108,25 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   try {
     await updateDatabase(identifiers, interpretationCode);
   } catch (error) {
-    commons.logError("order-result-lambda", "Database update failed", { error });
+    console.error(name, "Database update failed", { error });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
   if (interpretationCode === InterpretationCode.Normal) {
-    await orderStatusNotifyService.handleOrderStatusUpdated({
-      orderId: identifiers.orderUid,
-      patientId: testOrderResult.patient_uid,
-      correlationId: identifiers.correlationId,
-      statusCode: OrderStatusCodes.COMPLETE,
-    });
+    try {
+      await orderStatusNotifyService.dispatch({
+        orderId: identifiers.orderUid,
+        patientId: testOrderResult.patient_uid,
+        correlationId: identifiers.correlationId,
+        statusCode: OrderStatusCodes.COMPLETE,
+      });
+    } catch (error) {
+      console.error(name, "Failed to dispatch order result notification", {
+        correlationId: identifiers.correlationId,
+        orderId: identifiers.orderUid,
+        error,
+      });
+    }
   }
 
   return createFhirResponse(201, observation);

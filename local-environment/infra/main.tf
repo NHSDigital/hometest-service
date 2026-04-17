@@ -21,6 +21,7 @@ provider "aws" {
 
   endpoints {
     apigateway     = "http://localhost:4566"
+    events         = "http://localhost:4566"
     iam            = "http://localhost:4566"
     lambda         = "http://localhost:4566"
     s3             = "http://localhost:4566"
@@ -171,7 +172,10 @@ resource "aws_iam_role_policy" "lambdas_sqs_publish" {
         Action = [
           "sqs:SendMessage"
         ]
-        Resource = aws_sqs_queue.order_placement.arn
+        Resource = [
+          aws_sqs_queue.order_placement.arn,
+          aws_sqs_queue.notify_messages.arn,
+        ]
       }
     ]
   })
@@ -560,6 +564,63 @@ module "result_status_lambda" {
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
   }
+}
+
+resource "aws_lambda_function" "reminder_dispatch_lambda" {
+  filename         = "${path.module}/../../lambdas/dist/reminder-dispatch-lambda.zip"
+  function_name    = "${var.project_name}-reminder-dispatch-lambda"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs24.x"
+  source_code_hash = filebase64sha256("${path.module}/../../lambdas/dist/reminder-dispatch-lambda.zip")
+  timeout          = 60
+
+  environment {
+    variables = {
+      NODE_OPTIONS              = "--enable-source-maps"
+      DB_USERNAME               = "app_user"
+      DB_ADDRESS                = "postgres-db"
+      DB_PORT                   = "5432"
+      DB_NAME                   = "local_hometest_db"
+      DB_SCHEMA                 = "hometest"
+      DB_SECRET_NAME            = "postgres-db-password"
+      DB_SSL                    = "false"
+      NOTIFY_MESSAGES_QUEUE_URL = aws_sqs_queue.notify_messages.url
+      HOME_TEST_BASE_URL        = "http://localhost:3000"
+      REMINDER_ENABLED_STATUSES = jsonencode(["DISPATCHED"])
+      REMINDER_INTERVAL_CONFIG = jsonencode(
+        {
+          DISPATCHED = [
+            { interval = 7, eventCode = "DISPATCHED_INITIAL_REMINDER" },
+            { interval = 15, eventCode = "DISPATCHED_SECOND_REMINDER" },
+            { interval = 30, eventCode = "DISPATCHED_THIRD_REMINDER" }
+          ]
+        }
+      )
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.lambda_basic]
+}
+
+resource "aws_cloudwatch_event_rule" "reminder_dispatch_schedule" {
+  name                = "${var.project_name}-reminder-dispatch-schedule"
+  description         = "Triggers reminder-dispatch-lambda on a scheduled interval"
+  schedule_expression = "rate(2 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "reminder_dispatch_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.reminder_dispatch_schedule.name
+  target_id = "reminder-dispatch-lambda"
+  arn       = aws_lambda_function.reminder_dispatch_lambda.arn
+}
+
+resource "aws_lambda_permission" "allow_eventbridge_reminder_dispatch" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.reminder_dispatch_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.reminder_dispatch_schedule.arn
 }
 
 # API Gateway deployment

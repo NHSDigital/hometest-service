@@ -1,27 +1,37 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
+import { OrderDbClient } from "../lib/db/order-db-client";
 import { OrderStatusService } from "../lib/db/order-status-db";
 import { PatientDbClient } from "../lib/db/patient-db-client";
-import { OrderConfirmedMessageBuilder } from "../lib/notify/message-builders/order-status/order-confirmed-message-builder";
-import { OrderDispatchedMessageBuilder } from "../lib/notify/message-builders/order-status/order-dispatched-message-builder";
-import { OrderReceivedMessageBuilder } from "../lib/notify/message-builders/order-status/order-received-message-builder";
-import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { testComponentCreationOrder } from "../lib/test-utils/component-integration-helpers";
 import { restoreEnvironment, setupEnvironment } from "../lib/test-utils/environment-test-helpers";
+import { MarkReminderAsFailedCommand } from "./db/commands/mark-reminder-as-failed";
+import { MarkReminderAsQueuedCommand } from "./db/commands/mark-reminder-as-queued";
+import { ScheduleReminderCommand } from "./db/commands/schedule-reminder";
+import { GetScheduledRemindersQuery } from "./db/queries/get-scheduled-reminders";
 import { buildEnvironment as init } from "./init";
+import { DispatchedReminderMessageBuilder } from "./notify/dispatched-reminder-message-builder";
+import { ReminderNotifyService } from "./notify/reminder-notify-service";
+import { ReminderProcessor } from "./processor/reminder-processor";
 
 jest.mock("../lib/db/order-status-db");
+jest.mock("./db/queries/get-scheduled-reminders");
+jest.mock("./db/commands/mark-reminder-as-queued");
+jest.mock("./db/commands/mark-reminder-as-failed");
+jest.mock("./db/commands/schedule-reminder");
 jest.mock("../lib/db/patient-db-client");
+jest.mock("../lib/db/order-db-client");
 jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
 jest.mock("../lib/db/db-config");
-jest.mock("../lib/notify/services/order-status-notify-service");
-jest.mock("../lib/notify/message-builders/order-status/order-confirmed-message-builder");
+jest.mock("./notify/reminder-notify-service");
+jest.mock("./notify/dispatched-reminder-message-builder");
+jest.mock("./processor/reminder-processor");
 
 describe("init", () => {
   const originalEnv = process.env;
@@ -36,6 +46,9 @@ describe("init", () => {
     AWS_REGION: "eu-west-2",
     NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
     HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
+    REMINDER_ENABLED_STATUSES: '["DISPATCHED"]',
+    REMINDER_INTERVAL_CONFIG:
+      '{"DISPATCHED":[{"interval":7,"eventCode":"DISPATCHED_INITIAL_REMINDER"}]}',
   };
 
   const mockPostgresConfig = {
@@ -58,13 +71,17 @@ describe("init", () => {
   });
 
   describe("successful initialization", () => {
-    it("should initialize all components with correct configuration", () => {
-      process.env.AWS_REGION = "eu-west-2";
-
+    it("should return an Environment object with all required properties", () => {
       const result = init();
 
-      expect(result).toHaveProperty("orderStatusDb");
-      expect(result.orderStatusDb).toBeInstanceOf(OrderStatusService);
+      expect(result).toEqual({
+        reminderProcessor: expect.any(ReminderProcessor),
+        getScheduledRemindersQuery: expect.any(GetScheduledRemindersQuery),
+        reminderDispatchConfig: expect.objectContaining({
+          enabledReminderStatuses: expect.any(Set),
+          reminderConfiguration: expect.any(Object),
+        }),
+      });
     });
 
     it("should create AwsSecretsClient with AWS_REGION when set", () => {
@@ -81,38 +98,28 @@ describe("init", () => {
       expect(() => init()).toThrow("Missing value for an environment variable AWS_REGION");
     });
 
-    it("should create PostgresDbClient with correct configuration", () => {
-      process.env.AWS_REGION = "eu-west-2";
+    it("should throw when NOTIFY_MESSAGES_QUEUE_URL is not set", () => {
+      delete process.env.NOTIFY_MESSAGES_QUEUE_URL;
 
+      expect(() => init()).toThrow(
+        "Missing value for an environment variable NOTIFY_MESSAGES_QUEUE_URL",
+      );
+    });
+
+    it("should throw when HOME_TEST_BASE_URL is not set", () => {
+      delete process.env.HOME_TEST_BASE_URL;
+
+      expect(() => init()).toThrow("Missing value for an environment variable HOME_TEST_BASE_URL");
+    });
+
+    it("should create PostgresDbClient with correct configuration", () => {
       init();
 
       expect(PostgresDbClient).toHaveBeenCalledWith(mockPostgresConfig);
     });
-
-    it("should create OrderStatusService with PostgresDbClient instance", () => {
-      init();
-
-      expect(OrderStatusService).toHaveBeenCalledWith(expect.any(PostgresDbClient));
-    });
-
-    it("should return an Environment object with all required properties", () => {
-      const result = init();
-
-      expect(result).toEqual({
-        orderStatusDb: expect.any(OrderStatusService),
-        orderStatusNotifyService: expect.any(OrderStatusNotifyService),
-      });
-    });
   });
 
   describe("integration of components", () => {
-    it("should pass a PostgresDbClient instance to OrderStatusService", () => {
-      init();
-
-      const orderStatusServiceCalls = (OrderStatusService as jest.Mock).mock.calls;
-      expect(orderStatusServiceCalls[0][0]).toBeInstanceOf(PostgresDbClient);
-    });
-
     it("should call postgresConfigFromEnv with AwsSecretsClient instance", () => {
       init();
 
@@ -138,7 +145,32 @@ describe("init", () => {
             calledWith: expect.any(PostgresDbClient),
           },
           {
+            mock: GetScheduledRemindersQuery as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: MarkReminderAsQueuedCommand as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: MarkReminderAsFailedCommand as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: ScheduleReminderCommand as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
             mock: PatientDbClient as jest.Mock,
+            times: 1,
+            calledWith: expect.any(PostgresDbClient),
+          },
+          {
+            mock: OrderDbClient as jest.Mock,
             times: 1,
             calledWith: expect.any(PostgresDbClient),
           },
@@ -152,23 +184,39 @@ describe("init", () => {
             times: 1,
           },
           {
-            mock: OrderStatusNotifyService as jest.Mock,
+            mock: ReminderNotifyService as jest.Mock,
+            times: 1,
+          },
+          {
+            mock: ReminderProcessor as jest.Mock,
             times: 1,
           },
         ],
       });
     });
 
-    it("should create OrderStatusNotifyService with notification dependencies", () => {
+    it("should create ReminderProcessor with the commands and notify service", () => {
       init();
 
-      expect(OrderStatusNotifyService).toHaveBeenCalledWith(
+      expect(ReminderProcessor).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reminderNotifyService: expect.any(ReminderNotifyService),
+          markReminderAsQueuedCommand: expect.any(MarkReminderAsQueuedCommand),
+          markReminderAsFailedCommand: expect.any(MarkReminderAsFailedCommand),
+          scheduleReminderCommand: expect.any(ScheduleReminderCommand),
+        }),
+      );
+    });
+
+    it("should create ReminderNotifyService with notification dependencies", () => {
+      init();
+
+      expect(ReminderNotifyService).toHaveBeenCalledWith(
         expect.objectContaining({
           notifyMessageBuilders: {
-            CONFIRMED: expect.any(OrderConfirmedMessageBuilder),
-            DISPATCHED: expect.any(OrderDispatchedMessageBuilder),
-            RECEIVED: expect.any(OrderReceivedMessageBuilder),
+            DISPATCHED: expect.any(DispatchedReminderMessageBuilder),
           },
+          orderStatusService: expect.any(OrderStatusService),
           notificationAuditDbClient: expect.any(NotificationAuditDbClient),
           sqsClient: expect.any(AWSSQSClient),
           notifyMessagesQueueUrl: "https://example.queue.local/notify",
