@@ -430,7 +430,7 @@ describe("ConfirmMobileNumberPage", () => {
             updateOrderAnswers({
               supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
             });
-          }, [updateOrderAnswers]);
+          }, [supplierName, updateOrderAnswers]);
 
           return <>{children}</>;
         };
