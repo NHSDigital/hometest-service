@@ -1,28 +1,13 @@
-import * as utils from "../lib/utils/utils";
-import * as validation from "./validation-service";
-import * as validationUtils from "../lib/utils/validation-utils";
-
-import { InterpretationCode, orderResultFHIRObservationSchema } from "./models";
-
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { ConsoleCommons } from "../lib/commons";
 import { Observation } from "fhir/r4";
+
 import { ResultStatus } from "../lib/types/status";
+import * as utils from "../lib/utils/utils";
+import * as validationUtils from "../lib/utils/validation-utils";
+import { InterpretationCode, orderResultFHIRObservationSchema } from "./models";
+import * as validation from "./validation-service";
 
 describe("validation-service", () => {
-  let commons: jest.Mocked<ConsoleCommons>;
-
-  beforeEach(() => {
-    commons = {
-      logError: jest.fn(),
-      logInfo: jest.fn(),
-      logDebug: jest.fn(),
-    };
-    commons.logError.mockReset();
-    commons.logInfo.mockReset();
-    commons.logDebug.mockReset();
-  });
-
   afterEach(() => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
@@ -30,19 +15,15 @@ describe("validation-service", () => {
 
   describe("validateBody", () => {
     it("throws error when body is null", () => {
-      expect(() => validation.validateAndExtractObservation(null, commons)).toThrow(
-        "Body is empty",
-      );
+      expect(() => validation.validateAndExtractObservation(null)).toThrow("Body is empty");
     });
 
     it("throws error when body is empty object", () => {
-      expect(() => validation.validateAndExtractObservation("{}", commons)).toThrow(
-        "Body is empty",
-      );
+      expect(() => validation.validateAndExtractObservation("{}")).toThrow("Body is empty");
     });
 
     it("throws error when body is invalid JSON", () => {
-      expect(() => validation.validateAndExtractObservation("{invalid json}", commons)).toThrow();
+      expect(() => validation.validateAndExtractObservation("{invalid json}")).toThrow();
     });
 
     it("throws error when schema validation fails", () => {
@@ -56,7 +37,7 @@ describe("validation-service", () => {
         error: { issues: [{ message: "Invalid schema" }] },
       } as ReturnType<typeof orderResultFHIRObservationSchema.safeParse>);
 
-      expect(() => validation.validateAndExtractObservation(invalidObservation, commons)).toThrow();
+      expect(() => validation.validateAndExtractObservation(invalidObservation)).toThrow();
       expect(generateReadableErrorSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -67,9 +48,7 @@ describe("validation-service", () => {
         data: { resourceType: "Observation" },
       } as ReturnType<typeof orderResultFHIRObservationSchema.safeParse>);
 
-      expect(() =>
-        validation.validateAndExtractObservation(validObservation, commons),
-      ).not.toThrow();
+      expect(() => validation.validateAndExtractObservation(validObservation)).not.toThrow();
     });
   });
 
@@ -88,7 +67,7 @@ describe("validation-service", () => {
         throw new Error("bad body");
       });
 
-      const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'), commons);
+      const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'));
 
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -107,7 +86,7 @@ describe("validation-service", () => {
         throw new Error("missing correlation id");
       });
 
-      const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'), commons);
+      const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'));
 
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -129,7 +108,7 @@ describe("validation-service", () => {
         throw new Error("bad order uid");
       });
 
-      const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'), commons);
+      const result = validation.extractAndValidateObservationFields(makeEvent('{"x":1}'));
 
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -153,7 +132,6 @@ describe("validation-service", () => {
       };
       const result = validation.extractAndValidateObservationFields(
         makeEvent(JSON.stringify(observationEvent)),
-        commons,
       );
 
       expect(result.success).toBe(true);
@@ -199,12 +177,7 @@ describe("validation-service", () => {
     });
 
     it("returns not-found when testOrderResult is null", async () => {
-      const result = await validation.validateDBData(
-        identifiers,
-        observation,
-        null as any,
-        commons,
-      );
+      const result = await validation.validateDBData(identifiers, observation, null as any);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toEqual({
@@ -218,12 +191,7 @@ describe("validation-service", () => {
 
     it("returns conflict when idempotency check fails (different result)", async () => {
       testOrderResult.result_status = ResultStatus.Result_Withheld; // mismatch with mapping
-      const result = await validation.validateDBData(
-        identifiers,
-        observation,
-        testOrderResult,
-        commons,
-      );
+      const result = await validation.validateDBData(identifiers, observation, testOrderResult);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toEqual({
@@ -238,12 +206,7 @@ describe("validation-service", () => {
 
     it("returns success and isIdempotent=true when idempotency check passes (same result)", async () => {
       testOrderResult.result_status = ResultStatus.Result_Available; // matches mapping
-      const result = await validation.validateDBData(
-        identifiers,
-        observation,
-        testOrderResult,
-        commons,
-      );
+      const result = await validation.validateDBData(identifiers, observation, testOrderResult);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data).toEqual({
@@ -255,12 +218,7 @@ describe("validation-service", () => {
     it("returns invalid when patient_uid does not match", async () => {
       testOrderResult.correlation_id = undefined; // skip idempotency
       testOrderResult.patient_uid = "other-patient";
-      const result = await validation.validateDBData(
-        identifiers,
-        observation,
-        testOrderResult,
-        commons,
-      );
+      const result = await validation.validateDBData(identifiers, observation, testOrderResult);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toEqual({
@@ -275,12 +233,7 @@ describe("validation-service", () => {
     it("returns forbidden when supplier_id does not match", async () => {
       testOrderResult.correlation_id = undefined; // skip idempotency
       testOrderResult.supplier_id = "other-supplier";
-      const result = await validation.validateDBData(
-        identifiers,
-        observation,
-        testOrderResult,
-        commons,
-      );
+      const result = await validation.validateDBData(identifiers, observation, testOrderResult);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toEqual({
@@ -296,12 +249,7 @@ describe("validation-service", () => {
       testOrderResult.correlation_id = undefined; // skip idempotency
       testOrderResult.patient_uid = "patient-uid";
       testOrderResult.supplier_id = "supplier-123";
-      const result = await validation.validateDBData(
-        identifiers,
-        observation,
-        testOrderResult,
-        commons,
-      );
+      const result = await validation.validateDBData(identifiers, observation, testOrderResult);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data).toEqual({ isIdempotent: false });

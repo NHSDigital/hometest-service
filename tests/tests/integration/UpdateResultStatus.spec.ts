@@ -9,7 +9,6 @@ import { headersTestResults } from "../../utils";
 
 let orderId: string;
 let patientId: string;
-let correlationId: string;
 const supplierName = "Preventx";
 let supplierId: string;
 
@@ -25,7 +24,6 @@ test.describe("Results Flow - Update Order Results Logic", { tag: "@db" }, () =>
 
     orderId = result.order_uid;
     patientId = result.patient_uid;
-    correlationId = randomUUID();
     console.log(`Created test order with ID: ${orderId}`);
 
     supplierId = await testOrderDb.getSupplierIdByName(supplierName);
@@ -39,7 +37,7 @@ test.describe("Results Flow - Update Order Results Logic", { tag: "@db" }, () =>
     const testData = ResultsObservationData.buildNormalObservation(orderId, patientId, supplierId);
     const response = await hivResultsApi.submitTestResults(
       testData,
-      headersTestResults(correlationId),
+      headersTestResults(randomUUID()),
     );
     expect(response.status()).toBe(201);
 
@@ -62,7 +60,7 @@ test.describe("Results Flow - Update Order Results Logic", { tag: "@db" }, () =>
 
     const response = await hivResultsApi.submitTestResults(
       testData,
-      headersTestResults(correlationId),
+      headersTestResults(randomUUID()),
     );
     expect(response.status()).toBe(201);
 

@@ -81,7 +81,7 @@ export default defineConfig({
     },
     {
       name: "edge",
-      use: { ...devices["Desktop Edge"] },
+      use: { ...devices["Desktop Edge"], channel: "msedge" },
     },
     {
       name: "mobileChromium",
@@ -90,6 +90,10 @@ export default defineConfig({
     {
       name: "mobileSafari",
       use: { ...devices["iPhone 12"] },
+    },
+    {
+      name: "mobileEdge",
+      use: { ...devices["Pixel 5"], channel: "msedge" },
     },
   ],
 });
