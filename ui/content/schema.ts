@@ -478,11 +478,29 @@ export interface GoToClinicContent {
   moreOptionsHeading: string;
 }
 
+export interface BeforeYouStartContent {
+  pageTitle: string;
+  title: string;
+  urgentCard: {
+    heading: string;
+    hivExposureBullet: string;
+    stiSymptomsBulletPrefix: string;
+    stiSymptomsLink: {
+      text: string;
+      href: string;
+    };
+    transmissionInfo: string;
+    aeAdvicePrefix: string;
+  };
+  continueButton: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
 
 export interface PagesContent {
+  "before-you-start": BeforeYouStartContent;
   "get-self-test-kit-for-HIV": StartPageContent;
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
@@ -521,8 +539,7 @@ export interface ContentFile {
 
 export type MainPagesContent = Omit<
   PagesContent,
-  | "home-test-privacy-policy"
-  | "home-test-terms-of-use"
+  "home-test-privacy-policy" | "home-test-terms-of-use"
 >;
 
 export interface MainContentFile {

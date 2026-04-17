@@ -2,8 +2,7 @@ import { Locator, Page } from "@playwright/test";
 
 import { AuthenticatedPage } from "./AuthenticatedPage";
 
-export class HomeTestStartPage extends AuthenticatedPage {
-  private static readonly startPagePath = "/get-self-test-kit-for-HIV";
+export class GetSelfTestKitPage extends AuthenticatedPage {
   readonly findClinicLink: Locator;
   readonly nearestAELink: Locator;
   readonly sexualHealthServicesLink: Locator;
@@ -37,10 +36,6 @@ export class HomeTestStartPage extends AuthenticatedPage {
 
   async waitUntilPageLoaded(): Promise<void> {
     await this.pageHeader.waitFor({ state: "visible" });
-  }
-
-  async navigate(): Promise<void> {
-    await this.navigateToProtectedPath(HomeTestStartPage.startPagePath, this.pageHeader);
   }
 
   async clickFindClinicLink(expectedUrl: string): Promise<void> {
