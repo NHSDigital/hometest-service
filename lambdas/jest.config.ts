@@ -34,7 +34,7 @@ const config: Config = {
     "^.+\\.jsx?$": ["babel-jest", { configFile: "./babel.config.cjs" }],
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(\\.pnpm/)?(@middy|uuid|@aws-sdk))", // add ESM packages here
+    String.raw`/node_modules/(?!(\.pnpm/)?(@middy|uuid|@aws-sdk))`, // add ESM packages here
   ],
 };
 export default config;
