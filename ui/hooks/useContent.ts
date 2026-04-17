@@ -1,4 +1,5 @@
 import type {
+  BeforeYouStartContent,
   BloodSampleGuideContent,
   CannotUseServiceUnder18Content,
   CheckYourAnswersContent,
@@ -7,7 +8,6 @@ import type {
   EnterAddressManuallyContent,
   EnterDeliveryAddressContent,
   EnterMobilePhoneNumberContent,
-  ServiceErrorContent,
   GoToClinicContent,
   HomeTestPrivacyPolicyContent,
   HomeTestTermsOfUseContent,
@@ -17,14 +17,15 @@ import type {
   OrderSubmittedContent,
   OrderTrackingContent,
   SelectDeliveryAddressContent,
+  ServiceErrorContent,
   StartPageContent,
   SuppliersLegalDocumentsContent,
   TestResultsContent,
 } from "@/content";
-
 import { content } from "@/content";
 
 export const PageKeys = {
+  BeforeYouStart: "before-you-start",
   GetSelfTest: "get-self-test-kit-for-HIV",
   KitNotAvailableInArea: "kit-not-available-in-area",
   EnterDeliveryAddress: "enter-delivery-address",
@@ -47,6 +48,7 @@ export type PageKey = (typeof PageKeys)[keyof typeof PageKeys];
 
 export interface UseContentReturn {
   commonContent: CommonContent;
+  "before-you-start": BeforeYouStartContent;
   "get-self-test-kit-for-HIV": StartPageContent;
   "kit-not-available-in-area": KitNotAvailableInAreaContent;
   "enter-delivery-address": EnterDeliveryAddressContent;
@@ -73,6 +75,7 @@ export interface UseContentReturn {
 export const useContent = (): UseContentReturn => {
   return {
     commonContent: content.commonContent,
+    "before-you-start": content.pages["before-you-start"],
     "get-self-test-kit-for-HIV": content.pages["get-self-test-kit-for-HIV"],
     "kit-not-available-in-area": content.pages["kit-not-available-in-area"],
     "enter-delivery-address": content.pages["enter-delivery-address"],

@@ -91,13 +91,17 @@ jobs:
             playwright-${{ runner.os }}-
 
       - name: "Install Playwright browsers"
+        timeout-minutes: 3
         working-directory: tests
         run: npx playwright install --with-deps
 
       - name: "Start the application"
         if: env.TARGET_ENV == 'local'
         run: |
-          npm run start
+          npm run local:start
+        env:
+          BUILDKIT_PROGRESS: plain # or "quiet" to fully suppress build output
+          DOCKER_CLI_HINTS: false # removes "What's next?" hints
 
       - name: "Show application status"
         if: env.TARGET_ENV == 'local'
@@ -179,6 +183,34 @@ jobs:
             docker compose -f local-environment/docker-compose.yml logs "$service" > "tests/testResults/docker-compose-${service}.log" 2>&1
           done
 
+      - name: "Detect flaky tests"
+        if: always()
+        run: |
+          RESULTS_FILE="tests/testResults/test-results.json"
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "No test results JSON found, skipping flaky detection"
+            exit 0
+          fi
+
+          # Check top-level stats for flaky count first
+          FLAKY_COUNT=$(jq '.stats.flaky // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+          echo "Flaky test count: $FLAKY_COUNT"
+
+          if [ "$FLAKY_COUNT" -gt 0 ]; then
+            # Extract flaky test details: specs contain tests, status is on test objects
+            FLAKY_TESTS=$(jq -r '
+              [.. | .specs?[]? | {title: .title, file: .file, line: .line, tests: [.tests[]? | select(.status == "flaky") | .projectName]} | select(.tests | length > 0)]
+              | .[] | "[\(.tests | join(", "))] \(.title) (\(.file):\(.line))"
+            ' "$RESULTS_FILE" 2>/dev/null)
+
+            echo "::warning::Flaky tests detected (passed on retry):"
+            while IFS= read -r test; do
+              echo "::warning::  Flaky: $test"
+            done <<< "$FLAKY_TESTS"
+          else
+            echo "No flaky tests detected"
+          fi
+
       - name: "Publish Test Results"
         uses: dorny/test-reporter@v3
         if: always()
@@ -208,6 +240,22 @@ jobs:
             echo "| :stopwatch: Duration | ${TIME}s |" >> $GITHUB_STEP_SUMMARY
           else
             echo ":warning: No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Append flaky test details to summary
+          RESULTS_FILE="tests/testResults/test-results.json"
+          if [ -f "$RESULTS_FILE" ]; then
+            FLAKY_COUNT=$(jq '.stats.flaky // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            if [ "$FLAKY_COUNT" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### :warning: Flaky Tests ($FLAKY_COUNT)" >> $GITHUB_STEP_SUMMARY
+              echo "These tests failed initially but passed on retry:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '
+                [.. | .specs?[]? | {title: .title, file: .file, line: .line, tests: [.tests[]? | select(.status == "flaky") | .projectName]} | select(.tests | length > 0)]
+                | .[] | "- **[\(.tests | join(", "))] \(.title)** (\(.file):\(.line))"
+              ' "$RESULTS_FILE" 2>/dev/null >> $GITHUB_STEP_SUMMARY
+            fi
           fi
 
       - name: "Upload test results"

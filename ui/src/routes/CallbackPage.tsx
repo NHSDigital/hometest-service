@@ -1,14 +1,14 @@
 "use client";
 
-import { useAuth } from "@/state";
-import { mapAuthUser } from "@/lib/auth/mapAuthUser";
-import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
+import { useAsyncErrorHandler } from "@/hooks";
+import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
+import { mapAuthUser } from "@/lib/auth/mapAuthUser";
 import { RoutePath } from "@/lib/models/route-paths";
 import { backendUrl } from "@/settings";
-import { useNavigate } from "react-router-dom";
-import { useAsyncErrorHandler } from "@/hooks";
+import { useAuth } from "@/state";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -74,7 +74,7 @@ export default function CallbackPage() {
     const userData = mapAuthUser(data);
 
     setUser(userData);
-    navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
+    navigate(returnTo ?? RoutePath.BeforeYouStartPage);
   });
 
   useEffect(() => {

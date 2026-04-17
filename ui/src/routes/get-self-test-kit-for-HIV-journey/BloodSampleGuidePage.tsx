@@ -2,13 +2,13 @@
 
 import { Details, Images } from "nhsuk-react-components";
 
+import { useContent } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
-import { useContent } from "@/hooks";
 import { useJourneyNavigationContext } from "@/state";
 
 export default function BloodSampleGuidePage() {
-  const { goBack, stepHistory, goToStep } = useJourneyNavigationContext();
+  const { goBack, stepHistory, resetNavigation } = useJourneyNavigationContext();
   const { "blood-sample-guide": content } = useContent();
 
   return (
@@ -18,7 +18,7 @@ export default function BloodSampleGuidePage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(RoutePath.GetSelfTestKitPage);
+          resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
         }
       }}
     >

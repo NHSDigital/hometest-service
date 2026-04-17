@@ -29,6 +29,7 @@ const REQUIRED_COMMON_KEYS: (keyof CommonContent)[] = [
 ];
 
 const REQUIRED_PAGE_KEYS: (keyof MainPagesContent)[] = [
+  "before-you-start",
   "get-self-test-kit-for-HIV",
   "kit-not-available-in-area",
   "go-to-clinic",
