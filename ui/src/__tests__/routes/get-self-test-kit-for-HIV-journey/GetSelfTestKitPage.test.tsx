@@ -27,12 +27,40 @@ describe("FormPageLayout", () => {
 });
 
 describe("GetSelfTestKitPage", () => {
-  it("renders the main header", () => {
+  beforeEach(() => {
     render(<GetSelfTestKitPage />, { wrapper: TestWrapper });
+  });
 
-    const header = screen.getByRole("heading", {
-      name: "Get a self-test kit for HIV",
-    });
-    expect(header).toBeInTheDocument();
+  it("renders the main heading", () => {
+    expect(screen.getByRole("heading", { name: "Order a free HIV self-test kit" })).toBeInTheDocument();
+  });
+
+  it("renders the eligibility intro and list items", () => {
+    expect(screen.getByText("You can use this service if:")).toBeInTheDocument();
+    expect(screen.getByText("you're aged 18 or over")).toBeInTheDocument();
+    expect(screen.getByText("the kit's available in your area")).toBeInTheDocument();
+    expect(screen.getByText("you're ordering for yourself")).toBeInTheDocument();
+  });
+
+  it("renders the infoBox text", () => {
+    expect(
+      screen.getByText(/HIV can take up to 45 days after exposure/),
+    ).toBeInTheDocument();
+  });
+
+  it("renders the how it works section", () => {
+    expect(screen.getByRole("heading", { name: "How it works" })).toBeInTheDocument();
+  });
+
+  it("renders the results and timescales details summary", () => {
+    expect(screen.getByText("Results and timescales")).toBeInTheDocument();
+  });
+
+  it("renders the data sharing details summary", () => {
+    expect(screen.getByText("Who my information is shared with")).toBeInTheDocument();
+  });
+
+  it("renders the start now button", () => {
+    expect(screen.getByRole("button", { name: "Start now" })).toBeInTheDocument();
   });
 });
