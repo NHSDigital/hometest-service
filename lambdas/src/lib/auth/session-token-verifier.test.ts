@@ -1,6 +1,6 @@
 import { generateKeyPairSync } from "node:crypto";
 
-import jwt, { type SignOptions, type VerifyOptions } from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 
 import { SessionTokenVerifier } from "./session-token-verifier";
 
@@ -122,7 +122,7 @@ describe("SessionTokenVerifier", () => {
 
     const result = await verifier.verifyAccessToken(expiredToken, {
       ignoreExpiration: true,
-    } as VerifyOptions);
+    });
 
     expect(result.success).toBe(true);
     if (!result.success) {
@@ -306,7 +306,7 @@ describe("SessionTokenVerifier", () => {
 
     const result = await verifier.verifyAccessToken(token, {
       algorithms: ["RS256"],
-    } as VerifyOptions);
+    });
 
     expect(result).toEqual({
       success: false,

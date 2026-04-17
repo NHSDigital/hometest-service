@@ -199,11 +199,13 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
   }
 
   private mapJsonWebTokenErrorCode(message: string): SessionTokenVerifierErrorCode {
-    if (message === "invalid algorithm") {
+    const normalizedMessage = message.trim().toLowerCase();
+
+    if (normalizedMessage.includes("invalid algorithm")) {
       return "INVALID_ALGORITHM";
     }
 
-    if (message === "invalid signature") {
+    if (normalizedMessage.includes("invalid signature")) {
       return "INVALID_SIGNATURE";
     }
 
