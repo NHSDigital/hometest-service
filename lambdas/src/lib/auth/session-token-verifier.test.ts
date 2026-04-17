@@ -304,9 +304,7 @@ describe("SessionTokenVerifier", () => {
       },
     );
 
-    const result = await verifier.verifyAccessToken(token, {
-      algorithms: ["RS256"],
-    });
+    const result = await verifier.verifyAccessToken(token);
 
     expect(result).toEqual({
       success: false,

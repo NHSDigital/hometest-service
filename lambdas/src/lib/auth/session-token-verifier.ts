@@ -44,17 +44,19 @@ export interface SessionTokenVerifierConfig {
   keyId?: string;
 }
 
+export type SessionTokenVerifyOptions = Omit<VerifyOptions, "algorithms" | "complete">;
+
 type SessionAccessTokenClaims = IAccessTokenPayload & JwtPayload;
 type SessionRefreshTokenClaims = IRefreshTokenPayload & JwtPayload;
 
 export interface ISessionTokenVerifier {
   verifyAccessToken: (
     encodedToken: string,
-    verifyOptions?: VerifyOptions,
+    verifyOptions?: SessionTokenVerifyOptions,
   ) => Promise<SessionTokenVerificationResult<SessionAccessTokenClaims>>;
   verifyRefreshToken: (
     encodedToken: string,
-    verifyOptions?: VerifyOptions,
+    verifyOptions?: SessionTokenVerifyOptions,
   ) => Promise<SessionTokenVerificationResult<SessionRefreshTokenClaims>>;
 }
 
@@ -67,7 +69,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
 
   public verifyAccessToken(
     encodedToken: string,
-    verifyOptions?: VerifyOptions,
+    verifyOptions?: SessionTokenVerifyOptions,
   ): Promise<SessionTokenVerificationResult<SessionAccessTokenClaims>> {
     return this.verifyToken<SessionAccessTokenClaims>(
       encodedToken,
@@ -78,7 +80,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
 
   public verifyRefreshToken(
     encodedToken: string,
-    verifyOptions?: VerifyOptions,
+    verifyOptions?: SessionTokenVerifyOptions,
   ): Promise<SessionTokenVerificationResult<SessionRefreshTokenClaims>> {
     return this.verifyToken<SessionRefreshTokenClaims>(
       encodedToken,
@@ -90,7 +92,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
   private async verifyToken<TPayload extends JwtPayload>(
     encodedToken: string,
     payloadValidator: (payload: JwtPayload) => payload is TPayload,
-    verifyOptions?: VerifyOptions,
+    verifyOptions?: SessionTokenVerifyOptions,
   ): Promise<SessionTokenVerificationResult<TPayload>> {
     const decodedToken = jwt.decode(encodedToken, { complete: true });
 
@@ -116,10 +118,10 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
       };
     }
 
-    const { algorithms: _ignoredAlgorithms, ...safeVerifyOptions } = verifyOptions ?? {};
     const jwtOptions: VerifyOptions = {
-      ...safeVerifyOptions,
+      ...verifyOptions,
       algorithms: ["RS512"],
+      complete: false,
     };
 
     try {
