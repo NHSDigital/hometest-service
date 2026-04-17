@@ -1,18 +1,19 @@
-const mockSign = jest.fn();
-const mockCleanupKey = jest.fn();
+const sessionTokenServiceMockSign = jest.fn();
+const sessionTokenServiceMockCleanupKey = jest.fn();
 
 jest.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    sign: mockSign,
+    sign: sessionTokenServiceMockSign,
   },
 }));
 
 jest.mock("./auth-utils", () => ({
-  cleanupKey: mockCleanupKey,
+  cleanupKey: sessionTokenServiceMockCleanupKey,
 }));
 
-import { SessionTokenService } from "./session-token-service";
+const { SessionTokenService } =
+  jest.requireActual<typeof import("./session-token-service")>("./session-token-service");
 
 describe("SessionTokenService", () => {
   const config = {
@@ -23,8 +24,8 @@ describe("SessionTokenService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSign.mockReturnValue("signed-token");
-    mockCleanupKey.mockReturnValue("clean-private-key");
+    sessionTokenServiceMockSign.mockReturnValue("signed-token");
+    sessionTokenServiceMockCleanupKey.mockReturnValue("clean-private-key");
   });
 
   describe("signAccessToken", () => {
@@ -37,8 +38,8 @@ describe("SessionTokenService", () => {
 
       const token = service.signAccessToken(payload);
 
-      expect(mockCleanupKey).toHaveBeenCalledWith("raw-private-key");
-      expect(mockSign).toHaveBeenCalledWith(payload, "clean-private-key", {
+      expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledWith("raw-private-key");
+      expect(sessionTokenServiceMockSign).toHaveBeenCalledWith(payload, "clean-private-key", {
         expiresIn: "10m",
         algorithm: "RS512",
       });
@@ -53,8 +54,8 @@ describe("SessionTokenService", () => {
 
       const token = service.signRefreshToken(payload);
 
-      expect(mockCleanupKey).toHaveBeenCalledWith("raw-private-key");
-      expect(mockSign).toHaveBeenCalledWith(payload, "clean-private-key", {
+      expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledWith("raw-private-key");
+      expect(sessionTokenServiceMockSign).toHaveBeenCalledWith(payload, "clean-private-key", {
         expiresIn: "60m",
         algorithm: "RS512",
       });

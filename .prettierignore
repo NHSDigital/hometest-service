@@ -28,6 +28,3 @@ lambdas/test-results
 # local env & postman
 postman/
 local-environment/
-
-# files with deliberate import ordering that must not be reformatted
-lambdas/src/lib/auth/session-token-service.test.ts

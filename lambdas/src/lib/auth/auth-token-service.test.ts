@@ -1,18 +1,19 @@
-const mockSign = jest.fn();
-const mockCleanupKey = jest.fn();
+const authTokenServiceMockSign = jest.fn();
+const authTokenServiceMockCleanupKey = jest.fn();
 
 jest.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    sign: mockSign,
+    sign: authTokenServiceMockSign,
   },
 }));
 
 jest.mock("./auth-utils", () => ({
-  cleanupKey: mockCleanupKey,
+  cleanupKey: authTokenServiceMockCleanupKey,
 }));
 
-import { AuthTokenService } from "./auth-token-service";
+const { AuthTokenService } =
+  jest.requireActual<typeof import("./auth-token-service")>("./auth-token-service");
 
 describe("AuthTokenService", () => {
   const authConfig = {
@@ -28,8 +29,8 @@ describe("AuthTokenService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSign.mockReturnValue("signed-token");
-    mockCleanupKey.mockReturnValue("clean-private-key");
+    authTokenServiceMockSign.mockReturnValue("signed-token");
+    authTokenServiceMockCleanupKey.mockReturnValue("clean-private-key");
   });
 
   it("generates auth access token with expected claims, key, and options", () => {
@@ -41,8 +42,8 @@ describe("AuthTokenService", () => {
 
     const token = service.generateAuthAccessToken(accessTokenPayload);
 
-    expect(mockCleanupKey).toHaveBeenCalledWith("raw-private-key");
-    expect(mockSign).toHaveBeenCalledWith(accessTokenPayload, "clean-private-key", {
+    expect(authTokenServiceMockCleanupKey).toHaveBeenCalledWith("raw-private-key");
+    expect(authTokenServiceMockSign).toHaveBeenCalledWith(accessTokenPayload, "clean-private-key", {
       expiresIn: "15m",
       algorithm: "RS512",
       header: {
@@ -61,28 +62,32 @@ describe("AuthTokenService", () => {
 
     const token = service.generateAuthRefreshToken(refreshTokenPayload);
 
-    expect(mockCleanupKey).toHaveBeenCalledWith("raw-private-key");
-    expect(mockSign).toHaveBeenCalledWith(refreshTokenPayload, "clean-private-key", {
-      expiresIn: "60m",
-      algorithm: "RS512",
-      header: {
-        alg: "RS512",
-        kid: "test-key-id",
+    expect(authTokenServiceMockCleanupKey).toHaveBeenCalledWith("raw-private-key");
+    expect(authTokenServiceMockSign).toHaveBeenCalledWith(
+      refreshTokenPayload,
+      "clean-private-key",
+      {
+        expiresIn: "60m",
+        algorithm: "RS512",
+        header: {
+          alg: "RS512",
+          kid: "test-key-id",
+        },
       },
-    });
+    );
     expect(token).toBe("signed-token");
   });
 
   it("falls back to empty key when cleanupKey returns undefined", () => {
     const service = new AuthTokenService(authConfig);
-    mockCleanupKey.mockReturnValue(undefined);
+    authTokenServiceMockCleanupKey.mockReturnValue(undefined);
 
     service.generateAuthAccessToken({
       sessionId: "session-456",
       sessionStartTime: 1700000100,
     });
 
-    expect(mockSign).toHaveBeenCalledWith(
+    expect(authTokenServiceMockSign).toHaveBeenCalledWith(
       {
         sessionId: "session-456",
         sessionStartTime: 1700000100,
@@ -96,13 +101,13 @@ describe("AuthTokenService", () => {
 
   it("falls back to empty key for refresh token when cleanupKey returns undefined", () => {
     const service = new AuthTokenService(authConfig);
-    mockCleanupKey.mockReturnValue(undefined);
+    authTokenServiceMockCleanupKey.mockReturnValue(undefined);
 
     service.generateAuthRefreshToken({
       refreshToken: "refresh-token-789",
     });
 
-    expect(mockSign).toHaveBeenCalledWith(
+    expect(authTokenServiceMockSign).toHaveBeenCalledWith(
       {
         refreshToken: "refresh-token-789",
       },
