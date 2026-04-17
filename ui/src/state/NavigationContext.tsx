@@ -14,13 +14,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import sessionService from "@/lib/services/session-service";
 
-type Step = JourneyStepNames | RoutePath.GetSelfTestKitPage;
+type Step = JourneyStepNames | RoutePath.GetSelfTestKitPage | RoutePath.BeforeYouStartPage;
 type ResetNavigationOptions = { replace?: boolean };
 
 // Map the current browser path back to the journey step enum used by the context.
 const getStepFromPath = (path: string): Step => {
   if (path === RoutePath.GetSelfTestKitPage) {
     return RoutePath.GetSelfTestKitPage;
+  }
+
+  if (path === RoutePath.BeforeYouStartPage) {
+    return RoutePath.BeforeYouStartPage;
   }
 
   return (
@@ -31,9 +35,10 @@ const getStepFromPath = (path: string): Step => {
 
 // Build a browser path from a journey step when navigating programmatically.
 const getPathForStep = (step: Step): string => {
-  return step === RoutePath.GetSelfTestKitPage
-    ? RoutePath.GetSelfTestKitPage
-    : `${RoutePath.GetSelfTestKitPage}/${step}`;
+  if (step === RoutePath.GetSelfTestKitPage || step === RoutePath.BeforeYouStartPage) {
+    return step;
+  }
+  return `${RoutePath.GetSelfTestKitPage}/${step}`;
 };
 
 export interface NavigationState {

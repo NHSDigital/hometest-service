@@ -1,14 +1,13 @@
 "use client";
 
-import { useAuth } from "@/state";
-import { mapAuthUser } from "@/lib/auth/mapAuthUser";
-import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
 import { useEffect, useRef } from "react";
-
-import { RoutePath } from "@/lib/models/route-paths";
-import { backendUrl } from "@/settings";
 import { useNavigate } from "react-router-dom";
+
 import { useAsyncErrorHandler } from "@/hooks";
+import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
+import { RoutePath } from "@/lib/models/route-paths";
+import loginService from "@/lib/services/login-service";
+import { useAuth } from "@/state";
 
 function safeReturnTo(value: string | null | undefined) {
   if (!value) return null;
@@ -38,10 +37,6 @@ export default function CallbackPage() {
   const navigate = useNavigate();
   const didRun = useRef(false);
   const handleCallback = useAsyncErrorHandler(async () => {
-    if (!backendUrl || backendUrl.trim() === "") {
-      console.error("Missing NEXT_PUBLIC_BACKEND_URL");
-      throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
-    }
     const params = new URLSearchParams(globalThis.location.search);
     const code = params.get("code");
     const stateParam = params.get("state");
@@ -58,27 +53,13 @@ export default function CallbackPage() {
       return;
     }
 
-    const response = await fetch(`${backendUrl}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`HTTP ${response.status}: ${text}`);
-    }
-
-    const data = await response.json();
-    const userData = mapAuthUser(data);
+    const userData = await loginService.login(code);
 
     setUser(userData);
-    navigate(returnTo ?? RoutePath.GetSelfTestKitPage);
+    navigate(returnTo ?? RoutePath.BeforeYouStartPage);
   });
 
   useEffect(() => {
-    // ALPHA: Revisit this solution to the double call of useEffect.
     if (didRun.current) return;
     didRun.current = true;
     handleCallback();

@@ -2,13 +2,13 @@ export interface HttpClient {
   get<T>(url: string, headers?: Record<string, string>): Promise<T>;
   post<T>(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType?: string,
   ): Promise<T>;
   postRaw(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType?: string,
   ): Promise<Response>;
@@ -26,6 +26,18 @@ export class HttpError extends Error {
 }
 
 export class FetchHttpClient implements HttpClient {
+  private static serializeBody(body: unknown): string | null | undefined {
+    if (body == null || typeof body === "string") {
+      return body;
+    }
+
+    if (body instanceof URLSearchParams) {
+      return body.toString();
+    }
+
+    return JSON.stringify(body);
+  }
+
   async get<T>(url: string, headers?: Record<string, string>): Promise<T> {
     const response = await fetch(url, {
       method: "GET",
@@ -49,7 +61,7 @@ export class FetchHttpClient implements HttpClient {
 
   async post<T>(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType: string = "application/json",
   ): Promise<T> {
@@ -60,7 +72,7 @@ export class FetchHttpClient implements HttpClient {
         "Content-Type": contentType,
         ...headers,
       },
-      body: typeof body === "string" ? body : JSON.stringify(body),
+      body: FetchHttpClient.serializeBody(body),
     });
 
     if (!response.ok) {
@@ -77,7 +89,7 @@ export class FetchHttpClient implements HttpClient {
 
   async postRaw(
     url: string,
-    body: any,
+    body: unknown,
     headers?: Record<string, string>,
     contentType: string = "application/json",
   ): Promise<Response> {
@@ -88,7 +100,7 @@ export class FetchHttpClient implements HttpClient {
         "Content-Type": contentType,
         ...headers,
       },
-      body: typeof body === "string" ? body : JSON.stringify(body),
+      body: FetchHttpClient.serializeBody(body),
     });
 
     if (!response.ok) {

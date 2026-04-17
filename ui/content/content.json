@@ -124,6 +124,22 @@
     }
   },
   "pages": {
+    "before-you-start": {
+      "pageTitle": "Before you order a free HIV self-test kit - HomeTest - NHS",
+      "title": "Before you order a free HIV self-test kit",
+      "urgentCard": {
+        "heading": "Go to a sexual health clinic if:",
+        "hivExposureBullet": "you think you've been exposed to HIV in the last 72 hours, as they can give you emergency medicine called PEP",
+        "stiSymptomsBulletPrefix": "you think you have any",
+        "stiSymptomsLink": {
+          "text": "sexually transmitted infection (STI) symptoms",
+          "href": "https://www.nhs.uk/conditions/sexually-transmitted-infections-stis/"
+        },
+        "transmissionInfo": "The virus can be spread by having vaginal, anal or oral sex without a condom or by sharing needles with someone who has HIV.",
+        "aeAdvicePrefix": "You can also get emergency HIV medicine from"
+      },
+      "continueButton": "Continue to order a kit"
+    },
     "get-self-test-kit-for-HIV": {
       "title": "Get a self-test kit for HIV",
       "ageRequirement": "You can use this service if you are aged 18 or over.",
@@ -396,22 +412,16 @@
       "suppliers": {
         "preventx": {
           "title": "Preventx terms of use",
-          "introduction": [
-            "This is introduction paragraph for Preventx. https://www.sh.uk/"
-          ],
+          "introduction": ["This is introduction paragraph for Preventx. https://www.sh.uk/"],
           "sections": [
             {
               "id": "preventx-first-section",
               "heading": "It is first section for Preventx",
-              "paragraphs": [
-                "It is example of content for Preventx."
-              ],
+              "paragraphs": ["It is example of content for Preventx."],
               "subsections": [
                 {
                   "heading": "It is the first subsection for Preventx",
-                  "paragraphs": [
-                    "It is example of content for Preventx."
-                  ]
+                  "paragraphs": ["It is example of content for Preventx."]
                 }
               ]
             }
@@ -419,22 +429,16 @@
         },
         "sh:24": {
           "title": "SH:24 terms of use",
-          "introduction": [
-            "This is introduction paragraph for SH:24. https://sh24.org.uk/"
-          ],
+          "introduction": ["This is introduction paragraph for SH:24. https://sh24.org.uk/"],
           "sections": [
             {
               "id": "sh24-first-section",
               "heading": "It is first section for SH:24 ",
-              "paragraphs": [
-                "It is example of content for SH:24."
-              ],
+              "paragraphs": ["It is example of content for SH:24."],
               "subsections": [
                 {
                   "heading": "It is the first subsection for SH:24",
-                  "paragraphs": [
-                    "It is example of content for SH:24."
-                  ]
+                  "paragraphs": ["It is example of content for SH:24."]
                 }
               ]
             }
@@ -454,15 +458,11 @@
             {
               "id": "preventx-first-section",
               "heading": "It is first privacy section for Preventx",
-              "paragraphs": [
-                "It is example of privacy policy content for Preventx."
-              ],
+              "paragraphs": ["It is example of privacy policy content for Preventx."],
               "subsections": [
                 {
                   "heading": "It is the first privacy subsection for Preventx",
-                  "paragraphs": [
-                    "It is example of privacy policy content for Preventx."
-                  ]
+                  "paragraphs": ["It is example of privacy policy content for Preventx."]
                 }
               ]
             }
@@ -477,15 +477,11 @@
             {
               "id": "sh24-first-section",
               "heading": "It is first privacy section for SH:24",
-              "paragraphs": [
-                "It is example of privacy policy content for SH:24."
-              ],
+              "paragraphs": ["It is example of privacy policy content for SH:24."],
               "subsections": [
                 {
                   "heading": "It is the first privacy subsection for SH:24",
-                  "paragraphs": [
-                    "It is example of privacy policy content for SH:24."
-                  ]
+                  "paragraphs": ["It is example of privacy policy content for SH:24."]
                 }
               ]
             }
