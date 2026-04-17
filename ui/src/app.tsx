@@ -14,6 +14,7 @@ import ServiceErrorPage from "./routes/ServiceErrorPage";
 import SuppliersPrivacyPolicyPage from "./routes/SuppliersPrivacyPolicyPage";
 import SuppliersTermsConditionsPage from "./routes/SuppliersTermsConditionsPage";
 import TestResultsPage from "./routes/TestResultsPage";
+import BeforeYouStartPage from "./routes/get-self-test-kit-for-HIV-journey/BeforeYouStartPage";
 import BloodSampleGuidePage from "./routes/get-self-test-kit-for-HIV-journey/BloodSampleGuidePage";
 import CannotUseServiceUnder18Page from "./routes/get-self-test-kit-for-HIV-journey/CannotUseServiceUnder18Page";
 import CheckYourAnswersPage from "./routes/get-self-test-kit-for-HIV-journey/CheckYourAnswersPage";
@@ -74,7 +75,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: RoutePath.HomePage,
-        element: <Navigate to={RoutePath.GetSelfTestKitPage} replace />,
+        element: <Navigate to={RoutePath.BeforeYouStartPage} replace />,
+      },
+      {
+        path: RoutePath.BeforeYouStartPage,
+        element: <BeforeYouStartPage />,
       },
       {
         path: RoutePath.OrderTrackingPage,

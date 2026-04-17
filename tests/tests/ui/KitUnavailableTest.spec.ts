@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+
 import { test } from "../../fixtures/CombinedTestFixture";
 
 test.describe(
@@ -30,15 +31,17 @@ test.describe(
     };
 
     test("should include postcode in Find another sexual health clinic link", async ({
-      homeTestStartPage,
+      beforeYouStartPage,
+      getSelfTestKitPage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       kitNotAvailableInYourAreaPage,
     }) => {
       const unavailablePostcode = "SW1A 1AA";
 
-      await homeTestStartPage.navigate();
-      await homeTestStartPage.clickStartNowButton();
+      await beforeYouStartPage.navigate();
+      await beforeYouStartPage.clickContinueToOrderKitButton();
+      await getSelfTestKitPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue({
         addressLine1: "",
         addressLine2: "",

@@ -11,7 +11,7 @@ import { useCreateOrderContext, useJourneyNavigationContext, usePostcodeLookup }
 
 export default function EnterDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, stepHistory, resetNavigation } = useJourneyNavigationContext();
   const { lookupPostcode, lookupResultsStatus, isLoading, clearAddresses } = usePostcodeLookup();
   const { commonContent, "enter-delivery-address": content } = useContent();
 
@@ -86,7 +86,7 @@ export default function EnterDeliveryAddressPage() {
         if (stepHistory.length > 1) {
           goBack();
         } else {
-          goToStep(RoutePath.GetSelfTestKitPage);
+          resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
         }
       }}
     >
