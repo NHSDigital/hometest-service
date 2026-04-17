@@ -11,25 +11,25 @@ export interface OrderStatusReminderServiceDependencies {
   orderStatusReminderDbClient: OrderStatusReminderDbClient;
 }
 
-export interface HandleOrderStatusReminderInput {
+export interface HandleOrderStatusUpdatedInput {
   orderId: string;
   correlationId: string;
   statusCode: OrderStatusCode;
   triggeredAt: string;
 }
 
-type ReminderHandlerByStatus = Partial<
-  Record<OrderStatusCode, (input: HandleOrderStatusReminderInput) => Promise<void>>
+type ReminderByStatus = Partial<
+  Record<OrderStatusCode, (input: HandleOrderStatusUpdatedInput) => Promise<void>>
 >;
 
 export class OrderStatusReminderService {
   constructor(private readonly dependencies: OrderStatusReminderServiceDependencies) {}
 
-  async handleOrderStatusUpdated(input: HandleOrderStatusReminderInput): Promise<void> {
+  async handleOrderStatusUpdated(input: HandleOrderStatusUpdatedInput): Promise<void> {
     const { statusCode, correlationId, orderId } = input;
     const { orderStatusReminderDbClient } = this.dependencies;
 
-    const handleReminderByStatus: ReminderHandlerByStatus = {
+    const handleReminderByStatus: ReminderByStatus = {
       [OrderStatusCodes.DISPATCHED]: async ({ orderId, triggeredAt }) => {
         await orderStatusReminderDbClient.insertOrderStatusReminder({
           orderId,
