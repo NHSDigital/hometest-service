@@ -73,8 +73,16 @@ Mise can read the `.nvmrc` file by following the [instructions](https://mise.jdx
 Important commands:
 
 ```shell
+pre-commit install # Enables the git hook to run the checks locally on commit
 mise run pre-commit   # Run the pre-commit task defined in .mise.toml
 ```
+
+#### Local Secrets
+
+Before starting, ensure the following files are present in `local-environment/infra/resources/secrets/` (obtained from nhs_hometest Keybase repo):
+
+- `nhs-login-private-key.pem` — NHS login private key
+- `os-places-creds.json` — OS Places API credentials
 
 ## Usage
 
@@ -193,10 +201,6 @@ After running `npm start`, use targeted commands instead of restarting everythin
 ### Frontend
 
 The frontend is a Next.js application located in the `/ui` directory.
-
-1. cd to `/ui` directory.
-2. Run `npm install`.
-3. Run `npm run dev`.
 
 - When creating a new page, use the PageLayout component found in `/ui/src/components`.
 - To create a new route, create a directory with the name of your route in `/ui/src/app`, and add a `page.tsx` file within.
