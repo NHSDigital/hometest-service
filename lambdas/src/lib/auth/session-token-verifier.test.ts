@@ -40,6 +40,17 @@ function signToken(
   });
 }
 
+function signRs256Token(
+  payload: Record<string, string>,
+  privateKey: string,
+  options?: Omit<SignOptions, "algorithm">,
+): string {
+  return jwt.sign(payload, privateKey, {
+    algorithm: "RS256",
+    ...options,
+  });
+}
+
 describe("SessionTokenVerifier", () => {
   const primaryKeys = createRsaKeyPair();
   const secondaryKeys = createRsaKeyPair();
@@ -269,6 +280,37 @@ describe("SessionTokenVerifier", () => {
       error: {
         code: "INVALID_SIGNATURE",
         message: "invalid signature",
+      },
+    });
+  });
+
+  it("returns INVALID_ALGORITHM for tokens signed with a different algorithm", async () => {
+    const verifier = new SessionTokenVerifier({
+      publicKeys: {
+        "decoded-kid": compactPem(primaryKeys.publicKey),
+      },
+    });
+    const token = signRs256Token(
+      {
+        sessionId: "session-123",
+        sessionCreatedAt: "2026-04-17T09:00:00.000Z",
+      },
+      primaryKeys.privateKey,
+      {
+        header: {
+          alg: "RS256",
+          kid: "decoded-kid",
+        },
+      },
+    );
+
+    const result = await verifier.verifyAccessToken(token);
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "INVALID_ALGORITHM",
+        message: "invalid algorithm",
       },
     });
   });

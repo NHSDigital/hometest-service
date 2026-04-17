@@ -13,6 +13,7 @@ import {
 import { cleanupKey } from "./auth-utils";
 
 export type SessionTokenVerifierErrorCode =
+  | "INVALID_ALGORITHM"
   | "INVALID_SIGNATURE"
   | "TOKEN_EXPIRED"
   | "MALFORMED_TOKEN"
@@ -182,8 +183,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
     }
 
     if (error instanceof JsonWebTokenError) {
-      const errorCode =
-        error.message === "invalid signature" ? "INVALID_SIGNATURE" : "MALFORMED_TOKEN";
+      const errorCode = this.mapJsonWebTokenErrorCode(error.message);
 
       return {
         code: errorCode,
@@ -195,5 +195,17 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
       code: "MALFORMED_TOKEN",
       message: "Token verification failed",
     };
+  }
+
+  private mapJsonWebTokenErrorCode(message: string): SessionTokenVerifierErrorCode {
+    if (message === "invalid algorithm") {
+      return "INVALID_ALGORITHM";
+    }
+
+    if (message === "invalid signature") {
+      return "INVALID_SIGNATURE";
+    }
+
+    return "MALFORMED_TOKEN";
   }
 }
