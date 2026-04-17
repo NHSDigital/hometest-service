@@ -11,6 +11,7 @@ const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
 const mockNotify = jest.fn();
+const mockHandleReminderOrderStatusUpdated = jest.fn();
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
@@ -43,6 +44,7 @@ describe("Order Status Lambda Handler", () => {
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
     mockNotify.mockResolvedValue(undefined);
+    mockHandleReminderOrderStatusUpdated.mockResolvedValue(undefined);
 
     mockInit.mockReturnValue({
       orderStatusDb: {
@@ -52,6 +54,9 @@ describe("Order Status Lambda Handler", () => {
       },
       orderStatusNotifyService: {
         dispatch: mockNotify,
+      },
+      orderStatusReminderService: {
+        handleOrderStatusUpdated: mockHandleReminderOrderStatusUpdated,
       },
     });
 
@@ -288,6 +293,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
+      expect(mockHandleReminderOrderStatusUpdated).not.toHaveBeenCalled();
       expect(mockNotify).not.toHaveBeenCalled();
     });
 
@@ -464,6 +470,22 @@ describe("Order Status Lambda Handler", () => {
       expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: businessStatusMapping[IncomingBusinessStatus.CONFIRMED],
+        }),
+      );
+    });
+
+    it("should delegate reminder scheduling to the reminder service", async () => {
+      mockEvent.body = JSON.stringify(validTaskBody);
+
+      const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
+
+      expect(result.statusCode).toBe(201);
+      expect(mockHandleReminderOrderStatusUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderId: MOCK_ORDER_UID,
+          correlationId: MOCK_CORRELATION_ID,
+          statusCode: businessStatusMapping[MOCK_BUSINESS_STATUS],
+          triggeredAt: validTaskBody.lastModified,
         }),
       );
     });
