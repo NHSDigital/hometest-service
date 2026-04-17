@@ -1,3 +1,9 @@
+import { APIGatewayProxyEvent } from "aws-lambda";
+import { Observation } from "fhir/r4";
+
+import { OrderResultSummary } from "../lib/db/order-db";
+import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
+import { generateReadableError } from "../lib/utils/validation-utils";
 import {
   Identifiers,
   InterpretationCode,
@@ -5,13 +11,8 @@ import {
   resultCodeMapping,
 } from "./models";
 import { ValidationResult, ValidationResultError, errorResult, successResult } from "./validation";
-import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
 
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { ConsoleCommons } from "../lib/commons";
-import { Observation } from "fhir/r4";
-import { OrderResultSummary } from "../lib/db/order-db";
-import { generateReadableError } from "../lib/utils/validation-utils";
+const name = "order-result-lambda";
 
 function invalidErrorResult(errorMessage: string): ValidationResultError {
   return errorResult({
@@ -22,10 +23,7 @@ function invalidErrorResult(errorMessage: string): ValidationResultError {
   });
 }
 
-export const validateAndExtractObservation = (
-  body: string | null,
-  commons: ConsoleCommons,
-): Observation => {
+export const validateAndExtractObservation = (body: string | null): Observation => {
   let observation: Observation;
 
   try {
@@ -34,7 +32,7 @@ export const validateAndExtractObservation = (
     }
     observation = JSON.parse(body);
   } catch (error) {
-    commons.logError("order-result-lambda", "Invalid JSON in request body", { error });
+    console.error(name, "Invalid JSON in request body", { error });
     throw error;
   }
 
@@ -43,7 +41,7 @@ export const validateAndExtractObservation = (
   if (!validationResult.success) {
     const errorDetails = generateReadableError(validationResult.error);
 
-    commons.logError("order-result-lambda", "Validation failed", { error: errorDetails });
+    console.error(name, "Validation failed", { error: errorDetails });
     throw new Error(`FHIR Observation validation error: ${errorDetails}`);
   }
 
@@ -52,11 +50,10 @@ export const validateAndExtractObservation = (
 
 export function extractAndValidateObservationFields(
   event: APIGatewayProxyEvent,
-  commons: ConsoleCommons,
 ): ValidationResult<{ observation: Observation; identifiers: Identifiers }> {
   let observation: Observation;
   try {
-    observation = validateAndExtractObservation(event.body, commons);
+    observation = validateAndExtractObservation(event.body);
   } catch (error) {
     return invalidErrorResult((error as Error).message);
   }
@@ -66,7 +63,7 @@ export function extractAndValidateObservationFields(
   try {
     correlationId = getCorrelationIdFromEventHeaders(event);
   } catch (error) {
-    commons.logError("order-result-lambda", "Header validation failed", {
+    console.error(name, "Header validation failed", {
       error: (error as Error).message,
     });
     return invalidErrorResult((error as Error).message);
@@ -79,7 +76,7 @@ export function extractAndValidateObservationFields(
     patientId = extractPatientIdFromFHIRObservation(observation);
     supplierId = extractSupplierIdFromFHIRObservation(observation);
   } catch (error) {
-    commons.logError("order-result-lambda", "Error extracting identifiers from Observation", {
+    console.error(name, "Error extracting identifiers from Observation", {
       error,
     });
 
@@ -103,13 +100,12 @@ export async function validateDBData(
   identifiers: Identifiers,
   observation: Observation,
   testOrderResult: OrderResultSummary,
-  commons: ConsoleCommons,
 ): Promise<ValidationResult<{ isIdempotent: boolean }>> {
   const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation);
   const { orderUid, patientId, supplierId, correlationId } = identifiers;
 
   if (!testOrderResult) {
-    commons.logError("order-result-lambda", "Test order not found for orderUid", { orderUid });
+    console.error(name, "Test order not found for orderUid", { orderUid });
     return errorResult({
       errorCode: 404,
       errorType: "not-found",
@@ -121,8 +117,8 @@ export async function validateDBData(
   // Idempotency check
   if (testOrderResult.correlation_id && testOrderResult.correlation_id === correlationId) {
     if (resultCodeMapping[interpretationCode] !== testOrderResult.result_status) {
-      commons.logError(
-        "order-result-lambda",
+      console.error(
+        name,
         "Idempotency check failed, different result detected on same correlation ID.",
         { orderUid, correlationId },
       );
@@ -135,8 +131,8 @@ export async function validateDBData(
       });
     }
 
-    commons.logInfo(
-      "order-result-lambda",
+    console.info(
+      name,
       "Duplicate submission with same correlation ID detected, returning success without reprocessing",
       { orderUid, correlationId },
     );
@@ -146,20 +142,18 @@ export async function validateDBData(
   }
 
   if (testOrderResult.patient_uid !== patientId) {
-    commons.logError(
-      "order-result-lambda",
-      "Patient ID in Observation does not match test order record",
-      { orderUid, patientId },
-    );
+    console.error(name, "Patient ID in Observation does not match test order record", {
+      orderUid,
+      patientId,
+    });
     return invalidErrorResult("Patient ID in Observation does not match order record");
   }
 
   if (testOrderResult.supplier_id !== supplierId) {
-    commons.logError(
-      "order-result-lambda",
-      "Supplier ID in Observation does not match test order record",
-      { orderUid, supplierId },
-    );
+    console.error(name, "Supplier ID in Observation does not match test order record", {
+      orderUid,
+      supplierId,
+    });
     return errorResult({
       errorCode: 403,
       errorType: "forbidden",

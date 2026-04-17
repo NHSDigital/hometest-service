@@ -10,7 +10,7 @@ const mockInit = jest.fn();
 const mockGetPatientIdFromOrder = jest.fn();
 const mockCheckIdempotency = jest.fn();
 const mockAddOrderStatusUpdate = jest.fn();
-const mockHandleOrderStatusUpdated = jest.fn();
+const mockNotify = jest.fn();
 
 const mockGetCorrelationIdFromEventHeaders = jest.fn();
 
@@ -42,7 +42,7 @@ describe("Order Status Lambda Handler", () => {
     mockGetPatientIdFromOrder.mockResolvedValue(MOCK_PATIENT_UID);
     mockCheckIdempotency.mockResolvedValue({ isDuplicate: false });
     mockAddOrderStatusUpdate.mockResolvedValue(undefined);
-    mockHandleOrderStatusUpdated.mockResolvedValue(undefined);
+    mockNotify.mockResolvedValue(undefined);
 
     mockInit.mockReturnValue({
       orderStatusDb: {
@@ -51,7 +51,7 @@ describe("Order Status Lambda Handler", () => {
         addOrderStatusUpdate: mockAddOrderStatusUpdate,
       },
       orderStatusNotifyService: {
-        handleOrderStatusUpdated: mockHandleOrderStatusUpdated,
+        dispatch: mockNotify,
       },
     });
 
@@ -288,7 +288,7 @@ describe("Order Status Lambda Handler", () => {
 
       expect(result.statusCode).toBe(200);
       expect(mockCheckIdempotency).toHaveBeenCalledWith(MOCK_ORDER_UID, MOCK_CORRELATION_ID);
-      expect(mockHandleOrderStatusUpdated).not.toHaveBeenCalled();
+      expect(mockNotify).not.toHaveBeenCalled();
     });
 
     it("should process new updates with different correlation ID", async () => {
@@ -422,7 +422,7 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
-      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
+      expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
           patientId: MOCK_PATIENT_UID,
           correlationId: MOCK_CORRELATION_ID,
@@ -443,7 +443,7 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
-      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
+      expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: businessStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
         }),
@@ -461,20 +461,20 @@ describe("Order Status Lambda Handler", () => {
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
       expect(result.statusCode).toBe(201);
-      expect(mockHandleOrderStatusUpdated).toHaveBeenCalledWith(
+      expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: businessStatusMapping[IncomingBusinessStatus.CONFIRMED],
         }),
       );
     });
 
-    it("should return 500 when notification service fails", async () => {
-      mockHandleOrderStatusUpdated.mockRejectedValueOnce(new Error("Unexpected side effect error"));
+    it("should return 201 when notification service fails after a successful status update", async () => {
+      mockNotify.mockRejectedValueOnce(new Error("Unexpected side effect error"));
       mockEvent.body = JSON.stringify(validTaskBody);
 
       const result = await handler(mockEvent as APIGatewayProxyEvent, {} as Context);
 
-      expect(result.statusCode).toBe(500);
+      expect(result.statusCode).toBe(201);
     });
   });
 
