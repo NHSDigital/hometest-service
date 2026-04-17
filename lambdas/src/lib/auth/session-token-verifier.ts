@@ -69,18 +69,27 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
     encodedToken: string,
     verifyOptions?: VerifyOptions,
   ): Promise<SessionTokenVerificationResult<SessionAccessTokenClaims>> {
-    return this.verifyToken<SessionAccessTokenClaims>(encodedToken, verifyOptions);
+    return this.verifyToken<SessionAccessTokenClaims>(
+      encodedToken,
+      (payload) => this.isAccessTokenClaims(payload),
+      verifyOptions,
+    );
   }
 
   public verifyRefreshToken(
     encodedToken: string,
     verifyOptions?: VerifyOptions,
   ): Promise<SessionTokenVerificationResult<SessionRefreshTokenClaims>> {
-    return this.verifyToken<SessionRefreshTokenClaims>(encodedToken, verifyOptions);
+    return this.verifyToken<SessionRefreshTokenClaims>(
+      encodedToken,
+      (payload) => this.isRefreshTokenClaims(payload),
+      verifyOptions,
+    );
   }
 
   private async verifyToken<TPayload extends JwtPayload>(
     encodedToken: string,
+    payloadValidator: (payload: JwtPayload) => payload is TPayload,
     verifyOptions?: VerifyOptions,
   ): Promise<SessionTokenVerificationResult<TPayload>> {
     const decodedToken = jwt.decode(encodedToken, { complete: true });
@@ -126,9 +135,19 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
         };
       }
 
+      if (!payloadValidator(verifiedToken)) {
+        return {
+          success: false,
+          error: {
+            code: "MALFORMED_TOKEN",
+            message: this.messageForErrorCode("MALFORMED_TOKEN"),
+          },
+        };
+      }
+
       return {
         success: true,
-        payload: verifiedToken as TPayload,
+        payload: verifiedToken,
         header: decodedToken.header,
       };
     } catch (error) {
@@ -210,6 +229,23 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
     }
 
     return "MALFORMED_TOKEN";
+  }
+
+  private isAccessTokenClaims(payload: JwtPayload): payload is SessionAccessTokenClaims {
+    return (
+      this.hasNonEmptyStringClaim(payload, "sessionId") &&
+      this.hasNonEmptyStringClaim(payload, "sessionCreatedAt")
+    );
+  }
+
+  private isRefreshTokenClaims(payload: JwtPayload): payload is SessionRefreshTokenClaims {
+    return this.hasNonEmptyStringClaim(payload, "refreshTokenId");
+  }
+
+  private hasNonEmptyStringClaim(payload: JwtPayload, claim: string): boolean {
+    const value = payload[claim];
+
+    return typeof value === "string" && value.length > 0;
   }
 
   private messageForErrorCode(errorCode: SessionTokenVerifierErrorCode): string {

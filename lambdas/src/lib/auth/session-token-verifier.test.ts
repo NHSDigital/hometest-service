@@ -30,7 +30,7 @@ function compactPem(pem: string): string {
 }
 
 function signToken(
-  payload: Record<string, string>,
+  payload: Record<string, unknown>,
   privateKey: string,
   options?: Omit<SignOptions, "algorithm">,
 ): string {
@@ -41,7 +41,7 @@ function signToken(
 }
 
 function signRs256Token(
-  payload: Record<string, string>,
+  payload: Record<string, unknown>,
   privateKey: string,
   options?: Omit<SignOptions, "algorithm">,
 ): string {
@@ -321,6 +321,54 @@ describe("SessionTokenVerifier", () => {
     const verifier = new SessionTokenVerifier(verifierConfig);
 
     const result = await verifier.verifyAccessToken("not-a-jwt");
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "MALFORMED_TOKEN",
+        message: "Token is malformed",
+      },
+    });
+  });
+
+  it("returns MALFORMED_TOKEN when access token claims are missing", async () => {
+    const verifier = new SessionTokenVerifier({
+      publicKeys: {
+        "only-key": compactPem(primaryKeys.publicKey),
+      },
+    });
+    const token = signToken(
+      {
+        sessionId: "session-123",
+      },
+      primaryKeys.privateKey,
+    );
+
+    const result = await verifier.verifyAccessToken(token);
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "MALFORMED_TOKEN",
+        message: "Token is malformed",
+      },
+    });
+  });
+
+  it("returns MALFORMED_TOKEN when refresh token claims are invalid", async () => {
+    const verifier = new SessionTokenVerifier({
+      publicKeys: {
+        "only-key": compactPem(primaryKeys.publicKey),
+      },
+    });
+    const token = signToken(
+      {
+        refreshTokenId: 123,
+      },
+      primaryKeys.privateKey,
+    );
+
+    const result = await verifier.verifyRefreshToken(token);
 
     expect(result).toEqual({
       success: false,
