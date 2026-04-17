@@ -248,7 +248,7 @@ describe("SessionTokenVerifier", () => {
       success: false,
       error: {
         code: "TOKEN_EXPIRED",
-        message: "jwt expired",
+        message: "Token has expired",
       },
     });
   });
@@ -279,7 +279,7 @@ describe("SessionTokenVerifier", () => {
       success: false,
       error: {
         code: "INVALID_SIGNATURE",
-        message: "invalid signature",
+        message: "Token signature is invalid",
       },
     });
   });
@@ -304,13 +304,15 @@ describe("SessionTokenVerifier", () => {
       },
     );
 
-    const result = await verifier.verifyAccessToken(token);
+    const result = await verifier.verifyAccessToken(token, {
+      algorithms: ["RS256"],
+    } as VerifyOptions);
 
     expect(result).toEqual({
       success: false,
       error: {
         code: "INVALID_ALGORITHM",
-        message: "invalid algorithm",
+        message: "Token uses an invalid algorithm",
       },
     });
   });

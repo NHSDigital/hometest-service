@@ -90,7 +90,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
         success: false,
         error: {
           code: "MALFORMED_TOKEN",
-          message: "Token is malformed",
+          message: this.messageForErrorCode("MALFORMED_TOKEN"),
         },
       };
     }
@@ -102,14 +102,15 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
         success: false,
         error: {
           code: "UNKNOWN_KEY",
-          message: "No public key is configured for the token",
+          message: this.messageForErrorCode("UNKNOWN_KEY"),
         },
       };
     }
 
+    const { algorithms: _ignoredAlgorithms, ...safeVerifyOptions } = verifyOptions ?? {};
     const jwtOptions: VerifyOptions = {
+      ...safeVerifyOptions,
       algorithms: ["RS512"],
-      ...verifyOptions,
     };
 
     try {
@@ -120,7 +121,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
           success: false,
           error: {
             code: "MALFORMED_TOKEN",
-            message: "Token payload is malformed",
+            message: this.messageForErrorCode("MALFORMED_TOKEN"),
           },
         };
       }
@@ -178,7 +179,7 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
     if (error instanceof TokenExpiredError) {
       return {
         code: "TOKEN_EXPIRED",
-        message: error.message,
+        message: this.messageForErrorCode("TOKEN_EXPIRED"),
       };
     }
 
@@ -187,13 +188,13 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
 
       return {
         code: errorCode,
-        message: error.message,
+        message: this.messageForErrorCode(errorCode),
       };
     }
 
     return {
       code: "MALFORMED_TOKEN",
-      message: "Token verification failed",
+      message: this.messageForErrorCode("MALFORMED_TOKEN"),
     };
   }
 
@@ -207,5 +208,21 @@ export class SessionTokenVerifier implements ISessionTokenVerifier {
     }
 
     return "MALFORMED_TOKEN";
+  }
+
+  private messageForErrorCode(errorCode: SessionTokenVerifierErrorCode): string {
+    switch (errorCode) {
+      case "INVALID_ALGORITHM":
+        return "Token uses an invalid algorithm";
+      case "INVALID_SIGNATURE":
+        return "Token signature is invalid";
+      case "TOKEN_EXPIRED":
+        return "Token has expired";
+      case "UNKNOWN_KEY":
+        return "No public key is configured for the token";
+      case "MALFORMED_TOKEN":
+      default:
+        return "Token is malformed";
+    }
   }
 }
