@@ -1,6 +1,6 @@
 import { type JwksClient } from "jwks-rsa";
 
-import { type HttpClient } from "../http/login-http-client";
+import { type HttpClient } from "../http/http-client";
 import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
 import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
@@ -35,7 +35,7 @@ describe("NhsLoginClient.getUserInfo", () => {
     clientId: "client-id",
     expiresIn: 300,
     redirectUri: "https://example.com/callback",
-    baseUri: "https://auth.example",
+    baseUri: "https://auth.sandpit.signin.nhs.uk",
     privateKey: "private-key",
   };
 
@@ -49,9 +49,10 @@ describe("NhsLoginClient.getUserInfo", () => {
 
   it("enriches user info when userinfo has missing given_name", async () => {
     const rawUserInfo = createUserInfo({ family_name: "MILLAR", given_name: "" });
-    const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
-      getRequest: jest.fn().mockResolvedValue(rawUserInfo),
-      postRequest: jest.fn(),
+    const httpClientMock: Pick<HttpClient, "get" | "post" | "postRaw"> = {
+      get: jest.fn().mockResolvedValue(rawUserInfo),
+      post: jest.fn(),
+      postRaw: jest.fn(),
     };
 
     const enrichSpy = jest.spyOn(testUserMapping, "enrichUserInfoWithTestFirstName");
@@ -65,7 +66,7 @@ describe("NhsLoginClient.getUserInfo", () => {
 
     const result = await client.getUserInfo("access-token");
 
-    expect(httpClientMock.getRequest).toHaveBeenCalledWith("https://auth.example/userinfo", {
+    expect(httpClientMock.get).toHaveBeenCalledWith("https://auth.sandpit.signin.nhs.uk/userinfo", {
       Authorization: "Bearer access-token",
     });
     expect(enrichSpy).toHaveBeenCalledWith(rawUserInfo);
@@ -76,9 +77,10 @@ describe("NhsLoginClient.getUserInfo", () => {
 
   it("returns user info without enrichment when given_name is present", async () => {
     const rawUserInfo = createUserInfo({ family_name: "MILLAR", given_name: "Eric" });
-    const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
-      getRequest: jest.fn().mockResolvedValue(rawUserInfo),
-      postRequest: jest.fn(),
+    const httpClientMock: Pick<HttpClient, "get" | "post" | "postRaw"> = {
+      get: jest.fn().mockResolvedValue(rawUserInfo),
+      post: jest.fn(),
+      postRaw: jest.fn(),
     };
 
     const enrichSpy = jest.spyOn(testUserMapping, "enrichUserInfoWithTestFirstName");
@@ -92,7 +94,7 @@ describe("NhsLoginClient.getUserInfo", () => {
 
     const result = await client.getUserInfo("access-token");
 
-    expect(httpClientMock.getRequest).toHaveBeenCalledWith("https://auth.example/userinfo", {
+    expect(httpClientMock.get).toHaveBeenCalledWith("https://auth.sandpit.signin.nhs.uk/userinfo", {
       Authorization: "Bearer access-token",
     });
     expect(enrichSpy).toHaveBeenCalledWith(rawUserInfo);
@@ -121,9 +123,10 @@ describe("NhsLoginClient.fetchPublicKeyById", () => {
     }),
   } as unknown as JwksClient;
 
-  const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
-    getRequest: jest.fn(),
-    postRequest: jest.fn(),
+  const httpClientMock: Pick<HttpClient, "get" | "post" | "postRaw"> = {
+    get: jest.fn(),
+    post: jest.fn(),
+    postRaw: jest.fn(),
   };
 
   it("fetches public key by key id", async () => {
@@ -167,9 +170,10 @@ describe("NhsLoginClient.getUserTokens", () => {
     scope: "openid profile",
   };
 
-  const httpClientMock: Pick<HttpClient, "getRequest" | "postRequest"> = {
-    getRequest: jest.fn(),
-    postRequest: jest.fn().mockResolvedValue(tokenResponse),
+  const httpClientMock: Pick<HttpClient, "get" | "post" | "postRaw"> = {
+    get: jest.fn(),
+    post: jest.fn().mockResolvedValue(tokenResponse),
+    postRaw: jest.fn(),
   };
 
   it("exchanges authorization code for user tokens", async () => {
@@ -183,9 +187,9 @@ describe("NhsLoginClient.getUserTokens", () => {
     const result = await client.getUserTokens("auth-code");
 
     expect(jwtHelperMock.createClientAuthJwt).toHaveBeenCalled();
-    expect(httpClientMock.postRequest).toHaveBeenCalledTimes(1);
+    expect(httpClientMock.post).toHaveBeenCalledTimes(1);
 
-    const postRequestMock = httpClientMock.postRequest as jest.Mock;
+    const postRequestMock = httpClientMock.post as jest.Mock;
     const firstCallArgs = postRequestMock.mock.calls[0];
     const [url, params, headers] = firstCallArgs;
 
