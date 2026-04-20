@@ -504,6 +504,32 @@ module "get_results_lambda" {
   }
 }
 
+module "hiv_results_lambda" {
+  source = "./modules/lambda"
+ 
+  project_name                  = var.project_name
+  function_name                 = "hiv-results-processor"
+  zip_path                      = "${path.module}/../../lambdas/dist/hiv-result-processor-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "hiv-results"
+  http_method                   = "POST"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+ 
+  enable_cors        = true
+  cors_allow_origin  = "http://localhost:3000"
+  cors_allow_methods = ["POST", "OPTIONS"]
+  cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With"]
+ 
+  environment_variables = {
+    RESULT_STATUS_LAMBDA_NAME = "result-status-lambda"
+    AWS_REGION                = "eu-west-2"
+  }
+}
+
 module "order_status_lambda" {
   source = "./modules/lambda"
 
