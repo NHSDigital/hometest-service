@@ -13,7 +13,7 @@
     "check-typescript": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.97.0",
+    "@tanstack/react-query": "5.99.0",
     "next": "16.2.3",
     "nhsuk-frontend": "10.4.2",
     "nhsuk-react-components": "6.0.0",
