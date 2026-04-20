@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { createFhirErrorResponse } from "../lib/fhir-response";
 import { handler } from "./index";
 import { InterpretationCode } from "./models";
 
@@ -12,7 +12,7 @@ jest.mock("./init", () => {
       logError: jest.fn(),
     },
     resultStatusLambdaService: {
-      sendTask: jest.fn(),
+      sendResult: jest.fn(),
     },
   };
   return {
@@ -86,7 +86,7 @@ describe("hiv-results-processor handler", () => {
     const res = await handler(event);
 
     expect(res.statusCode).toBe(200);
-    expect(initMock.resultStatusLambdaService.sendTask).not.toHaveBeenCalled();
+    expect(initMock.resultStatusLambdaService.sendResult).not.toHaveBeenCalled();
   });
 
   it("builds task and calls status lambda for negative results", async () => {
@@ -95,13 +95,13 @@ describe("hiv-results-processor handler", () => {
     const res = await handler(event);
 
     expect(buildTaskFromObservation).toHaveBeenCalledWith(observation);
-    expect(initMock.resultStatusLambdaService.sendTask).toHaveBeenCalledWith({ mockTask: true });
+    expect(initMock.resultStatusLambdaService.sendResult).toHaveBeenCalledWith({ mockTask: true });
     expect(res.statusCode).toBe(200);
   });
 
   it("returns 500 if status lambda invocation fails", async () => {
     extractInterpretationCodeFromFHIRObservation.mockReturnValue(InterpretationCode.Normal);
-    initMock.resultStatusLambdaService.sendTask.mockRejectedValueOnce(new Error("fail"));
+    initMock.resultStatusLambdaService.sendResult.mockRejectedValueOnce(new Error("fail"));
 
     const res = await handler(event);
 

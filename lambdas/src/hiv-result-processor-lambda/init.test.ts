@@ -1,8 +1,13 @@
+import { LambdaClient } from "@aws-sdk/client-lambda";
+
 import { ConsoleCommons } from "../lib/commons";
-import { buildEnvironment as init } from "./init";
+import { LambdaHttpClient } from "../lib/http/lambda-http-client";
+import { buildEnvironment } from "./init";
 import { ResultStatusLambdaService } from "./result-status-lambda-service";
 
+jest.mock("@aws-sdk/client-lambda");
 jest.mock("../lib/commons");
+jest.mock("../lib/http/lambda-http-client");
 jest.mock("./result-status-lambda-service");
 
 describe("hiv-results-processor init", () => {
@@ -21,34 +26,51 @@ describe("hiv-results-processor init", () => {
   });
 
   it("initializes commons and resultStatusLambdaService", () => {
-    const env = init();
+    const env = buildEnvironment();
 
     expect(env.commons).toBeInstanceOf(ConsoleCommons);
     expect(env.resultStatusLambdaService).toBeInstanceOf(ResultStatusLambdaService);
   });
 
-  it("passes AWS_REGION and RESULT_STATUS_LAMBDA_NAME to ResultStatusLambdaService", () => {
-    init();
+  it("constructs LambdaClient with AWS_REGION", () => {
+    buildEnvironment();
 
-    expect(ResultStatusLambdaService).toHaveBeenCalledWith("status-lambda", "eu-west-2");
+    expect(LambdaClient).toHaveBeenCalledWith({ region: "eu-west-2" });
+  });
+
+  it("constructs LambdaHttpClient with the LambdaClient instance and RESULT_STATUS_LAMBDA_NAME", () => {
+    buildEnvironment();
+
+    const lambdaClientInstance = (LambdaClient as jest.Mock).mock.instances[0];
+    expect(LambdaHttpClient).toHaveBeenCalledWith(lambdaClientInstance, "status-lambda");
+  });
+
+  it("passes LambdaHttpClient instance to ResultStatusLambdaService", () => {
+    buildEnvironment();
+
+    const lambdaHttpClientInstance = (LambdaHttpClient as jest.Mock).mock.instances[0];
+    expect(ResultStatusLambdaService).toHaveBeenCalledWith(lambdaHttpClientInstance);
   });
 
   it("throws if AWS_REGION is missing", () => {
     delete process.env.AWS_REGION;
 
-    expect(() => init()).toThrow("Missing value for an environment variable AWS_REGION");
+    expect(() => buildEnvironment()).toThrow(
+      "Missing value for an environment variable AWS_REGION",
+    );
   });
 
   it("throws if RESULT_STATUS_LAMBDA_NAME is missing", () => {
     delete process.env.RESULT_STATUS_LAMBDA_NAME;
 
-    expect(() => init()).toThrow(
+    expect(() => buildEnvironment()).toThrow(
       "Missing value for an environment variable RESULT_STATUS_LAMBDA_NAME",
     );
   });
 
   it("returns the same instance on repeated calls (singleton)", () => {
     jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { init: isolatedInit } = require("./init");
 
       const env1 = isolatedInit();
@@ -63,7 +85,6 @@ describe("hiv-results-processor init", () => {
     jest.isolateModules(() => {
       jest.clearAllMocks();
 
-      // First call: throw
       (ResultStatusLambdaService as jest.Mock).mockImplementationOnce(() => {
         throw new Error("Boom");
       });
@@ -72,7 +93,6 @@ describe("hiv-results-processor init", () => {
 
       expect(() => isolatedInit()).toThrow("Boom");
 
-      // Second call: should succeed
       const env = isolatedInit();
       expect(env).toBeTruthy();
     });

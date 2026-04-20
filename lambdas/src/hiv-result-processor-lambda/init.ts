@@ -1,4 +1,8 @@
+import { LambdaClient } from "@aws-sdk/client-lambda";
+
+import { getAwsClientOptions } from "../lib/aws/aws-client-config";
 import { Commons, ConsoleCommons } from "../lib/commons";
+import { LambdaHttpClient } from "../lib/http/lambda-http-client";
 import { retrieveMandatoryEnvVariable } from "../lib/utils/utils";
 import { ResultStatusLambdaService } from "./result-status-lambda-service";
 
@@ -12,11 +16,9 @@ export function buildEnvironment(): Environment {
 
   const awsRegion = retrieveMandatoryEnvVariable("AWS_REGION");
   const resultStatusLambdaName = retrieveMandatoryEnvVariable("RESULT_STATUS_LAMBDA_NAME");
-
-  const resultStatusLambdaService = new ResultStatusLambdaService(
-    resultStatusLambdaName,
-    awsRegion,
-  );
+  const lambdaClient = new LambdaClient(getAwsClientOptions(awsRegion));
+  const lambdaHttpClient = new LambdaHttpClient(lambdaClient, resultStatusLambdaName);
+  const resultStatusLambdaService = new ResultStatusLambdaService(lambdaHttpClient);
 
   return {
     commons,

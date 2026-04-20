@@ -1,16 +1,14 @@
-import { InvokeCommand, LambdaClient } from "@aws-sdk/client-lambda";
 import { Task } from "fhir/r4";
 
+import { HttpClient, HttpError } from "../lib/http/http-client";
 import { ResultStatusLambdaService } from "./result-status-lambda-service";
 
-const mockSend = jest.fn();
-
-jest.mock("@aws-sdk/client-lambda", () => ({
-  InvokeCommand: jest.fn().mockImplementation((input) => ({ input })),
-  LambdaClient: jest.fn().mockImplementation(() => ({
-    send: mockSend,
-  })),
-}));
+const mockPost = jest.fn();
+const mockHttpClient: HttpClient = {
+  get: jest.fn(),
+  post: mockPost,
+  postRaw: jest.fn(),
+};
 
 describe("ResultStatusLambdaService", () => {
   const taskPayload: Task = {
@@ -19,32 +17,46 @@ describe("ResultStatusLambdaService", () => {
     intent: "order",
   };
 
+  const correlationId = "test-correlation-id";
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("constructs the lambda client with the provided region", () => {
-    new ResultStatusLambdaService("status-lambda", "eu-west-2");
+  it("posts the task payload to the correct path with the correlation ID header", async () => {
+    mockPost.mockResolvedValueOnce({});
+    const service = new ResultStatusLambdaService(mockHttpClient);
 
-    expect(LambdaClient).toHaveBeenCalledWith({ region: "eu-west-2" });
+    await service.sendResult(taskPayload, correlationId);
+
+    expect(mockPost).toHaveBeenCalledWith(
+      "result/status",
+      taskPayload,
+      { "X-Correlation-Id": correlationId },
+      "application/fhir+json",
+    );
   });
 
-  it("invokes the configured status lambda with the task payload", async () => {
-    mockSend.mockResolvedValue({});
-    const service = new ResultStatusLambdaService("status-lambda", "eu-west-2");
+  it("uses 'null' as correlation ID when none is provided", async () => {
+    mockPost.mockResolvedValueOnce({});
+    const service = new ResultStatusLambdaService(mockHttpClient);
 
-    const result = await service.sendTask(taskPayload);
+    await service.sendResult(taskPayload);
 
-    expect(InvokeCommand).toHaveBeenCalledWith({
-      FunctionName: "status-lambda",
-      Payload: Buffer.from(JSON.stringify(taskPayload)),
-    });
-    expect(mockSend).toHaveBeenCalledWith({
-      input: {
-        FunctionName: "status-lambda",
-        Payload: Buffer.from(JSON.stringify(taskPayload)),
-      },
-    });
+    expect(mockPost).toHaveBeenCalledWith(
+      "result/status",
+      taskPayload,
+      { "X-Correlation-Id": "null" },
+      "application/fhir+json",
+    );
+  });
+
+  it("returns a success OperationOutcome when the post succeeds", async () => {
+    mockPost.mockResolvedValueOnce({});
+    const service = new ResultStatusLambdaService(mockHttpClient);
+
+    const result = await service.sendResult(taskPayload, correlationId);
+
     expect(result).toEqual({
       resourceType: "OperationOutcome",
       issue: [
@@ -57,29 +69,11 @@ describe("ResultStatusLambdaService", () => {
     });
   });
 
-  it("returns an error outcome when the invoked lambda reports a function error", async () => {
-    mockSend.mockResolvedValue({ FunctionError: "Unhandled" });
-    const service = new ResultStatusLambdaService("status-lambda", "eu-west-2");
+  it("returns an OperationOutcome when the post throws an HttpError", async () => {
+    mockPost.mockRejectedValueOnce(new HttpError("Not found", 404, "not found"));
+    const service = new ResultStatusLambdaService(mockHttpClient);
 
-    const result = await service.sendTask(taskPayload);
-
-    expect(result).toEqual({
-      resourceType: "OperationOutcome",
-      issue: [
-        {
-          severity: "error",
-          code: "exception",
-          diagnostics: "Status lambda returned an error: Unhandled",
-        },
-      ],
-    });
-  });
-
-  it("returns a fatal outcome when invoking the lambda throws", async () => {
-    mockSend.mockRejectedValue(new Error("network failure"));
-    const service = new ResultStatusLambdaService("status-lambda", "eu-west-2");
-
-    const result = await service.sendTask(taskPayload);
+    const result = await service.sendResult(taskPayload, correlationId);
 
     expect(result).toEqual({
       resourceType: "OperationOutcome",
@@ -87,7 +81,25 @@ describe("ResultStatusLambdaService", () => {
         {
           severity: "fatal",
           code: "exception",
-          diagnostics: "Failed to invoke status lambda: network failure",
+          diagnostics: "Failed to invoke status lambda: Not found",
+        },
+      ],
+    });
+  });
+
+  it("returns an OperationOutcome when the post throws an unexpected error", async () => {
+    mockPost.mockRejectedValueOnce(new Error("network failure"));
+    const service = new ResultStatusLambdaService(mockHttpClient);
+
+    const result = await service.sendResult(taskPayload, correlationId);
+
+    expect(result).toEqual({
+      resourceType: "OperationOutcome",
+      issue: [
+        {
+          severity: "fatal",
+          code: "exception",
+          diagnostics: `Failed to invoke status lambda: network failure`,
         },
       ],
     });

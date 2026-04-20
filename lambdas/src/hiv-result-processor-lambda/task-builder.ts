@@ -8,6 +8,7 @@ import { InterpretationCode } from "./models";
 import { extractInterpretationCodeFromFHIRObservation } from "./validation-service";
 
 // Helper functions to extract identifiers from Observation
+// TODO do helper functions like this already exist?
 function extractOrderUid(observation: Observation): string {
   const reference = observation.basedOn?.[0]?.reference;
   if (!reference) throw new Error("Missing basedOn reference");
@@ -27,6 +28,8 @@ function extractSupplierId(observation: Observation): string {
 }
 
 // Build the FHIR Task payload for the status lambda
+// TODO what type is the result?
+//  This will help inform what should be passed to the result-status-lambda-service
 export function buildTaskFromObservation(observation: Observation) {
   const orderUid = extractOrderUid(observation);
   const patientId = extractPatientId(observation);

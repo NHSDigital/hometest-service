@@ -19,8 +19,9 @@ export class HttpError extends Error {
     message: string,
     public readonly status: number,
     public readonly body?: string,
+    _cause?: unknown,
   ) {
-    super(message);
+    super(message, { cause: _cause });
     this.name = "HttpError";
   }
 }

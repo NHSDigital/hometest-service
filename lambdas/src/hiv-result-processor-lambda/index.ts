@@ -36,8 +36,10 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   // 4. If negative (N) → build Task + send to status lambda
   if (interpretation === InterpretationCode.Normal) {
     try {
+      // TODO find the correlation id from the request headers, pass it here,
+      //  and remove the nullability of that parameter
       const taskPayload = buildTaskFromObservation(observation);
-      await resultStatusLambdaService.sendTask(taskPayload);
+      await resultStatusLambdaService.sendResult(taskPayload);
 
       return createFhirResponse(200, observation);
     } catch (error) {

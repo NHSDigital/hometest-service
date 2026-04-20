@@ -1,48 +1,23 @@
-// Wraps AWS Lambda invocation in a service class
-// Takes the lambda name + region in the constructor
-// Has a sendTask() method that:
-// JSON‑stringifies the Task
-// Invokes the status lambda
-// Returns a Promise
-// Returns an OperationOutcome (FHIR standard) on success/failure
-// Keeps your index.ts clean and simple
-import { InvokeCommand, LambdaClient } from "@aws-sdk/client-lambda";
 import { OperationOutcome } from "fhir/r4";
+import { HttpClient } from "src/lib/http/http-client";
 
 export class ResultStatusLambdaService {
-  private lambdaClient: LambdaClient;
+  constructor(private readonly client: HttpClient) {}
 
-  constructor(
-    private lambdaName: string,
-    private region: string,
-  ) {
-    this.lambdaClient = new LambdaClient({ region });
-  }
-
-  async sendTask(taskPayload: any): Promise<OperationOutcome> {
-    const payloadString = JSON.stringify(taskPayload);
-
-    const command = new InvokeCommand({
-      FunctionName: this.lambdaName,
-      Payload: Buffer.from(payloadString),
-    });
-
+  // TODO: what is the result? the type should be known
+  async sendResult(result: unknown, correlationId?: string): Promise<OperationOutcome> {
+    // check what the return type is, and convert to OperationOutcome if needed,
+    // this will be the type returned in HOTE-1100
     try {
-      const response = await this.lambdaClient.send(command);
-
-      if (response.FunctionError) {
-        return {
-          resourceType: "OperationOutcome",
-          issue: [
-            {
-              severity: "error",
-              code: "exception",
-              diagnostics: `Status lambda returned an error: ${response.FunctionError}`,
-            },
-          ],
-        };
-      }
-
+      await this.client.post<unknown>(
+        "result/status",
+        result,
+        { "X-Correlation-Id": correlationId ?? "null" },
+        "application/fhir+json",
+      );
+      // TODO: Do we need to return anything here? Is it the responsibility of this code to generate
+      //  the operation outcome or should that be higher up.
+      //  Or maybe we don't catch the error here and let that propagate up?
       return {
         resourceType: "OperationOutcome",
         issue: [
@@ -53,14 +28,14 @@ export class ResultStatusLambdaService {
           },
         ],
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         resourceType: "OperationOutcome",
         issue: [
           {
             severity: "fatal",
             code: "exception",
-            diagnostics: `Failed to invoke status lambda: ${error.message}`,
+            diagnostics: `Failed to invoke status lambda: ${(error as Error).message}`,
           },
         ],
       };
