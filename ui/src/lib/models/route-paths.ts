@@ -29,5 +29,4 @@ export enum JourneyStepNames {
   SuppliersTermsConditions = "suppliers-terms-conditions",
   GoToClinic = "go-to-clinic",
   SuppliersPrivacyPolicy = "suppliers-privacy-policy",
-  BeforeYouStart = "before-you-start",
 }

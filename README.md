@@ -200,10 +200,17 @@ After running `npm start`, use targeted commands instead of restarting everythin
 
 ### Frontend
 
-The frontend is a Next.js application located in the `/ui` directory.
+The frontend is located in the `/ui` directory. It is a **React Router SPA** built with Next.js as
+a static-export shell — not a standard Next.js application.
 
-- When creating a new page, use the PageLayout component found in `/ui/src/components`.
-- To create a new route, create a directory with the name of your route in `/ui/src/app`, and add a `page.tsx` file within.
+- All route/page components live under `ui/src/routes/` and are registered in `ui/src/app.tsx`
+  (the React Router config).
+- Layout components live under `ui/src/layouts/`. Use these (e.g. `FormPageLayout`,
+  `JourneyLayout`) when building new pages.
+- Use components from `nhsuk-react-components` for standard NHS UI elements; use Tailwind utility
+  classes for custom spacing and layout.
+- **Never** use `next/link`, `next/navigation`, or Next.js API routes — all navigation goes
+  through React Router and all backend logic lives in Lambda functions.
 
 ### Local Infrastructure
 
