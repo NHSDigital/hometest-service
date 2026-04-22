@@ -79,9 +79,14 @@ mise run pre-commit   # Run the pre-commit task defined in .mise.toml
 
 #### Local Secrets
 
-Before starting, ensure the following files are present in `local-environment/infra/resources/secrets/` (obtained from nhs_hometest Keybase repo):
+Before starting, ensure the following files are present in
+`local-environment/infra/resources/secrets/`.
 
-- `nhs-login-private-key.pem` — NHS login private key
+> [!WARNING]
+> These files contain sensitive credentials. They must never be committed to git or shared in
+> plaintext. Obtain them only through a team-approved secure channel.
+
+- `nhs-login-private-key.pem` — NHS Login private key
 - `os-places-creds.json` — OS Places API credentials
 
 ## Usage
