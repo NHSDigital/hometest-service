@@ -1,7 +1,7 @@
 import { JwksClient } from "jwks-rsa";
 
 import { AuthTokenVerifier } from "../lib/auth/auth-token-verifier";
-import { HttpClient } from "../lib/http/login-http-client";
+import { FetchHttpClient } from "../lib/http/http-client";
 import { NhsLoginClient } from "../lib/login/nhs-login-client";
 import { NhsLoginJwtHelper } from "../lib/login/nhs-login-jwt-helper";
 import { INhsLoginConfig } from "../lib/models/nhs-login/nhs-login-config";
@@ -49,7 +49,7 @@ export async function buildEnvironment(): Promise<SessionLambdaDependencies> {
       baseUri: envVars.nhsLoginBaseEndpointUrl,
     } as INhsLoginConfig,
     {} as NhsLoginJwtHelper,
-    new HttpClient(),
+    new FetchHttpClient(),
     {} as JwksClient,
   );
 
