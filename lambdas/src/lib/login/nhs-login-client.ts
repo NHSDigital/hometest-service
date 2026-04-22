@@ -1,8 +1,9 @@
-import { type HttpClient } from "../http/login-http-client";
+import { type JwksClient } from "jwks-rsa";
+
+import { type HttpClient } from "../http/http-client";
 import { type INhsLoginConfig } from "../models/nhs-login/nhs-login-config";
 import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
-import { type JwksClient } from "jwks-rsa";
 import { type NhsLoginJwtHelper } from "./nhs-login-jwt-helper";
 import { enrichUserInfoWithTestFirstName } from "./test-user-mapping";
 
@@ -12,7 +13,6 @@ export interface INhsLoginClient {
   fetchPublicKeyById: (kid: string) => Promise<string>;
 }
 
-// ALPHA: Removed commons use. To be reintroduced for logging later.
 export class NhsLoginClient implements INhsLoginClient {
   private readonly nhsLoginConfig: INhsLoginConfig;
   private readonly nhsLoginJwtHelper: NhsLoginJwtHelper;
@@ -47,23 +47,25 @@ export class NhsLoginClient implements INhsLoginClient {
       client_assertion: signedToken,
     });
 
-    const response: INhsTokenResponseModel = await this.httpClient.postRequest<
-      URLSearchParams,
-      any
-    >(this.nhsLoginTokenUri, formData, {
-      "Content-Type": "application/x-www-form-urlencoded",
-    });
+    const response: INhsTokenResponseModel = await this.httpClient.post<INhsTokenResponseModel>(
+      this.nhsLoginTokenUri,
+      formData,
+      {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    );
     return response;
   }
 
   public async getUserInfo(userAccessToken: string): Promise<INhsUserInfoResponseModel> {
-    const userInfoResponse = await this.httpClient.getRequest<INhsUserInfoResponseModel>(
+    const userInfoResponse = await this.httpClient.get<INhsUserInfoResponseModel>(
       this.nhsLoginUserInfoUri,
       {
         Authorization: `Bearer ${userAccessToken}`,
       },
     );
-    // ALPHA: Enrich user info with test data for missing given_name (temporary workaround)
+    // BETA: Enrich user info with test data for missing given_name (temporary workaround for NHS Login Sandpit)
+    // This will require removal as part of NHS Login Integration and onboarding (Given name will be retrieved in UserInfo)
     const enrichedUserInfo = enrichUserInfoWithTestFirstName(userInfoResponse);
     return enrichedUserInfo;
   }
