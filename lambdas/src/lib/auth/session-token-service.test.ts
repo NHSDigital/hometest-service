@@ -68,4 +68,45 @@ describe("SessionTokenService", () => {
       "SessionTokenService requires a non-empty private key",
     );
   });
+
+  describe("constructor validation — accessTokenExpiryDurationMinutes", () => {
+    it.each([0, -1, NaN, Infinity, 1.5])(
+      "throws when accessTokenExpiryDurationMinutes is %s",
+      (value) => {
+        expect(
+          () => new SessionTokenService({ ...config, accessTokenExpiryDurationMinutes: value }),
+        ).toThrow(
+          "SessionTokenService requires accessTokenExpiryDurationMinutes to be a finite positive integer",
+        );
+      },
+    );
+  });
+
+  describe("constructor validation — refreshTokenExpiryDurationMinutes", () => {
+    it.each([0, -1, NaN, Infinity, 1.5])(
+      "throws when refreshTokenExpiryDurationMinutes is %s",
+      (value) => {
+        expect(
+          () => new SessionTokenService({ ...config, refreshTokenExpiryDurationMinutes: value }),
+        ).toThrow(
+          "SessionTokenService requires refreshTokenExpiryDurationMinutes to be a finite positive integer",
+        );
+      },
+    );
+  });
+
+  describe("cleanupKey fallback", () => {
+    it("falls back to raw privateKey when cleanupKey returns undefined", () => {
+      sessionTokenServiceMockCleanupKey.mockReturnValue(undefined);
+      const service = new SessionTokenService(config);
+      const payload = { sessionId: "abc-123", sessionCreatedAt: "2026-04-14T10:00:00.000Z" };
+
+      service.signAccessToken(payload);
+
+      expect(sessionTokenServiceMockSign).toHaveBeenCalledWith(payload, "raw-private-key", {
+        expiresIn: "10m",
+        algorithm: "RS512",
+      });
+    });
+  });
 });
