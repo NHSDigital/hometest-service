@@ -2,17 +2,17 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
 import GetSelfTestKitPage from "@/routes/get-self-test-kit-for-HIV-journey/GetSelfTestKitPage";
 import { CreateOrderProvider, JourneyNavigationProvider } from "@/state";
 
 const mockGoToStep = jest.fn();
 const mockGoBack = jest.fn();
+const mockCanGoBack = jest.fn();
 const mockNavigationContext = {
   goToStep: mockGoToStep,
   goBack: mockGoBack,
-  canGoBack: jest.fn(),
+  canGoBack: mockCanGoBack,
   stepHistory: ["/get-self-test-kit-for-HIV"] as string[],
   currentStep: "/get-self-test-kit-for-HIV",
 };
@@ -28,24 +28,6 @@ jest.mock("@/state", () => ({
   }),
 }));
 
-jest.mock("@/layouts/FormPageLayout", () => ({
-  __esModule: true,
-  default: ({
-    children,
-    showBackButton,
-    onBackButtonClick,
-  }: {
-    children: React.ReactNode;
-    showBackButton?: boolean;
-    onBackButtonClick?: () => void;
-  }) => (
-    <div>
-      {showBackButton && <button onClick={onBackButtonClick}>Back</button>}
-      {children}
-    </div>
-  ),
-}));
-
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV"]}>
     <JourneyNavigationProvider>
@@ -53,17 +35,6 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     </JourneyNavigationProvider>
   </MemoryRouter>
 );
-
-describe("FormPageLayout", () => {
-  it("renders without crashing", () => {
-    render(
-      <FormPageLayout>
-        <div>Test content</div>
-      </FormPageLayout>,
-    );
-    expect(screen.getByText("Test content")).toBeInTheDocument();
-  });
-});
 
 describe("GetSelfTestKitPage", () => {
   beforeEach(() => {
@@ -116,17 +87,17 @@ describe("GetSelfTestKitPage back button", () => {
   });
 
   it("calls goBack when stepHistory has more than one entry", () => {
-    mockNavigationContext.stepHistory = ["/get-self-test-kit-for-HIV", "enter-delivery-address"];
+    mockCanGoBack.mockReturnValue(true);
     render(<GetSelfTestKitPage />, { wrapper: TestWrapper });
-    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    fireEvent.click(screen.getByText("Back"));
     expect(mockGoBack).toHaveBeenCalledTimes(1);
     expect(mockGoToStep).not.toHaveBeenCalled();
   });
 
   it("navigates to BeforeYouStartPage when stepHistory has one entry", () => {
-    mockNavigationContext.stepHistory = ["/get-self-test-kit-for-HIV"];
+    mockCanGoBack.mockReturnValue(false);
     render(<GetSelfTestKitPage />, { wrapper: TestWrapper });
-    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    fireEvent.click(screen.getByText("Back"));
     expect(mockGoToStep).toHaveBeenCalledWith(RoutePath.BeforeYouStartPage);
     expect(mockGoBack).not.toHaveBeenCalled();
   });

@@ -11,7 +11,7 @@ import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function GetSelfTestKitPage() {
   const { updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
+  const { goToStep, goBack, canGoBack } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
   usePageTitle(content.pageTitle);
@@ -20,7 +20,7 @@ export default function GetSelfTestKitPage() {
     <FormPageLayout
       showBackButton
       onBackButtonClick={() => {
-        if (stepHistory.length > 1) {
+        if (canGoBack()) {
           goBack();
         } else {
           goToStep(RoutePath.BeforeYouStartPage);

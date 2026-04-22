@@ -38,3 +38,4 @@ hardcode
 WireMock
 teardown
 repo
+plaintext
