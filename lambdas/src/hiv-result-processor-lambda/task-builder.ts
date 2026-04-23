@@ -4,36 +4,21 @@
 // Returns the Task objects
 import { Observation } from "fhir/r4";
 
-import { InterpretationCode } from "./models";
-import { extractInterpretationCodeFromFHIRObservation } from "./validation-service";
+import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
+import {
+  extractInterpretationCodeFromFHIRObservation,
+  extractOrderUidFromFHIRObservation,
+  extractPatientIdFromFHIRObservation,
+  extractSupplierIdFromFHIRObservation,
+} from "./validation-service";
 
-// Helper functions to extract identifiers from Observation
-// TODO do helper functions like this already exist?
-function extractOrderUid(observation: Observation): string {
-  const reference = observation.basedOn?.[0]?.reference;
-  if (!reference) throw new Error("Missing basedOn reference");
-  return reference.split("/")[1];
-}
-
-function extractPatientId(observation: Observation): string {
-  const reference = observation.subject?.reference;
-  if (!reference) throw new Error("Missing subject reference");
-  return reference.split("/")[1];
-}
-
-function extractSupplierId(observation: Observation): string {
-  const reference = observation.performer?.[0]?.reference;
-  if (!reference) throw new Error("Missing performer reference");
-  return reference.split("/")[1];
-}
-
-// Build the FHIR Task payload for the status lambda
-// TODO what type is the result?
-//  This will help inform what should be passed to the result-status-lambda-service
-export function buildTaskFromObservation(observation: Observation, correlationId: string ) {
-  const orderUid = extractOrderUid(observation);
-  const patientId = extractPatientId(observation);
-  const supplierId = extractSupplierId(observation);
+export function buildTaskFromObservation(
+  observation: Observation,
+  correlationId: string,
+): FHIRTask {
+  const orderUid = extractOrderUidFromFHIRObservation(observation);
+  const patientId = extractPatientIdFromFHIRObservation(observation);
+  const supplierId = extractSupplierIdFromFHIRObservation(observation);
 
   const now = new Date().toISOString();
 
