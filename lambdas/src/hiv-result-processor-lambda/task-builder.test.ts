@@ -84,7 +84,9 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow("Observation.basedOn[0].reference is missing");
+    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow(
+      "Observation.basedOn[0].reference is missing",
+    );
   });
 
   it("throws when subject reference is missing", () => {
@@ -95,7 +97,9 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow("Invalid subject reference format");
+    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow(
+      "Invalid subject reference format",
+    );
   });
 
   it("throws when performer reference is missing", () => {
@@ -106,6 +110,8 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "" }],
     };
 
-    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow("Invalid performer reference format");
+    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow(
+      "Invalid performer reference format",
+    );
   });
 });

@@ -94,7 +94,10 @@ describe("hiv-results-processor handler", () => {
 
     const res = await handler(event);
 
-    expect(buildTaskFromObservation).toHaveBeenCalledWith(observation, event.headers["X-Correlation-Id"]);
+    expect(buildTaskFromObservation).toHaveBeenCalledWith(
+      observation,
+      event.headers["X-Correlation-Id"],
+    );
     expect(initMock.resultStatusLambdaService.sendResult).toHaveBeenCalledWith(
       { mockTask: true },
       event.headers["X-Correlation-Id"],

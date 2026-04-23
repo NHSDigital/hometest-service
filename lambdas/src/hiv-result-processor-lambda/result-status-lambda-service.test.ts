@@ -1,6 +1,5 @@
-import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
-
 import { HttpClient } from "../lib/http/http-client";
+import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import { ResultStatusLambdaService } from "./result-status-lambda-service";
 
 const mockPost = jest.fn();
@@ -64,8 +63,6 @@ describe("ResultStatusLambdaService", () => {
     mockPost.mockRejectedValueOnce(error);
     const service = new ResultStatusLambdaService(mockHttpClient);
 
-    await expect(service.sendResult(taskPayload, correlationId)).rejects.toThrow(
-      "Network failure",
-    );
+    await expect(service.sendResult(taskPayload, correlationId)).rejects.toThrow("Network failure");
   });
 });

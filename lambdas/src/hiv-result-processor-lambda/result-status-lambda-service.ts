@@ -1,4 +1,5 @@
 import { HttpClient } from "src/lib/http/http-client";
+
 import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 
 export class ResultStatusLambdaService {
