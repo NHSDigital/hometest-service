@@ -22,8 +22,9 @@ repos:
         name: Grype vulnerability scan
         entry: >-
           bash -c '
-          syft scan dir:. --config scripts/config/syft.yaml --output spdx-json=/tmp/hometest-sbom.json &&
-          grype sbom:/tmp/hometest-sbom.json --config scripts/config/grype.yaml --fail-on high
+          SBOM=$(mktemp) && mv "$SBOM" "${SBOM}.json" && SBOM="${SBOM}.json" &&
+          syft scan dir:. --config scripts/config/syft.yaml --output spdx-json="$SBOM" &&
+          grype sbom:"$SBOM" --config scripts/config/grype.yaml --fail-on high
           '
         language: system
         pass_filenames: false
