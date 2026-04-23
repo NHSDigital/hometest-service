@@ -59,7 +59,7 @@ export default function CheckYourAnswersPage() {
   const [consentError, setConsentError] = useState<string | null>(null);
   const isSubmitting = useRef(false);
 
-  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
   const shouldResetSubmittedOrderOnPop =
     hasSubmittedOrder && navigationType === "POP" && !isSubmitting.current;
 

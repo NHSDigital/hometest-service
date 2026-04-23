@@ -16,6 +16,7 @@ export default function ConfirmMobileNumberPage() {
   const { commonContent, "confirm-mobile-phone-number": content } = useContent();
 
   const nhsPhone = user?.phoneNumber;
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
 
   // Pre-populate based on existing data
   const getInitialSelection = (): "nhs-mobile-number" | "other" | null => {
@@ -88,8 +89,6 @@ export default function ConfirmMobileNumberPage() {
     >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
-      <p className="nhsuk-body">{content.description}</p>
-
       {error && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
           <ErrorSummary.Title id="error-summary-title">
@@ -114,7 +113,14 @@ export default function ConfirmMobileNumberPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Radios name="phone-confirmation" id="phone-confirmation" error={error || undefined}>
+        <Radios
+          name="phone-confirmation"
+          id="phone-confirmation"
+          error={error || undefined}
+          hint={content.hint.replace("{supplier}", supplierName)}
+          legend={content.radioLegend}
+          legendProps={{ className: "nhsuk-u-visually-hidden" }}
+        >
           <Radios.Item
             id="phone-confirmation-1"
             value="nhs-mobile-number"

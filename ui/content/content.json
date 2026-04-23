@@ -141,26 +141,39 @@
       "continueButton": "Continue to order a kit"
     },
     "get-self-test-kit-for-HIV": {
-      "title": "Get a self-test kit for HIV",
-      "ageRequirement": "You can use this service if you are aged 18 or over.",
-      "availabilityNotice": "The kit is not yet available in all areas, so we'll need to check when you enter a postcode.",
-      "urgentCard": {
-        "heading": "Go to a sexual health clinic if:",
-        "exposureWarning": "you think you've been exposed to the HIV virus in the last 72 hours",
-        "clinicAdvice": "Clinic staff can offer you emergency HIV medicine, which may stop you getting infected.",
-        "aeAdvice": "You can also get emergency HIV medicine from your"
+      "pageTitle": "Order a free HIV self-test kit - HomeTest - NHS",
+      "title": "Order a free HIV self-test kit",
+      "eligibility": {
+        "intro": "You can use this service if:",
+        "items": [
+          "you're aged 18 or over",
+          "the kit's available in your area",
+          "you're ordering for yourself"
+        ]
+      },
+      "resultsAndTimescales": {
+        "summary": "Results and timescales",
+        "intro": "The supplier will contact you within 72 hours with your result, which will either be:",
+        "negative": {
+          "label": "Negative",
+          "description": "a negative test result means the test did not detect HIV."
+        },
+        "reactive": {
+          "label": "Reactive",
+          "description": "a reactive result means that the test has detected something which could suggest an HIV infection. It will need further tests to confirm the result. If it is reactive, you'll be contacted by a clinician from the kit supplier to discuss your results and next steps."
+        }
       },
       "infoBox": {
-        "text": "HIV antibodies take time to develop. The test is accurate if you take it 45 days or more after potential exposure."
+        "text": "HIV can take up to 45 days after exposure to show in a blood sample. It may be best to wait 45 days before taking the test for it to be accurate."
       },
       "howItWorks": {
         "heading": "How it works",
-        "deliveryInfo": "The kit will be delivered in plain packaging, to the address you choose, within 5 working days. This does not have to be your usual address.",
+        "deliveryInfo": "The free kit will be delivered in plain packaging to the address you choose. This does not have to be your usual address. It can take up to 7 days to arrive but is usually quicker. Aim to do the test soon after receiving it.",
         "sampleInstructions": "You'll need to prick your finger and fill a tube with blood. Then send it to the address in the pre-paid envelope."
       },
       "dataSharing": {
         "summary": "Who my information is shared with",
-        "details": "Your contact details will only be shared with the kit supplier, who is a trusted NHS partner. Your contact details and test result will not be shared with anyone else, including your GP, unless you give consent."
+        "details": "Your contact details will only be shared with the kit supplier, who is a trusted NHS partner. We do not share your test result with your GP."
       },
       "startButton": "Start now",
       "aboutService": {
@@ -170,11 +183,16 @@
         "privacyLink": "privacy policy"
       },
       "otherOptions": {
-        "heading": "Other options to home testing, and more support",
+        "heading": "Other options and more support",
+        "otherTests": "For a wider range of sexual health tests (for example HIV, Chlamydia, Gonorrhoea, Syphilis),",
+        "otherTestsLink": {
+          "text": "complete an online sexual health questionnaire with {supplier}",
+          "href": "TBC"
+        },
         "clinicText": "Instead of doing the test at home, you can go to",
         "clinicLinkText": "your nearest sexual health clinic",
         "clinicTextEnd": "to get tested.",
-        "sexualHealthText": "If you're concerned about other sexual health issues, you can",
+        "sexualHealthText": "If you're concerned about other sexual health issues, including sexual assault, you can",
         "sexualHealthLink": {
           "text": "find sexual health services near you",
           "href": "https://www.nhs.uk/nhs-services/sexual-health-services/"
@@ -257,7 +275,7 @@
     },
     "enter-mobile-phone-number": {
       "title": "What's your mobile phone number?",
-      "description": "You'll get updates to this number.",
+      "hint": "{supplier} will send updates to this number. It must be your own number.",
       "form": {
         "label": "UK mobile phone number",
         "hint": "For example, 07771 900 900 or +44 7771 900 900"
@@ -265,12 +283,13 @@
     },
     "confirm-mobile-phone-number": {
       "title": "What's your mobile phone number?",
-      "description": "You'll get updates to this number.",
+      "hint": "{supplier} will send updates to this number. It must be your own number.",
       "form": {
         "alternativeLabel": "Use another mobile phone number",
         "alternativeInputLabel": "UK mobile phone number",
         "alternativeInputHint": "For example, 07771 900 900 or +44 7771 900 900"
-      }
+      },
+      "radioLegend": "Confirm your mobile phone number"
     },
     "service-error": {
       "title": "Sorry, there is a problem with the service",

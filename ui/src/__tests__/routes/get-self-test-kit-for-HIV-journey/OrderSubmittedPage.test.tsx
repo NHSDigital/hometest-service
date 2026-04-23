@@ -158,7 +158,7 @@ describe("OrderSubmittedPage", () => {
       });
 
       expect(
-        screen.getByText(/\[supplier\] will send you a text message confirming the order/i),
+        screen.getByText(/The supplier will send you a text message confirming the order/i),
       ).toBeInTheDocument();
     });
 
@@ -173,7 +173,7 @@ describe("OrderSubmittedPage", () => {
       });
 
       expect(
-        screen.getByText(/\[supplier\] will send you a text message confirming the order/i),
+        screen.getByText(/The supplier will send you a text message confirming the order/i),
       ).toBeInTheDocument();
     });
 
