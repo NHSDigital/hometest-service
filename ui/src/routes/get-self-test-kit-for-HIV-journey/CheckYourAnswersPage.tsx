@@ -58,7 +58,7 @@ export default function CheckYourAnswersPage() {
   );
   const [consentError, setConsentError] = useState<string | null>(null);
 
-  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
 
   useLayoutEffect(() => {
     if (!hasSubmittedOrder || navigationType !== "POP") {

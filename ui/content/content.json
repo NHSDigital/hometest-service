@@ -275,7 +275,7 @@
     },
     "enter-mobile-phone-number": {
       "title": "What's your mobile phone number?",
-      "description": "You'll get updates to this number.",
+      "hint": "{supplier} will send updates to this number. It must be your own number.",
       "form": {
         "label": "UK mobile phone number",
         "hint": "For example, 07771 900 900 or +44 7771 900 900"
@@ -283,12 +283,13 @@
     },
     "confirm-mobile-phone-number": {
       "title": "What's your mobile phone number?",
-      "description": "You'll get updates to this number.",
+      "hint": "{supplier} will send updates to this number. It must be your own number.",
       "form": {
         "alternativeLabel": "Use another mobile phone number",
         "alternativeInputLabel": "UK mobile phone number",
         "alternativeInputHint": "For example, 07771 900 900 or +44 7771 900 900"
-      }
+      },
+      "radioLegend": "Confirm your mobile phone number"
     },
     "service-error": {
       "title": "Sorry, there is a problem with the service",

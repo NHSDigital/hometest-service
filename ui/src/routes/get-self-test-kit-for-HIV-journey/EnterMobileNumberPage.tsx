@@ -18,6 +18,8 @@ export default function EnterMobileNumberPage() {
   const [mobileNumber, setMobileNumber] = useState(orderAnswers.mobileNumber || "");
   const [mobileNumberError, setMobileNumberError] = useState<string | null>(null);
 
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
+
   const handleMobileNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMobileNumber(e.target.value);
   };
@@ -61,7 +63,7 @@ export default function EnterMobileNumberPage() {
     >
       <h1 className="nhsuk-heading-l nhsuk-u-margin-bottom-4">{content.title}</h1>
 
-      <p className="nhsuk-body">{content.description}</p>
+      <p className="nhsuk-body">{content.hint.replace("{supplier}", supplierName)}</p>
 
       {mobileNumberError && (
         <ErrorSummary aria-labelledby="error-summary-title" role="alert">
