@@ -30,7 +30,7 @@ function extractSupplierId(observation: Observation): string {
 // Build the FHIR Task payload for the status lambda
 // TODO what type is the result?
 //  This will help inform what should be passed to the result-status-lambda-service
-export function buildTaskFromObservation(observation: Observation) {
+export function buildTaskFromObservation(observation: Observation, correlationId: string ) {
   const orderUid = extractOrderUid(observation);
   const patientId = extractPatientId(observation);
   const supplierId = extractSupplierId(observation);
@@ -43,6 +43,10 @@ export function buildTaskFromObservation(observation: Observation) {
       {
         system: "https://fhir.hometest.nhs.uk/Id/order-id",
         value: orderUid,
+      },
+      {
+        system: "https://fhir.hometest.nhs.uk/Id/correlation-id",
+        value: correlationId,
       },
     ],
     status: "completed",

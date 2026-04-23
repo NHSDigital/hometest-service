@@ -6,6 +6,7 @@ import { init } from "./init";
 import { InterpretationCode } from "./models";
 import { buildTaskFromObservation } from "./task-builder";
 import { extractInterpretationCodeFromFHIRObservation } from "./validation-service";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 
 const { commons, resultStatusLambdaService } = init();
 
@@ -14,6 +15,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     path: event.path,
     method: event.httpMethod,
   });
+
+  const correlationId = getCorrelationIdFromEventHeaders(event);
+
+  if (!correlationId) {
+    commons.logError("hiv-results-processor", "Missing correlation ID in request headers");
+    return createFhirErrorResponse(400, "invalid", "Missing correlation ID", "error");
+  }
 
   // 1. Parse Observation directly (no validation)
   let observation: Observation;
@@ -36,9 +44,9 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   // 4. If negative (N) → build Task + send to status lambda
   if (interpretation === InterpretationCode.Normal) {
     try {
-      // TODO find the correlation id from the request headers, pass it here,
-      //  and remove the nullability of that parameter
-      const taskPayload = buildTaskFromObservation(observation);
+      // This is now complete
+      // TODO find the correlation id from the request headers, pass it here, and remove the nullability of that parameter
+      const taskPayload = buildTaskFromObservation(observation, correlationId);
       await resultStatusLambdaService.sendResult(taskPayload);
 
       return createFhirResponse(200, observation);
