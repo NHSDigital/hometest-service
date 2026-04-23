@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Test Goose database migrations against a local PostgreSQL container,
-# replicating the exact behaviour of the lambda-goose-migrator Lambda:
+# replicating the exact behaviour of the goose-migrator-lambda Lambda:
 #
 #   1. Connect as master user
 #   2. Create a named schema (DB_SCHEMA) if it doesn't exist
@@ -123,7 +123,7 @@ ensure_goose() {
 
   if command -v mise &>/dev/null; then
     log_info "Installing goose via mise..."
-    mise install "aqua:pressly/goose"
+    mise install "go:github.com/pressly/goose/v3/cmd/goose"
     eval "$(mise env)"
     if command -v goose &>/dev/null; then
       log_info "Goose installed: $(goose --version 2>&1 | head -1)"

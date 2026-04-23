@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.44.0
 	github.com/aws/aws-sdk-go v1.55.8
 	github.com/lib/pq v1.10.9
-	github.com/pressly/goose/v3 v3.16.0
+	github.com/pressly/goose/v3 v3.27.0
 )
 
 require (

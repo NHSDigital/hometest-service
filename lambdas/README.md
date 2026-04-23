@@ -32,7 +32,7 @@ lambdas/
 
 ### Directory Naming
 
-- All Typescript Lambdas must be direct subdirectories of `src/`
+- All TypeScript Lambdas must be direct subdirectories of `src/`
 - Lambda directory names must end with `-lambda` suffix
 - Each Lambda directory contains its handler and related code
 
@@ -128,6 +128,8 @@ pnpm test
 ## Goose Migrator Lambda (Go)
 
 The `goose-migrator-lambda/` contains a Go-based Lambda that runs database migrations using [Goose](https://github.com/pressly/goose). Unlike the TypeScript lambdas above, it has its own build process and directory structure.
+
+Note that `lambdas/goose-migrator-lambda/migrations/` is the source of truth for all goose migration files in this repository.
 
 ### Build
 

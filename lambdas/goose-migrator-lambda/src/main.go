@@ -19,19 +19,20 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-// getDBPassword fetches the DB password from AWS Secrets Manager using the ARN
-func getDBPassword(secretArn string) (string, error) {
+// getDBPassword fetches the DB password from AWS Secrets Manager.
+// secretId accepts either a secret ARN or a secret name.
+func getDBPassword(secretId string) (string, error) {
 	sess, err := session.NewSession()
 	if err != nil {
 		return "", fmt.Errorf("failed to create AWS session: %w", err)
 	}
 	client := secretsmanager.New(sess)
 	input := &secretsmanager.GetSecretValueInput{
-		SecretId: aws.String(secretArn),
+		SecretId: aws.String(secretId),
 	}
 	result, err := client.GetSecretValue(input)
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret value: %w", err)
+		return "", fmt.Errorf("failed to get secret value for %s: %w", secretId, err)
 	}
 	var secretString string
 	if result.SecretString != nil {
@@ -106,21 +107,27 @@ func buildPostgresURL() (string, error) {
 		}
 	}
 
-	// URL-encode username and password
-	encodedUser := url.QueryEscape(user)
-	encodedPassword := url.QueryEscape(password)
-
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=require", encodedUser, encodedPassword, host, port, dbname)
+	// Build URL using url.UserPassword so userinfo is correctly percent-encoded
+	// (url.QueryEscape uses '+' for spaces which is invalid in URL userinfo)
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(user, password),
+		Host:   fmt.Sprintf("%s:%s", host, port),
+		Path:   "/" + dbname,
+	}
+	q := url.Values{}
+	q.Set("sslmode", "require")
 
 	// When DB_SCHEMA is set, include search_path in the connection URL so that
 	// every connection obtained from the *sql.DB pool uses the correct schema.
 	// lib/pq treats unknown DSN parameters as SET key=value session variables.
 	schema := os.Getenv("DB_SCHEMA")
 	if schema != "" && schema != "public" {
-		dbURL += "&search_path=" + url.QueryEscape(schema)
+		q.Set("search_path", schema)
 	}
+	u.RawQuery = q.Encode()
 
-	return dbURL, nil
+	return u.String(), nil
 }
 
 // setupSchemaAndUser creates the schema if it doesn't exist and ensures app_user role
@@ -336,6 +343,13 @@ func HandleRequest(ctx context.Context, event Event) (Response, error) {
 		return Response{"Failed to connect to DB"}, err
 	}
 	defer db.Close()
+
+	// sql.Open does not establish a connection — verify connectivity eagerly so
+	// failures surface here with a clear error rather than deep inside goose.
+	if err := db.PingContext(ctx); err != nil {
+		log.Printf("Failed to ping DB: %s", redactPassword(err.Error()))
+		return Response{"Failed to connect to DB"}, err
+	}
 
 	// Handle teardown action — drops schema and user for environment cleanup
 	if action == "teardown" {
