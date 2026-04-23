@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+
 import { test } from "../../fixtures/CombinedTestFixture";
 import { AddressModel } from "../../models/Address";
 
@@ -11,14 +12,16 @@ test.describe(
   },
   () => {
     test("should display nearest clinic details", async ({
-      homeTestStartPage,
+      beforeYouStartPage,
+      getSelfTestKitPage,
       enterDeliveryAddressPage,
       selectDeliveryAddressPage,
       howComfortablePrickingFingerPage,
       goToClinicPage,
     }) => {
-      await homeTestStartPage.navigate();
-      await homeTestStartPage.clickStartNowButton();
+      await beforeYouStartPage.navigate();
+      await beforeYouStartPage.clickContinueToOrderKitButton();
+      await getSelfTestKitPage.clickStartNowButton();
       await enterDeliveryAddressPage.fillPostCodeAndAddressAndContinue(randomAddress);
       await selectDeliveryAddressPage.waitUntilPageLoaded();
       await selectDeliveryAddressPage.selectAddressAndContinue();

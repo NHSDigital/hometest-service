@@ -21,6 +21,7 @@ provider "aws" {
 
   endpoints {
     apigateway     = "http://localhost:4566"
+    events         = "http://localhost:4566"
     iam            = "http://localhost:4566"
     lambda         = "http://localhost:4566"
     s3             = "http://localhost:4566"
@@ -171,7 +172,10 @@ resource "aws_iam_role_policy" "lambdas_sqs_publish" {
         Action = [
           "sqs:SendMessage"
         ]
-        Resource = aws_sqs_queue.order_placement.arn
+        Resource = [
+          aws_sqs_queue.order_placement.arn,
+          aws_sqs_queue.notify_messages.arn,
+        ]
       }
     ]
   })
@@ -244,14 +248,15 @@ module "login_lambda" {
     NODE_OPTIONS                               = "--enable-source-maps",
     ALLOW_ORIGIN                               = "http://localhost:3000",
     NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url,
-    NHS_LOGIN_CLIENT_ID                        = "hometest",
-    NHS_LOGIN_REDIRECT_URL                     = "http://localhost:3000/callback",
-    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = "nhs-login-private-key",
-    AUTH_SESSION_MAX_DURATION_MINUTES          = "60",
-    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = "60",
-    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = "60",
-    AUTH_COOKIE_SAME_SITE                      = "Lax"
-    AUTH_COOKIE_SECURE                         = "false"
+    NHS_LOGIN_CLIENT_ID                        = var.local_nhs_login_client_id,
+    NHS_LOGIN_REDIRECT_URL                     = var.local_nhs_login_redirect_url,
+    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = var.local_nhs_login_private_key_secret_name,
+    AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME       = var.local_auth_cookie_private_keys_secret_name
+    AUTH_SESSION_MAX_DURATION_MINUTES          = var.local_auth_session_max_duration_minutes,
+    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = var.local_auth_access_token_expiry_duration_minutes,
+    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = var.local_auth_refresh_token_expiry_duration_minutes,
+    AUTH_COOKIE_SAME_SITE                      = var.local_auth_cookie_same_site
+    AUTH_COOKIE_SECURE                         = var.local_auth_cookie_secure
   }
 }
 
@@ -279,8 +284,8 @@ module "session_lambda" {
   environment_variables = {
     NODE_OPTIONS                       = "--enable-source-maps"
     ALLOW_ORIGIN                       = "http://localhost:3000"
-    AUTH_COOKIE_KEY_ID                 = "key"
-    AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = "nhs-login-private-key"
+    AUTH_COOKIE_KEY_ID                 = var.local_auth_cookie_key_id
+    AUTH_COOKIE_PUBLIC_KEY_SECRET_NAME = var.local_auth_cookie_public_key_secret_name
     NHS_LOGIN_BASE_ENDPOINT_URL        = local.resolved_nhs_login_base_url,
   }
 }
@@ -560,6 +565,63 @@ module "result_status_lambda" {
     DB_SECRET_NAME = "postgres-db-password"
     DB_SSL         = "false"
   }
+}
+
+resource "aws_lambda_function" "reminder_dispatch_lambda" {
+  filename         = "${path.module}/../../lambdas/dist/reminder-dispatch-lambda.zip"
+  function_name    = "${var.project_name}-reminder-dispatch-lambda"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs24.x"
+  source_code_hash = filebase64sha256("${path.module}/../../lambdas/dist/reminder-dispatch-lambda.zip")
+  timeout          = 60
+
+  environment {
+    variables = {
+      NODE_OPTIONS              = "--enable-source-maps"
+      DB_USERNAME               = "app_user"
+      DB_ADDRESS                = "postgres-db"
+      DB_PORT                   = "5432"
+      DB_NAME                   = "local_hometest_db"
+      DB_SCHEMA                 = "hometest"
+      DB_SECRET_NAME            = "postgres-db-password"
+      DB_SSL                    = "false"
+      NOTIFY_MESSAGES_QUEUE_URL = aws_sqs_queue.notify_messages.url
+      HOME_TEST_BASE_URL        = "http://localhost:3000"
+      REMINDER_ENABLED_STATUSES = jsonencode(["DISPATCHED"])
+      REMINDER_INTERVAL_CONFIG = jsonencode(
+        {
+          DISPATCHED = [
+            { interval = 7, eventCode = "DISPATCHED_INITIAL_REMINDER" },
+            { interval = 15, eventCode = "DISPATCHED_SECOND_REMINDER" },
+            { interval = 30, eventCode = "DISPATCHED_THIRD_REMINDER" }
+          ]
+        }
+      )
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.lambda_basic]
+}
+
+resource "aws_cloudwatch_event_rule" "reminder_dispatch_schedule" {
+  name                = "${var.project_name}-reminder-dispatch-schedule"
+  description         = "Triggers reminder-dispatch-lambda on a scheduled interval"
+  schedule_expression = "rate(2 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "reminder_dispatch_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.reminder_dispatch_schedule.name
+  target_id = "reminder-dispatch-lambda"
+  arn       = aws_lambda_function.reminder_dispatch_lambda.arn
+}
+
+resource "aws_lambda_permission" "allow_eventbridge_reminder_dispatch" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.reminder_dispatch_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.reminder_dispatch_schedule.arn
 }
 
 # API Gateway deployment

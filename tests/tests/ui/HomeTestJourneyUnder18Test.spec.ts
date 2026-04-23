@@ -14,17 +14,20 @@ test.describe("HIV Test Order journeys - User under 18", () => {
     },
   });
 
-  test.beforeEach(async ({ homeTestStartPage, userManager, page, context }) => {
-    await context.clearCookies();
-    await context.clearPermissions();
+  test.beforeEach(
+    async ({ beforeYouStartPage, getSelfTestKitPage, userManager, page, context }) => {
+      await context.clearCookies();
+      await context.clearPermissions();
 
-    const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
+      const user = userManager.getSpecialUser(SpecialUserKey.UNDER_18) as NHSLoginMockedUser;
 
-    await userManager.login(user, page);
-    await homeTestStartPage.navigate();
-    await expect(homeTestStartPage.headerText).toHaveText("Get a self-test kit for HIV");
-    await homeTestStartPage.clickStartNowButton();
-  });
+      await userManager.login(user, page);
+      await beforeYouStartPage.navigate();
+      await beforeYouStartPage.clickContinueToOrderKitButton();
+      await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
+      await getSelfTestKitPage.clickStartNowButton();
+    },
+  );
 
   test("Order test journey with address search", async ({
     enterDeliveryAddressPage,

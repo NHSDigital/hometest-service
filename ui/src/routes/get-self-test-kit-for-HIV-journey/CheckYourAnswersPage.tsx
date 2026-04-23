@@ -67,7 +67,7 @@ export default function CheckYourAnswersPage() {
 
     reset();
     clearAddresses();
-    resetNavigation(RoutePath.GetSelfTestKitPage, { replace: true });
+    resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
   }, [clearAddresses, hasSubmittedOrder, navigationType, reset, resetNavigation]);
 
   const handleChangeClick = (field: "address" | "mobile" | "comfort") => {

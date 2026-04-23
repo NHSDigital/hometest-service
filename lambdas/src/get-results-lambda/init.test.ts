@@ -150,7 +150,7 @@ describe("init", () => {
         initFn: init,
         components: [
           {
-            mock: FetchHttpClient as jest.Mock,
+            mock: FetchHttpClient as unknown as jest.Mock,
             times: 1,
           },
           {

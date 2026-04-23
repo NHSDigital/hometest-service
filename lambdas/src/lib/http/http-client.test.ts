@@ -51,6 +51,35 @@ describe("FetchHttpClient", () => {
     expect(result).toEqual({ token: "abc" });
   });
 
+  it("post preserves URLSearchParams bodies", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ token: "abc" }),
+    });
+
+    await client.post<{ token: string }>(
+      "https://example.com/token",
+      new URLSearchParams({
+        grant_type: "authorization_code",
+        code: "auth-code",
+      }),
+      { Accept: "application/json" },
+      "application/x-www-form-urlencoded",
+    );
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://example.com/token",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        }),
+        body: "grant_type=authorization_code&code=auth-code",
+      }),
+    );
+  });
+
   it("post throws HttpError with body on failure", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
@@ -88,9 +117,7 @@ describe("FetchHttpClient", () => {
       text: async () => "bad gateway",
     });
 
-    await expect(
-      client.postRaw("https://example.com", "payload"),
-    ).rejects.toEqual(
+    await expect(client.postRaw("https://example.com", "payload")).rejects.toEqual(
       expect.objectContaining<HttpError>({
         name: "HttpError",
         message: "HTTP POST request failed with status: 502",

@@ -133,6 +133,9 @@ npm run local:frontend:start
 # Run all unit tests (ui + lambdas)
 npm test
 
+# Run a single test file (always use this exact form — quote the path and pass --no-coverage)
+npx jest "src/lib/auth/session-token-service" --no-coverage
+
 # Run Playwright tests (reads URLs from Terraform outputs)
 npm run test:playwright
 

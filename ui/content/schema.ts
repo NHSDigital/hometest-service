@@ -169,14 +169,23 @@ export interface CommonContent {
 // ============================================================================
 
 export interface StartPageContent {
+  pageTitle: string;
   title: string;
-  ageRequirement: string;
-  availabilityNotice: string;
-  urgentCard: {
-    heading: string;
-    exposureWarning: string;
-    clinicAdvice: string;
-    aeAdvice: string;
+  eligibility: {
+    intro: string;
+    items: string[];
+  };
+  resultsAndTimescales: {
+    summary: string;
+    intro: string;
+    negative: {
+      label: string;
+      description: string;
+    };
+    reactive: {
+      label: string;
+      description: string;
+    };
   };
   infoBox: {
     text: string;
@@ -199,6 +208,11 @@ export interface StartPageContent {
   };
   otherOptions: {
     heading: string;
+    otherTests: string;
+    otherTestsLink: {
+      text: string;
+      href: string;
+    };
     clinicText: string;
     clinicLinkText: string;
     clinicTextEnd: string;
@@ -479,11 +493,29 @@ export interface GoToClinicContent {
   moreOptionsHeading: string;
 }
 
+export interface BeforeYouStartContent {
+  pageTitle: string;
+  title: string;
+  urgentCard: {
+    heading: string;
+    hivExposureBullet: string;
+    stiSymptomsBulletPrefix: string;
+    stiSymptomsLink: {
+      text: string;
+      href: string;
+    };
+    transmissionInfo: string;
+    aeAdvicePrefix: string;
+  };
+  continueButton: string;
+}
+
 // ============================================================================
 // Pages Container
 // ============================================================================
 
 export interface PagesContent {
+  "before-you-start": BeforeYouStartContent;
   "get-self-test-kit-for-HIV": StartPageContent;
   "enter-delivery-address": EnterDeliveryAddressContent;
   "enter-address-manually": EnterAddressManuallyContent;
