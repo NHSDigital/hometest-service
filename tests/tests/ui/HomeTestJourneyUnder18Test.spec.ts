@@ -24,7 +24,7 @@ test.describe("HIV Test Order journeys - User under 18", () => {
       await userManager.login(user, page);
       await beforeYouStartPage.navigate();
       await beforeYouStartPage.clickContinueToOrderKitButton();
-      await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+      await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
       await getSelfTestKitPage.clickStartNowButton();
     },
   );

@@ -13,6 +13,7 @@ infrastructure-as-code.
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
       - [mise](#mise)
+      - [Local Secrets](#local-secrets)
   - [Usage](#usage)
     - [Local Development](#local-development)
     - [Common local workflows](#common-local-workflows)
@@ -73,8 +74,21 @@ Mise can read the `.nvmrc` file by following the [instructions](https://mise.jdx
 Important commands:
 
 ```shell
+pre-commit install # Enables the git hook to run the checks locally on commit
 mise run pre-commit   # Run the pre-commit task defined in .mise.toml
 ```
+
+#### Local Secrets
+
+Before starting, ensure the following files are present in
+`local-environment/infra/resources/secrets/`.
+
+> [!WARNING]
+> These files contain sensitive credentials. They must never be committed to git or shared in
+> plaintext. Obtain them only through a team-approved secure channel.
+
+- `nhs-login-private-key.pem` — NHS Login private key
+- `os-places-creds.json` — OS Places API credentials
 
 ## Usage
 
@@ -192,7 +206,8 @@ After running `pnpm start`, use targeted commands instead of restarting everythi
 
 ### Frontend
 
-The frontend is a Next.js application located in the `/ui` directory.
+The frontend is located in the `/ui` directory. It is a **React Router SPA** built with Next.js as
+a static-export shell — not a standard Next.js application.
 
 1. cd to `/ui` directory.
 2. Run `pnpm install`.
@@ -200,6 +215,14 @@ The frontend is a Next.js application located in the `/ui` directory.
 
 - When creating a new page, use the PageLayout component found in `/ui/src/components`.
 - To create a new route, create a directory with the name of your route in `/ui/src/app`, and add a `page.tsx` file within.
+- All route/page components live under `ui/src/routes/` and are registered in `ui/src/app.tsx`
+  (the React Router config).
+- Layout components live under `ui/src/layouts/`. Use these (e.g. `FormPageLayout`,
+  `JourneyLayout`) when building new pages.
+- Use components from `nhsuk-react-components` for standard NHS UI elements; use Tailwind utility
+  classes for custom spacing and layout.
+- **Never** use `next/link`, `next/navigation`, or Next.js API routes — all navigation goes
+  through React Router and all backend logic lives in Lambda functions.
 
 ### Local Infrastructure
 

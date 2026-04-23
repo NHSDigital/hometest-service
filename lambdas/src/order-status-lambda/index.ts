@@ -5,7 +5,6 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import z from "zod";
 
-import { ConsoleCommons } from "../lib/commons";
 import { OrderStatusUpdateParams } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
@@ -21,7 +20,6 @@ import { init } from "./init";
 import { IncomingBusinessStatus } from "./types";
 import { businessStatusMapping, extractIdFromReference } from "./utils";
 
-const commons = new ConsoleCommons();
 const name = "order-status-lambda";
 
 const orderStatusFHIRTaskSchema = FHIRTaskSchema.extend({
@@ -42,8 +40,9 @@ export type OrderStatusFHIRTask = z.infer<typeof orderStatusFHIRTaskSchema>;
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderStatusDb, orderStatusNotifyService } = init();
-  commons.logInfo(name, "Received order status update request", {
+  const { orderStatusDb, orderStatusReminderService, orderStatusNotifyService } = init();
+
+  console.info(name, "Received order status update request", {
     path: event.path,
     method: event.httpMethod,
   });
@@ -51,7 +50,7 @@ export const lambdaHandler = async (
   let task: unknown;
 
   if (!event.body) {
-    commons.logError(name, "Missing request body");
+    console.error(name, "Missing request body");
 
     return createFhirErrorResponse(400, "invalid", "Request body is required", "error");
   }
@@ -59,7 +58,7 @@ export const lambdaHandler = async (
   try {
     task = JSON.parse(event.body);
   } catch (error) {
-    commons.logError(name, "Invalid JSON in request body", { error });
+    console.error(name, "Invalid JSON in request body", { error });
 
     return createFhirErrorResponse(400, "invalid", "Invalid JSON in request body", "error");
   }
@@ -71,7 +70,7 @@ export const lambdaHandler = async (
       .map((err) => `${err.path.join(".")}: ${err.message}`)
       .join("; ");
 
-    commons.logError(name, "Task validation failed", {
+    console.error(name, "Task validation failed", {
       error: errorDetails,
     });
 
@@ -87,7 +86,7 @@ export const lambdaHandler = async (
     try {
       correlationId = getCorrelationIdFromEventHeaders(event);
     } catch (error) {
-      commons.logError(name, "Failed to retrieve correlation ID", { error });
+      console.error(name, "Failed to retrieve correlation ID", { error });
 
       return createFhirErrorResponse(
         400,
@@ -101,7 +100,7 @@ export const lambdaHandler = async (
     const orderPatientId = await orderStatusDb.getPatientIdFromOrder(orderId);
 
     if (!orderPatientId) {
-      commons.logError(name, "Order not found", { orderId });
+      console.error(name, "Order not found", { orderId });
 
       return createFhirErrorResponse(
         404,
@@ -115,7 +114,7 @@ export const lambdaHandler = async (
     const patientIdFromTask = extractIdFromReference(validatedTask.for.reference);
 
     if (!patientIdFromTask) {
-      commons.logError(name, "Invalid patient reference format", {
+      console.error(name, "Invalid patient reference format", {
         reference: validatedTask.for.reference,
       });
 
@@ -123,7 +122,7 @@ export const lambdaHandler = async (
     }
 
     if (patientIdFromTask !== orderPatientId) {
-      commons.logError(name, "Patient mismatch for order", {
+      console.error(name, "Patient mismatch for order", {
         orderId,
         expectedPatient: orderPatientId,
         providedPatient: patientIdFromTask,
@@ -141,7 +140,7 @@ export const lambdaHandler = async (
     const idempotencyCheck = await orderStatusDb.checkIdempotency(orderId, correlationId);
 
     if (idempotencyCheck.isDuplicate) {
-      commons.logInfo(name, "Duplicate update detected via correlation ID", {
+      console.info(name, "Duplicate update detected via correlation ID", {
         orderId,
         correlationId,
       });
@@ -159,18 +158,33 @@ export const lambdaHandler = async (
 
     await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
 
-    commons.logInfo(name, "Order status update added successfully", statusOrderUpdateParams);
+    console.info(name, "Order status update added successfully", statusOrderUpdateParams);
 
-    await orderStatusNotifyService.handleOrderStatusUpdated({
+    try {
+      await orderStatusNotifyService.dispatch({
+        orderId,
+        patientId: orderPatientId,
+        correlationId,
+        statusCode: statusOrderUpdateParams.statusCode,
+      });
+    } catch (error) {
+      console.error(name, "Failed to dispatch order status notification", {
+        correlationId,
+        orderId,
+        error,
+      });
+    }
+
+    await orderStatusReminderService.handleOrderStatusUpdated({
       orderId,
-      patientId: orderPatientId,
       correlationId,
       statusCode: statusOrderUpdateParams.statusCode,
+      triggeredAt: statusOrderUpdateParams.createdAt,
     });
 
     return createFhirResponse(201, validatedTask);
   } catch (error) {
-    commons.logError(name, "Error processing order status update", {
+    console.error(name, "Error processing order status update", {
       error,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
