@@ -60,16 +60,18 @@ export default function CheckYourAnswersPage() {
   const isSubmitting = useRef(false);
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+  const shouldResetSubmittedOrderOnPop =
+    hasSubmittedOrder && navigationType === "POP" && !isSubmitting.current;
 
   useLayoutEffect(() => {
-    if (!hasSubmittedOrder || navigationType !== "POP" || isSubmitting.current) {
+    if (!shouldResetSubmittedOrderOnPop) {
       return;
     }
 
     reset();
     clearAddresses();
     resetNavigation(RoutePath.BeforeYouStartPage, { replace: true });
-  }, [clearAddresses, hasSubmittedOrder, navigationType, reset, resetNavigation]);
+  }, [clearAddresses, reset, resetNavigation, shouldResetSubmittedOrderOnPop]);
 
   const handleChangeClick = (field: "address" | "mobile" | "comfort") => {
     setReturnToStep(JourneyStepNames.CheckYourAnswers);
@@ -111,58 +113,65 @@ export default function CheckYourAnswersPage() {
     setConsentError(null);
 
     isSubmitting.current = true;
+    let hasNavigatedToSubmittedPage = false;
 
-    const consentTimestamp = new Date().toISOString();
-    updateOrderAnswers({
-      consentGiven: true,
-      consentTimestamp,
-    });
+    try {
+      const consentTimestamp = new Date().toISOString();
+      updateOrderAnswers({
+        consentGiven: true,
+        consentTimestamp,
+      });
 
-    // Build orderRequest from OrderAnswers and User in state
-    const addressLines = orderAnswers.deliveryAddress
-      ? formatAddress(orderAnswers.deliveryAddress)
-      : [];
+      // Build orderRequest from OrderAnswers and User in state
+      const addressLines = orderAnswers.deliveryAddress
+        ? formatAddress(orderAnswers.deliveryAddress)
+        : [];
 
-    const orderRequest: OrderServiceRequest = {
-      testCode: orderAnswers.supplier?.[0]?.testCode || "",
-      testDescription: "HIV antigen test",
-      supplierId: orderAnswers.supplier?.[0]?.id || "",
-      patient: {
-        family: user?.familyName || "",
-        given: [user?.givenName || ""],
-        text: `${user?.givenName || ""} ${user?.familyName || ""}`,
-        telecom: [
-          { phone: orderAnswers.mobileNumber || "" },
-          { sms: orderAnswers.mobileNumber || "" },
-          { email: user?.email || "" },
-        ],
-        address: {
-          line: addressLines,
-          city: orderAnswers.deliveryAddress?.postTown || "",
-          postalCode: orderAnswers.deliveryAddress?.postcode || "",
-          country: "United Kingdom",
+      const orderRequest: OrderServiceRequest = {
+        testCode: orderAnswers.supplier?.[0]?.testCode || "",
+        testDescription: "HIV antigen test",
+        supplierId: orderAnswers.supplier?.[0]?.id || "",
+        patient: {
+          family: user?.familyName || "",
+          given: [user?.givenName || ""],
+          text: `${user?.givenName || ""} ${user?.familyName || ""}`,
+          telecom: [
+            { phone: orderAnswers.mobileNumber || "" },
+            { sms: orderAnswers.mobileNumber || "" },
+            { email: user?.email || "" },
+          ],
+          address: {
+            line: addressLines,
+            city: orderAnswers.deliveryAddress?.postTown || "",
+            postalCode: orderAnswers.deliveryAddress?.postcode || "",
+            country: "United Kingdom",
+          },
+          birthDate: user?.birthdate || "",
+          nhsNumber: user?.nhsNumber || "",
         },
-        birthDate: user?.birthdate || "",
-        nhsNumber: user?.nhsNumber || "",
-      },
-      consent: true,
-    };
+        consent: true,
+      };
 
-    const orderResponse = await orderService.submitOrder(orderRequest);
-    console.log("Order router response:", orderResponse);
+      const orderResponse = await orderService.submitOrder(orderRequest);
 
-    updateOrderAnswers({
-      orderReferenceNumber: orderResponse.orderReference,
-    });
+      updateOrderAnswers({
+        orderReferenceNumber: orderResponse.orderReference,
+      });
 
-    goToStep(JourneyStepNames.OrderSubmitted);
+      goToStep(JourneyStepNames.OrderSubmitted);
+      hasNavigatedToSubmittedPage = true;
+    } finally {
+      if (!hasNavigatedToSubmittedPage) {
+        isSubmitting.current = false;
+      }
+    }
   });
 
   const addressLines = orderAnswers.deliveryAddress
     ? formatAddress(orderAnswers.deliveryAddress)
     : [];
 
-  if (hasSubmittedOrder && navigationType === "POP") {
+  if (shouldResetSubmittedOrderOnPop) {
     return null;
   }
 
