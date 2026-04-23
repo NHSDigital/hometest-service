@@ -6,7 +6,6 @@ import { Observation } from "fhir/r4";
 
 import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import {
-  extractInterpretationCodeFromFHIRObservation,
   extractOrderUidFromFHIRObservation,
   extractPatientIdFromFHIRObservation,
   extractSupplierIdFromFHIRObservation,
