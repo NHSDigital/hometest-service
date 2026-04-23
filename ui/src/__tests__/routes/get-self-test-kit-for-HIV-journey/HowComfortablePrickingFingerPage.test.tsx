@@ -1,11 +1,10 @@
 import "@testing-library/jest-dom";
-
-import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
-import { MemoryRouter, useLocation } from "react-router-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { useEffect } from "react";
+import { MemoryRouter, useLocation } from "react-router-dom";
 
 import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
-import { useEffect } from "react";
+import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
 
 jest.mock("@/hooks", () => ({
   useContent: () => ({
@@ -42,7 +41,7 @@ jest.mock("@/hooks", () => ({
       options: {
         yes: {
           text: "Yes I'm comfortable, send me the kit",
-          hint: "The test is supplied by [Supplier], a trusted partner of the NHS",
+          hint: "The test is supplied by the supplier, a trusted partner of the NHS",
         },
         no: {
           text: "No, I'd rather go to a sexual health clinic instead",
@@ -128,7 +127,7 @@ describe("HowComfortablePrickingFingerPage", () => {
 
       expect(screen.getByText(/yes i'm comfortable, send me the kit/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/the test is supplied by \[supplier\], a trusted partner of the nhs/i),
+        screen.getByText(/the test is supplied by the supplier, a trusted partner of the nhs/i),
       ).toBeInTheDocument();
       expect(
         screen.getByText(/no, i'd rather go to a sexual health clinic instead/i),

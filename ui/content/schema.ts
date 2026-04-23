@@ -297,7 +297,7 @@ export interface CannotUseServiceUnder18Content {
 
 export interface EnterMobilePhoneNumberContent {
   title: string;
-  description: string;
+  hint: string;
   form: {
     label: string;
     hint: string;
@@ -306,12 +306,13 @@ export interface EnterMobilePhoneNumberContent {
 
 export interface ConfirmMobilePhoneNumberContent {
   title: string;
-  description: string;
+  hint: string;
   form: {
     alternativeLabel: string;
     alternativeInputLabel: string;
     alternativeInputHint: string;
   };
+  radioLegend: string;
 }
 
 export interface ServiceErrorContent {
