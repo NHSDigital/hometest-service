@@ -100,7 +100,7 @@ export const handler = middy(lambdaHandler)
 ```
 
 - Middy middleware order is always: `httpSecurityHeaders` → `cors` → `httpErrorHandler`.
-  - `cors` is only required if the http request is coming from a browser.
+  - `cors` is only required if the HTTP request is coming from a browser.
   - `httpSecurityHeaders` and `httpErrorHandler` is always required.
 - Always pass the shared config objects: `httpSecurityHeaders(securityHeaders)` and `cors(defaultCorsOptions)` — never inline options.
 - Echo `X-Correlation-ID` in the response header for all JSON responses. FHIR-response lambdas (using `createFhirResponse`) do not set this header — that is an accepted divergence.

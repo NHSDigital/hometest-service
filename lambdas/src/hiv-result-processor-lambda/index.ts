@@ -2,11 +2,11 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { Observation } from "fhir/r4";
 
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { init } from "./init";
 import { InterpretationCode } from "./models";
 import { buildTaskFromObservation } from "./task-builder";
 import { extractInterpretationCodeFromFHIRObservation } from "./validation-service";
-import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 
 const { commons, resultStatusLambdaService } = init();
 
@@ -45,7 +45,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   if (interpretation === InterpretationCode.Normal) {
     try {
       const taskPayload = buildTaskFromObservation(observation, correlationId);
-      await resultStatusLambdaService.sendResult(taskPayload);
+      await resultStatusLambdaService.sendResult(taskPayload, correlationId);
 
       return createFhirResponse(200, observation);
     } catch (error) {
