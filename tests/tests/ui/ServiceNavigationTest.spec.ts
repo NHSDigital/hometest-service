@@ -11,7 +11,7 @@ test.describe("Reaching Check Your Answers page", { tag: "@ui" }, () => {
   test.beforeEach(async ({ beforeYouStartPage, getSelfTestKitPage }) => {
     await beforeYouStartPage.navigate();
     await beforeYouStartPage.clickContinueToOrderKitButton();
-    await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+    await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
     await getSelfTestKitPage.clickStartNowButton();
   });
 
