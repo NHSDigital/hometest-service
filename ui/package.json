@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.97.0",
-    "next": "16.2.3",
+    "next": "16.2.4",
     "nhsuk-frontend": "10.4.2",
     "nhsuk-react-components": "6.0.0",
     "react": "19.2.5",
