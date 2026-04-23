@@ -181,6 +181,24 @@ resource "aws_iam_role_policy" "lambdas_sqs_publish" {
   })
 }
 
+resource "aws_iam_role_policy" "lambdas_invoke_result_processor" {
+  name = "${var.project_name}-lambdas-invoke-result-processor"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:InvokeFunction"
+        ]
+        Resource = module.hiv_results_lambda.lambda_function_arn
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "api" {
   name        = "${var.project_name}-api"
   description = "API Gateway for ${var.project_name}"
@@ -395,17 +413,18 @@ module "order_result_lambda" {
   lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
 
   environment_variables = {
-    NODE_OPTIONS              = "--enable-source-maps"
-    ALLOW_ORIGIN              = "http://localhost:3000"
-    DB_USERNAME               = "app_user"
-    DB_ADDRESS                = "postgres-db"
-    DB_PORT                   = "5432"
-    DB_NAME                   = "local_hometest_db"
-    DB_SCHEMA                 = "hometest"
-    DB_SECRET_NAME            = "postgres-db-password"
-    DB_SSL                    = "false"
-    NOTIFY_MESSAGES_QUEUE_URL = aws_sqs_queue.notify_messages.url
-    HOME_TEST_BASE_URL        = "http://localhost:3000"
+    NODE_OPTIONS                    = "--enable-source-maps"
+    ALLOW_ORIGIN                    = "http://localhost:3000"
+    DB_USERNAME                     = "app_user"
+    DB_ADDRESS                      = "postgres-db"
+    DB_PORT                         = "5432"
+    DB_NAME                         = "local_hometest_db"
+    DB_SCHEMA                       = "hometest"
+    DB_SECRET_NAME                  = "postgres-db-password"
+    DB_SSL                          = "false"
+    RESULT_PROCESSING_FUNCTION_NAME = module.hiv_results_lambda.function_name
+    NOTIFY_MESSAGES_QUEUE_URL       = aws_sqs_queue.notify_messages.url
+    HOME_TEST_BASE_URL              = "http://localhost:3000"
   }
 }
 
