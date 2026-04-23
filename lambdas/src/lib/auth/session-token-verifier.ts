@@ -7,8 +7,8 @@ import jwt, {
 } from "jsonwebtoken";
 
 import {
-  type IAccessTokenPayload,
-  type IRefreshTokenPayload,
+  type ISessionAccessTokenPayload,
+  type ISessionRefreshTokenPayload,
 } from "../models/auth/session-token-payload";
 import { cleanupKey } from "./auth-utils";
 
@@ -46,8 +46,8 @@ export interface SessionTokenVerifierConfig {
 
 export type SessionTokenVerifyOptions = Omit<VerifyOptions, "algorithms" | "complete">;
 
-type SessionAccessTokenClaims = IAccessTokenPayload & JwtPayload;
-type SessionRefreshTokenClaims = IRefreshTokenPayload & JwtPayload;
+type SessionAccessTokenClaims = ISessionAccessTokenPayload & JwtPayload;
+type SessionRefreshTokenClaims = ISessionRefreshTokenPayload & JwtPayload;
 
 export interface ISessionTokenVerifier {
   verifyAccessToken: (
