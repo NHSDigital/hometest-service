@@ -1,44 +1,40 @@
 "use client";
 
-import { ActionLink, Button, Card, Details } from "nhsuk-react-components";
+import { Button, Details } from "nhsuk-react-components";
 import { Link } from "react-router-dom";
 
 import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function GetSelfTestKitPage() {
   const { updateOrderAnswers } = useCreateOrderContext();
-  const { goToStep } = useJourneyNavigationContext();
+  const { goToStep, goBack, canGoBack } = useJourneyNavigationContext();
   const { commonContent, "get-self-test-kit-for-HIV": content } = useContent();
 
+  usePageTitle(content.pageTitle);
+
   return (
-    <FormPageLayout>
+    <FormPageLayout
+      showBackButton
+      onBackButtonClick={() => {
+        if (canGoBack()) {
+          goBack();
+        } else {
+          goToStep(RoutePath.BeforeYouStartPage);
+        }
+      }}
+    >
       <h1>{content.title}</h1>
 
-      <p>{content.ageRequirement}</p>
-      <p>{content.availabilityNotice}</p>
-
-      <Card cardType="urgent">
-        <Card.Heading>{content.urgentCard.heading}</Card.Heading>
-        <ul>
-          <li>{content.urgentCard.exposureWarning}</li>
-        </ul>
-
-        <p>{content.urgentCard.clinicAdvice}</p>
-
-        <ActionLink href={commonContent.links.sexualHealthClinic.href}>
-          {commonContent.links.sexualHealthClinic.text}
-        </ActionLink>
-
-        <p>
-          {`${content.urgentCard.aeAdvice} `}
-          <a href={commonContent.links.nearestAE.href}>{commonContent.links.nearestAE.text}</a>
-          {"."}
-        </p>
-      </Card>
+      <p>{content.eligibility.intro}</p>
+      <ul className="nhsuk-list nhsuk-list--bullet">
+        {content.eligibility.items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
 
       <div className="nhsuk-inset-text">
         <p>{content.infoBox.text}</p>
@@ -47,9 +43,32 @@ export default function GetSelfTestKitPage() {
       <h2>{content.howItWorks.heading}</h2>
       <p>{content.howItWorks.deliveryInfo}</p>
       <p>
-        <Link to="blood-sample-guide">{commonContent.links.bloodSampleGuide.text}</Link>
+        <Link to={JourneyStepNames.BloodSampleGuide}>
+          {commonContent.links.bloodSampleGuide.text}
+        </Link>
       </p>
       <p>{content.howItWorks.sampleInstructions}</p>
+
+      <Details>
+        <Details.Summary>{content.resultsAndTimescales.summary}</Details.Summary>
+        <Details.Text>
+          <p>{content.resultsAndTimescales.intro}</p>
+          <ul>
+            <li>
+              <span className="nhsuk-u-font-weight-bold">
+                {content.resultsAndTimescales.negative.label}
+              </span>
+              {`: ${content.resultsAndTimescales.negative.description}`}
+            </li>
+            <li>
+              <span className="nhsuk-u-font-weight-bold">
+                {content.resultsAndTimescales.reactive.label}
+              </span>
+              {`: ${content.resultsAndTimescales.reactive.description}`}
+            </li>
+          </ul>
+        </Details.Text>
+      </Details>
 
       <Details>
         <Details.Summary>{content.dataSharing.summary}</Details.Summary>

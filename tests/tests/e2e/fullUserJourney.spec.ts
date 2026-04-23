@@ -12,7 +12,7 @@ import { buildHeaders, headersTestResults, orderStatusPayload } from "../../util
 const randomAddress = AddressModel.getRandomAddress();
 
 const EXPECTED_TEXTS = {
-  HIV_KIT_HEADER: "Get a self-test kit for HIV",
+  HIV_KIT_HEADER: "Order a free HIV self-test kit",
   BLOOD_SAMPLE_HEADER: "This is what you'll need to do to give a blood sample",
   ORDER_SUBMITTED: "Order submitted",
   DISPATCHED: "Dispatched",
