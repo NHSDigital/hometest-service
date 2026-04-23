@@ -38,12 +38,23 @@ describe("SessionTokenService", () => {
 
       const token = service.signAccessToken(payload);
 
+      expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledTimes(1);
       expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledWith("raw-private-key");
       expect(sessionTokenServiceMockSign).toHaveBeenCalledWith(payload, "clean-private-key", {
         expiresIn: "10m",
         algorithm: "RS512",
       });
       expect(token).toBe("signed-token");
+    });
+
+    it("does not re-invoke cleanupKey on subsequent sign calls", () => {
+      const service = new SessionTokenService(config);
+      const payload = { sessionId: "abc-123", sessionCreatedAt: "2026-04-14T10:00:00.000Z" };
+
+      service.signAccessToken(payload);
+      service.signAccessToken(payload);
+
+      expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -54,6 +65,7 @@ describe("SessionTokenService", () => {
 
       const token = service.signRefreshToken(payload);
 
+      expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledTimes(1);
       expect(sessionTokenServiceMockCleanupKey).toHaveBeenCalledWith("raw-private-key");
       expect(sessionTokenServiceMockSign).toHaveBeenCalledWith(payload, "clean-private-key", {
         expiresIn: "60m",
@@ -65,6 +77,12 @@ describe("SessionTokenService", () => {
 
   it("throws during construction if privateKey is empty", () => {
     expect(() => new SessionTokenService({ ...config, privateKey: "" })).toThrow(
+      "SessionTokenService requires a non-empty private key",
+    );
+  });
+
+  it("throws during construction if privateKey is whitespace-only", () => {
+    expect(() => new SessionTokenService({ ...config, privateKey: "  \n\n  " })).toThrow(
       "SessionTokenService requires a non-empty private key",
     );
   });

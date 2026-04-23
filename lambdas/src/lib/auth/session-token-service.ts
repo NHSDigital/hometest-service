@@ -19,9 +19,10 @@ export interface ISessionTokenService {
 
 export class SessionTokenService implements ISessionTokenService {
   private readonly config: ISessionTokenServiceConfig;
+  private readonly normalizedPrivateKey: string;
 
   constructor(config: ISessionTokenServiceConfig) {
-    if (!config.privateKey) {
+    if (!config.privateKey.trim()) {
       throw new Error("SessionTokenService requires a non-empty private key");
     }
     if (
@@ -43,6 +44,7 @@ export class SessionTokenService implements ISessionTokenService {
       );
     }
     this.config = config;
+    this.normalizedPrivateKey = cleanupKey(config.privateKey) ?? config.privateKey;
   }
 
   public signAccessToken(payload: ISessionAccessTokenPayload): string {
@@ -64,8 +66,6 @@ export class SessionTokenService implements ISessionTokenService {
       algorithm: "RS512",
     };
 
-    const privateKey = cleanupKey(this.config.privateKey) ?? this.config.privateKey;
-
-    return jwt.sign(payload, privateKey, options);
+    return jwt.sign(payload, this.normalizedPrivateKey, options);
   }
 }
