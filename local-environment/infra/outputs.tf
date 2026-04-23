@@ -63,6 +63,16 @@ output "nhs_login_authorize_url" {
   value       = local.resolved_nhs_login_authorize_url
 }
 
+output "nhs_login_client_id" {
+  description = "NHS Login client id for local UI authorize requests"
+  value       = var.local_nhs_login_client_id
+}
+
+output "nhs_login_scope" {
+  description = "NHS Login scope for local UI authorize requests"
+  value       = var.local_nhs_login_scope
+}
+
 output "local_service_mode" {
   description = "Resolved local integration mode"
   value       = var.local_service_mode
