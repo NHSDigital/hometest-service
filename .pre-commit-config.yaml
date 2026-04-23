@@ -18,9 +18,15 @@ repos:
 
   - repo: local
     hooks:
-      - id: trivy-fs-scan
-        name: Trivy filesystem scan
-        entry: trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
+      - id: grype-scan
+        name: Grype vulnerability scan
+        entry: >-
+          bash -c '
+          SBOM=$(mktemp) && mv "$SBOM" "${SBOM}.json" && SBOM="${SBOM}.json" &&
+          trap "rm -f \"$SBOM\"" EXIT &&
+          syft scan dir:. --config scripts/config/syft.yaml --output spdx-json="$SBOM" &&
+          grype sbom:"$SBOM" --config scripts/config/grype.yaml --fail-on high
+          '
         language: system
         pass_filenames: false
 
