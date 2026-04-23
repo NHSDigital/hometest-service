@@ -1,5 +1,4 @@
-// TODO rename to follow lambda naming convention in the service
-module lambda-goose-migrator
+module goose-migrator-lambda
 
 go 1.21
 
