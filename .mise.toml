@@ -65,6 +65,9 @@ node = "24.14.1"
 # https://go.dev/dl/
 go = "1.26.2"
 
+# https://github.com/pressly/goose/releases
+"go:github.com/pressly/goose/v3/cmd/goose" = "3.27.0"
+
 [tasks.pre-commit]
 description = "Run pre-commit checks on all files"
 run = "pre-commit run --all-files --show-diff-on-failure --color=always"

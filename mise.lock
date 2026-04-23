@@ -87,6 +87,10 @@ url = "https://dl.google.com/go/go1.26.2.darwin-amd64.tar.gz"
 checksum = "sha256:98eb3570bade15cb826b0909338df6cc6d2cf590bc39c471142002db3832b708"
 url = "https://dl.google.com/go/go1.26.2.windows-amd64.zip"
 
+[[tools."go:github.com/pressly/goose/v3/cmd/goose"]]
+version = "3.27.0"
+backend = "go:github.com/pressly/goose/v3/cmd/goose"
+
 [[tools.grype]]
 version = "v0.111.0"
 backend = "aqua:anchore/grype"
