@@ -1,6 +1,6 @@
-import { Task } from "fhir/r4";
+import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 
-import { HttpClient, HttpError } from "../lib/http/http-client";
+import { HttpClient } from "../lib/http/http-client";
 import { ResultStatusLambdaService } from "./result-status-lambda-service";
 
 const mockPost = jest.fn();
@@ -11,10 +11,18 @@ const mockHttpClient: HttpClient = {
 };
 
 describe("ResultStatusLambdaService", () => {
-  const taskPayload: Task = {
+  const taskPayload: FHIRTask = {
     resourceType: "Task",
     status: "completed",
     intent: "order",
+    identifier: [
+      {
+        system: "https://fhir.hometest.nhs.uk/Id/order-id",
+        value: "550e8400-e29b-41d4-a716-446655440000",
+      },
+    ],
+    basedOn: [{ reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000" }],
+    for: { reference: "Patient/550e8400-e29b-41d4-a716-446655440001" },
   };
 
   const correlationId = "test-correlation-id";
@@ -38,7 +46,7 @@ describe("ResultStatusLambdaService", () => {
   });
 
   it("uses 'null' as correlation ID when none is provided", async () => {
-    mockPost.mockResolvedValueOnce({});
+    mockPost.mockResolvedValueOnce(undefined);
     const service = new ResultStatusLambdaService(mockHttpClient);
 
     await service.sendResult(taskPayload);
@@ -51,57 +59,13 @@ describe("ResultStatusLambdaService", () => {
     );
   });
 
-  it("returns a success OperationOutcome when the post succeeds", async () => {
-    mockPost.mockResolvedValueOnce({});
+  it("throws an error when the post fails", async () => {
+    const error = new Error("Network failure");
+    mockPost.mockRejectedValueOnce(error);
     const service = new ResultStatusLambdaService(mockHttpClient);
 
-    const result = await service.sendResult(taskPayload, correlationId);
-
-    expect(result).toEqual({
-      resourceType: "OperationOutcome",
-      issue: [
-        {
-          severity: "information",
-          code: "informational",
-          diagnostics: "Status update lambda invoked successfully",
-        },
-      ],
-    });
-  });
-
-  it("returns an OperationOutcome when the post throws an HttpError", async () => {
-    mockPost.mockRejectedValueOnce(new HttpError("Not found", 404, "not found"));
-    const service = new ResultStatusLambdaService(mockHttpClient);
-
-    const result = await service.sendResult(taskPayload, correlationId);
-
-    expect(result).toEqual({
-      resourceType: "OperationOutcome",
-      issue: [
-        {
-          severity: "fatal",
-          code: "exception",
-          diagnostics: "Failed to invoke status lambda: Not found",
-        },
-      ],
-    });
-  });
-
-  it("returns an OperationOutcome when the post throws an unexpected error", async () => {
-    mockPost.mockRejectedValueOnce(new Error("network failure"));
-    const service = new ResultStatusLambdaService(mockHttpClient);
-
-    const result = await service.sendResult(taskPayload, correlationId);
-
-    expect(result).toEqual({
-      resourceType: "OperationOutcome",
-      issue: [
-        {
-          severity: "fatal",
-          code: "exception",
-          diagnostics: `Failed to invoke status lambda: network failure`,
-        },
-      ],
-    });
+    await expect(service.sendResult(taskPayload, correlationId)).rejects.toThrow(
+      "Network failure",
+    );
   });
 });

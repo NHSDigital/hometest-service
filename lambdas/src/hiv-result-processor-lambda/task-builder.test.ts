@@ -4,6 +4,7 @@ import { buildTaskFromObservation } from "./task-builder";
 
 describe("buildTaskFromObservation", () => {
   const fixedDate = new Date("2026-04-17T10:20:30.000Z");
+  const correlationId = "test-correlation-id";
   const baseObservation: Pick<Observation, "resourceType" | "status" | "code"> = {
     resourceType: "Observation",
     status: "final",
@@ -28,34 +29,38 @@ describe("buildTaskFromObservation", () => {
   it("builds the expected task from a valid observation", () => {
     const observation: Observation = {
       ...baseObservation,
-      basedOn: [{ reference: "ServiceRequest/order-123" }],
-      subject: { reference: "Patient/patient-456" },
-      performer: [{ reference: "Organization/supplier-789" }],
+      basedOn: [{ reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000" }],
+      subject: { reference: "Patient/550e8400-e29b-41d4-a716-446655440001" },
+      performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    const result = buildTaskFromObservation(observation) as Task;
+    const result = buildTaskFromObservation(observation, correlationId) as Task;
 
     expect(result).toEqual({
       resourceType: "Task",
       identifier: [
         {
           system: "https://fhir.hometest.nhs.uk/Id/order-id",
-          value: "order-123",
+          value: "550e8400-e29b-41d4-a716-446655440000",
+        },
+        {
+          system: "https://fhir.hometest.nhs.uk/Id/correlation-id",
+          value: correlationId,
         },
       ],
       status: "completed",
       intent: "order",
       basedOn: [
         {
-          reference: "ServiceRequest/order-123",
+          reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000",
           type: "ServiceRequest",
         },
       ],
       requester: {
-        reference: "Organization/supplier-789",
+        reference: "Organization/550e8400-e29b-41d4-a716-446655440002",
       },
       for: {
-        reference: "Patient/patient-456",
+        reference: "Patient/550e8400-e29b-41d4-a716-446655440001",
       },
       businessStatus: {
         coding: [
@@ -75,30 +80,32 @@ describe("buildTaskFromObservation", () => {
   it("throws when basedOn reference is missing", () => {
     const observation: Observation = {
       ...baseObservation,
-      subject: { reference: "Patient/patient-456" },
-      performer: [{ reference: "Organization/supplier-789" }],
+      subject: { reference: "Patient/550e8400-e29b-41d4-a716-446655440001" },
+      performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    expect(() => buildTaskFromObservation(observation)).toThrow("Missing basedOn reference");
+    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow("Observation.basedOn[0].reference is missing");
   });
 
   it("throws when subject reference is missing", () => {
     const observation: Observation = {
       ...baseObservation,
-      basedOn: [{ reference: "ServiceRequest/order-123" }],
-      performer: [{ reference: "Organization/supplier-789" }],
+      basedOn: [{ reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000" }],
+      subject: { reference: "" },
+      performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    expect(() => buildTaskFromObservation(observation)).toThrow("Missing subject reference");
+    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow("Invalid subject reference format");
   });
 
   it("throws when performer reference is missing", () => {
     const observation: Observation = {
       ...baseObservation,
-      basedOn: [{ reference: "ServiceRequest/order-123" }],
-      subject: { reference: "Patient/patient-456" },
+      basedOn: [{ reference: "ServiceRequest/550e8400-e29b-41d4-a716-446655440000" }],
+      subject: { reference: "Patient/550e8400-e29b-41d4-a716-446655440001" },
+      performer: [{ reference: "" }],
     };
 
-    expect(() => buildTaskFromObservation(observation)).toThrow("Missing performer reference");
+    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow("Invalid performer reference format");
   });
 });

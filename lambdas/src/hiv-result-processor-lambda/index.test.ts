@@ -56,7 +56,7 @@ describe("hiv-results-processor handler", () => {
     path: "/hiv",
     httpMethod: "POST",
     body: JSON.stringify(observation),
-    headers: {},
+    headers: { "X-Correlation-Id": "550e8400-e29b-41d4-a716-446655440003" },
     isBase64Encoded: false,
     multiValueHeaders: {},
     multiValueQueryStringParameters: null,
@@ -94,8 +94,11 @@ describe("hiv-results-processor handler", () => {
 
     const res = await handler(event);
 
-    expect(buildTaskFromObservation).toHaveBeenCalledWith(observation);
-    expect(initMock.resultStatusLambdaService.sendResult).toHaveBeenCalledWith({ mockTask: true });
+    expect(buildTaskFromObservation).toHaveBeenCalledWith(observation, event.headers["X-Correlation-Id"]);
+    expect(initMock.resultStatusLambdaService.sendResult).toHaveBeenCalledWith(
+      { mockTask: true },
+      event.headers["X-Correlation-Id"],
+    );
     expect(res.statusCode).toBe(200);
   });
 
