@@ -20,7 +20,7 @@ export default function HowComfortablePrickingFingerPage() {
   );
   const [optionError, setOptionError] = useState<string | null>(null);
 
-  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
+  const supplierName = orderAnswers.supplier?.[0]?.name || "the supplier";
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();

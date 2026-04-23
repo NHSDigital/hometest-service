@@ -41,7 +41,7 @@ jest.mock("@/hooks", () => ({
       options: {
         yes: {
           text: "Yes I'm comfortable, send me the kit",
-          hint: "The test is supplied by The supplier, a trusted partner of the NHS",
+          hint: "The test is supplied by the supplier, a trusted partner of the NHS",
         },
         no: {
           text: "No, I'd rather go to a sexual health clinic instead",
