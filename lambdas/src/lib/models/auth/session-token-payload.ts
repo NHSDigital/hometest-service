@@ -1,8 +1,8 @@
-export interface IAccessTokenPayload {
+export interface ISessionAccessTokenPayload {
   sessionId: string;
   sessionCreatedAt: string;
 }
 
-export interface IRefreshTokenPayload {
+export interface ISessionRefreshTokenPayload {
   refreshTokenId: string;
 }

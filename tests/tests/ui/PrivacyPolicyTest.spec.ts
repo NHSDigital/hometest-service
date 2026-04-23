@@ -12,7 +12,7 @@ test.describe("Privacy Policy page", { tag: "@ui" }, () => {
   }) => {
     await beforeYouStartPage.navigate();
     await beforeYouStartPage.clickContinueToOrderKitButton();
-    await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+    await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
     await getSelfTestKitPage.clickPrivacyPolicyLink();
     const actualHeaderText = await privacyPolicyPage.getHeaderText();
     expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
