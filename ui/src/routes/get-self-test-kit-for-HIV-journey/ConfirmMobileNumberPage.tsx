@@ -16,7 +16,7 @@ export default function ConfirmMobileNumberPage() {
   const { commonContent, "confirm-mobile-phone-number": content } = useContent();
 
   const nhsPhone = user?.phoneNumber;
-  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
 
   // Pre-populate based on existing data
   const getInitialSelection = (): "nhs-mobile-number" | "other" | null => {

@@ -19,7 +19,7 @@ export default function OrderSubmittedPage() {
   }, [orderAnswers.orderReferenceNumber, resetNavigation]);
 
   const referenceNumber = orderAnswers.orderReferenceNumber ?? "[Reference Number]";
-  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
 
   // TODO: update feedback HREF in content
 

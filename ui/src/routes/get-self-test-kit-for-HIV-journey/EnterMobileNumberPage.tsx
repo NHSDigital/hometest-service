@@ -18,7 +18,7 @@ export default function EnterMobileNumberPage() {
   const [mobileNumber, setMobileNumber] = useState(orderAnswers.mobileNumber || "");
   const [mobileNumberError, setMobileNumberError] = useState<string | null>(null);
 
-  const supplierName = orderAnswers.supplier?.[0]?.name || "[Supplier]";
+  const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
 
   const handleMobileNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMobileNumber(e.target.value);
