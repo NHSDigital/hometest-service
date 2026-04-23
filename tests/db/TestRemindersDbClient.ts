@@ -1,5 +1,5 @@
 import { UUID } from "../models/TestOrder";
-import { ReminderModel, ReminderStatusCode } from "../models/TestRminder";
+import { ReminderModel, ReminderStatusCode } from "../models/TestReminder";
 import { BaseDbClient } from "./BaseDbClient";
 
 export class TestRemindersDbClient extends BaseDbClient {

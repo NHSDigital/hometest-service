@@ -1,12 +1,10 @@
 import { randomUUID } from "crypto";
 
-import { faker } from "@faker-js/faker";
-
 import { expect, test } from "../../fixtures/IntegrationFixture";
-import { isValidReminder } from "../../models/TestRminder";
+import { isValidReminder } from "../../models/TestReminder";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import { OrderTestData } from "../../test-data/OrderTestData";
-import { buildHeaders, orderStatusPayload } from "../../utils";
+import { RandomDataGenerator, buildHeaders, orderStatusPayload } from "../../utils";
 
 const originator = OrderStatusTestData.DEFAULT_ORIGINATOR;
 const defaultStatus = OrderStatusTestData.DEFAULT_STATUS;
@@ -19,8 +17,8 @@ test.describe("Order Reminders", { tag: ["@API", "@db"] }, () => {
   let birthDate: string;
 
   test.beforeEach(async ({ testOrderDb }) => {
-    nhsNumber = `99${faker.number.int({ min: 100000000, max: 999999999 })}`;
-    birthDate = faker.date.birthdate({ min: 18, max: 65, mode: "age" }).toISOString().split("T")[0];
+    nhsNumber = RandomDataGenerator.generateNhsNumber();
+    birthDate = RandomDataGenerator.generateBirthDate();
 
     const supplierId = await testOrderDb.getSupplierIdByName(OrderTestData.PREVENTX_SUPPLIER_NAME);
     const testCode = await testOrderDb.getTestCodeByDescription(
