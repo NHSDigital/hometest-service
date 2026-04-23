@@ -1,8 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
-import { OrderStatus, ResultStatus } from "../lib/types/status";
-import { handler } from "./index";
+import { lambdaHandler as handler } from "./index";
 import { InterpretationCode } from "./models";
 
 jest.mock("./init", () => {
@@ -17,6 +16,9 @@ jest.mock("./init", () => {
     },
     orderStatusNotifyService: {
       dispatch: jest.fn(),
+    },
+    resultProcessingService: {
+      processValidatedResult: jest.fn(),
     },
   };
   return {
@@ -76,17 +78,18 @@ const { initMock } = jest.requireMock("./init") as {
     orderStatusNotifyService: {
       dispatch: jest.Mock;
     };
+    resultProcessingService: {
+      processValidatedResult: jest.Mock;
+    };
   };
 };
 
-const {
-  extractAndValidateObservationFieldsMock,
-  extractInterpretationCodeFromFHIRObservationMock,
-  validateDBDataMock,
-} = jest.requireMock("./validation-service") as {
+const { extractAndValidateObservationFieldsMock, validateDBDataMock, extractInterpretationCodeFromFHIRObservationMock } = jest.requireMock(
+  "./validation-service",
+) as {
   extractAndValidateObservationFieldsMock: jest.Mock;
-  extractInterpretationCodeFromFHIRObservationMock: jest.Mock;
   validateDBDataMock: jest.Mock;
+  extractInterpretationCodeFromFHIRObservationMock: jest.Mock;
 };
 
 describe("order-result-lambda handler", () => {
@@ -126,6 +129,7 @@ describe("order-result-lambda handler", () => {
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
     initMock.orderStatusNotifyService.dispatch.mockResolvedValue(undefined);
+    initMock.resultProcessingService.processValidatedResult.mockResolvedValue(undefined);
   });
 
   it("returns 201 and resource on success", async () => {
@@ -183,15 +187,18 @@ describe("order-result-lambda handler", () => {
     expect(createFhirResponse).toHaveBeenCalledWith(201, observation);
   });
 
-  it("calls updateOrderStatusAndResultStatus for interpretation code normal with order status complete and result available", async () => {
-    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Normal);
+  it("delegates validated results to result processing service", async () => {
     await handler(event);
-    expect(initMock.orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
-      identifiers.orderUid,
-      OrderStatus.Complete,
-      ResultStatus.Result_Available,
-      identifiers.correlationId,
+    expect(initMock.resultProcessingService.processValidatedResult).toHaveBeenCalledWith(
+      expect.objectContaining({
+        correlationId: identifiers.correlationId,
+        observation,
+      }),
     );
+  });
+
+  it("dispatches a notification for normal results", async () => {
+    await handler(event);
     expect(initMock.orderStatusNotifyService.dispatch).toHaveBeenCalledWith(
       expect.objectContaining({
         orderId: identifiers.orderUid,
@@ -202,22 +209,16 @@ describe("order-result-lambda handler", () => {
     );
   });
 
-  it("calls updateOrderStatusAndResultStatus for interpretation code abnormal with result withheld", async () => {
-    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(
-      InterpretationCode.Abnormal,
-    );
+  it("does not dispatch a notification for abnormal results", async () => {
+    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(InterpretationCode.Abnormal);
     await handler(event);
-    expect(initMock.orderService.updateOrderStatusAndResultStatus).toHaveBeenCalledWith(
-      identifiers.orderUid,
-      OrderStatus.Received,
-      ResultStatus.Result_Withheld,
-      identifiers.correlationId,
-    );
     expect(initMock.orderStatusNotifyService.dispatch).not.toHaveBeenCalled();
   });
 
-  it("returns 500 if updateDatabase throws", async () => {
-    initMock.orderService.updateOrderStatusAndResultStatus.mockRejectedValueOnce(new Error("fail"));
+  it("returns 500 if result processing throws", async () => {
+    initMock.resultProcessingService.processValidatedResult.mockRejectedValueOnce(
+      new Error("fail"),
+    );
     const res = await handler(event);
     expect(res.statusCode).toBe(500);
     expect(createFhirErrorResponse).toHaveBeenCalledWith(
