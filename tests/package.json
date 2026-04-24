@@ -46,15 +46,10 @@
     "axe-core": "4.11.3",
     "axe-html-reporter": "2.2.11",
     "pg": "8.20.0",
-<<<<<<< HEAD
-    "tsx": "4.21.0",
-    "uuid": "13.0.0"
-=======
     "uuid": "13.0.0",
     "tsx": "4.21.0"
   },
   "overrides": {
     "fast-xml-parser": "4.5.5"
->>>>>>> c5bce388f4f5d9b6af75bbb30ef1dd9c3f577882
   }
 }
