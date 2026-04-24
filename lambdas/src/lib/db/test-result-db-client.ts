@@ -1,3 +1,4 @@
+import { ResultStatus } from "../types/status";
 import { type DBClient } from "./db-client";
 
 type TestResultStatusCode = "RESULT_AVAILABLE" | "RESULT_WITHHELD";
@@ -11,11 +12,7 @@ export interface TestResult {
 export class TestResultDbClient {
   constructor(private readonly dbClient: DBClient) {}
 
-  public async getResult(
-    orderId: string,
-    nhsNumber: string,
-    dateOfBirth: Date,
-  ) {
+  public async getResult(orderId: string, nhsNumber: string, dateOfBirth: Date) {
     const query = `
       SELECT
           rs.result_id AS id,
@@ -39,11 +36,30 @@ export class TestResultDbClient {
       LIMIT 1;
     `;
 
-    const result = await this.dbClient.query<
-      TestResult,
-      [string, string, Date]
-    >(query, [orderId, nhsNumber, dateOfBirth]);
+    const result = await this.dbClient.query<TestResult, [string, string, Date]>(query, [
+      orderId,
+      nhsNumber,
+      dateOfBirth,
+    ]);
 
     return result?.rows[0] ?? null;
+  }
+
+  public async insertResultStatus(
+    orderId: string,
+    status: ResultStatus,
+    correlationId: string,
+  ): Promise<void> {
+    const query = `
+      INSERT INTO result_status (order_uid, status, correlation_id)
+      VALUES ($1::uuid, $2, $3::uuid)
+      ON CONFLICT (correlation_id) DO NOTHING;
+    `;
+
+    await this.dbClient.query<void, [string, string, string]>(query, [
+      orderId,
+      status,
+      correlationId,
+    ]);
   }
 }
