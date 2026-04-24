@@ -122,6 +122,7 @@ export class NhsCallbackService implements INhsCallbackService {
   }
 
   private normalizeRefreshToken(refreshToken: string): string | undefined {
-    return refreshToken.trim().length > 0 ? refreshToken : undefined;
+    const trimmedRefreshToken = refreshToken.trim();
+    return trimmedRefreshToken.length > 0 ? trimmedRefreshToken : undefined;
   }
 }
