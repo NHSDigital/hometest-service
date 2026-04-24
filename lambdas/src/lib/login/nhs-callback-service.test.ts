@@ -239,35 +239,24 @@ describe("NhsCallbackService.executeCallback", () => {
     });
   });
 
-  it("converts empty refresh_token to undefined", async () => {
-    nhsLoginClientMock.getUserTokens.mockResolvedValue(createTokenResponse({ refresh_token: "" }));
-    nhsTokenVerifierMock.verifyToken
-      .mockResolvedValueOnce(verificationSuccess("user-123"))
-      .mockResolvedValueOnce(verificationSuccess("user-123"));
-    nhsLoginClientMock.getUserInfo.mockResolvedValue(createUserInfo());
-
-    const service = new NhsCallbackService({
-      nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock,
-    });
-
-    const result = await service.executeCallback("auth-code");
-
-    expect(result).toEqual({
-      success: true,
-      result: {
-        userInfo: createUserInfo(),
-        nhsAccessToken: "nhs-access-token",
-        nhsRefreshToken: undefined,
-        idTokenSubject: "user-123",
-      },
-    });
-  });
-
-  it("converts whitespace-only refresh_token to undefined", async () => {
-    nhsLoginClientMock.getUserTokens.mockResolvedValue(
-      createTokenResponse({ refresh_token: "   \t  " }),
-    );
+  it.each([
+    {
+      name: "empty refresh_token",
+      tokenResponse: createTokenResponse({ refresh_token: "" }),
+    },
+    {
+      name: "whitespace-only refresh_token",
+      tokenResponse: createTokenResponse({ refresh_token: "   \t  " }),
+    },
+    {
+      name: "missing refresh_token",
+      tokenResponse: {
+        ...createTokenResponse(),
+        refresh_token: undefined,
+      } as unknown as INhsTokenResponseModel,
+    },
+  ])("treats $name as undefined", async ({ tokenResponse }) => {
+    nhsLoginClientMock.getUserTokens.mockResolvedValue(tokenResponse);
     nhsTokenVerifierMock.verifyToken
       .mockResolvedValueOnce(verificationSuccess("user-123"))
       .mockResolvedValueOnce(verificationSuccess("user-123"));
