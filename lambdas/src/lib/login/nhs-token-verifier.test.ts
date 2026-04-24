@@ -126,6 +126,26 @@ describe("NhsTokenVerifier", () => {
     });
   });
 
+  it("returns KEY_RESOLUTION_FAILED when the key provider returns an empty string", async () => {
+    const keyProvider = createKeyProvider("");
+    const verifier = new NhsTokenVerifier({ keyProvider, issuer });
+    const token = signNhsToken({ sub: "user-123" }, primaryKeys.privateKey, {
+      expiresIn: "1h",
+      issuer,
+      header: { alg: "RS512", kid: "nhs-kid-1" },
+    });
+
+    const result = await verifier.verifyToken(token);
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "KEY_RESOLUTION_FAILED",
+        message: "No public key was returned for the token",
+      },
+    });
+  });
+
   it("returns INVALID_SIGNATURE when the token is signed with a different key", async () => {
     const keyProvider = createKeyProvider(secondaryKeys.publicKey);
     const verifier = new NhsTokenVerifier({ keyProvider, issuer });

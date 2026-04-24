@@ -1,3 +1,4 @@
+import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
 import { type INhsLoginClient } from "./nhs-login-client";
 import { type INhsTokenVerifier } from "./nhs-token-verifier";
@@ -53,7 +54,7 @@ export class NhsCallbackService implements INhsCallbackService {
   }
 
   public async executeCallback(code: string): Promise<NhsCallbackExecutionResult> {
-    let tokenResponse;
+    let tokenResponse: INhsTokenResponseModel;
 
     try {
       tokenResponse = await this.nhsLoginClient.getUserTokens(code);
