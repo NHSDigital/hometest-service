@@ -31,7 +31,10 @@ export class GetSelfTestKitPage extends AuthenticatedPage {
     });
     this.privacyPolicyLink = page.getByRole("link", { name: "privacy policy" });
     this.termsOfUseLink = page.getByRole("link", { name: "terms of use" });
-    this.pageHeader = page.getByRole("heading", { name: "Get a self-test kit for HIV", level: 1 });
+    this.pageHeader = page.getByRole("heading", {
+      name: "Order a free HIV self-test kit",
+      level: 1,
+    });
   }
 
   async waitUntilPageLoaded(): Promise<void> {

@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
-    "serve:static": "npm run build && npx http-server build -p 8085 -c-1 --proxy http://localhost:8085?",
+    "serve:static": "pnpm run build && pnpm exec http-server build -p 8085 -c-1 --proxy http://localhost:8085?",
     "check-typescript": "next typegen && tsc --noEmit"
   },
   "dependencies": {
@@ -38,6 +38,7 @@
     "jest": "30.3.0",
     "jest-environment-jsdom": "30.3.0",
     "jest-junit": "16.0.0",
+    "http-server": "14.1.1",
     "ts-node": "10.9.2",
     "typescript": "6.0.2"
   }

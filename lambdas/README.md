@@ -37,27 +37,27 @@ lambdas/
 - TypeScript source code is compiled and bundled into a single JavaScript file
 - Output is optimised for AWS Lambda runtime (Node.js 24.x)
 - Build targets `src/{lambda-name}/index.ts` as entry point
-- To run the build process, run `npm run build`
-- An individual Lambda can be built by running `npm run build -- --lambda {lambda-name}`
+- To run the build process, run `pnpm run build`
+- An individual Lambda can be built by running `pnpm run build -- --lambda {lambda-name}`
 
 ### Packaging Process
 
 - Each Lambda is packaged as a ZIP archive
 - The archives can be found in the `dist/` directory
-- To create the ZIP archives, run `npm run package`
-- An individual Lambda can be packaged by running `npm run package -- --lambda {lambda-name}`
+- To create the ZIP archives, run `pnpm run package`
+- An individual Lambda can be packaged by running `pnpm run package -- --lambda {lambda-name}`
 
 ### Local Deployment
 
 - Lambdas are deployed via Terraform using `archive_file` data source
-- To deploy all Lambdas, run `npm run local:terraform:apply`
+- To deploy all Lambdas, run `pnpm run local:terraform:apply`
   - This is a wrapper for the script with the same name in the root `package.json`
 - Each Lambda gets its own IAM role with minimal required permissions
 
 ### Local Development
 
 - Use LocalStack for local testing
-- Deploy via Terraform: `npm run local:terraform:apply`
+- Deploy via Terraform: `pnpm run local:terraform:apply`
 - Functions are available at `http://localhost:4566`
 
 ### Best Practices
@@ -76,13 +76,13 @@ Unit tests use mocked dependencies and run quickly without external services.
 
 ```bash
 # Run all unit tests (excludes integration tests)
-npm run test:unit
+pnpm run test:unit
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Run with coverage
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ### Integration Tests
@@ -107,10 +107,10 @@ Integration tests use real services (PostgreSQL via Docker) to verify infrastruc
 
 ```bash
 # Run only integration tests
-npm run test:integration
+pnpm run test:integration
 
 # Run all tests (unit + integration)
-npm test
+pnpm test
 ```
 
 **Note:** Integration tests are slower (~10-30s startup) but provide confidence that infrastructure components work correctly with real external systems.

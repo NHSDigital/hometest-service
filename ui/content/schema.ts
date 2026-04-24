@@ -169,14 +169,23 @@ export interface CommonContent {
 // ============================================================================
 
 export interface StartPageContent {
+  pageTitle: string;
   title: string;
-  ageRequirement: string;
-  availabilityNotice: string;
-  urgentCard: {
-    heading: string;
-    exposureWarning: string;
-    clinicAdvice: string;
-    aeAdvice: string;
+  eligibility: {
+    intro: string;
+    items: string[];
+  };
+  resultsAndTimescales: {
+    summary: string;
+    intro: string;
+    negative: {
+      label: string;
+      description: string;
+    };
+    reactive: {
+      label: string;
+      description: string;
+    };
   };
   infoBox: {
     text: string;
@@ -199,6 +208,11 @@ export interface StartPageContent {
   };
   otherOptions: {
     heading: string;
+    otherTests: string;
+    otherTestsLink: {
+      text: string;
+      href: string;
+    };
     clinicText: string;
     clinicLinkText: string;
     clinicTextEnd: string;
@@ -283,7 +297,7 @@ export interface CannotUseServiceUnder18Content {
 
 export interface EnterMobilePhoneNumberContent {
   title: string;
-  description: string;
+  hint: string;
   form: {
     label: string;
     hint: string;
@@ -292,12 +306,13 @@ export interface EnterMobilePhoneNumberContent {
 
 export interface ConfirmMobilePhoneNumberContent {
   title: string;
-  description: string;
+  hint: string;
   form: {
     alternativeLabel: string;
     alternativeInputLabel: string;
     alternativeInputHint: string;
   };
+  radioLegend: string;
 }
 
 export interface ServiceErrorContent {

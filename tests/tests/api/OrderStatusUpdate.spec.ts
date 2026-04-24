@@ -1,11 +1,9 @@
 import { randomUUID } from "crypto";
 
-import { faker } from "@faker-js/faker";
-
 import { expect, test } from "../../fixtures/IntegrationFixture";
 import { OrderStatusTestData } from "../../test-data/OrderStatusTypes";
 import { OrderTestData } from "../../test-data/OrderTestData";
-import { buildHeaders, orderStatusPayload } from "../../utils";
+import { RandomDataGenerator, buildHeaders, orderStatusPayload } from "../../utils";
 
 const originator = OrderStatusTestData.DEFAULT_ORIGINATOR;
 const defaultStatus = OrderStatusTestData.DEFAULT_STATUS;
@@ -18,8 +16,8 @@ test.describe("Order Status Update API", { tag: ["@API", "@db"] }, () => {
   let birthDate: string;
 
   test.beforeEach(async ({ testOrderDb }) => {
-    nhsNumber = `99${faker.number.int({ min: 100000000, max: 999999999 })}`;
-    birthDate = faker.date.birthdate({ min: 18, max: 65, mode: "age" }).toISOString().split("T")[0];
+    nhsNumber = RandomDataGenerator.generateNhsNumber();
+    birthDate = RandomDataGenerator.generateBirthDate();
 
     const supplierId = await testOrderDb.getSupplierIdByName(OrderTestData.PREVENTX_SUPPLIER_NAME);
     const testCode = await testOrderDb.getTestCodeByDescription(
@@ -48,6 +46,19 @@ test.describe("Order Status Update API", { tag: ["@API", "@db"] }, () => {
     "success (201) persists order status updates",
     { tag: ["@API"] },
     async ({ orderStatusApi, testOrderDb }) => {
+      const confirmedResponse = await orderStatusApi.updateOrderStatus(
+        orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_ORDER_ACCEPTED },
+        }),
+        buildHeaders(randomUUID()),
+      );
+
+      orderStatusApi.validateResponse(confirmedResponse, 201);
+
+      const { statusCode: confirmedStatusCode } =
+        await testOrderDb.getLatestOrderStatusWithCountByOrderUid(orderUid);
+      expect(confirmedStatusCode).toBe(OrderStatusTestData.EXPECTED_STATUS_CODE_CONFIRMED);
+
       const dispatchedResponse = await orderStatusApi.updateOrderStatus(
         orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
           businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_DISPATCHED },
