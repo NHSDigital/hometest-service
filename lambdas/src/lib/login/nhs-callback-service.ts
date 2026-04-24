@@ -39,14 +39,16 @@ export interface INhsCallbackService {
   executeCallback: (code: string) => Promise<NhsCallbackExecutionResult>;
 }
 
+export type NhsCallbackLoginClient = Pick<INhsLoginClient, "getUserTokens" | "getUserInfo">;
+
 export interface NhsCallbackServiceParams {
   nhsTokenVerifier: INhsTokenVerifier;
-  nhsLoginClient: INhsLoginClient;
+  nhsLoginClient: NhsCallbackLoginClient;
 }
 
 export class NhsCallbackService implements INhsCallbackService {
   private readonly nhsTokenVerifier: INhsTokenVerifier;
-  private readonly nhsLoginClient: INhsLoginClient;
+  private readonly nhsLoginClient: NhsCallbackLoginClient;
 
   constructor(params: NhsCallbackServiceParams) {
     this.nhsTokenVerifier = params.nhsTokenVerifier;
