@@ -2,8 +2,7 @@ import { type JwtHeader, type JwtPayload } from "jsonwebtoken";
 
 import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
-import { NhsCallbackService } from "./nhs-callback-service";
-import { type INhsLoginClient } from "./nhs-login-client";
+import { type NhsCallbackLoginClient, NhsCallbackService } from "./nhs-callback-service";
 import {
   type INhsTokenVerifier,
   type NhsTokenVerificationResult,
@@ -69,7 +68,7 @@ function verificationFailure(
 
 describe("NhsCallbackService.executeCallback", () => {
   let nhsTokenVerifierMock: jest.Mocked<INhsTokenVerifier>;
-  let nhsLoginClientMock: jest.Mocked<Pick<INhsLoginClient, "getUserTokens" | "getUserInfo">>;
+  let nhsLoginClientMock: jest.Mocked<NhsCallbackLoginClient>;
 
   beforeEach(() => {
     nhsTokenVerifierMock = {
