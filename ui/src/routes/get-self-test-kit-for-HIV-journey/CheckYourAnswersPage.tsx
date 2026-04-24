@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-components";
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { useNavigationType } from "react-router-dom";
 
 import { useAsyncErrorHandler, useContent } from "@/hooks";
@@ -57,11 +57,11 @@ export default function CheckYourAnswersPage() {
     orderAnswers.consentCheckboxChecked ?? false,
   );
   const [consentError, setConsentError] = useState<string | null>(null);
-  const isSubmitting = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";
   const shouldResetSubmittedOrderOnPop =
-    hasSubmittedOrder && navigationType === "POP" && !isSubmitting.current;
+    hasSubmittedOrder && navigationType === "POP" && !isSubmitting;
 
   useLayoutEffect(() => {
     if (!shouldResetSubmittedOrderOnPop) {
@@ -112,7 +112,7 @@ export default function CheckYourAnswersPage() {
 
     setConsentError(null);
 
-    isSubmitting.current = true;
+    setIsSubmitting(true);
     let hasNavigatedToSubmittedPage = false;
 
     try {
@@ -162,7 +162,7 @@ export default function CheckYourAnswersPage() {
       hasNavigatedToSubmittedPage = true;
     } finally {
       if (!hasNavigatedToSubmittedPage) {
-        isSubmitting.current = false;
+        setIsSubmitting(false);
       }
     }
   });
