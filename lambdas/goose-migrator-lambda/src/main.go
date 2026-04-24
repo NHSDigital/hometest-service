@@ -332,7 +332,7 @@ func HandleRequest(ctx context.Context, event Event) (Response, error) {
 	dbURL, err := buildPostgresURL()
 	if err != nil {
 		log.Printf("Failed to build DB URL: %s", redactPassword(err.Error()))
-		return Response{"Failed to build DB URL: " + redactPassword(err.Error())}, err
+		return Response{"Failed to build DB URL"}, err
 	}
 
 	// Redact password in log output
@@ -384,6 +384,12 @@ func HandleRequest(ctx context.Context, event Event) (Response, error) {
 	// Step 2: Run goose migrations.
 	// search_path is set via the connection URL (see buildPostgresURL), so every
 	// connection from the pool automatically targets the correct schema.
+	// SetDialect must be called when using sql.Open directly (as opposed to
+	// goose.OpenDBWithDriver, which infers the dialect from the driver name).
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Printf("Failed to set goose dialect: %s", err.Error())
+		return Response{"Failed to set goose dialect"}, err
+	}
 	log.Println("Running goose.Up migrations...")
 	if err := goose.Up(db, "migrations"); err != nil {
 		log.Printf("Migration failed: %s", redactPassword(err.Error()))
