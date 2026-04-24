@@ -48,7 +48,7 @@ test.describe("Order Status Update API", { tag: ["@API", "@db"] }, () => {
     async ({ orderStatusApi, testOrderDb }) => {
       const confirmedResponse = await orderStatusApi.updateOrderStatus(
         orderStatusPayload(orderUid, patientUid, defaultStatus, defaultIntent, {
-          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_CONFIRMED },
+          businessStatus: { text: OrderStatusTestData.BUSINESS_STATUS_ORDER_ACCEPTED },
         }),
         buildHeaders(randomUUID()),
       );
