@@ -264,4 +264,31 @@ describe("NhsCallbackService.executeCallback", () => {
       },
     });
   });
+
+  it("converts whitespace-only refresh_token to undefined", async () => {
+    nhsLoginClientMock.getUserTokens.mockResolvedValue(
+      createTokenResponse({ refresh_token: "   \t  " }),
+    );
+    nhsTokenVerifierMock.verifyToken
+      .mockResolvedValueOnce(verificationSuccess("user-123"))
+      .mockResolvedValueOnce(verificationSuccess("user-123"));
+    nhsLoginClientMock.getUserInfo.mockResolvedValue(createUserInfo());
+
+    const service = new NhsCallbackService({
+      nhsTokenVerifier: nhsTokenVerifierMock,
+      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+    });
+
+    const result = await service.executeCallback("auth-code");
+
+    expect(result).toEqual({
+      success: true,
+      result: {
+        userInfo: createUserInfo(),
+        nhsAccessToken: "nhs-access-token",
+        nhsRefreshToken: undefined,
+        idTokenSubject: "user-123",
+      },
+    });
+  });
 });

@@ -103,7 +103,7 @@ export class NhsCallbackService implements INhsCallbackService {
       result: {
         userInfo,
         nhsAccessToken: tokenResponse.access_token,
-        nhsRefreshToken: tokenResponse.refresh_token || undefined,
+        nhsRefreshToken: this.normalizeRefreshToken(tokenResponse.refresh_token),
         idTokenSubject,
       },
     };
@@ -117,5 +117,9 @@ export class NhsCallbackService implements INhsCallbackService {
         message,
       },
     };
+  }
+
+  private normalizeRefreshToken(refreshToken: string): string | undefined {
+    return refreshToken.trim().length > 0 ? refreshToken : undefined;
   }
 }
