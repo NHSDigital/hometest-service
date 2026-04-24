@@ -225,6 +225,7 @@ export interface StartPageContent {
 }
 
 export interface EnterDeliveryAddressContent {
+  pageTitle: string;
   title: string;
   form: {
     postcodeLabel: string;
@@ -235,6 +236,7 @@ export interface EnterDeliveryAddressContent {
 }
 
 export interface EnterAddressManuallyContent {
+  pageTitle: string;
   title: string;
   form: {
     addressLine1Label: string;
@@ -247,12 +249,14 @@ export interface EnterAddressManuallyContent {
 }
 
 export interface NoAddressFoundContent {
+  pageTitle: string;
   title: string;
   notFoundMessage: string;
   tryNewSearchLink: string;
 }
 
 export interface SelectDeliveryAddressContent {
+  pageTitle: string;
   title: string;
   postcodeLabel: string;
   editPostcodeLink: string;
@@ -260,6 +264,7 @@ export interface SelectDeliveryAddressContent {
 }
 
 export interface HowComfortablePrickingFingerContent {
+  pageTitle: string;
   title: string;
   instructions: string;
   steps: {
@@ -283,6 +288,7 @@ export interface HowComfortablePrickingFingerContent {
 }
 
 export interface CannotUseServiceUnder18Content {
+  pageTitle: string;
   title: string;
   intro: string;
   phoneLabel: string;
@@ -296,6 +302,7 @@ export interface CannotUseServiceUnder18Content {
 }
 
 export interface EnterMobilePhoneNumberContent {
+  pageTitle: string;
   title: string;
   hint: string;
   form: {
@@ -305,6 +312,7 @@ export interface EnterMobilePhoneNumberContent {
 }
 
 export interface ConfirmMobilePhoneNumberContent {
+  pageTitle: string;
   title: string;
   hint: string;
   form: {
@@ -316,11 +324,13 @@ export interface ConfirmMobilePhoneNumberContent {
 }
 
 export interface ServiceErrorContent {
+  pageTitle: string;
   title: string;
   message: string;
 }
 
 export interface OrderTrackingContent {
+  pageTitle: string;
   error: {
     title: string;
     orderNotFound: string;
@@ -329,6 +339,7 @@ export interface OrderTrackingContent {
 }
 
 export interface TestResultsContent {
+  pageTitle: string;
   title: string;
   error: {
     title: string;
@@ -385,18 +396,21 @@ export interface PrivacyPolicySection {
 }
 
 export interface HomeTestPrivacyPolicyContent {
+  pageTitle: string;
   title: string;
   introduction: string[];
   sections: PrivacyPolicySection[];
 }
 
 export interface HomeTestTermsOfUseContent {
+  pageTitle: string;
   title: string;
   introduction: string[];
   sections: PrivacyPolicySection[];
 }
 
 export interface BloodSampleGuideContent {
+  pageTitle: string;
   title: string;
   whatsInKit: {
     summary: string;
@@ -423,6 +437,7 @@ export interface BloodSampleGuideContent {
 }
 
 export interface CheckYourAnswersContent {
+  pageTitle: string;
   title: string;
   updateMessage: string;
   deliveryMessage: string;
@@ -444,6 +459,7 @@ export interface CheckYourAnswersContent {
 }
 
 export interface OrderSubmittedContent {
+  pageTitle: string;
   panel: {
     title: string;
     referenceNumberPrefix: string;
@@ -459,6 +475,7 @@ export interface OrderSubmittedContent {
   };
 }
 export interface KitNotAvailableInAreaContent {
+  pageTitle: string;
   title: string;
   description: string;
   moreOptionsHeading: string;
@@ -489,6 +506,7 @@ export interface SuppliersLegalDocumentsContent<TSupplierContent = LegalDocument
 }
 
 export interface GoToClinicContent {
+  pageTitle: string;
   title: string;
   moreOptionsHeading: string;
 }

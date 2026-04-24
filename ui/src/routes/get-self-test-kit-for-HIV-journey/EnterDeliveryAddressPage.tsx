@@ -3,7 +3,7 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useEffect, useRef, useState } from "react";
 
-import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { useAsyncErrorHandler, useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import { createBuildingNameSchema, createPostcodeSchema } from "@/lib/validation/address-schema";
@@ -14,6 +14,7 @@ export default function EnterDeliveryAddressPage() {
   const { goToStep, goBack, stepHistory, resetNavigation } = useJourneyNavigationContext();
   const { lookupPostcode, lookupResultsStatus, isLoading, clearAddresses } = usePostcodeLookup();
   const { commonContent, "enter-delivery-address": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   const [postcode, setPostcode] = useState(orderAnswers.postcodeSearch || "");
   const [buildingName, setBuildingName] = useState(orderAnswers.buildingNumber || "");

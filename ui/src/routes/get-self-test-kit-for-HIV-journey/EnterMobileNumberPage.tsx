@@ -3,7 +3,7 @@
 import { Button, ErrorSummary, TextInput } from "nhsuk-react-components";
 import { useState } from "react";
 
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
@@ -14,6 +14,7 @@ export default function EnterMobileNumberPage() {
   const { goToStep, goBack, stepHistory, returnToStep, setReturnToStep } =
     useJourneyNavigationContext();
   const { commonContent, "enter-mobile-phone-number": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   const [mobileNumber, setMobileNumber] = useState(orderAnswers.mobileNumber || "");
   const [mobileNumberError, setMobileNumberError] = useState<string | null>(null);

@@ -42,4 +42,10 @@ describe("NoAddressFoundPage", () => {
       expect(link.tagName).toBe("A");
     });
   });
+
+  it("sets the document title", () => {
+    render(<NoAddressFoundPage />, { wrapper: TestWrapper });
+
+    expect(document.title).toBe("No address found – HIV Home Test Service – NHS");
+  });
 });

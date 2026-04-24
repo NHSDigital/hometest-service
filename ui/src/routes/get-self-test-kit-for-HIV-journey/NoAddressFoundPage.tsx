@@ -1,15 +1,15 @@
 "use client";
 
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
-import { useContent } from "@/hooks";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function NoAddressFoundPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers } = useCreateOrderContext();
   const { commonContent, "no-address-found": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   return (
     <FormPageLayout

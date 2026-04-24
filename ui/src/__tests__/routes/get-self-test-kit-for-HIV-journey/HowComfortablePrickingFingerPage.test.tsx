@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { useEffect } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 
+import { usePageTitle } from "@/hooks";
 import HowComfortablePrickingFingerPage from "@/routes/get-self-test-kit-for-HIV-journey/HowComfortablePrickingFingerPage";
 import { AuthProvider, CreateOrderProvider, JourneyNavigationProvider, useAuth } from "@/state";
 
@@ -28,6 +29,8 @@ jest.mock("@/hooks", () => ({
       },
     },
     "how-comfortable-pricking-finger": {
+      pageTitle:
+        "This is what you'll need to do to give a blood sample – HIV Home Test Service – NHS",
       title: "This is what you'll need to do to give a blood sample",
       instructions: "To give a sample of blood, you'll need to:",
       steps: {
@@ -50,6 +53,7 @@ jest.mock("@/hooks", () => ({
       },
     },
   }),
+  usePageTitle: jest.fn(),
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -336,5 +340,13 @@ describe("HowComfortablePrickingFingerPage", () => {
         "/get-self-test-kit-for-HIV/go-to-clinic",
       );
     });
+  });
+
+  it("sets the page title", () => {
+    render(<HowComfortablePrickingFingerPage />, { wrapper: TestWrapper });
+
+    expect(usePageTitle as jest.Mock).toHaveBeenCalledWith(
+      "This is what you'll need to do to give a blood sample – HIV Home Test Service – NHS",
+    );
   });
 });

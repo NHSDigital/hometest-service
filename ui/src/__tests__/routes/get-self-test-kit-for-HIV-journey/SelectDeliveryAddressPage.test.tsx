@@ -131,6 +131,7 @@ jest.mock("@/hooks/useContent", () => ({
       },
     },
     "select-delivery-address": {
+      pageTitle: "Select your delivery address – HIV Home Test Service – NHS",
       title: "found",
       postcodeLabel: "Postcode:",
       editPostcodeLink: "Edit postcode",
@@ -203,6 +204,10 @@ describe("SelectDeliveryAddressPage", () => {
     it("renders the main heading with correct address count", () => {
       const heading = screen.getByRole("heading");
       expect(heading).toHaveTextContent("3 addresses found");
+    });
+
+    it("sets the document title", () => {
+      expect(document.title).toBe("3 addresses found – HIV Home Test Service – NHS");
     });
 
     it("displays the searched postcode", () => {

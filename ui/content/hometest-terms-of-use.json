@@ -1,4 +1,5 @@
 {
+  "pageTitle": "Home test terms of use – HIV Home Test Service – NHS",
   "title": "Hometest Terms of Use - Draft V1 January 2026",
   "introduction": [
     "[Hometest] is operated by NHS England [and commissioned by the Department of Health and Social Care (DHSC)]."
@@ -136,11 +137,7 @@
         {
           "table": {
             "caption": "Name of home testing services with functionality and further information",
-            "headers": [
-              "Service",
-              "Functionality",
-              "For further information, see:"
-            ],
+            "headers": ["Service", "Functionality", "For further information, see:"],
             "rows": [
               [
                 "Testing Services\n(Hometest App allows you to access the service, but the service is provided outside the Hometest App)",
@@ -245,9 +242,7 @@
     {
       "id": "prohibited-uses",
       "heading": "10. Prohibited uses",
-      "paragraphs": [
-        "10.1. You may not use the Hometest App:"
-      ],
+      "paragraphs": ["10.1. You may not use the Hometest App:"],
       "subsections": [
         {
           "indented": true,

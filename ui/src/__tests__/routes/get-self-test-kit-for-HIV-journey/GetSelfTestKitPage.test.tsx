@@ -77,7 +77,7 @@ describe("GetSelfTestKitPage", () => {
   });
 
   it("sets the document title", () => {
-    expect(document.title).toBe("Order a free HIV self-test kit - HomeTest - NHS");
+    expect(document.title).toBe("Order a free HIV self-test kit – HIV Home Test Service – NHS");
   });
 });
 

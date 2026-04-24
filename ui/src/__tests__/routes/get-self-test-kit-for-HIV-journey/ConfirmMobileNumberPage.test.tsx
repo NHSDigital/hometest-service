@@ -12,6 +12,47 @@ import {
   useCreateOrderContext,
 } from "@/state";
 
+type SupplierSeedProps = {
+  supplierName: string;
+  children: React.ReactNode;
+};
+
+function SupplierSeed({ supplierName, children }: Readonly<SupplierSeedProps>) {
+  const { updateOrderAnswers } = useCreateOrderContext();
+
+  React.useEffect(() => {
+    updateOrderAnswers({
+      supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
+    });
+  }, [supplierName, updateOrderAnswers]);
+
+  return <>{children}</>;
+}
+
+type AuthUserSeedProps = {
+  phoneNumber: string;
+  children: React.ReactNode;
+};
+
+function AuthUserSeed({ phoneNumber, children }: Readonly<AuthUserSeedProps>) {
+  const { setUser } = useAuth();
+
+  React.useEffect(() => {
+    setUser({
+      sub: "test-user-123",
+      nhsNumber: "1234567890",
+      birthdate: "1990-01-01",
+      identityProofingLevel: "P9",
+      phoneNumber,
+      givenName: "John",
+      familyName: "Smith",
+      email: "john.smith@example.com",
+    });
+  }, [phoneNumber, setUser]);
+
+  return <>{children}</>;
+}
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
     <AuthProvider>
@@ -28,7 +69,7 @@ describe("ConfirmMobileNumberPage", () => {
       render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
 
       const heading = screen.getByRole("heading", {
-        name: /what's your mobile phone number\?/i,
+        name: /confirm your mobile phone number/i,
       });
       expect(heading).toBeInTheDocument();
     });
@@ -423,24 +464,12 @@ describe("ConfirmMobileNumberPage", () => {
   describe("Supplier Name Substitution in Hint", () => {
     const createWrapperWithSupplier = (supplierName: string) => {
       const WrapperWithSupplier = ({ children }: { children: React.ReactNode }) => {
-        const SeedSupplier = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
-
-          React.useEffect(() => {
-            updateOrderAnswers({
-              supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
-            });
-          }, [supplierName, updateOrderAnswers]);
-
-          return <>{children}</>;
-        };
-
         return (
           <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
             <AuthProvider>
               <JourneyNavigationProvider>
                 <CreateOrderProvider>
-                  <SeedSupplier />
+                  <SupplierSeed supplierName={supplierName}>{children}</SupplierSeed>
                 </CreateOrderProvider>
               </JourneyNavigationProvider>
             </AuthProvider>
@@ -474,31 +503,12 @@ describe("ConfirmMobileNumberPage", () => {
     // Helper to create wrapper with specific user phone number
     const createWrapperWithPhone = (phoneNumber: string) => {
       const WrapperWithPhone = ({ children }: { children: React.ReactNode }) => {
-        const TestComponent = () => {
-          const { setUser } = useAuth();
-
-          React.useEffect(() => {
-            setUser({
-              sub: "test-user-123",
-              nhsNumber: "1234567890",
-              birthdate: "1990-01-01",
-              identityProofingLevel: "P9",
-              phoneNumber,
-              givenName: "John",
-              familyName: "Smith",
-              email: "john.smith@example.com",
-            });
-          }, [setUser]);
-
-          return <>{children}</>;
-        };
-
         return (
           <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/confirm-mobile-phone-number"]}>
             <AuthProvider>
               <JourneyNavigationProvider>
                 <CreateOrderProvider>
-                  <TestComponent />
+                  <AuthUserSeed phoneNumber={phoneNumber}>{children}</AuthUserSeed>
                 </CreateOrderProvider>
               </JourneyNavigationProvider>
             </AuthProvider>
@@ -526,7 +536,7 @@ describe("ConfirmMobileNumberPage", () => {
 
       expect(
         screen.getByRole("heading", {
-          name: /what's your mobile phone number\?/i,
+          name: /confirm your mobile phone number/i,
         }),
       ).toBeInTheDocument();
 
@@ -553,5 +563,11 @@ describe("ConfirmMobileNumberPage", () => {
         document.querySelector('[role="alert"][aria-labelledby="error-summary-title"]'),
       ).not.toBeInTheDocument();
     });
+  });
+
+  it("sets the document title", () => {
+    render(<ConfirmMobileNumberPage />, { wrapper: TestWrapper });
+
+    expect(document.title).toBe("Confirm your mobile phone number – HIV Home Test Service – NHS");
   });
 });

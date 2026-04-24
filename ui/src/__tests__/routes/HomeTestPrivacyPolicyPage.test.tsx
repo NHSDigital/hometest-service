@@ -134,4 +134,8 @@ describe("HomeTestPrivacyPolicyPage", () => {
       expect(paragraphs[0].closest("p")).toHaveClass("nhsuk-body");
     });
   });
+
+  it("sets the document title", () => {
+    expect(document.title).toBe("Home test privacy policy – HIV Home Test Service – NHS");
+  });
 });

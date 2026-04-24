@@ -4,7 +4,7 @@ import { Button, Checkboxes, ErrorSummary, SummaryList } from "nhsuk-react-compo
 import React, { useLayoutEffect, useState } from "react";
 import { useNavigationType } from "react-router-dom";
 
-import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { useAsyncErrorHandler, useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import orderService, { OrderServiceRequest } from "@/lib/services/order-service";
@@ -51,6 +51,7 @@ export default function CheckYourAnswersPage() {
   const { clearAddresses } = usePostcodeLookup();
   const { user } = useAuth();
   const { commonContent, "check-your-answers": content } = useContent();
+  usePageTitle(content.pageTitle);
   const hasSubmittedOrder = orderAnswers.orderReferenceNumber != null;
 
   const [consentChecked, setConsentChecked] = useState(

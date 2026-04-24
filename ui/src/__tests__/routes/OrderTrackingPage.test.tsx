@@ -290,4 +290,10 @@ describe("OrderTrackingPage", () => {
       expect(screen.queryByTestId("about-service")).not.toBeInTheDocument();
     });
   });
+
+  it("sets the document title", () => {
+    renderWithRouter("abc123");
+
+    expect(document.title).toBe("Track your order – HIV Home Test Service – NHS");
+  });
 });

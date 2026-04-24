@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 import { AboutService } from "@/components/AboutService";
 import { OrderStatus } from "@/components/order-status";
-import { usePageContent } from "@/hooks";
+import { usePageContent, usePageTitle } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { Patient } from "@/lib/models/patient";
 import { useOrderStatusQuery } from "@/lib/queries/order-status-query";
@@ -48,6 +48,7 @@ export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
   const content = usePageContent("order-tracking");
+  usePageTitle(content.pageTitle);
 
   if (!orderId || !isValidGuid(orderId)) {
     return (

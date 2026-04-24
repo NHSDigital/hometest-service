@@ -3,10 +3,11 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useAsyncErrorHandler } from "@/hooks";
+import { useAsyncErrorHandler, usePageTitle } from "@/hooks";
 import { consumeLoginCsrf, verifyState } from "@/lib/auth/loginState";
 import { RoutePath } from "@/lib/models/route-paths";
 import loginService from "@/lib/services/login-service";
+import { formatPageTitle } from "@/lib/utils/page-title";
 import { useAuth } from "@/state";
 
 function safeReturnTo(value: string | null | undefined) {
@@ -36,6 +37,9 @@ export default function CallbackPage() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
   const didRun = useRef(false);
+
+  usePageTitle(formatPageTitle("Signing you in"));
+
   const handleCallback = useAsyncErrorHandler(async () => {
     const params = new URLSearchParams(globalThis.location.search);
     const code = params.get("code");

@@ -1,5 +1,6 @@
 import { LegalDocumentContent } from "@/components/LegalDocumentContent";
-import { usePageContent } from "@/hooks";
+import { usePageContent, usePageTitle } from "@/hooks";
+import { formatPageTitle } from "@/lib/utils/page-title";
 
 type SupplierLegalDocumentType = "terms" | "privacy";
 
@@ -39,6 +40,8 @@ export function SupplierLegalDocumentContent({
   }
 
   const supplierContent = content.suppliers[normalizedSupplier];
+
+  usePageTitle(formatPageTitle(supplierContent.title));
 
   return <LegalDocumentContent content={supplierContent} />;
 }

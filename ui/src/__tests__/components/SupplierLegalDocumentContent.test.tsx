@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom";
-
 import { render } from "@testing-library/react";
 
 import { SupplierLegalDocumentContent } from "@/components/SupplierLegalDocumentContent";
 import { type LegalDocumentContent as LegalDocumentContentType } from "@/content";
+import { usePageTitle } from "@/hooks";
 
 const mockUsePageContent = jest.fn();
 const mockLegalDocumentContent: jest.Mock<null, [{ content: LegalDocumentContentType }]> = jest.fn<
@@ -37,6 +37,7 @@ jest.mock("@/components/LegalDocumentContent", () => ({
 
 jest.mock("@/hooks", () => ({
   usePageContent: (...args: unknown[]) => mockUsePageContent(...args),
+  usePageTitle: jest.fn(),
 }));
 
 describe.each([
@@ -67,6 +68,9 @@ describe.each([
     render(<SupplierLegalDocumentContent supplier="preventx" documentType={documentType} />);
 
     expect(mockUsePageContent).toHaveBeenCalledWith(contentKey);
+    expect(usePageTitle as jest.Mock).toHaveBeenCalledWith(
+      `${title} – HIV Home Test Service – NHS`,
+    );
     expect(mockLegalDocumentContent).toHaveBeenCalledWith({
       content: {
         ...supplierContent,

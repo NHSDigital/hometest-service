@@ -3,7 +3,7 @@
 import { Button, ErrorSummary, Radios, TextInput } from "nhsuk-react-components";
 import { useState } from "react";
 
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { createMobileNumberSchema } from "@/lib/validation/mobile-number-schema";
@@ -14,6 +14,7 @@ export default function ConfirmMobileNumberPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { user } = useAuth();
   const { commonContent, "confirm-mobile-phone-number": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   const nhsPhone = user?.phoneNumber;
   const supplierName = orderAnswers.supplier?.[0]?.name || "The supplier";

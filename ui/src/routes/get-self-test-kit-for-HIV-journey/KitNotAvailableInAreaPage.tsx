@@ -1,19 +1,19 @@
 "use client";
 
-import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
-
 import { FeedbackSection } from "@/components/FeedbackSection";
 import { FindAnotherSexualHealthClinicLink } from "@/components/FindAnotherSexualHealthClinicLink";
-import FormPageLayout from "@/layouts/FormPageLayout";
-import { JourneyStepNames } from "@/lib/models/route-paths";
 import { LearnMoreAboutHivAndAidsLink } from "@/components/LearnMoreAboutHivAndAidsLink";
 import { NearestSexualHealthClinicSection } from "@/components/NearestSexualHealthClinicSection";
-import { usePageContent } from "@/hooks";
+import { usePageContent, usePageTitle } from "@/hooks";
+import FormPageLayout from "@/layouts/FormPageLayout";
+import { JourneyStepNames } from "@/lib/models/route-paths";
+import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
 
 export default function KitNotAvailableInAreaPage() {
   const { goToStep, goBack, stepHistory } = useJourneyNavigationContext();
   const { orderAnswers } = useCreateOrderContext();
   const content = usePageContent("kit-not-available-in-area");
+  usePageTitle(content.pageTitle);
 
   return (
     <FormPageLayout

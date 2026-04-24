@@ -2,7 +2,7 @@
 
 import { useLayoutEffect } from "react";
 
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
@@ -11,6 +11,7 @@ export default function OrderSubmittedPage() {
   const { orderAnswers } = useCreateOrderContext();
   const { resetNavigation } = useJourneyNavigationContext();
   const { "order-submitted": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   useLayoutEffect(() => {
     if (orderAnswers.orderReferenceNumber == null) {
