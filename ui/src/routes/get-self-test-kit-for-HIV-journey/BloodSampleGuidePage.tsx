@@ -2,7 +2,7 @@
 
 import { Details, Images } from "nhsuk-react-components";
 
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
 import { useJourneyNavigationContext } from "@/state";
@@ -10,6 +10,7 @@ import { useJourneyNavigationContext } from "@/state";
 export default function BloodSampleGuidePage() {
   const { goBack, stepHistory, resetNavigation } = useJourneyNavigationContext();
   const { "blood-sample-guide": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   return (
     <FormPageLayout

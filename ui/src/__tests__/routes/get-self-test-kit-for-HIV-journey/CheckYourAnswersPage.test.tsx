@@ -181,6 +181,14 @@ describe("CheckYourAnswersPage", () => {
       expect(heading).toBeInTheDocument();
     });
 
+    it("sets the document title", () => {
+      render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
+
+      expect(document.title).toBe(
+        "Check your answers before submitting your order – HIV Home Test Service – NHS",
+      );
+    });
+
     it("renders the update message", () => {
       render(<CheckYourAnswersPage />, { wrapper: TestWrapper });
 

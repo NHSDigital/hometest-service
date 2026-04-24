@@ -5,6 +5,23 @@ import { MemoryRouter } from "react-router-dom";
 import EnterMobileNumberPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterMobileNumberPage";
 import { CreateOrderProvider, JourneyNavigationProvider, useCreateOrderContext } from "@/state";
 
+type SupplierSeedProps = {
+  supplierName: string;
+  children: React.ReactNode;
+};
+
+function SupplierSeed({ supplierName, children }: Readonly<SupplierSeedProps>) {
+  const { updateOrderAnswers } = useCreateOrderContext();
+
+  React.useEffect(() => {
+    updateOrderAnswers({
+      supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
+    });
+  }, [supplierName, updateOrderAnswers]);
+
+  return <>{children}</>;
+}
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>
     <JourneyNavigationProvider>
@@ -401,23 +418,11 @@ describe("EnterMobileNumberPage", () => {
   describe("Supplier Name Substitution in Hint", () => {
     const createWrapperWithSupplier = (supplierName: string) => {
       const WrapperWithSupplier = ({ children }: { children: React.ReactNode }) => {
-        const SeedSupplier = () => {
-          const { updateOrderAnswers } = useCreateOrderContext();
-
-          React.useEffect(() => {
-            updateOrderAnswers({
-              supplier: [{ id: "supplier-1", name: supplierName, testCode: "HIV-001" }],
-            });
-          }, [supplierName, updateOrderAnswers]);
-
-          return <>{children}</>;
-        };
-
         return (
           <MemoryRouter initialEntries={["/get-self-test-kit-for-HIV/enter-mobile-phone-number"]}>
             <JourneyNavigationProvider>
               <CreateOrderProvider>
-                <SeedSupplier />
+                <SupplierSeed supplierName={supplierName}>{children}</SupplierSeed>
               </CreateOrderProvider>
             </JourneyNavigationProvider>
           </MemoryRouter>
@@ -480,5 +485,11 @@ describe("EnterMobileNumberPage", () => {
       fireEvent.change(mobileInput, { target: { value: "07771 900 900" } });
       expect(mobileInput.value).toBe("07771 900 900");
     });
+  });
+
+  it("sets the document title", () => {
+    render(<EnterMobileNumberPage />, { wrapper: TestWrapper });
+
+    expect(document.title).toBe("What's your mobile phone number? – HIV Home Test Service – NHS");
   });
 });

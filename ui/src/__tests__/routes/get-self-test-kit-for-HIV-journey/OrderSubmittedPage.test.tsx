@@ -241,4 +241,10 @@ describe("OrderSubmittedPage", () => {
       expect(screen.getByText(/ORD-12345-TEST/i)).toBeInTheDocument();
     });
   });
+
+  it("sets the document title", () => {
+    render(<OrderSubmittedPage />, { wrapper: TestWrapper });
+
+    expect(document.title).toBe("Order submitted – HIV Home Test Service – NHS");
+  });
 });

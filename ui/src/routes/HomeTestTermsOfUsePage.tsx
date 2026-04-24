@@ -5,7 +5,7 @@ import "@/styles/lists.css";
 import { useNavigate } from "react-router-dom";
 
 import type { PrivacyPolicySection, PrivacyPolicySubsection } from "@/content";
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { cleanListItems, getListClass, renderTextWithLinks } from "@/utils/renderTextWithLinks";
 
@@ -120,6 +120,7 @@ const renderSection = (section: PrivacyPolicySection) => (
 export default function HomeTestTermsOfUsePage() {
   const navigate = useNavigate();
   const { "home-test-terms-of-use": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   return (
     <PageLayout onBackButtonClick={() => navigate(-1)}>

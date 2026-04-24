@@ -3,7 +3,7 @@
 import { Button, ErrorSummary, Images, Radios } from "nhsuk-react-components";
 import { useState } from "react";
 
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import { useAuth, useCreateOrderContext, useJourneyNavigationContext } from "@/state";
@@ -14,6 +14,7 @@ export default function HowComfortablePrickingFingerPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { user } = useAuth();
   const { commonContent, "how-comfortable-pricking-finger": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   const [selectedOption, setSelectedOption] = useState<string>(
     orderAnswers.comfortableDoingTest || "",

@@ -60,33 +60,26 @@ const defaultPersistedPostcodeLookupState: PersistedPostcodeLookupState = {
   error: null,
 };
 
+function getPersistedPostcodeLookupState(): PersistedPostcodeLookupState {
+  return sessionService.rehydratePostcodeLookup<PersistedPostcodeLookupState>(
+    defaultPersistedPostcodeLookupState,
+  );
+}
+
 export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ children }) => {
-  const [postcode, setPostcode] = useState<string>("");
-  const [addresses, setAddresses] = useState<AddressResult[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
+  const [persistedState] = useState<PersistedPostcodeLookupState>(getPersistedPostcodeLookupState);
+  const [postcode, setPostcode] = useState<string>(persistedState.postcode);
+  const [addresses, setAddresses] = useState<AddressResult[]>(persistedState.addresses);
+  const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(
+    persistedState.selectedAddress,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [lookupResultsStatus, setLookupResultsStatus] = useState<LookupResultsStatus>("idle");
-  const [error, setError] = useState<string | null>(null);
-  const [hasHydrated, setHasHydrated] = useState<boolean>(false);
+  const [lookupResultsStatus, setLookupResultsStatus] = useState<LookupResultsStatus>(
+    persistedState.lookupResultsStatus,
+  );
+  const [error, setError] = useState<string | null>(persistedState.error);
 
   useEffect(() => {
-    const persistedState = sessionService.rehydratePostcodeLookup<PersistedPostcodeLookupState>(
-      defaultPersistedPostcodeLookupState,
-    );
-
-    setPostcode(persistedState.postcode);
-    setAddresses(persistedState.addresses);
-    setSelectedAddress(persistedState.selectedAddress);
-    setLookupResultsStatus(persistedState.lookupResultsStatus);
-    setError(persistedState.error);
-    setHasHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasHydrated) {
-      return;
-    }
-
     const isEmptyState =
       postcode === "" &&
       addresses.length === 0 &&
@@ -106,7 +99,7 @@ export const PostcodeLookupProvider: React.FC<PostcodeLookupProviderProps> = ({ 
       lookupResultsStatus,
       error,
     });
-  }, [hasHydrated, postcode, addresses, selectedAddress, lookupResultsStatus, error]);
+  }, [postcode, addresses, selectedAddress, lookupResultsStatus, error]);
 
   const lookupPostcode = useCallback(async (postcodeValue: string): Promise<void> => {
     setIsLoading(true);

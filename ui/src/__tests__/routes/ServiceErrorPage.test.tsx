@@ -1,16 +1,19 @@
 import "@testing-library/jest-dom";
-
-import { MemoryRouter } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+
+import { usePageTitle } from "@/hooks";
 import ServiceErrorPage from "@/routes/ServiceErrorPage";
 
 jest.mock("@/hooks", () => ({
   useContent: () => ({
     "service-error": {
+      pageTitle: "Sorry, there is a problem with the service – HIV Home Test Service – NHS",
       title: "Sorry, there is a problem with the service",
       message: "Try again later.",
     },
   }),
+  usePageTitle: jest.fn(),
 }));
 
 jest.mock("@/layouts/PageLayout", () => ({
@@ -54,10 +57,7 @@ describe("ServiceErrorPage", () => {
 
     renderWithState({ errorMessage: "Something went wrong" });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "[ServiceErrorPage]",
-      "Something went wrong",
-    );
+    expect(consoleSpy).toHaveBeenCalledWith("[ServiceErrorPage]", "Something went wrong");
 
     consoleSpy.mockRestore();
   });
@@ -70,5 +70,13 @@ describe("ServiceErrorPage", () => {
     expect(consoleSpy).not.toHaveBeenCalled();
 
     consoleSpy.mockRestore();
+  });
+
+  it("sets the page title", () => {
+    renderWithState();
+
+    expect(usePageTitle as jest.Mock).toHaveBeenCalledWith(
+      "Sorry, there is a problem with the service – HIV Home Test Service – NHS",
+    );
   });
 });

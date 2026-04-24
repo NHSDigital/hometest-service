@@ -49,6 +49,9 @@ jest.mock("@/hooks", () => ({
       }
     };
   },
+  usePageTitle: (title: string) => {
+    document.title = title;
+  },
 }));
 
 const mockedConsumeLoginCsrf = jest.mocked(consumeLoginCsrf);
@@ -74,6 +77,7 @@ describe("CallbackPage", () => {
       render(<CallbackPage />);
     });
 
+    expect(document.title).toBe("Signing you in – HIV Home Test Service – NHS");
     expect(mockedLoginService.login).not.toHaveBeenCalled();
     expect(mockSetUser).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();

@@ -110,6 +110,14 @@ describe("EnterAddressManuallyPage", () => {
       ).toBeInTheDocument();
     });
 
+    it("sets the document title", () => {
+      render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
+
+      expect(document.title).toBe(
+        "Enter your delivery address manually and we'll check if the kit's available – HIV Home Test Service – NHS",
+      );
+    });
+
     it("renders all form elements", () => {
       render(<EnterAddressManuallyPage />, { wrapper: TestWrapper });
 

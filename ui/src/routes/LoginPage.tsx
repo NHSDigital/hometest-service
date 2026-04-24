@@ -3,13 +3,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { usePageTitle } from "@/hooks";
 import { getAuthorizeLoginHintFragment } from "@/lib/auth/loginHint";
 import { generateState, persistLoginCsrf } from "@/lib/auth/loginState";
 import { RoutePath } from "@/lib/models/route-paths";
+import { formatPageTitle } from "@/lib/utils/page-title";
 import * as settings from "@/settings";
 
 export default function RedirectPage() {
   const navigate = useNavigate();
+
+  usePageTitle(formatPageTitle("Sign in"));
 
   useEffect(() => {
     const authorizeUrl = settings.nhsLoginAuthorizeUrl?.trim();

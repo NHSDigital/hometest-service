@@ -199,4 +199,8 @@ describe("HomeTestTermsOfUsePage", () => {
       expect(lists.length).toBeGreaterThan(0);
     });
   });
+
+  it("sets the document title", () => {
+    expect(document.title).toBe("Home test terms of use – HIV Home Test Service – NHS");
+  });
 });

@@ -4,7 +4,7 @@ import { ActionLink } from "nhsuk-react-components";
 
 import { FeedbackSection } from "@/components/FeedbackSection";
 import { OpensInNewTabLink } from "@/components/OpensInNewTabLink";
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { RoutePath } from "@/lib/models/route-paths";
 import { useCreateOrderContext, useJourneyNavigationContext } from "@/state";
@@ -30,6 +30,7 @@ export const NHS_LINKS = {
 export default function CannotUseServiceUnder18Page() {
   const { resetNavigation, goBack, stepHistory } = useJourneyNavigationContext();
   const { "cannot-use-service-under-18": content } = useContent();
+  usePageTitle(content.pageTitle);
   const { orderAnswers } = useCreateOrderContext();
 
   const postcode = orderAnswers.deliveryAddress?.postcode;

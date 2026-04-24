@@ -108,6 +108,8 @@ describe("BeforeYouStartPage", () => {
   it("sets the document title", () => {
     render(<BeforeYouStartPage />, { wrapper: TestWrapper });
 
-    expect(document.title).toBe("Before you order a free HIV self-test kit - HomeTest - NHS");
+    expect(document.title).toBe(
+      "Before you order a free HIV self-test kit – HIV Home Test Service – NHS",
+    );
   });
 });

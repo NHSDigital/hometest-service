@@ -1,12 +1,11 @@
 import "@testing-library/jest-dom";
-
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-
 import React from "react";
-import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
-import { CreateOrderProvider, JourneyNavigationProvider, PostcodeLookupProvider } from "@/state";
-import EnterDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
 import { MemoryRouter } from "react-router-dom";
+
+import { TestErrorBoundary } from "@/lib/test-utils/TestErrorBoundary";
+import EnterDeliveryAddressPage from "@/routes/get-self-test-kit-for-HIV-journey/EnterDeliveryAddressPage";
+import { CreateOrderProvider, JourneyNavigationProvider, PostcodeLookupProvider } from "@/state";
 
 const mockLookupPostcode = jest.fn();
 const mockClearAddresses = jest.fn();
@@ -53,6 +52,14 @@ describe("EnterDeliveryAddressPage", () => {
         name: /enter your delivery address and we'll check if the kit's available/i,
       });
       expect(heading).toBeInTheDocument();
+    });
+
+    it("sets the document title", () => {
+      render(<EnterDeliveryAddressPage />, { wrapper: TestWrapper });
+
+      expect(document.title).toBe(
+        "Enter your delivery address and we'll check if the kit's available – HIV Home Test Service – NHS",
+      );
     });
 
     it("renders all form elements", () => {

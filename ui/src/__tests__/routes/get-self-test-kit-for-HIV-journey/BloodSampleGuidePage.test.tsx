@@ -133,4 +133,8 @@ describe("BloodSampleGuidePage", () => {
       screen.getByText(/Place your blood sample tube into the protective packaging/),
     ).toBeInTheDocument();
   });
+
+  it("sets the document title", () => {
+    expect(document.title).toBe("Blood sample step-by-step guide – HIV Home Test Service – NHS");
+  });
 });

@@ -125,7 +125,7 @@
   },
   "pages": {
     "before-you-start": {
-      "pageTitle": "Before you order a free HIV self-test kit - HomeTest - NHS",
+      "pageTitle": "Before you order a free HIV self-test kit – HIV Home Test Service – NHS",
       "title": "Before you order a free HIV self-test kit",
       "urgentCard": {
         "heading": "Go to a sexual health clinic if:",
@@ -141,7 +141,7 @@
       "continueButton": "Continue to order a kit"
     },
     "get-self-test-kit-for-HIV": {
-      "pageTitle": "Order a free HIV self-test kit - HomeTest - NHS",
+      "pageTitle": "Order a free HIV self-test kit – HIV Home Test Service – NHS",
       "title": "Order a free HIV self-test kit",
       "eligibility": {
         "intro": "You can use this service if:",
@@ -200,15 +200,18 @@
       }
     },
     "kit-not-available-in-area": {
+      "pageTitle": "Free HIV self-test kits are not available in your area using this service – HIV Home Test Service – NHS",
       "title": "Free HIV self-test kits are not available in your area using this service",
       "description": "There are other options to get an HIV test.",
       "moreOptionsHeading": "More options and information"
     },
     "go-to-clinic": {
+      "pageTitle": "Contact your nearest sexual health clinic – HIV Home Test Service – NHS",
       "title": "Contact your nearest sexual health clinic",
       "moreOptionsHeading": "More options and information"
     },
     "enter-delivery-address": {
+      "pageTitle": "Enter your delivery address and we'll check if the kit's available – HIV Home Test Service – NHS",
       "title": "Enter your delivery address and we'll check if the kit's available",
       "form": {
         "postcodeLabel": "Postcode",
@@ -218,6 +221,7 @@
       }
     },
     "enter-address-manually": {
+      "pageTitle": "Enter your delivery address manually and we'll check if the kit's available – HIV Home Test Service – NHS",
       "title": "Enter your delivery address manually and we'll check if the kit's available",
       "form": {
         "addressLine1Label": "Address line 1",
@@ -229,17 +233,20 @@
       }
     },
     "no-address-found": {
+      "pageTitle": "No address found – HIV Home Test Service – NHS",
       "title": "No address found",
       "notFoundMessage": "We could not find an address that matches",
       "tryNewSearchLink": "Try a new search"
     },
     "select-delivery-address": {
+      "pageTitle": "Select your delivery address – HIV Home Test Service – NHS",
       "title": "found",
       "postcodeLabel": "Postcode:",
       "editPostcodeLink": "Edit postcode",
       "formLabel": "Select your delivery address"
     },
     "how-comfortable-pricking-finger": {
+      "pageTitle": "This is what you'll need to do to give a blood sample – HIV Home Test Service – NHS",
       "title": "This is what you'll need to do to give a blood sample",
       "instructions": "To give a sample of blood, you'll need to:",
       "steps": {
@@ -262,6 +269,7 @@
       }
     },
     "cannot-use-service-under-18": {
+      "pageTitle": "You cannot use this service as you are under 18 – HIV Home Test Service – NHS",
       "title": "You cannot use this service as you are under 18",
       "intro": "To get tested for HIV, go to your nearest sexual health clinic, which is:",
       "phoneLabel": "Phone:",
@@ -274,6 +282,7 @@
       "learnMoreLinkHref": "https://www.nhs.uk/conditions/hiv-and-aids/"
     },
     "enter-mobile-phone-number": {
+      "pageTitle": "What's your mobile phone number? – HIV Home Test Service – NHS",
       "title": "What's your mobile phone number?",
       "hint": "{supplier} will send updates to this number. It must be your own number.",
       "form": {
@@ -282,7 +291,8 @@
       }
     },
     "confirm-mobile-phone-number": {
-      "title": "What's your mobile phone number?",
+      "pageTitle": "Confirm your mobile phone number – HIV Home Test Service – NHS",
+      "title": "Confirm your mobile phone number",
       "hint": "{supplier} will send updates to this number. It must be your own number.",
       "form": {
         "alternativeLabel": "Use another mobile phone number",
@@ -292,10 +302,12 @@
       "radioLegend": "Confirm your mobile phone number"
     },
     "service-error": {
+      "pageTitle": "Sorry, there is a problem with the service – HIV Home Test Service – NHS",
       "title": "Sorry, there is a problem with the service",
       "message": "Try again later."
     },
     "order-tracking": {
+      "pageTitle": "Track your order – HIV Home Test Service – NHS",
       "title": "Track your order",
       "error": {
         "title": "There is a problem",
@@ -304,6 +316,7 @@
       }
     },
     "test-results": {
+      "pageTitle": "HIV self-test result – HIV Home Test Service – NHS",
       "title": "Test results",
       "error": {
         "title": "There is a problem",
@@ -337,6 +350,7 @@
       }
     },
     "blood-sample-guide": {
+      "pageTitle": "Blood sample step-by-step guide – HIV Home Test Service – NHS",
       "title": "Blood sample step-by-step guide",
       "whatsInKit": {
         "summary": "What's in the kit",
@@ -509,6 +523,7 @@
       }
     },
     "check-your-answers": {
+      "pageTitle": "Check your answers before submitting your order – HIV Home Test Service – NHS",
       "title": "Check your answers before submitting your order",
       "updateMessage": "We'll update you about your HIV test on the account you use for your NHS login.",
       "deliveryMessage": "The kit will arrive within 5 working days.",
@@ -529,6 +544,7 @@
       "submitButton": "Submit order"
     },
     "order-submitted": {
+      "pageTitle": "Order submitted – HIV Home Test Service – NHS",
       "panel": {
         "title": "Order submitted",
         "referenceNumberPrefix": "Your reference number"

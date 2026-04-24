@@ -1,9 +1,11 @@
-import PageLayout from "@/layouts/PageLayout";
-import { useContent } from "@/hooks";
 import { useLocation } from "react-router-dom";
+
+import { useContent, usePageTitle } from "@/hooks";
+import PageLayout from "@/layouts/PageLayout";
 
 export default function ServiceErrorPage() {
   const { "service-error": content } = useContent();
+  usePageTitle(content.pageTitle);
   const { state } = useLocation();
 
   if (state?.errorMessage) {

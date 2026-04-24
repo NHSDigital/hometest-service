@@ -4,6 +4,7 @@ import React, { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { CannotUseServiceUnder18Content, CommonContent } from "@/content";
+import { usePageTitle } from "@/hooks";
 import { JourneyStepNames, RoutePath } from "@/lib/models/route-paths";
 import CannotUseServiceUnder18Page, {
   HARD_CODED_CLINIC_DATA,
@@ -17,6 +18,7 @@ import {
 } from "@/state";
 
 const mockedContent: CannotUseServiceUnder18Content = {
+  pageTitle: "You cannot use this service as you are under 18 – HIV Home Test Service – NHS",
   title: "some-mocked-title",
   intro: "some-mocked-intro",
   phoneLabel: "some-mocked-phone-label",
@@ -42,6 +44,7 @@ jest.mock("@/hooks", () => ({
     "cannot-use-service-under-18": mockedContent,
   }),
   useCommonContent: () => mockedCommonContent,
+  usePageTitle: jest.fn(),
 }));
 
 const goBackMock = jest.fn();
@@ -266,5 +269,15 @@ describe("Back Navigation", () => {
     expect(resetNavigationMock).toHaveBeenCalledWith(RoutePath.BeforeYouStartPage, {
       replace: true,
     });
+  });
+});
+
+describe("CannotUseServiceUnder18Page page title", () => {
+  it("sets the page title", () => {
+    renderWithProviders(<CannotUseServiceUnder18Page />);
+
+    expect(usePageTitle as jest.Mock).toHaveBeenCalledWith(
+      "You cannot use this service as you are under 18 – HIV Home Test Service – NHS",
+    );
   });
 });

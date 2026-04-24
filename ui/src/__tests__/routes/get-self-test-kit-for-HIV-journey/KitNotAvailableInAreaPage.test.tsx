@@ -1,9 +1,8 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
 
+import { usePageContent, usePageTitle } from "@/hooks";
 import KitNotAvailableInAreaPage from "@/routes/get-self-test-kit-for-HIV-journey/KitNotAvailableInAreaPage";
-import { usePageContent } from "@/hooks";
 
 const mockGoToStep = jest.fn();
 const mockGoBack = jest.fn();
@@ -27,6 +26,7 @@ jest.mock("@/state", () => ({
 
 jest.mock("@/hooks", () => ({
   usePageContent: jest.fn(),
+  usePageTitle: jest.fn(),
 }));
 
 jest.mock("@/layouts/FormPageLayout", () => ({
@@ -69,6 +69,8 @@ describe("KitNotAvailableInAreaPage", () => {
     mockNavigationContext.stepHistory = ["enter-delivery-address", "kit-not-available-in-area"];
 
     (usePageContent as jest.Mock).mockReturnValue({
+      pageTitle:
+        "Free HIV self-test kits are not available in your area using this service – HIV Home Test Service – NHS",
       title: "Free HIV self-test kits are not available in your area using this service",
       description: "There are other options to get an HIV test.",
       moreOptionsHeading: "More options and information",
@@ -109,5 +111,13 @@ describe("KitNotAvailableInAreaPage", () => {
       expect(mockGoToStep).toHaveBeenCalledWith("enter-delivery-address");
       expect(mockGoBack).not.toHaveBeenCalled();
     });
+  });
+
+  it("sets the page title", () => {
+    render(<KitNotAvailableInAreaPage />);
+
+    expect(usePageTitle as jest.Mock).toHaveBeenCalledWith(
+      "Free HIV self-test kits are not available in your area using this service – HIV Home Test Service – NHS",
+    );
   });
 });

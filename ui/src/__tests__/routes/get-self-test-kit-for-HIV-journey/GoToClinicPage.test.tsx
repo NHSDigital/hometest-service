@@ -1,9 +1,8 @@
 import "@testing-library/jest-dom";
-
 import { fireEvent, render, screen } from "@testing-library/react";
 
+import { usePageContent, usePageTitle } from "@/hooks";
 import GoToClinicPage from "@/routes/get-self-test-kit-for-HIV-journey/GoToClinicPage";
-import { usePageContent } from "@/hooks";
 
 const mockGoToStep = jest.fn();
 const mockGoBack = jest.fn();
@@ -27,6 +26,7 @@ jest.mock("@/state", () => ({
 
 jest.mock("@/hooks", () => ({
   usePageContent: jest.fn(),
+  usePageTitle: jest.fn(),
 }));
 
 jest.mock("@/layouts/FormPageLayout", () => ({
@@ -69,6 +69,7 @@ describe("GoToClinicPage", () => {
     mockNavigationContext.stepHistory = ["how-comfortable-pricking-finger", "go-to-clinic"];
 
     (usePageContent as jest.Mock).mockReturnValue({
+      pageTitle: "Contact your nearest sexual health clinic – HIV Home Test Service – NHS",
       title: "Contact your nearest sexual health clinic",
       moreOptionsHeading: "More options and information",
     });
@@ -108,5 +109,13 @@ describe("GoToClinicPage", () => {
       expect(mockGoToStep).toHaveBeenCalledWith("how-comfortable-pricking-finger");
       expect(mockGoBack).not.toHaveBeenCalled();
     });
+  });
+
+  it("sets the page title", () => {
+    render(<GoToClinicPage />);
+
+    expect(usePageTitle as jest.Mock).toHaveBeenCalledWith(
+      "Contact your nearest sexual health clinic – HIV Home Test Service – NHS",
+    );
   });
 });

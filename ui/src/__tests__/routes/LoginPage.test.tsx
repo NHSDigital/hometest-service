@@ -94,6 +94,8 @@ describe("LoginPage", () => {
     const { default: LoginPage } = await import("@/routes/LoginPage");
     render(<LoginPage />);
 
+    expect(document.title).toBe("Sign in – HIV Home Test Service – NHS");
+
     await waitFor(() => {
       expect(mockedGetAuthorizeLoginHintFragment).toHaveBeenCalledWith("user@example.com");
     });
@@ -109,6 +111,8 @@ describe("LoginPage", () => {
 
     render(<LoginPage />);
 
+    expect(document.title).toBe("Sign in – HIV Home Test Service – NHS");
+
     await waitFor(() => {
       expect(mockedGenerateState).toHaveBeenCalledWith("/");
     });
@@ -122,6 +126,8 @@ describe("LoginPage", () => {
     const { default: LoginPage } = await import("@/routes/LoginPage");
 
     render(<LoginPage />);
+
+    expect(document.title).toBe("Sign in – HIV Home Test Service – NHS");
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(RoutePath.ServiceErrorPage, {

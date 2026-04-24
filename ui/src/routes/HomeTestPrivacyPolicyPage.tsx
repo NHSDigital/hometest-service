@@ -4,13 +4,14 @@ import "@/styles/lists.css";
 
 import { useNavigate } from "react-router-dom";
 
-import { useContent } from "@/hooks";
+import { useContent, usePageTitle } from "@/hooks";
 import PageLayout from "@/layouts/PageLayout";
 import { cleanListItems, getListClass, renderTextWithLinks } from "@/utils/renderTextWithLinks";
 
 export default function HomeTestPrivacyPolicyPage() {
   const navigate = useNavigate();
   const { "home-test-privacy-policy": content } = useContent();
+  usePageTitle(content.pageTitle);
 
   const renderHeading = (text: string) => {
     const numberMatch = /^(\d+\.\s+)/.exec(text);

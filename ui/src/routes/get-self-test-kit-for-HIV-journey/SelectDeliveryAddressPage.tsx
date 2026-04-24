@@ -3,11 +3,12 @@
 import { Button, ErrorSummary, Radios } from "nhsuk-react-components";
 import { useState } from "react";
 
-import { useAsyncErrorHandler, useContent } from "@/hooks";
+import { useAsyncErrorHandler, useContent, usePageTitle } from "@/hooks";
 import FormPageLayout from "@/layouts/FormPageLayout";
 import { JourneyStepNames } from "@/lib/models/route-paths";
 import laLookupService from "@/lib/services/la-lookup-service";
 import { isUnder18 } from "@/lib/utils/is-under-18";
+import { formatPageTitle } from "@/lib/utils/page-title";
 import {
   AddressResult,
   useAuth,
@@ -22,6 +23,11 @@ export default function SelectDeliveryAddressPage() {
   const { orderAnswers, updateOrderAnswers } = useCreateOrderContext();
   const { commonContent, "select-delivery-address": content } = useContent();
   const { addresses } = usePostcodeLookup();
+  usePageTitle(
+    formatPageTitle(
+      `${addresses.length} ${addresses.length === 1 ? "address" : "addresses"} ${content.title}`,
+    ),
+  );
   const [selectedAddress, setSelectedAddress] = useState<string>(
     orderAnswers.selectedAddressId || "",
   );
