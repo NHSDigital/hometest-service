@@ -3,6 +3,12 @@ import { Observation } from "fhir/r4";
 
 import { OrderResultSummary } from "../lib/db/order-db";
 import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
+import {
+  ValidationResult,
+  ValidationResultError,
+  errorResult,
+  successResult,
+} from "../lib/utils/validation-result";
 import { generateReadableError } from "../lib/utils/validation-utils";
 import {
   Identifiers,
@@ -10,7 +16,6 @@ import {
   orderResultFHIRObservationSchema,
   resultCodeMapping,
 } from "./models";
-import { ValidationResult, ValidationResultError, errorResult, successResult } from "./validation";
 
 const name = "order-result-lambda";
 
