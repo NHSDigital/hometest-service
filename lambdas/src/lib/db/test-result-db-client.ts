@@ -1,4 +1,3 @@
-import { ResultStatus } from "../types/status";
 import { type DBClient } from "./db-client";
 
 type TestResultStatusCode = "RESULT_AVAILABLE" | "RESULT_WITHHELD";
@@ -43,23 +42,5 @@ export class TestResultDbClient {
     ]);
 
     return result?.rows[0] ?? null;
-  }
-
-  public async insertResultStatus(
-    orderId: string,
-    status: ResultStatus,
-    correlationId: string,
-  ): Promise<void> {
-    const query = `
-      INSERT INTO result_status (order_uid, status, correlation_id)
-      VALUES ($1::uuid, $2, $3::uuid)
-      ON CONFLICT (correlation_id) DO NOTHING;
-    `;
-
-    await this.dbClient.query<void, [string, string, string]>(query, [
-      orderId,
-      status,
-      correlationId,
-    ]);
   }
 }
