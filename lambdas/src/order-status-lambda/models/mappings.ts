@@ -1,30 +1,28 @@
 import { OrderStatus, ResultStatus } from "../../lib/types/status";
-import {
-  IncomingBusinessStatus,
-  IncomingOrderBusinessStatus,
-  IncomingResultBusinessStatus,
-} from "./types";
+import { IncomingBusinessStatus, StatusKind } from "./types";
 
-export const orderStatusMapping: Record<IncomingOrderBusinessStatus, OrderStatus> = {
-  [IncomingBusinessStatus.ORDER_ACCEPTED]: OrderStatus.Confirmed,
-  [IncomingBusinessStatus.DISPATCHED]: OrderStatus.Dispatched,
-  [IncomingBusinessStatus.RECEIVED_AT_LAB]: OrderStatus.Received,
+export type ResolvedStatus =
+  | { kind: StatusKind.Order; status: OrderStatus }
+  | { kind: StatusKind.Result; status: ResultStatus };
+
+const statusResolutionMap: Record<IncomingBusinessStatus, ResolvedStatus> = {
+  [IncomingBusinessStatus.ORDER_ACCEPTED]: {
+    kind: StatusKind.Order,
+    status: OrderStatus.Confirmed,
+  },
+  [IncomingBusinessStatus.DISPATCHED]: {
+    kind: StatusKind.Order,
+    status: OrderStatus.Dispatched,
+  },
+  [IncomingBusinessStatus.RECEIVED_AT_LAB]: {
+    kind: StatusKind.Order,
+    status: OrderStatus.Received,
+  },
+  [IncomingBusinessStatus.TEST_PROCESSED]: {
+    kind: StatusKind.Result,
+    status: ResultStatus.Result_Processed,
+  },
 };
 
-export const resultStatusMapping: Record<IncomingResultBusinessStatus, ResultStatus> = {
-  [IncomingBusinessStatus.TEST_PROCESSED]: ResultStatus.Result_Processed,
-};
-
-const orderBusinessStatuses: readonly IncomingBusinessStatus[] = [
-  IncomingBusinessStatus.ORDER_ACCEPTED,
-  IncomingBusinessStatus.DISPATCHED,
-  IncomingBusinessStatus.RECEIVED_AT_LAB,
-];
-
-export const isIncomingOrderStatus = (
-  status: IncomingBusinessStatus,
-): status is IncomingOrderBusinessStatus => orderBusinessStatuses.includes(status);
-
-export const isIncomingResultStatus = (
-  status: IncomingBusinessStatus,
-): status is IncomingResultBusinessStatus => status === IncomingBusinessStatus.TEST_PROCESSED;
+export const resolveStatus = (incoming: IncomingBusinessStatus): ResolvedStatus =>
+  statusResolutionMap[incoming];

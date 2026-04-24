@@ -10,12 +10,8 @@ import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-respons
 import { securityHeaders } from "../lib/http/security-headers";
 import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
-import {
-  isIncomingOrderStatus,
-  isIncomingResultStatus,
-  orderStatusMapping,
-  resultStatusMapping,
-} from "./models/mappings";
+import { resolveStatus } from "./models/mappings";
+import { StatusKind } from "./models/types";
 import { validateAndExtractCorrelationId } from "./validation/correlation-id-validation";
 import { validatePatientOwnership } from "./validation/patient-validation";
 import { validateAndExtractTask } from "./validation/task-validation";
@@ -27,7 +23,8 @@ const fhirErrorFromValidation = (error: ValidationError): APIGatewayProxyResult 
 
 /**
  * Lambda handler for POST /test-order/status endpoint
- * Adds a status record for a given order based on the incoming FHIR Task resource
+ * Validates and processes an incoming FHIR Task resource, updating either the order status or
+ * result status, dispatching notifications, and managing reminders accordingly.
  */
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
@@ -57,6 +54,7 @@ export const lambdaHandler = async (
     }
     const task = taskValidationResult.data;
     const orderId = task.identifier[0].value;
+    const logContext = { orderId, correlationId };
 
     const orderPatientId = await orderStatusDb.getPatientIdFromOrder(orderId);
     if (!orderPatientId) {
@@ -82,79 +80,73 @@ export const lambdaHandler = async (
 
     const idempotencyCheck = await orderStatusDb.checkIdempotency(orderId, correlationId);
     if (idempotencyCheck.isDuplicate) {
-      console.info(name, "Duplicate update detected via correlation ID", {
-        orderId,
-        correlationId,
-      });
+      console.info(name, "Duplicate update detected via correlation ID", logContext);
 
       return createFhirResponse(200, task);
     }
 
     const incomingStatus = task.businessStatus.text;
+    const resolved = resolveStatus(incomingStatus);
 
-    if (isIncomingResultStatus(incomingStatus)) {
-      const resultStatus = resultStatusMapping[incomingStatus];
+    switch (resolved.kind) {
+      case StatusKind.Result: {
+        try {
+          await insertResultStatusCommand.execute(orderId, resolved.status, correlationId);
+        } catch (error) {
+          console.warn(name, "Failed to update result status", {
+            ...logContext,
+            resultStatus: resolved.status,
+          });
+        }
 
-      try {
-        await insertResultStatusCommand.execute(orderId, resultStatus, correlationId);
-      } catch (error) {
-        console.warn(name, "Failed to update result status", {
-          orderId,
-          correlationId,
-          resultStatus,
+        console.info(name, "Result status update added successfully", {
+          ...logContext,
+          resultStatus: resolved.status,
         });
+
+        return createFhirResponse(201, task);
       }
 
-      console.info(name, "Result status update added successfully", {
-        orderId,
-        correlationId,
-        resultStatus,
-      });
-
-      return createFhirResponse(201, task);
-    }
-
-    if (isIncomingOrderStatus(incomingStatus)) {
-      const statusOrderUpdateParams: OrderStatusUpdateParams = {
-        orderId,
-        statusCode: orderStatusMapping[incomingStatus],
-        createdAt: task.lastModified,
-        correlationId,
-      };
-
-      await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
-      console.info(name, "Order status update added successfully", statusOrderUpdateParams);
-
-      try {
-        await orderStatusNotifyService.dispatch({
+      case StatusKind.Order: {
+        const statusOrderUpdateParams: OrderStatusUpdateParams = {
           orderId,
-          patientId: orderPatientId,
+          statusCode: resolved.status,
+          createdAt: task.lastModified,
+          correlationId,
+        };
+
+        await orderStatusDb.addOrderStatusUpdate(statusOrderUpdateParams);
+        console.info(name, "Order status update added successfully", statusOrderUpdateParams);
+
+        try {
+          await orderStatusNotifyService.dispatch({
+            orderId,
+            patientId: orderPatientId,
+            correlationId,
+            statusCode: statusOrderUpdateParams.statusCode,
+          });
+        } catch (error) {
+          console.error(name, "Failed to dispatch order status notification", {
+            ...logContext,
+            error,
+          });
+        }
+
+        await orderStatusReminderService.handleOrderStatusUpdated({
+          orderId,
           correlationId,
           statusCode: statusOrderUpdateParams.statusCode,
+          triggeredAt: statusOrderUpdateParams.createdAt,
         });
-      } catch (error) {
-        console.error(name, "Failed to dispatch order status notification", {
-          correlationId,
-          orderId,
-          error,
-        });
+
+        return createFhirResponse(201, task);
       }
 
-      await orderStatusReminderService.handleOrderStatusUpdated({
-        orderId,
-        correlationId,
-        statusCode: statusOrderUpdateParams.statusCode,
-        triggeredAt: statusOrderUpdateParams.createdAt,
-      });
-
-      return createFhirResponse(201, task);
+      default:
+        return createFhirErrorResponse(400, "invalid", "Unrecognised business status", "error");
     }
-
-    return createFhirErrorResponse(400, "invalid", "Unrecognised business status", "error");
   } catch (error) {
-    console.error(name, "Error processing order status update", {
-      error,
-    });
+    console.error(name, "Error processing order status update", { error });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 };

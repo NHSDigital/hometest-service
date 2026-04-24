@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 import { IdempotencyCheckResult } from "../lib/db/order-status-db";
+import { OrderStatus } from "../lib/types/status";
 import { errorResult, successResult } from "../lib/utils/validation-result";
-import { orderStatusMapping } from "./models/mappings";
 import { OrderStatusFHIRTask } from "./models/schemas";
 import { IncomingBusinessStatus } from "./models/types";
 
@@ -273,7 +273,7 @@ describe("Order Status Lambda Handler", () => {
       expect(mockAddOrderStatusUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           orderId: MOCK_ORDER_UID,
-          statusCode: orderStatusMapping[MOCK_BUSINESS_STATUS],
+          statusCode: OrderStatus.Dispatched,
           createdAt: validTask.lastModified,
           correlationId: MOCK_CORRELATION_ID,
         }),
@@ -289,7 +289,7 @@ describe("Order Status Lambda Handler", () => {
           patientId: MOCK_PATIENT_UID,
           correlationId: MOCK_CORRELATION_ID,
           orderId: MOCK_ORDER_UID,
-          statusCode: orderStatusMapping[MOCK_BUSINESS_STATUS],
+          statusCode: OrderStatus.Dispatched,
         }),
       );
     });
@@ -307,7 +307,7 @@ describe("Order Status Lambda Handler", () => {
       expect(result.statusCode).toBe(201);
       expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
-          statusCode: orderStatusMapping[IncomingBusinessStatus.RECEIVED_AT_LAB],
+          statusCode: OrderStatus.Received,
         }),
       );
     });
@@ -325,7 +325,7 @@ describe("Order Status Lambda Handler", () => {
       expect(result.statusCode).toBe(201);
       expect(mockNotify).toHaveBeenCalledWith(
         expect.objectContaining({
-          statusCode: orderStatusMapping[IncomingBusinessStatus.ORDER_ACCEPTED],
+          statusCode: OrderStatus.Confirmed,
         }),
       );
     });
@@ -338,7 +338,7 @@ describe("Order Status Lambda Handler", () => {
         expect.objectContaining({
           orderId: MOCK_ORDER_UID,
           correlationId: MOCK_CORRELATION_ID,
-          statusCode: orderStatusMapping[MOCK_BUSINESS_STATUS],
+          statusCode: OrderStatus.Dispatched,
           triggeredAt: validTask.lastModified,
         }),
       );
