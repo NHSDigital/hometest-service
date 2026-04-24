@@ -80,6 +80,7 @@ calculate_source_hash() {
   final_hash=$(echo "$all_hashes" | $hash_cmd | cut -d' ' -f1)
 
   echo "$final_hash"
+  return 0
 }
 
 show_hash_inputs() {
@@ -96,6 +97,7 @@ show_hash_inputs() {
 
   echo "  Migration files:"
   find "$MIGRATOR_DIR/migrations" -type f -name "*.sql" 2>/dev/null | wc -l | xargs printf "    %s files in migrations/\n"
+  return 0
 }
 
 get_cached_hash() {
@@ -104,11 +106,13 @@ get_cached_hash() {
   else
     echo ""
   fi
+  return 0
 }
 
 save_hash() {
   local hash="$1"
   echo "$hash" > "$HASH_FILE"
+  return 0
 }
 
 needs_rebuild() {
@@ -156,6 +160,7 @@ build_migrator() {
   go mod verify
 
   GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bootstrap main.go
+  return 0
 }
 
 package_migrator() {
@@ -170,6 +175,7 @@ package_migrator() {
   zip -r "$ZIP_FILE" migrations/
 
   echo "  Created: $ZIP_FILE ($(du -h "$ZIP_FILE" | cut -f1))"
+  return 0
 }
 
 # -----------------------------------------------------------------------------

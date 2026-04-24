@@ -63,14 +63,17 @@ NC='\033[0m' # No Color
 
 log_info() {
   echo -e "${GREEN}[INFO]${NC} $*"
+  return 0
 }
 
 log_warn() {
   echo -e "${YELLOW}[WARN]${NC} $*"
+  return 0
 }
 
 log_error() {
   echo -e "${RED}[ERROR]${NC} $*"
+  return 0
 }
 
 cleanup() {
@@ -80,6 +83,7 @@ cleanup() {
   else
     log_warn "Container ${CONTAINER_NAME} kept running (KEEP_CONTAINER=true)"
   fi
+  return 0
 }
 
 wait_for_postgres() {
@@ -118,6 +122,7 @@ wait_for_postgres() {
   done
   echo ""
   log_info "PostgreSQL is ready!"
+  return 0
 }
 
 ensure_goose() {
@@ -144,12 +149,14 @@ ensure_goose() {
 psql_master() {
   docker exec -i -e PGPASSWORD="${POSTGRES_PASSWORD}" "${CONTAINER_NAME}" \
     psql -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" "$@"
+  return $?
 }
 
 # psql as app_user_<schema> (limited role).
 psql_appuser() {
   docker exec -i -e PGPASSWORD="${APP_USER_PASSWORD}" "${CONTAINER_NAME}" \
     psql -U "${APP_USERNAME}" -d "${POSTGRES_DB}" "$@"
+  return $?
 }
 
 # Run goose as the master user. search_path is already configured at the
@@ -161,6 +168,7 @@ run_goose() {
   GOOSE_DRIVER=postgres \
   GOOSE_DBSTRING="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable" \
   goose -dir "${MIGRATIONS_DIR}" "${cmd}" "$@"
+  return $?
 }
 
 # Replicate setupSchemaAndUser from main.go:
@@ -206,6 +214,7 @@ setup_schema_and_user() {
 SQL
 
   log_info "Schema '${POSTGRES_SCHEMA}' and role '${APP_USERNAME}' ready."
+  return 0
 }
 
 verify_tables_in_schema() {
@@ -228,6 +237,7 @@ verify_tables_in_schema() {
 
   log_info "Goose version table in '${POSTGRES_SCHEMA}':"
   psql_master -c "SELECT * FROM ${POSTGRES_SCHEMA}.goose_db_version ORDER BY id;"
+  return 0
 }
 
 verify_no_tables_in_public() {
@@ -251,6 +261,7 @@ verify_no_tables_in_public() {
   else
     log_info "public schema is clean (no application tables)"
   fi
+  return 0
 }
 
 verify_app_user_access() {
@@ -280,6 +291,7 @@ verify_app_user_access() {
   fi
 
   log_info "app_user access checks passed."
+  return 0
 }
 
 # ==============================================================================
@@ -370,6 +382,7 @@ main() {
 
   log_info ""
   log_info "=== All migration tests passed! ==="
+  return 0
 }
 
 main "$@"
