@@ -527,7 +527,7 @@ module "hiv_results_lambda" {
   enable_cors        = true
   cors_allow_origin  = "http://localhost:3000"
   cors_allow_methods = ["POST", "OPTIONS"]
-  cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With"]
+  cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-ID"]
 
   environment_variables = {
     RESULT_STATUS_LAMBDA_NAME = "result-status-lambda"
@@ -664,7 +664,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     module.session_lambda,
     module.order_status_lambda,
     module.postcode_lookup_lambda,
-    module.result_status_lambda
+    module.result_status_lambda,
+    module.hiv_results_lambda
   ]
 
   triggers = {
@@ -678,7 +679,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       module.session_lambda,
       module.order_status_lambda,
       module.postcode_lookup_lambda,
-      module.result_status_lambda
+      module.result_status_lambda,
+      module.hiv_results_lambda
     ]))
   }
 
