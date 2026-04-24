@@ -1,7 +1,3 @@
-// Takes the raw FHIR Observation
-// Extracts orderUid, patientId, supplierId
-// Builds the FHIR Task payload exactly as HOTE-1100 requires
-// Returns the Task objects
 import { Observation } from "fhir/r4";
 
 import {

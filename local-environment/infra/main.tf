@@ -530,7 +530,7 @@ module "hiv_results_lambda" {
   cors_allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Correlation-ID"]
 
   environment_variables = {
-    RESULT_STATUS_LAMBDA_NAME = "result-status-lambda"
+    RESULT_STATUS_LAMBDA_NAME = module.result_status_lambda.lambda_function.function_name
     AWS_REGION                = "eu-west-2"
   }
 }

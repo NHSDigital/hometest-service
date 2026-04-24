@@ -31,7 +31,6 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(400, "invalid", "Missing correlation ID", "error");
   }
 
-  // 1. Parse Observation directly (no validation)
   let observation: Observation;
   try {
     observation = JSON.parse(event.body ?? "");
@@ -40,18 +39,15 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(400, "invalid", "Invalid JSON body", "error");
   }
 
-  // 2. Extract interpretation code ("N" or "A")
   const interpretation = extractInterpretationCodeFromFHIRObservation(
     observation,
   ) as InterpretationCode;
 
-  // 3. If reactive (A) → ignore
   if (interpretation === InterpretationCode.Abnormal) {
     commons.logInfo("hiv-results-processor", "Reactive result ignored");
     return createFhirResponse(200, observation);
   }
 
-  // 4. If negative (N) → build Task + send to status lambda
   if (interpretation === InterpretationCode.Normal) {
     try {
       const taskPayload = buildTaskFromObservation(observation, correlationId);
@@ -64,7 +60,6 @@ export const lambdaHandler = async (
     }
   }
 
-  // 5. Fallback (should not happen)
   return createFhirResponse(200, observation);
 };
 
