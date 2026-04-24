@@ -1,16 +1,24 @@
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { Observation } from "fhir/r4";
 
+import { extractInterpretationCodeFromFHIRObservation } from "../lib/fhir-observation-extractors";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
+import { securityHeaders } from "../lib/http/security-headers";
 import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
 import { InterpretationCode } from "./models";
 import { buildTaskFromObservation } from "./task-builder";
-import { extractInterpretationCodeFromFHIRObservation } from "./validation-service";
 
 const { commons, resultStatusLambdaService } = init();
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
   commons.logInfo("hiv-results-processor", "Received HIV result", {
     path: event.path,
     method: event.httpMethod,
@@ -33,7 +41,9 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 
   // 2. Extract interpretation code ("N" or "A")
-  const interpretation = extractInterpretationCodeFromFHIRObservation(observation);
+  const interpretation = extractInterpretationCodeFromFHIRObservation(
+    observation,
+  ) as InterpretationCode;
 
   // 3. If reactive (A) → ignore
   if (interpretation === InterpretationCode.Abnormal) {
@@ -57,3 +67,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   // 5. Fallback (should not happen)
   return createFhirResponse(200, observation);
 };
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(corsOptions))
+  .use(httpErrorHandler());

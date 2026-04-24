@@ -49,12 +49,17 @@ describe("LambdaHttpClient", () => {
           input: expect.objectContaining({
             FunctionName: "my-lambda",
             InvocationType: "RequestResponse",
-            Payload: expect.stringContaining('"httpMethod":"GET"'),
           }),
         }),
       );
 
-      const sentPayload = JSON.parse(mockSend.mock.calls[0][0].input.Payload);
+      const payloadArg = mockSend.mock.calls[0][0].input.Payload;
+      const payloadString =
+        typeof payloadArg === "string"
+          ? payloadArg
+          : Buffer.from(payloadArg as Uint8Array).toString("utf-8");
+      const sentPayload = JSON.parse(payloadString);
+
       expect(sentPayload).toMatchObject({
         httpMethod: "GET",
         path: "/some-path",

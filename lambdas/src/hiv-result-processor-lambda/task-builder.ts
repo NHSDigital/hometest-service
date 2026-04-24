@@ -4,12 +4,12 @@
 // Returns the Task objects
 import { Observation } from "fhir/r4";
 
-import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 import {
   extractOrderUidFromFHIRObservation,
   extractPatientIdFromFHIRObservation,
   extractSupplierIdFromFHIRObservation,
-} from "./validation-service";
+} from "../lib/fhir-observation-extractors";
+import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
 
 export function buildTaskFromObservation(
   observation: Observation,

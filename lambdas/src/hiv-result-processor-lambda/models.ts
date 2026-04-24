@@ -13,7 +13,7 @@ export enum InterpretationCode {
 }
 
 export const resultCodeMapping: {
-  [key in InterpretationCode]: string;
+  [key in InterpretationCode]: ResultStatus;
 } = {
   [InterpretationCode.Normal]: ResultStatus.Result_Available,
   [InterpretationCode.Abnormal]: ResultStatus.Result_Withheld,

@@ -44,16 +44,16 @@ describe("ResultStatusLambdaService", () => {
     );
   });
 
-  it("uses 'null' as correlation ID when none is provided", async () => {
+  it("uses empty string as correlation ID when none is provided", async () => {
     mockPost.mockResolvedValueOnce(undefined);
     const service = new ResultStatusLambdaService(mockHttpClient);
 
-    await service.sendResult(taskPayload);
+    await service.sendResult(taskPayload, "");
 
     expect(mockPost).toHaveBeenCalledWith(
       "result/status",
       taskPayload,
-      { "X-Correlation-Id": "null" },
+      { "X-Correlation-Id": "" },
       "application/fhir+json",
     );
   });

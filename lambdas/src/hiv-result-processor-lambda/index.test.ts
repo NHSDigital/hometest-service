@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { createFhirErrorResponse } from "../lib/fhir-response";
-import { handler } from "./index";
+import { lambdaHandler } from "./index";
 import { InterpretationCode } from "./models";
 
 // --- Mock init.ts ---
@@ -26,8 +26,8 @@ jest.mock("./task-builder", () => ({
   buildTaskFromObservation: jest.fn(() => ({ mockTask: true })),
 }));
 
-// --- Mock validation-service.ts ---
-jest.mock("./validation-service", () => ({
+// --- Mock FHIR observation extractors ---
+jest.mock("../lib/fhir-observation-extractors", () => ({
   extractInterpretationCodeFromFHIRObservation: jest.fn(),
 }));
 
@@ -47,7 +47,9 @@ jest.mock("../lib/fhir-response", () => ({
 
 const { initMock } = jest.requireMock("./init");
 const { buildTaskFromObservation } = jest.requireMock("./task-builder");
-const { extractInterpretationCodeFromFHIRObservation } = jest.requireMock("./validation-service");
+const { extractInterpretationCodeFromFHIRObservation } = jest.requireMock(
+  "../lib/fhir-observation-extractors",
+);
 
 describe("hiv-results-processor handler", () => {
   const observation = { resourceType: "Observation" };
@@ -74,7 +76,7 @@ describe("hiv-results-processor handler", () => {
   it("returns 400 for invalid JSON", async () => {
     const badEvent = { ...event, body: "{invalid json" };
 
-    const res = await handler(badEvent as any);
+    const res = await lambdaHandler(badEvent as any);
 
     expect(res.statusCode).toBe(400);
     expect(createFhirErrorResponse).toHaveBeenCalled();
@@ -83,7 +85,7 @@ describe("hiv-results-processor handler", () => {
   it("returns 200 and ignores reactive results", async () => {
     extractInterpretationCodeFromFHIRObservation.mockReturnValue(InterpretationCode.Abnormal);
 
-    const res = await handler(event);
+    const res = await lambdaHandler(event);
 
     expect(res.statusCode).toBe(200);
     expect(initMock.resultStatusLambdaService.sendResult).not.toHaveBeenCalled();
@@ -92,7 +94,7 @@ describe("hiv-results-processor handler", () => {
   it("builds task and calls status lambda for negative results", async () => {
     extractInterpretationCodeFromFHIRObservation.mockReturnValue(InterpretationCode.Normal);
 
-    const res = await handler(event);
+    const res = await lambdaHandler(event);
 
     expect(buildTaskFromObservation).toHaveBeenCalledWith(
       observation,
@@ -109,7 +111,7 @@ describe("hiv-results-processor handler", () => {
     extractInterpretationCodeFromFHIRObservation.mockReturnValue(InterpretationCode.Normal);
     initMock.resultStatusLambdaService.sendResult.mockRejectedValueOnce(new Error("fail"));
 
-    const res = await handler(event);
+    const res = await lambdaHandler(event);
 
     expect(res.statusCode).toBe(500);
     expect(createFhirErrorResponse).toHaveBeenCalled();

@@ -53,7 +53,7 @@ export class LambdaHttpClient implements HttpClient {
     const command = new InvokeCommand({
       FunctionName: this.functionName,
       InvocationType: "RequestResponse",
-      Payload: JSON.stringify(event),
+      Payload: Buffer.from(JSON.stringify(event)),
     });
 
     const response = await this.client.send(command);
@@ -69,8 +69,9 @@ export class LambdaHttpClient implements HttpClient {
 
     if (status < 200 || status >= 300) {
       throw new HttpError(
-        `HTTP GET: Error response from ${this.functionName} ${url}: ${body}`,
+        `HTTP GET: Error response from ${this.functionName} ${url} `,
         status,
+        body,
       );
     }
 
@@ -93,7 +94,7 @@ export class LambdaHttpClient implements HttpClient {
     const command = new InvokeCommand({
       FunctionName: this.functionName,
       InvocationType: "RequestResponse",
-      Payload: JSON.stringify(event),
+      Payload: Buffer.from(JSON.stringify(event)),
     });
 
     const response = await this.client.send(command);
@@ -108,8 +109,9 @@ export class LambdaHttpClient implements HttpClient {
     const resultBody = result.body;
     if (statusCode < 200 || statusCode >= 300) {
       throw new HttpError(
-        `HTTP POST: Error response from ${this.functionName} ${url}: ${resultBody}`,
+        `HTTP POST: Error response from ${this.functionName} ${url}`,
         statusCode,
+        resultBody,
       );
     }
 
@@ -132,7 +134,7 @@ export class LambdaHttpClient implements HttpClient {
     const command = new InvokeCommand({
       FunctionName: this.functionName,
       InvocationType: "RequestResponse",
-      Payload: JSON.stringify(event),
+      Payload: Buffer.from(JSON.stringify(event)),
     });
 
     const response = await this.client.send(command);
@@ -147,8 +149,9 @@ export class LambdaHttpClient implements HttpClient {
     const resultBody = result.body;
     if (statusCode < 200 || statusCode >= 300) {
       throw new HttpError(
-        `HTTP POST: Error response from ${this.functionName} ${url}: ${resultBody}`,
+        `HTTP POST: Error response from ${this.functionName} ${url}`,
         statusCode,
+        resultBody,
       );
     }
 
