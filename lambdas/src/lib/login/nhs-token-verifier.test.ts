@@ -71,6 +71,8 @@ describe("NhsTokenVerifier", () => {
 
     expect(result.payload.sub).toBe("user-123");
     expect(result.payload.iss).toBe(issuer);
+    expect(result.payload.exp).toEqual(expect.any(Number));
+    expect(result.payload.iat).toEqual(expect.any(Number));
     expect(result.header.kid).toBe("nhs-kid-1");
     expect(result.header.alg).toBe("RS512");
     expect(keyProvider.fetchPublicKeyById).toHaveBeenCalledWith("nhs-kid-1");
@@ -221,31 +223,5 @@ describe("NhsTokenVerifier", () => {
       code: "VERIFICATION_FAILED",
       message: "Token verification failed",
     });
-  });
-
-  it("includes standard JWT claims in the verified payload", async () => {
-    const keyProvider = createKeyProvider();
-    const verifier = new NhsTokenVerifier({ keyProvider, issuer });
-    const token = signNhsToken(
-      { sub: "user-456", nhs_number: "9999999999" },
-      primaryKeys.privateKey,
-      {
-        expiresIn: "1h",
-        issuer,
-        header: { alg: "RS512", kid: "nhs-kid-1" },
-      },
-    );
-
-    const result = await verifier.verifyToken(token);
-
-    expect(result.success).toBe(true);
-    if (!result.success) {
-      throw new Error("Expected successful verification");
-    }
-
-    expect(result.payload.sub).toBe("user-456");
-    expect(result.payload.iss).toBe(issuer);
-    expect(result.payload.exp).toEqual(expect.any(Number));
-    expect(result.payload.iat).toEqual(expect.any(Number));
   });
 });
