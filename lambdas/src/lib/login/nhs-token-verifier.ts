@@ -134,7 +134,7 @@ export class NhsTokenVerifier implements INhsTokenVerifier {
     }
 
     if (error instanceof JsonWebTokenError) {
-      const normalizedMessage = error.message.trim().toLowerCase();
+      const normalizedMessage = (error as { message?: string }).message?.trim().toLowerCase() ?? "";
 
       if (normalizedMessage.includes("invalid signature")) {
         return { code: "INVALID_SIGNATURE", message: "Token signature is invalid" };
