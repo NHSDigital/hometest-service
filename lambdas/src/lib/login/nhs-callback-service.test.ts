@@ -92,7 +92,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     const result = await service.executeCallback("auth-code");
@@ -118,7 +118,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     await expect(service.executeCallback("bad-code")).resolves.toEqual({
@@ -139,7 +139,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     await expect(service.executeCallback("auth-code")).resolves.toEqual({
@@ -160,7 +160,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     await expect(service.executeCallback("auth-code")).resolves.toEqual({
@@ -185,7 +185,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     await expect(service.executeCallback("auth-code")).resolves.toEqual({
@@ -207,7 +207,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     await expect(service.executeCallback("auth-code")).resolves.toEqual({
@@ -228,7 +228,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     await expect(service.executeCallback("auth-code")).resolves.toEqual({
@@ -249,7 +249,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     const result = await service.executeCallback("auth-code");
@@ -276,7 +276,7 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const service = new NhsCallbackService({
       nhsTokenVerifier: nhsTokenVerifierMock,
-      nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
+      nhsLoginClient: nhsLoginClientMock,
     });
 
     const result = await service.executeCallback("auth-code");
