@@ -98,6 +98,11 @@ wait_for_postgres() {
   done
   echo ""
 
+  # pg_isready can return success briefly during PostgreSQL's init cycle
+  # (start - initdb - shutdown - restart) before the server is fully ready.
+  # A short sleep avoids "database system is shutting down" on the next connection.
+  sleep 2
+
   # Also verify the host-side port mapping is reachable (important on macOS Docker Desktop)
   attempt=1
   log_info "Verifying host-side connectivity on port ${POSTGRES_PORT}..."

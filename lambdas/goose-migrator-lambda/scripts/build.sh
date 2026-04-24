@@ -146,7 +146,15 @@ needs_rebuild() {
 build_migrator() {
   echo "Compiling Go binary (linux/arm64)..."
   cd "$MIGRATOR_DIR/src"
-  go mod tidy
+
+  # go mod download: fetches dependencies pinned in go.sum without modifying go.mod/go.sum
+  # go mod verify: ensures downloaded modules match go.sum checksums
+  # (NOT go mod tidy: tidy rewrites go.mod/go.sum based on the builder's environment,
+  # creating non-reproducible builds. Run 'go mod tidy' manually as a developer step
+  # when updating dependencies, not as part of the automated build.)
+  go mod download
+  go mod verify
+
   GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bootstrap main.go
 }
 
