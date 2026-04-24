@@ -18,7 +18,7 @@
 #   - mise installed (will install goose automatically)
 #
 # Environment variables (optional):
-#   POSTGRES_IMAGE     - PostgreSQL Docker image (default: postgres:16)
+#   POSTGRES_IMAGE     - PostgreSQL Docker image (default: postgres:17.9)
 #   POSTGRES_USER      - Master DB user (default: testuser)
 #   POSTGRES_PASSWORD  - Master DB password (default: testpassword)
 #   POSTGRES_DB        - Database name (default: testdb)
@@ -37,7 +37,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAMBDA_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 MIGRATIONS_DIR="${LAMBDA_DIR}/migrations"
 
-POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:16}"
+POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:17.9}"
 POSTGRES_USER="${POSTGRES_USER:-testuser}"
 POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-testpassword}"
 POSTGRES_DB="${POSTGRES_DB:-testdb}"
