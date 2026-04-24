@@ -10,41 +10,63 @@ updates:
       interval: "daily"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/"
+      - "/ui"
+      - "/lambdas"
+      - "/tests"
     schedule:
       interval: "daily"
     cooldown:
       default-days: 7
-    ignore:
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
+    groups:
+      aws-dependencies:
+        patterns:
+          - "@aws-sdk/*"
+          - "aws-sdk"
+          - "@aws-lambda-powertools/*"
+          - "aws-lambda"
+          - "@types/aws-lambda"
+          - "@middy/*"
 
-  - package-ecosystem: "npm"
-    directory: "/ui"
-    schedule:
-      interval: "daily"
-    cooldown:
-      default-days: 7
-    ignore:
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
+      react-dependencies:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router-dom"
+          - "@types/react"
+          - "@types/react-dom"
+          - "next"
+          - "eslint-config-next"
 
-  - package-ecosystem: "npm"
-    directory: "/lambdas"
-    schedule:
-      interval: "daily"
-    cooldown:
-      default-days: 7
-    ignore:
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
+      testing-dependencies:
+        patterns:
+          - "jest"
+          - "jest-*"
+          - "@jest/*"
+          - "ts-jest"
+          - "@testing-library/*"
+          - "@testcontainers/*"
+          - "@playwright/test"
+          - "@axe-core/playwright"
+          - "axe-html-reporter"
+          - "@types/jest"
 
-  - package-ecosystem: "npm"
-    directory: "/tests"
-    schedule:
-      interval: "daily"
-    cooldown:
-      default-days: 7
+      typescript-eslint-dependencies:
+        patterns:
+          - "typescript"
+          - "typescript-eslint"
+          - "@typescript-eslint/*"
+          - "eslint"
+          - "@eslint/*"
+          - "globals"
+          - "prettier"
+          - "@trivago/prettier-plugin-sort-imports"
+
+      nhs-dependencies:
+        patterns:
+          - "nhsuk-frontend"
+          - "nhsuk-react-components"
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]

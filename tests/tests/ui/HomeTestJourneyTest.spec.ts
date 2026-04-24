@@ -71,7 +71,7 @@ test.describe("Check your answers page - Change fields", { tag: "@ui" }, () => {
     }) => {
       await beforeYouStartPage.navigate();
       await beforeYouStartPage.clickContinueToOrderKitButton();
-      await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+      await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
       await getSelfTestKitPage.clickBloodSampleGuideLink();
       await bloodSampleGuidePage.waitUntilPageLoaded();
       await bloodSampleGuidePage.clickBackLink();
@@ -119,7 +119,7 @@ test("Verify Privacy Policy page", async ({
 }) => {
   await beforeYouStartPage.navigate();
   await beforeYouStartPage.clickContinueToOrderKitButton();
-  await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
   await getSelfTestKitPage.clickPrivacyPolicyLink();
   const actualHeaderText = await privacyPolicyPage.getHeaderText();
   expect(actualHeaderText).toBe("Hometest Privacy Policy - Draft v1.0 Jan 2026");
@@ -134,7 +134,7 @@ test("Verify Terms of Use page", async ({
 }) => {
   await beforeYouStartPage.navigate();
   await beforeYouStartPage.clickContinueToOrderKitButton();
-  await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
   await getSelfTestKitPage.clickTermsOfUseLink();
   await termsOfUsePage.waitUntilPageLoaded();
 
@@ -146,5 +146,5 @@ test("Verify Terms of Use page", async ({
   await privacyPolicyPage.clickBackLink();
   await termsOfUsePage.waitUntilPageLoaded();
   await termsOfUsePage.clickBackLink();
-  await expect(getSelfTestKitPage.headerText).toHaveText("Get a self-test kit for HIV");
+  await expect(getSelfTestKitPage.headerText).toHaveText("Order a free HIV self-test kit");
 });
