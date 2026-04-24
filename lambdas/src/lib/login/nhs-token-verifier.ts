@@ -7,7 +7,7 @@ import jwt, {
 } from "jsonwebtoken";
 
 export interface NhsJwksKeyProvider {
-  fetchPublicKeyById: (kid: string) => Promise<string>;
+  fetchPublicKeyById: (kid: string) => Promise<string | undefined>;
 }
 
 export interface NhsTokenVerifierConfig {
@@ -72,7 +72,7 @@ export class NhsTokenVerifier implements INhsTokenVerifier {
       };
     }
 
-    let publicKey: string;
+    let publicKey: string | undefined;
 
     try {
       publicKey = await this.config.keyProvider.fetchPublicKeyById(kid);
