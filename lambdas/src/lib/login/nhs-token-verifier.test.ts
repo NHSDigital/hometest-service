@@ -197,7 +197,10 @@ describe("NhsTokenVerifier", () => {
     if (result.success) {
       throw new Error("Expected failure");
     }
-    expect(result.error.code).toBe("VERIFICATION_FAILED");
+    expect(result.error).toEqual({
+      code: "VERIFICATION_FAILED",
+      message: "Token verification failed",
+    });
   });
 
   it("includes standard JWT claims in the verified payload", async () => {

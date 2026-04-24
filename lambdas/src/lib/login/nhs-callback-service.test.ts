@@ -103,14 +103,17 @@ describe("NhsCallbackService.executeCallback", () => {
     expect(nhsLoginClientMock.getUserInfo).toHaveBeenCalledWith("nhs-access-token");
 
     expect(result).toEqual({
-      userInfo,
-      nhsAccessToken: "nhs-access-token",
-      nhsRefreshToken: "nhs-refresh-token",
-      idTokenSubject: "user-123",
+      success: true,
+      result: {
+        userInfo,
+        nhsAccessToken: "nhs-access-token",
+        nhsRefreshToken: "nhs-refresh-token",
+        idTokenSubject: "user-123",
+      },
     });
   });
 
-  it("throws when code exchange fails", async () => {
+  it("returns TOKEN_EXCHANGE_FAILED when code exchange fails", async () => {
     nhsLoginClientMock.getUserTokens.mockRejectedValue(new Error("Token endpoint error"));
 
     const service = new NhsCallbackService({
@@ -118,11 +121,17 @@ describe("NhsCallbackService.executeCallback", () => {
       nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
     });
 
-    await expect(service.executeCallback("bad-code")).rejects.toThrow("Token endpoint error");
+    await expect(service.executeCallback("bad-code")).resolves.toEqual({
+      success: false,
+      error: {
+        code: "TOKEN_EXCHANGE_FAILED",
+        message: "Unable to exchange NHS authorization code",
+      },
+    });
     expect(nhsTokenVerifierMock.verifyToken).not.toHaveBeenCalled();
   });
 
-  it("throws when id_token verification fails", async () => {
+  it("returns ID_TOKEN_VERIFICATION_FAILED when id_token verification fails", async () => {
     nhsLoginClientMock.getUserTokens.mockResolvedValue(createTokenResponse());
     nhsTokenVerifierMock.verifyToken.mockResolvedValueOnce(
       verificationFailure("INVALID_SIGNATURE", "Token signature is invalid"),
@@ -133,13 +142,17 @@ describe("NhsCallbackService.executeCallback", () => {
       nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
     });
 
-    await expect(service.executeCallback("auth-code")).rejects.toThrow(
-      "NHS id_token verification failed: Token signature is invalid",
-    );
+    await expect(service.executeCallback("auth-code")).resolves.toEqual({
+      success: false,
+      error: {
+        code: "ID_TOKEN_VERIFICATION_FAILED",
+        message: "Unable to verify NHS identity token",
+      },
+    });
     expect(nhsLoginClientMock.getUserInfo).not.toHaveBeenCalled();
   });
 
-  it("throws when access_token verification fails", async () => {
+  it("returns ACCESS_TOKEN_VERIFICATION_FAILED when access_token verification fails", async () => {
     nhsLoginClientMock.getUserTokens.mockResolvedValue(createTokenResponse());
     nhsTokenVerifierMock.verifyToken
       .mockResolvedValueOnce(verificationSuccess("user-123"))
@@ -150,13 +163,17 @@ describe("NhsCallbackService.executeCallback", () => {
       nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
     });
 
-    await expect(service.executeCallback("auth-code")).rejects.toThrow(
-      "NHS access_token verification failed: Token has expired",
-    );
+    await expect(service.executeCallback("auth-code")).resolves.toEqual({
+      success: false,
+      error: {
+        code: "ACCESS_TOKEN_VERIFICATION_FAILED",
+        message: "Unable to verify NHS access token",
+      },
+    });
     expect(nhsLoginClientMock.getUserInfo).not.toHaveBeenCalled();
   });
 
-  it("throws when id_token has no sub claim", async () => {
+  it("returns ID_TOKEN_SUB_MISSING when id_token has no sub claim", async () => {
     nhsLoginClientMock.getUserTokens.mockResolvedValue(createTokenResponse());
     nhsTokenVerifierMock.verifyToken
       .mockResolvedValueOnce({
@@ -171,13 +188,17 @@ describe("NhsCallbackService.executeCallback", () => {
       nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
     });
 
-    await expect(service.executeCallback("auth-code")).rejects.toThrow(
-      "NHS id_token does not contain a sub claim",
-    );
+    await expect(service.executeCallback("auth-code")).resolves.toEqual({
+      success: false,
+      error: {
+        code: "ID_TOKEN_SUB_MISSING",
+        message: "NHS identity token is missing a required subject claim",
+      },
+    });
     expect(nhsLoginClientMock.getUserInfo).not.toHaveBeenCalled();
   });
 
-  it("throws when userinfo call fails", async () => {
+  it("returns USER_INFO_FAILED when userinfo call fails", async () => {
     nhsLoginClientMock.getUserTokens.mockResolvedValue(createTokenResponse());
     nhsTokenVerifierMock.verifyToken
       .mockResolvedValueOnce(verificationSuccess("user-123"))
@@ -189,10 +210,16 @@ describe("NhsCallbackService.executeCallback", () => {
       nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
     });
 
-    await expect(service.executeCallback("auth-code")).rejects.toThrow("Userinfo endpoint error");
+    await expect(service.executeCallback("auth-code")).resolves.toEqual({
+      success: false,
+      error: {
+        code: "USER_INFO_FAILED",
+        message: "Unable to retrieve NHS user information",
+      },
+    });
   });
 
-  it("throws when userinfo sub does not match id_token sub", async () => {
+  it("returns SUBJECT_MISMATCH when userinfo sub does not match id_token sub", async () => {
     nhsLoginClientMock.getUserTokens.mockResolvedValue(createTokenResponse());
     nhsTokenVerifierMock.verifyToken
       .mockResolvedValueOnce(verificationSuccess("id-token-user"))
@@ -204,9 +231,13 @@ describe("NhsCallbackService.executeCallback", () => {
       nhsLoginClient: nhsLoginClientMock as unknown as INhsLoginClient,
     });
 
-    await expect(service.executeCallback("auth-code")).rejects.toThrow(
-      "The sub claim in the user info response does not match the sub claim in the id token",
-    );
+    await expect(service.executeCallback("auth-code")).resolves.toEqual({
+      success: false,
+      error: {
+        code: "SUBJECT_MISMATCH",
+        message: "NHS user information does not match the verified identity token",
+      },
+    });
   });
 
   it("converts empty refresh_token to undefined", async () => {
@@ -223,6 +254,14 @@ describe("NhsCallbackService.executeCallback", () => {
 
     const result = await service.executeCallback("auth-code");
 
-    expect(result.nhsRefreshToken).toBeUndefined();
+    expect(result).toEqual({
+      success: true,
+      result: {
+        userInfo: createUserInfo(),
+        nhsAccessToken: "nhs-access-token",
+        nhsRefreshToken: undefined,
+        idTokenSubject: "user-123",
+      },
+    });
   });
 });

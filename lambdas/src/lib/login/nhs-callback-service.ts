@@ -9,8 +9,33 @@ export interface INhsCallbackResult {
   idTokenSubject: string;
 }
 
+export type NhsCallbackErrorCode =
+  | "TOKEN_EXCHANGE_FAILED"
+  | "ID_TOKEN_VERIFICATION_FAILED"
+  | "ACCESS_TOKEN_VERIFICATION_FAILED"
+  | "ID_TOKEN_SUB_MISSING"
+  | "USER_INFO_FAILED"
+  | "SUBJECT_MISMATCH";
+
+export interface NhsCallbackError {
+  code: NhsCallbackErrorCode;
+  message: string;
+}
+
+export interface NhsCallbackSuccess {
+  success: true;
+  result: INhsCallbackResult;
+}
+
+export interface NhsCallbackFailure {
+  success: false;
+  error: NhsCallbackError;
+}
+
+export type NhsCallbackExecutionResult = NhsCallbackSuccess | NhsCallbackFailure;
+
 export interface INhsCallbackService {
-  executeCallback: (code: string) => Promise<INhsCallbackResult>;
+  executeCallback: (code: string) => Promise<NhsCallbackExecutionResult>;
 }
 
 export interface NhsCallbackServiceParams {
@@ -27,40 +52,69 @@ export class NhsCallbackService implements INhsCallbackService {
     this.nhsLoginClient = params.nhsLoginClient;
   }
 
-  public async executeCallback(code: string): Promise<INhsCallbackResult> {
-    const tokenResponse = await this.nhsLoginClient.getUserTokens(code);
+  public async executeCallback(code: string): Promise<NhsCallbackExecutionResult> {
+    let tokenResponse;
+
+    try {
+      tokenResponse = await this.nhsLoginClient.getUserTokens(code);
+    } catch {
+      return this.failure("TOKEN_EXCHANGE_FAILED", "Unable to exchange NHS authorization code");
+    }
 
     const idTokenResult = await this.nhsTokenVerifier.verifyToken(tokenResponse.id_token);
 
     if (!idTokenResult.success) {
-      throw new Error(`NHS id_token verification failed: ${idTokenResult.error.message}`);
+      return this.failure("ID_TOKEN_VERIFICATION_FAILED", "Unable to verify NHS identity token");
     }
 
     const accessTokenResult = await this.nhsTokenVerifier.verifyToken(tokenResponse.access_token);
 
     if (!accessTokenResult.success) {
-      throw new Error(`NHS access_token verification failed: ${accessTokenResult.error.message}`);
+      return this.failure("ACCESS_TOKEN_VERIFICATION_FAILED", "Unable to verify NHS access token");
     }
 
     const idTokenSubject = idTokenResult.payload.sub;
 
     if (!idTokenSubject) {
-      throw new Error("NHS id_token does not contain a sub claim");
+      return this.failure(
+        "ID_TOKEN_SUB_MISSING",
+        "NHS identity token is missing a required subject claim",
+      );
     }
 
-    const userInfo = await this.nhsLoginClient.getUserInfo(tokenResponse.access_token);
+    let userInfo: INhsUserInfoResponseModel;
+
+    try {
+      userInfo = await this.nhsLoginClient.getUserInfo(tokenResponse.access_token);
+    } catch {
+      return this.failure("USER_INFO_FAILED", "Unable to retrieve NHS user information");
+    }
 
     if (userInfo.sub !== idTokenSubject) {
-      throw new Error(
-        "The sub claim in the user info response does not match the sub claim in the id token",
+      return this.failure(
+        "SUBJECT_MISMATCH",
+        "NHS user information does not match the verified identity token",
       );
     }
 
     return {
-      userInfo,
-      nhsAccessToken: tokenResponse.access_token,
-      nhsRefreshToken: tokenResponse.refresh_token || undefined,
-      idTokenSubject,
+      success: true,
+      result: {
+        userInfo,
+        nhsAccessToken: tokenResponse.access_token,
+        nhsRefreshToken: tokenResponse.refresh_token || undefined,
+        idTokenSubject,
+      },
+    };
+  }
+
+  private failure(code: NhsCallbackErrorCode, message: string): NhsCallbackFailure {
+    return {
+      success: false,
+      error: {
+        code,
+        message,
+      },
     };
   }
 }
