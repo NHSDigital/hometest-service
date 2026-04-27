@@ -181,6 +181,26 @@ resource "aws_iam_role_policy" "lambdas_sqs_publish" {
   })
 }
 
+resource "aws_iam_role_policy" "lambdas_lambda_invoke" {
+  name = "${var.project_name}-lambdas-lambda-invoke"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:InvokeFunction"
+        ]
+        Resource = [
+          module.result_status_lambda.lambda_function.arn,
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_api_gateway_rest_api" "api" {
   name        = "${var.project_name}-api"
   description = "API Gateway for ${var.project_name}"
