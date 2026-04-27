@@ -49,6 +49,7 @@ function verificationSuccess(sub: string): NhsTokenVerificationResult {
     payload: {
       sub,
       iss: "https://issuer.example",
+      aud: "hometest",
       iat: 1234567890,
       exp: 1234571490,
     } as JwtPayload,
@@ -108,6 +109,8 @@ describe("NhsLoginService.executeCallback", () => {
         nhsAccessToken: "nhs-access-token",
         nhsRefreshToken: "nhs-refresh-token",
         idTokenSubject: "user-123",
+        idTokenIssuer: "https://issuer.example",
+        idTokenAudience: "hometest",
       },
     });
   });
@@ -276,6 +279,8 @@ describe("NhsLoginService.executeCallback", () => {
         nhsAccessToken: "nhs-access-token",
         nhsRefreshToken: undefined,
         idTokenSubject: "user-123",
+        idTokenIssuer: "https://issuer.example",
+        idTokenAudience: "hometest",
       },
     });
   });

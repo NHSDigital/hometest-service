@@ -260,6 +260,51 @@ module "login_lambda" {
   }
 }
 
+module "session_login_lambda" {
+  source = "./modules/lambda"
+
+  project_name                  = var.project_name
+  function_name                 = "session-login"
+  zip_path                      = "${path.module}/../../lambdas/dist/session-login-lambda.zip"
+  lambda_role_arn               = aws_iam_role.lambda_role.arn
+  environment                   = var.environment
+  api_gateway_id                = aws_api_gateway_rest_api.api.id
+  api_gateway_root_resource_id  = aws_api_gateway_rest_api.api.root_resource_id
+  api_gateway_execution_arn     = aws_api_gateway_rest_api.api.execution_arn
+  api_path                      = "session-preview/login"
+  lambda_role_policy_attachment = aws_iam_role_policy_attachment.lambda_basic
+  http_method                   = "POST"
+  timeout                       = 30
+
+  enable_cors            = true
+  cors_allow_origin      = "http://localhost:3000"
+  cors_allow_methods     = ["POST", "OPTIONS"]
+  cors_allow_headers     = ["Content-Type", "Authorization", "X-Correlation-ID"]
+  cors_allow_credentials = true
+
+  environment_variables = {
+    NODE_OPTIONS                               = "--enable-source-maps"
+    ALLOW_ORIGIN                               = "http://localhost:3000"
+    NHS_LOGIN_BASE_ENDPOINT_URL                = local.resolved_nhs_login_base_url
+    NHS_LOGIN_CLIENT_ID                        = var.local_nhs_login_client_id
+    NHS_LOGIN_REDIRECT_URL                     = var.local_nhs_login_redirect_url
+    NHS_LOGIN_PRIVATE_KEY_SECRET_NAME          = var.local_nhs_login_private_key_secret_name
+    AUTH_COOKIE_PRIVATE_KEYS_SECRET_NAME       = var.local_auth_cookie_private_keys_secret_name
+    AUTH_SESSION_MAX_DURATION_MINUTES          = var.local_auth_session_max_duration_minutes
+    AUTH_ACCESS_TOKEN_EXPIRY_DURATION_MINUTES  = var.local_auth_access_token_expiry_duration_minutes
+    AUTH_REFRESH_TOKEN_EXPIRY_DURATION_MINUTES = var.local_auth_refresh_token_expiry_duration_minutes
+    AUTH_COOKIE_SAME_SITE                      = var.local_auth_cookie_same_site
+    AUTH_COOKIE_SECURE                         = var.local_auth_cookie_secure
+    DB_USERNAME                                = "app_user"
+    DB_ADDRESS                                 = "postgres-db"
+    DB_PORT                                    = "5432"
+    DB_NAME                                    = "local_hometest_db"
+    DB_SCHEMA                                  = "hometest"
+    DB_SECRET_NAME                             = "postgres-db-password"
+    DB_SSL                                     = "false"
+  }
+}
+
 module "session_lambda" {
   source = "./modules/lambda"
 

@@ -7,6 +7,7 @@
     "postinstall": "pnpm -C ui install --frozen-lockfile && pnpm -C lambdas install --frozen-lockfile && pnpm -C tests install --frozen-lockfile",
     "test": "pnpm -C ui run test && pnpm -C lambdas run test",
     "test:playwright": "UI_BASE_URL=$(terraform -chdir=local-environment/infra output -raw ui_url) API_BASE_URL=$(terraform -chdir=local-environment/infra output -raw api_base_url) pnpm -C tests run test:chrome",
+    "test:postman:session-login-preview": "API_GATEWAY_ID=$(terraform -chdir=local-environment/infra output -raw api_gateway_id) && pnpm dlx newman run postman/session_login_preview_wiremock.postman_collection.json -e postman/session_login_preview_wiremock.local.postman_environment.json --env-var api_gateway_id=$API_GATEWAY_ID --env-var execute_api_base_localstack=http://localhost:4566/_aws/execute-api/$API_GATEWAY_ID/local --env-var session_login_endpoint_localstack=http://localhost:4566/_aws/execute-api/$API_GATEWAY_ID/local/session-preview/login --reporters cli",
     "format": "(git diff --name-only --diff-filter=ACMR -z; git diff --name-only --cached --diff-filter=ACMR -z) | sort -zu | xargs -0 sh -c '[ \"$#\" -gt 0 ] && pnpm run format:pre-commit -- \"$@\"' sh",
     "format:pre-commit": "prettier --write --ignore-unknown",
     "lint": "pnpm -C ui run lint && pnpm -C lambdas run lint && pnpm -C tests run lint",

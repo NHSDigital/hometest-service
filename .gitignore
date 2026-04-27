@@ -29,6 +29,7 @@ output.json
 # Node
 node_modules
 dist
+.pnpm-store
 
 # Next.js
 .next
