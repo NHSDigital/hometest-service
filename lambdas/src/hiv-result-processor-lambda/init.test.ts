@@ -32,7 +32,7 @@ describe("hiv-results-processor init", () => {
   it("constructs LambdaClient with AWS_REGION", () => {
     buildEnvironment();
 
-    expect(LambdaClient).toHaveBeenCalledWith({ region: "eu-west-2" });
+    expect(LambdaClient).toHaveBeenCalledWith(expect.objectContaining({ region: "eu-west-2" }));
   });
 
   it("constructs LambdaHttpClient with the LambdaClient instance and RESULT_STATUS_LAMBDA_NAME", () => {

@@ -9,7 +9,7 @@ export class ResultStatusLambdaService {
     await this.client.post<void>(
       "result/status",
       result,
-      { "X-Correlation-Id": correlationId },
+      { "X-Correlation-ID": correlationId },
       "application/fhir+json",
     );
   }

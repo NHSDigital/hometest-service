@@ -16,7 +16,12 @@ import {
   errorResult,
   successResult,
 } from "../lib/validation";
-import { Identifiers, orderResultFHIRObservationSchema, resultCodeMapping } from "./models";
+import {
+  Identifiers,
+  InterpretationCode,
+  orderResultFHIRObservationSchema,
+  resultCodeMapping,
+} from "./models";
 
 const name = "order-result-lambda";
 
@@ -107,7 +112,9 @@ export async function validateDBData(
   observation: Observation,
   testOrderResult: OrderResultSummary,
 ): Promise<ValidationResult<{ isIdempotent: boolean }>> {
-  const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation);
+  const interpretationCode = extractInterpretationCodeFromFHIRObservation(
+    observation,
+  ) as InterpretationCode;
   const { orderUid, patientId, supplierId, correlationId } = identifiers;
 
   if (!testOrderResult) {

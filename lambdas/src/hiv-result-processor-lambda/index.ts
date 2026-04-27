@@ -12,12 +12,14 @@ import { buildTaskFromObservation } from "./builders/task-builder";
 import { init } from "./init";
 import { InterpretationCode } from "./models/interpretation";
 
+const name = "hiv-results-processor";
+
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   const { resultStatusLambdaService } = init();
 
-  console.info("hiv-results-processor", "Received HIV result", {
+  console.info(name, "Received HIV result", {
     path: event.path,
     method: event.httpMethod,
   });
@@ -26,7 +28,7 @@ export const lambdaHandler = async (
   try {
     correlationId = getCorrelationIdFromEventHeaders(event);
   } catch (error) {
-    console.error("hiv-results-processor", "Missing or invalid correlation ID in request headers", {
+    console.error(name, "Missing or invalid correlation ID in request headers", {
       error,
     });
     return createFhirErrorResponse(400, "invalid", "Missing or invalid correlation ID", "error");
@@ -36,7 +38,7 @@ export const lambdaHandler = async (
   try {
     observation = JSON.parse(event.body ?? "");
   } catch (error) {
-    console.error("hiv-results-processor", "Invalid JSON in request body", { error });
+    console.error(name, "Invalid JSON in request body", { correlationId, error });
     return createFhirErrorResponse(400, "invalid", "Invalid JSON body", "error");
   }
 
@@ -45,7 +47,7 @@ export const lambdaHandler = async (
   ) as InterpretationCode;
 
   if (interpretation === InterpretationCode.Abnormal) {
-    console.info("hiv-results-processor", "Reactive result ignored");
+    console.info(name, "Reactive result ignored", { correlationId });
     return createFhirResponse(200, observation);
   }
 
@@ -56,7 +58,7 @@ export const lambdaHandler = async (
 
       return createFhirResponse(200, observation);
     } catch (error) {
-      console.error("hiv-results-processor", "Failed to send task to status lambda", { error });
+      console.error(name, "Failed to send task to status lambda", { correlationId, error });
       return createFhirErrorResponse(500, "exception", "Status update failed", "fatal");
     }
   }

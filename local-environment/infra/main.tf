@@ -519,6 +519,7 @@ resource "aws_lambda_function" "hiv_results_lambda" {
 
   environment {
     variables = {
+      NODE_OPTIONS              = "--enable-source-maps"
       RESULT_STATUS_LAMBDA_NAME = module.result_status_lambda.lambda_function.function_name
       AWS_REGION                = "eu-west-2"
     }

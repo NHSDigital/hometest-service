@@ -39,7 +39,7 @@ describe("ResultStatusLambdaService", () => {
     expect(mockPost).toHaveBeenCalledWith(
       "result/status",
       taskPayload,
-      { "X-Correlation-Id": correlationId },
+      { "X-Correlation-ID": correlationId },
       "application/fhir+json",
     );
   });
@@ -53,7 +53,7 @@ describe("ResultStatusLambdaService", () => {
     expect(mockPost).toHaveBeenCalledWith(
       "result/status",
       taskPayload,
-      { "X-Correlation-Id": "" },
+      { "X-Correlation-ID": "" },
       "application/fhir+json",
     );
   });
