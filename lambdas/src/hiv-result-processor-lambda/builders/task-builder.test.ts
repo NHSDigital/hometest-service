@@ -4,7 +4,6 @@ import { buildTaskFromObservation } from "./task-builder";
 
 describe("buildTaskFromObservation", () => {
   const fixedDate = new Date("2026-04-17T10:20:30.000Z");
-  const correlationId = "test-correlation-id";
   const baseObservation: Pick<Observation, "resourceType" | "status" | "code"> = {
     resourceType: "Observation",
     status: "final",
@@ -34,7 +33,7 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    const result = buildTaskFromObservation(observation, correlationId) as Task;
+    const result = buildTaskFromObservation(observation) as Task;
 
     expect(result).toEqual({
       resourceType: "Task",
@@ -42,10 +41,6 @@ describe("buildTaskFromObservation", () => {
         {
           system: "https://fhir.hometest.nhs.uk/Id/order-id",
           value: "550e8400-e29b-41d4-a716-446655440000",
-        },
-        {
-          system: "https://fhir.hometest.nhs.uk/Id/correlation-id",
-          value: correlationId,
         },
       ],
       status: "completed",
@@ -84,7 +79,7 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow(
+    expect(() => buildTaskFromObservation(observation)).toThrow(
       "Observation.basedOn[0].reference is missing",
     );
   });
@@ -97,9 +92,7 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "Organization/550e8400-e29b-41d4-a716-446655440002" }],
     };
 
-    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow(
-      "Invalid subject reference format",
-    );
+    expect(() => buildTaskFromObservation(observation)).toThrow("Invalid subject reference format");
   });
 
   it("throws when performer reference is missing", () => {
@@ -110,7 +103,7 @@ describe("buildTaskFromObservation", () => {
       performer: [{ reference: "" }],
     };
 
-    expect(() => buildTaskFromObservation(observation, correlationId)).toThrow(
+    expect(() => buildTaskFromObservation(observation)).toThrow(
       "Invalid performer reference format",
     );
   });

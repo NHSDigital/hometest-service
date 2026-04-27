@@ -53,7 +53,7 @@ export const lambdaHandler = async (
 
   if (interpretation === InterpretationCode.Normal) {
     try {
-      const taskPayload = buildTaskFromObservation(observation, correlationId);
+      const taskPayload = buildTaskFromObservation(observation);
       await resultStatusLambdaService.sendResult(taskPayload, correlationId);
 
       return createFhirResponse(200, observation);

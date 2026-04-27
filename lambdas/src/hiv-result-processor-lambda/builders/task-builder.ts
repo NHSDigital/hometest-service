@@ -7,10 +7,7 @@ import {
 } from "../../lib/fhir-observation-extractors";
 import { type FHIRTask } from "../../lib/models/fhir/fhir-service-request-type";
 
-export function buildTaskFromObservation(
-  observation: Observation,
-  correlationId: string,
-): FHIRTask {
+export function buildTaskFromObservation(observation: Observation): FHIRTask {
   const orderUid = extractOrderUidFromFHIRObservation(observation);
   const patientId = extractPatientIdFromFHIRObservation(observation);
   const supplierId = extractSupplierIdFromFHIRObservation(observation);
@@ -23,10 +20,6 @@ export function buildTaskFromObservation(
       {
         system: "https://fhir.hometest.nhs.uk/Id/order-id",
         value: orderUid,
-      },
-      {
-        system: "https://fhir.hometest.nhs.uk/Id/correlation-id",
-        value: correlationId,
       },
     ],
     status: "completed",
