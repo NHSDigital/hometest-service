@@ -151,6 +151,18 @@ test.describe("Order Reminders", { tag: ["@API", "@db"] }, () => {
       const secondReminderStatus =
         await testRemindersDb.getReminderStatusByOrderUidAndReminderNumber(secondOrderUid, 2);
       expect(secondReminderStatus).toBe("CANCELLED");
+
+      await testRemindersDb.updateReminderTriggeredAt(secondOrderUid, 1, 15);
+      await lambdaInvoker.invokeReminderDispatch();
+      const remindersCountAfterSecondDispatch =
+        await testRemindersDb.getRemindersCountByOrderUid(secondOrderUid);
+      expect(remindersCountAfterSecondDispatch).toBe(2);
+
+      await testRemindersDb.updateReminderTriggeredAt(secondOrderUid, 2, 15);
+      await lambdaInvoker.invokeReminderDispatch();
+      const remindersCountAfterThirdDispatch =
+        await testRemindersDb.getRemindersCountByOrderUid(secondOrderUid);
+      expect(remindersCountAfterThirdDispatch).toBe(2);
     },
   );
 });
