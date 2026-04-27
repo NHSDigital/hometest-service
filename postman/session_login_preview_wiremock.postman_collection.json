@@ -1,0 +1,356 @@
+{
+  "info": {
+    "_postman_id": "7f0a54d3-0373-4b4b-8d79-3b1cd83ba5ab",
+    "name": "Session Login Preview (WireMock)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Exercises the preview-only session-login-lambda against the local LocalStack API while NHS Login upstreams are stubbed by WireMock. Populate api_gateway_id from local-environment/infra outputs or terraform state, then run the authorize request first to refresh the mock auth code if needed."
+  },
+  "item": [
+    {
+      "name": "WireMock NHS Login",
+      "item": [
+        {
+          "name": "Capture Mock Authorisation Code",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{wiremock_nhs_login_base_url}}/authorize?client_id={{nhs_login_client_id}}&response_type=code&scope={{nhs_login_scope}}&redirect_uri={{nhs_login_redirect_url}}&state={{oauth_state}}",
+              "host": [
+                "{{wiremock_nhs_login_base_url}}"
+              ],
+              "path": [
+                "authorize"
+              ],
+              "query": [
+                {
+                  "key": "client_id",
+                  "value": "{{nhs_login_client_id}}"
+                },
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "scope",
+                  "value": "{{nhs_login_scope}}"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{nhs_login_redirect_url}}"
+                },
+                {
+                  "key": "state",
+                  "value": "{{oauth_state}}"
+                }
+              ]
+            },
+            "description": "Calls the WireMock /authorize stub directly and captures the redirected code into the wiremock_auth_code collection variable."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"WireMock authorize returns a redirect\", function () {",
+                  "  pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "const redirectLocation = pm.response.headers.get(\"Location\");",
+                  "pm.expect(redirectLocation, \"Location header\").to.be.a(\"string\");",
+                  "",
+                  "const codeMatch = redirectLocation.match(/[?&]code=([^&]+)/);",
+                  "pm.expect(codeMatch, \"authorization code in redirect\").to.not.equal(null);",
+                  "if (codeMatch) {",
+                  "  pm.collectionVariables.set(\"wiremock_auth_code\", decodeURIComponent(codeMatch[1]));",
+                  "}",
+                  "",
+                  "const stateMatch = redirectLocation.match(/[?&]state=([^&]+)/);",
+                  "if (stateMatch) {",
+                  "  pm.collectionVariables.set(\"oauth_state_returned\", decodeURIComponent(stateMatch[1]));",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Preview Session Login Lambda",
+      "item": [
+        {
+          "name": "200: success with mock auth code",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{correlation_id}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{wiremock_auth_code}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{session_login_endpoint_localstack}}",
+              "host": [
+                "{{session_login_endpoint_localstack}}"
+              ]
+            },
+            "description": "Posts the captured mock NHS Login code to the preview-only session-login-lambda. By default wiremock_auth_code is pre-seeded with wiremock-auth-code, so this request also works without the authorize step."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Preview session login returns 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Correlation ID is echoed\", function () {",
+                  "  pm.expect(pm.response.headers.get(\"X-Correlation-ID\")).to.eql(pm.collectionVariables.get(\"correlation_id\"));",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"User info payload is returned\", function () {",
+                  "  pm.expect(body.sub).to.eql(\"test-sub-123\");",
+                  "  pm.expect(body.nhs_number).to.eql(\"9912003071\");",
+                  "  pm.expect(body.gp_registration_details.gp_ods_code).to.eql(\"Y12345\");",
+                  "});",
+                  "",
+                  "const setCookieHeaders = pm.response.headers",
+                  "  .all()",
+                  "  .filter((header) => header.key.toLowerCase() === \"set-cookie\")",
+                  "  .map((header) => header.value);",
+                  "",
+                  "pm.test(\"Preview cookies are set on isolated names and paths\", function () {",
+                  "  pm.expect(setCookieHeaders.some((value) => value.includes(\"preview_auth=\") && value.includes(\"Path=/session-preview\"))).to.eql(true);",
+                  "  pm.expect(setCookieHeaders.some((value) => value.includes(\"preview_auth_refresh=\") && value.includes(\"Path=/session-preview/refresh\"))).to.eql(true);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400: missing code",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{correlation_id}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{session_login_endpoint_localstack}}",
+              "host": [
+                "{{session_login_endpoint_localstack}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Missing code returns 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Validation message is returned\", function () {",
+                  "  pm.expect(body.message).to.include(\"Validation failed\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400: invalid JSON",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{correlation_id}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"code\": }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{session_login_endpoint_localstack}}",
+              "host": [
+                "{{session_login_endpoint_localstack}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Invalid JSON returns 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"JSON parsing message is returned\", function () {",
+                  "  pm.expect(body.message).to.eql(\"Invalid JSON in request body\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "api_gateway_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "wiremock_nhs_login_base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "execute_api_base_localstack",
+      "value": "http://localhost:4566/_aws/execute-api/{{api_gateway_id}}/local",
+      "type": "string"
+    },
+    {
+      "key": "session_login_endpoint_localstack",
+      "value": "{{execute_api_base_localstack}}/session-preview/login",
+      "type": "string"
+    },
+    {
+      "key": "nhs_login_client_id",
+      "value": "hometest",
+      "type": "string"
+    },
+    {
+      "key": "nhs_login_scope",
+      "value": "openid profile email phone nhs_number",
+      "type": "string"
+    },
+    {
+      "key": "nhs_login_redirect_url",
+      "value": "http://localhost:3000/callback",
+      "type": "string"
+    },
+    {
+      "key": "oauth_state",
+      "value": "preview-session-login-state",
+      "type": "string"
+    },
+    {
+      "key": "oauth_state_returned",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "wiremock_auth_code",
+      "value": "wiremock-auth-code",
+      "type": "string"
+    },
+    {
+      "key": "correlation_id",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string"
+    }
+  ]
+}

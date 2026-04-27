@@ -8,6 +8,8 @@ export interface INhsLoginResult {
   nhsAccessToken: string;
   nhsRefreshToken?: string;
   idTokenSubject: string;
+  idTokenIssuer?: string;
+  idTokenAudience?: string | string[];
 }
 
 export type NhsLoginErrorCode =
@@ -107,6 +109,8 @@ export class NhsLoginService implements INhsLoginService {
         nhsAccessToken: tokenResponse.access_token,
         nhsRefreshToken: this.normalizeRefreshToken(tokenResponse.refresh_token),
         idTokenSubject,
+        idTokenIssuer: idTokenResult.payload.iss,
+        idTokenAudience: idTokenResult.payload.aud,
       },
     };
   }
