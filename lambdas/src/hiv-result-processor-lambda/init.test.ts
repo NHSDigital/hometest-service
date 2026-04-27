@@ -1,14 +1,12 @@
 import { LambdaClient } from "@aws-sdk/client-lambda";
 
-import { ConsoleCommons } from "../lib/commons";
 import { LambdaHttpClient } from "../lib/http/lambda-http-client";
 import { buildEnvironment } from "./init";
-import { ResultStatusLambdaService } from "./result-status-lambda-service";
+import { ResultStatusLambdaService } from "./services/result-status-lambda-service";
 
 jest.mock("@aws-sdk/client-lambda");
-jest.mock("../lib/commons");
 jest.mock("../lib/http/lambda-http-client");
-jest.mock("./result-status-lambda-service");
+jest.mock("./services/result-status-lambda-service");
 
 describe("hiv-results-processor init", () => {
   const originalEnv = process.env;
@@ -25,10 +23,9 @@ describe("hiv-results-processor init", () => {
     process.env = originalEnv;
   });
 
-  it("initializes commons and resultStatusLambdaService", () => {
+  it("initializes resultStatusLambdaService", () => {
     const env = buildEnvironment();
 
-    expect(env.commons).toBeInstanceOf(ConsoleCommons);
     expect(env.resultStatusLambdaService).toBeInstanceOf(ResultStatusLambdaService);
   });
 

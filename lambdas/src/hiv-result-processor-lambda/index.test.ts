@@ -2,15 +2,10 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { createFhirErrorResponse } from "../lib/fhir-response";
 import { lambdaHandler } from "./index";
-import { InterpretationCode } from "./models";
+import { InterpretationCode } from "./models/interpretation";
 
-// --- Mock init.ts ---
 jest.mock("./init", () => {
   const initMock = {
-    commons: {
-      logInfo: jest.fn(),
-      logError: jest.fn(),
-    },
     resultStatusLambdaService: {
       sendResult: jest.fn(),
     },
@@ -21,17 +16,14 @@ jest.mock("./init", () => {
   };
 });
 
-// --- Mock task-builder.ts ---
-jest.mock("./task-builder", () => ({
+jest.mock("./builders/task-builder", () => ({
   buildTaskFromObservation: jest.fn(() => ({ mockTask: true })),
 }));
 
-// --- Mock FHIR observation extractors ---
 jest.mock("../lib/fhir-observation-extractors", () => ({
   extractInterpretationCodeFromFHIRObservation: jest.fn(),
 }));
 
-// --- Mock FHIR response helpers ---
 jest.mock("../lib/fhir-response", () => ({
   createFhirErrorResponse: jest.fn((code, type, message, severity) => ({
     statusCode: code,
@@ -46,7 +38,7 @@ jest.mock("../lib/fhir-response", () => ({
 }));
 
 const { initMock } = jest.requireMock("./init");
-const { buildTaskFromObservation } = jest.requireMock("./task-builder");
+const { buildTaskFromObservation } = jest.requireMock("./builders/task-builder");
 const { extractInterpretationCodeFromFHIRObservation } = jest.requireMock(
   "../lib/fhir-observation-extractors",
 );
@@ -71,6 +63,15 @@ describe("hiv-results-processor handler", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it("returns 400 for missing correlation ID", async () => {
+    const noCorrelationEvent = { ...event, headers: {} };
+
+    const res = await lambdaHandler(noCorrelationEvent as any);
+
+    expect(res.statusCode).toBe(400);
+    expect(createFhirErrorResponse).toHaveBeenCalled();
   });
 
   it("returns 400 for invalid JSON", async () => {

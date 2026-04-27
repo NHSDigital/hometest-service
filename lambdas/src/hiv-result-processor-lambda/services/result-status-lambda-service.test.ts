@@ -1,5 +1,5 @@
-import { HttpClient } from "../lib/http/http-client";
-import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
+import { HttpClient } from "../../lib/http/http-client";
+import { type FHIRTask } from "../../lib/models/fhir/fhir-service-request-type";
 import { ResultStatusLambdaService } from "./result-status-lambda-service";
 
 const mockPost = jest.fn();

@@ -8,15 +8,15 @@ import {
   extractPatientIdFromFHIRObservation,
   extractSupplierIdFromFHIRObservation,
 } from "../lib/fhir-observation-extractors";
-import { getCorrelationIdFromEventHeaders, isUUID } from "../lib/utils/utils";
+import { getCorrelationIdFromEventHeaders } from "../lib/utils/utils";
 import { generateReadableError } from "../lib/utils/validation-utils";
 import {
-  Identifiers,
-  InterpretationCode,
-  orderResultFHIRObservationSchema,
-  resultCodeMapping,
-} from "./models";
-import { ValidationResult, ValidationResultError, errorResult, successResult } from "./validation";
+  ValidationResult,
+  ValidationResultError,
+  errorResult,
+  successResult,
+} from "../lib/validation";
+import { Identifiers, orderResultFHIRObservationSchema, resultCodeMapping } from "./models";
 
 const name = "order-result-lambda";
 

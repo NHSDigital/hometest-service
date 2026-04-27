@@ -4,8 +4,8 @@ import {
   extractOrderUidFromFHIRObservation,
   extractPatientIdFromFHIRObservation,
   extractSupplierIdFromFHIRObservation,
-} from "../lib/fhir-observation-extractors";
-import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
+} from "../../lib/fhir-observation-extractors";
+import { type FHIRTask } from "../../lib/models/fhir/fhir-service-request-type";
 
 export function buildTaskFromObservation(
   observation: Observation,

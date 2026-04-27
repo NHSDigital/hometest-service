@@ -50,27 +50,13 @@ export class LambdaHttpClient implements HttpClient {
       null,
     );
 
-    const command = new InvokeCommand({
-      FunctionName: this.functionName,
-      InvocationType: "RequestResponse",
-      Payload: Buffer.from(JSON.stringify(event)),
-    });
+    const result = await this.invoke(event, url);
 
-    const response = await this.client.send(command);
-
-    if (response.FunctionError) {
-      throw new HttpError(`Error sending request to ${this.functionName} ${url}`, 500);
-    }
-
-    const result = decodePayload(response.Payload);
-
-    const status = result.statusCode;
-    const body = result.body;
-
-    if (status < 200 || status >= 300) {
+    const { statusCode, body } = result;
+    if (statusCode < 200 || statusCode >= 300) {
       throw new HttpError(
-        `HTTP GET: Error response from ${this.functionName} ${url} `,
-        status,
+        `HTTP GET: Error response from ${this.functionName} ${url}`,
+        statusCode,
         body,
       );
     }
@@ -84,38 +70,8 @@ export class LambdaHttpClient implements HttpClient {
     headers: Record<string, string> = {},
     contentType: string = "application/json",
   ): Promise<T> {
-    const event = buildApiGatewayEvent(
-      "POST",
-      url,
-      { Accept: "application/json", "Content-Type": contentType, ...headers },
-      serializeBody(body),
-    );
-
-    const command = new InvokeCommand({
-      FunctionName: this.functionName,
-      InvocationType: "RequestResponse",
-      Payload: Buffer.from(JSON.stringify(event)),
-    });
-
-    const response = await this.client.send(command);
-
-    if (response.FunctionError) {
-      throw new HttpError(`Error sending request to ${this.functionName} ${url}`, 500);
-    }
-
-    const result = decodePayload(response.Payload);
-
-    const statusCode = result.statusCode;
-    const resultBody = result.body;
-    if (statusCode < 200 || statusCode >= 300) {
-      throw new HttpError(
-        `HTTP POST: Error response from ${this.functionName} ${url}`,
-        statusCode,
-        resultBody,
-      );
-    }
-
-    return JSON.parse(resultBody) as T;
+    const result = await this.executePost(url, body, headers, contentType);
+    return JSON.parse(result.body) as T;
   }
 
   async postRaw(
@@ -124,13 +80,17 @@ export class LambdaHttpClient implements HttpClient {
     headers: Record<string, string> = {},
     contentType: string = "application/json",
   ): Promise<Response> {
-    const event = buildApiGatewayEvent(
-      "POST",
-      url,
-      { Accept: "application/json", "Content-Type": contentType, ...headers },
-      serializeBody(body),
-    );
+    const result = await this.executePost(url, body, headers, contentType);
+    return new Response(result.body, {
+      status: result.statusCode,
+      headers: result.headers as Record<string, string>,
+    });
+  }
 
+  private async invoke(
+    event: Partial<APIGatewayProxyEvent>,
+    url: string,
+  ): Promise<APIGatewayProxyResult> {
     const command = new InvokeCommand({
       FunctionName: this.functionName,
       InvocationType: "RequestResponse",
@@ -143,10 +103,25 @@ export class LambdaHttpClient implements HttpClient {
       throw new HttpError(`Error sending request to ${this.functionName} ${url}`, 500);
     }
 
-    const result = decodePayload(response.Payload);
+    return decodePayload(response.Payload);
+  }
 
-    const statusCode = result.statusCode;
-    const resultBody = result.body;
+  private async executePost(
+    url: string,
+    body: unknown,
+    headers: Record<string, string>,
+    contentType: string,
+  ): Promise<APIGatewayProxyResult> {
+    const event = buildApiGatewayEvent(
+      "POST",
+      url,
+      { Accept: "application/json", "Content-Type": contentType, ...headers },
+      serializeBody(body),
+    );
+
+    const result = await this.invoke(event, url);
+
+    const { statusCode, body: resultBody } = result;
     if (statusCode < 200 || statusCode >= 300) {
       throw new HttpError(
         `HTTP POST: Error response from ${this.functionName} ${url}`,
@@ -155,9 +130,6 @@ export class LambdaHttpClient implements HttpClient {
       );
     }
 
-    return new Response(resultBody, {
-      status: statusCode,
-      headers: result.headers as Record<string, string>,
-    });
+    return result;
   }
 }
