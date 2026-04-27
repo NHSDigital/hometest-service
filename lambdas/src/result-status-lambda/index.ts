@@ -5,6 +5,7 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { OrderResultSummary } from "src/lib/db/order-db";
 
+import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
 import { type FHIRTask } from "../lib/models/fhir/fhir-service-request-type";
@@ -79,7 +80,7 @@ function extractOrderUidFromFHIRTask(task: FHIRTask): string {
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  const { orderService } = init();
+  const { orderService, orderStatusNotifyService } = init();
   let correlationId: string;
 
   try {
@@ -178,7 +179,21 @@ export const lambdaHandler = async (
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
 
-  //TODO: send notification in HOTE-982
+  try {
+    await orderStatusNotifyService.dispatch({
+      orderId: orderUid,
+      patientId: patientUid,
+      correlationId,
+      statusCode: OrderStatusCodes.COMPLETE,
+    });
+  } catch (error) {
+    console.error(name, "Failed to dispatch order result notification", {
+      correlationId,
+      orderUid,
+      error,
+    });
+  }
+
   return createFhirResponse(201, task);
 };
 

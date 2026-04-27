@@ -14,9 +14,6 @@ jest.mock("./init", () => {
       retrieveOrderDetails: jest.fn(),
       updateOrderStatusAndResultStatus: jest.fn(),
     },
-    orderStatusNotifyService: {
-      dispatch: jest.fn(),
-    },
     resultProcessingService: {
       processValidatedResult: jest.fn(),
     },
@@ -75,9 +72,6 @@ const { initMock } = jest.requireMock("./init") as {
       retrieveOrderDetails: jest.Mock;
       updateOrderStatusAndResultStatus: jest.Mock;
     };
-    orderStatusNotifyService: {
-      dispatch: jest.Mock;
-    };
     resultProcessingService: {
       processValidatedResult: jest.Mock;
     };
@@ -130,7 +124,6 @@ describe("order-result-lambda handler", () => {
     validateDBDataMock.mockResolvedValue({ success: true, data: { isIdempotent: false } });
     extractInterpretationCodeFromFHIRObservationMock.mockReturnValue(InterpretationCode.Normal);
     initMock.orderService.updateOrderStatusAndResultStatus.mockResolvedValue(undefined);
-    initMock.orderStatusNotifyService.dispatch.mockResolvedValue(undefined);
     initMock.resultProcessingService.processValidatedResult.mockResolvedValue(undefined);
   });
 
@@ -197,26 +190,6 @@ describe("order-result-lambda handler", () => {
         observation,
       }),
     );
-  });
-
-  it("dispatches a notification for normal results", async () => {
-    await handler(event);
-    expect(initMock.orderStatusNotifyService.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderId: identifiers.orderUid,
-        patientId: expect.any(String),
-        correlationId: identifiers.correlationId,
-        statusCode: "COMPLETE",
-      }),
-    );
-  });
-
-  it("does not dispatch a notification for abnormal results", async () => {
-    extractInterpretationCodeFromFHIRObservationMock.mockReturnValueOnce(
-      InterpretationCode.Abnormal,
-    );
-    await handler(event);
-    expect(initMock.orderStatusNotifyService.dispatch).not.toHaveBeenCalled();
   });
 
   it("returns 500 if result processing throws", async () => {

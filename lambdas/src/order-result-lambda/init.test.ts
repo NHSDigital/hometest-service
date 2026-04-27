@@ -1,20 +1,13 @@
 import { PostgresDbClient } from "../lib/db/db-client";
 import { postgresConfigFromEnv } from "../lib/db/db-config";
-import { NotificationAuditDbClient } from "../lib/db/notification-audit-db-client";
 import { OrderService } from "../lib/db/order-db";
 import { AWSLambdaClient } from "../lib/lambda/lambda-client";
-import { OrderResultAvailableMessageBuilder } from "../lib/notify/message-builders/order-status/order-result-available-message-builder";
-import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
-import { AWSSQSClient } from "../lib/sqs/sqs-client";
 import { buildEnvironment as init } from "./init";
 import { ResultProcessingHandoffService } from "./result-processing-service";
 
 jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
-jest.mock("../lib/db/order-db");
-jest.mock("../lib/db/patient-db-client");
-jest.mock("../lib/db/notification-audit-db-client");
 jest.mock("../lib/commons");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/sqs/sqs-client");
@@ -32,8 +25,6 @@ describe("order-result-lambda init", () => {
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
     AWS_REGION: "eu-west-2",
-    NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
-    HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
     RESULT_PROCESSING_FUNCTION_NAME: "hometest-service-hiv-results-processor",
   };
 
@@ -61,9 +52,7 @@ describe("order-result-lambda init", () => {
 
     expect(result).toHaveProperty("orderService");
     expect(result).toHaveProperty("resultProcessingService");
-    expect(result).toHaveProperty("orderStatusNotifyService");
     expect(result.orderService).toBeInstanceOf(OrderService);
-    expect(result.orderStatusNotifyService).toBeInstanceOf(OrderStatusNotifyService);
     expect(result.resultProcessingService).toBeInstanceOf(ResultProcessingHandoffService);
   });
 
@@ -100,28 +89,12 @@ describe("order-result-lambda init", () => {
     expect(AWSLambdaClient).toHaveBeenCalledWith("eu-west-2");
   });
 
-  it("should create OrderStatusNotifyService with notifyMessagesQueueUrl", () => {
-    init();
-
-    expect(OrderStatusNotifyService).toHaveBeenCalledWith(
-      expect.objectContaining({
-        notifyMessageBuilders: expect.objectContaining({
-          COMPLETE: expect.any(OrderResultAvailableMessageBuilder),
-        }),
-        notifyMessagesQueueUrl: "https://example.queue.local/notify",
-        notificationAuditDbClient: expect.any(NotificationAuditDbClient),
-        sqsClient: expect.any(AWSSQSClient),
-      }),
-    );
-  });
-
   it("returns an Environment object with all required properties", () => {
     const result = init();
 
     expect(result).toEqual({
       orderService: expect.any(OrderService),
       resultProcessingService: expect.any(ResultProcessingHandoffService),
-      orderStatusNotifyService: expect.any(OrderStatusNotifyService),
     });
   });
 

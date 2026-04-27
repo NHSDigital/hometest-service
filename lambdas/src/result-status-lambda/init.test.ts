@@ -1,5 +1,6 @@
 import { postgresConfigFromEnv } from "../lib/db/db-config";
 import { OrderService } from "../lib/db/order-db";
+import { OrderStatusNotifyService } from "../lib/notify/services/order-status-notify-service";
 import { AwsSecretsClient } from "../lib/secrets/secrets-manager-client";
 import { init } from "./init";
 
@@ -8,17 +9,24 @@ jest.mock("../lib/db/db-client");
 jest.mock("../lib/db/db-config");
 jest.mock("../lib/secrets/secrets-manager-client");
 jest.mock("../lib/db/order-db");
+jest.mock("../lib/db/patient-db-client");
+jest.mock("../lib/db/notification-audit-db-client");
+jest.mock("../lib/sqs/sqs-client");
+jest.mock("../lib/notify/services/order-status-notify-service");
 
 describe("init", () => {
   const originalEnv = process.env;
 
   const mockEnvVariables = {
+    AWS_REGION: "eu-west-2",
     DB_USERNAME: "test-username",
     DB_ADDRESS: "test-address",
     DB_PORT: "5432",
     DB_NAME: "test-database",
     DB_SCHEMA: "test-schema",
     DB_SECRET_NAME: "test-secret-name",
+    NOTIFY_MESSAGES_QUEUE_URL: "https://example.queue.local/notify",
+    HOME_TEST_BASE_URL: "https://hometest.example.nhs.uk",
   };
 
   // This represents the return value of postgresConfigFromEnv(secretsClient)
@@ -57,7 +65,9 @@ describe("init", () => {
       const result = init();
 
       expect(result).toHaveProperty("orderService");
+      expect(result).toHaveProperty("orderStatusNotifyService");
       expect(result.orderService).toBeInstanceOf(OrderService);
+      expect(result.orderStatusNotifyService).toBeInstanceOf(OrderStatusNotifyService);
     });
 
     it("should create AwsSecretsClient with AWS_REGION when set", () => {
@@ -86,6 +96,36 @@ describe("init", () => {
 
       expect(result).toEqual({
         orderService: expect.any(OrderService),
+        orderStatusNotifyService: expect.any(OrderStatusNotifyService),
+      });
+    });
+
+    it("should create OrderStatusNotifyService with notifyMessagesQueueUrl", () => {
+      jest.isolateModules(() => {
+        const {
+          NotificationAuditDbClient: NotificationAuditDbClientModule,
+        } = require("../lib/db/notification-audit-db-client");
+
+        const {
+          OrderResultAvailableMessageBuilder: OrderResultAvailableMessageBuilderModule,
+        } = require("../lib/notify/message-builders/order-status/order-result-available-message-builder");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { AWSSQSClient: AWSSQSClientModule } = require("../lib/sqs/sqs-client");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { init: initModule } = require("./init");
+
+        initModule();
+
+        expect(OrderStatusNotifyService).toHaveBeenCalledWith(
+          expect.objectContaining({
+            notifyMessageBuilders: expect.objectContaining({
+              COMPLETE: expect.any(OrderResultAvailableMessageBuilderModule),
+            }),
+            notifyMessagesQueueUrl: "https://example.queue.local/notify",
+            notificationAuditDbClient: expect.any(NotificationAuditDbClientModule),
+            sqsClient: expect.any(AWSSQSClientModule),
+          }),
+        );
       });
     });
   });

@@ -5,17 +5,11 @@ import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { OrderResultSummary } from "../lib/db/order-db";
-import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
 import { securityHeaders } from "../lib/http/security-headers";
 import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
-import { InterpretationCode } from "./models";
-import {
-  extractAndValidateObservationFields,
-  extractInterpretationCodeFromFHIRObservation,
-  validateDBData,
-} from "./validation-service";
+import { extractAndValidateObservationFields, validateDBData } from "./validation-service";
 
 const name = "order-result-lambda";
 
@@ -32,7 +26,7 @@ export const lambdaHandler = async (
     method: event.httpMethod,
   });
 
-  const { orderService, orderStatusNotifyService, resultProcessingService } = init();
+  const { orderService, resultProcessingService } = init();
 
   const validationResult = extractAndValidateObservationFields(event);
   if (!validationResult.success) {
@@ -101,27 +95,6 @@ export const lambdaHandler = async (
       correlationId: identifiers.correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
-  }
-
-  // TODO: does this need updating or moving?
-  // Other types of test results may be formats other than InterpretationCode.Normal/Abnormal. HIV specific business logic?
-  const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation);
-
-  if (interpretationCode === InterpretationCode.Normal) {
-    try {
-      await orderStatusNotifyService.dispatch({
-        orderId: identifiers.orderUid,
-        patientId: testOrderResult.patient_uid,
-        correlationId: identifiers.correlationId,
-        statusCode: OrderStatusCodes.COMPLETE,
-      });
-    } catch (error) {
-      console.error(name, "Failed to dispatch order result notification", {
-        correlationId: identifiers.correlationId,
-        orderId: identifiers.orderUid,
-        error,
-      });
-    }
   }
 
   return createFhirResponse(201, observation);
