@@ -9,26 +9,26 @@ importers:
   .:
     dependencies:
       '@aws-sdk/client-secrets-manager':
-        specifier: 3.1032.0
-        version: 3.1032.0
+        specifier: 3.1037.0
+        version: 3.1037.0
       '@aws-sdk/client-sqs':
-        specifier: 3.1032.0
-        version: 3.1032.0
+        specifier: 3.1037.0
+        version: 3.1037.0
       '@aws-sdk/rds-signer':
-        specifier: 3.1032.0
-        version: 3.1032.0
+        specifier: 3.1037.0
+        version: 3.1037.0
       '@middy/core':
-        specifier: 7.3.0
-        version: 7.3.0
+        specifier: 7.3.3
+        version: 7.3.3
       '@middy/http-cors':
-        specifier: 7.3.0
-        version: 7.3.0
+        specifier: 7.3.3
+        version: 7.3.3
       '@middy/http-error-handler':
-        specifier: 7.3.0
-        version: 7.3.0
+        specifier: 7.3.3
+        version: 7.3.3
       '@middy/http-security-headers':
-        specifier: 7.3.0
-        version: 7.3.0
+        specifier: 7.3.3
+        version: 7.3.3
       cookie:
         specifier: 1.1.1
         version: 1.1.1
@@ -133,16 +133,16 @@ packages:
   '@aws-crypto/util@5.2.0':
     resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
 
-  '@aws-sdk/client-cognito-identity@3.1032.0':
-    resolution: {integrity: sha512-TVgbjyb1fJoHZDoBAmW85hNcx00zxi5qXFG3wvS/2C213Q2PusCQIih7Zlub9mKE3iRtES5epxazFmp8jVeLyQ==}
+  '@aws-sdk/client-cognito-identity@3.1037.0':
+    resolution: {integrity: sha512-/BQAyz98JRQFg3E8de3fGGydIYnsFRd6Cla4+zkviOe641fLCG0ZkPIk9D22HSi8qy9XKx+zk6ed2PcLO8uuPw==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-secrets-manager@3.1032.0':
-    resolution: {integrity: sha512-gdSaBSaghzbCoAeCVbnbBkF1z5IN37+kWhWwHREbc6ulBn2gk+rJGu4jyPzeZGmpKHkICqosjlhB3jJkozWucQ==}
+  '@aws-sdk/client-secrets-manager@3.1037.0':
+    resolution: {integrity: sha512-SBXVNgXdzFeiuUod1AZXJexTDndPcpSTGOrVDe5Ny81Xq7d3r18th7ZTzvnc7BsD9MQa8SckNgOYscvi/fYZhw==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-sqs@3.1032.0':
-    resolution: {integrity: sha512-n102sARTLi53Da0JT/2Kvg/bQ4bv+JqA+YQ8OlaM4CgsPn61sMv0x9PxdF6s/KbgZ2HMwYBszNzuvUttN+Beqg==}
+  '@aws-sdk/client-sqs@3.1037.0':
+    resolution: {integrity: sha512-rl8Pshwiep04z/j+aRRjna4A2g4iJEzaU3j7zvVjsLk+DG7KRYiJ4Li0Ad65EdXPf1Xymox/RqqBjzgAd09mrA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.974.5':
@@ -185,8 +185,8 @@ packages:
     resolution: {integrity: sha512-swW6Bwvl8lanyEMtZOWE/oR6yqcRQH4HTQZUVsnDVgoXvRjRywpYpLv2BWwjUFyjPrqsdX6FeTkf4tMSe/qFTQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/credential-providers@3.1032.0':
-    resolution: {integrity: sha512-OT+4/Kf62PKslLoJJGEzpQricgaMOuXFNf65FR56i3QugNLlNHfkhDWkk1CDvN1NYCHZbYZMJusdGjxVxQKgjQ==}
+  '@aws-sdk/credential-providers@3.1037.0':
+    resolution: {integrity: sha512-TPPoQzfNkWltNgjJn3RRY1S8VXffDvv49xGGs9K0DrYS9LZCLLsoHmSmShx9HQusPc/4Oz23rfRWTolCU19PdQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/middleware-host-header@3.972.10':
@@ -217,8 +217,8 @@ packages:
     resolution: {integrity: sha512-SivE6GP228IVgfsrr2c/vqTg95X0Qj39Yw4uIrcddpkUzIltNMoNOR62leHOLhODfjv9K8X2mPTwS69A5kT0nQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/rds-signer@3.1032.0':
-    resolution: {integrity: sha512-1zHD9BHklaC3khh4mtnY8IoTgn83g2G4L6yHLqL6S+xFi1gLtf2+krC+Nw0KQubNdGvuA41s7x53Mm8OQZVMow==}
+  '@aws-sdk/rds-signer@3.1037.0':
+    resolution: {integrity: sha512-PiF1oLYUJEcGFLB+5AADprX2oqEwjtNtgh6diCa+o61+cy4IpJZ5QWzttubHefIQR4Iqr6OwE45qSQuvyfmb+Q==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/region-config-resolver@3.972.13':
@@ -1372,8 +1372,8 @@ packages:
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
 
-  '@middy/core@7.3.0':
-    resolution: {integrity: sha512-RsWSFwbueM8FxAZ7I6y7QqAh9kE1djzpchWG7aSNI6aB8KozBE7GZz0eavAkHHKFjujOvWE/RPFbawyHgpyr0w==}
+  '@middy/core@7.3.3':
+    resolution: {integrity: sha512-Wy6zjpaMo3yiU3+GR2d8HQhx7jnuDkPL5O2vSzLgw2OJmTkrMRREz8MMVUq24XrWyR1OX+xGRqSJJwC7NJP60A==}
     engines: {node: '>=22'}
     peerDependencies:
       '@aws/durable-execution-sdk-js': ^1.0.0
@@ -1381,20 +1381,20 @@ packages:
       '@aws/durable-execution-sdk-js':
         optional: true
 
-  '@middy/http-cors@7.3.0':
-    resolution: {integrity: sha512-Uqm9h+MR4t4BC8xuX6wG4yXLvd0Tl7QWvpbVo5RmAy/+Qf4Q91o+GqRo8nL9T9FXMgP422ClHa6Q9LoDtuXhpw==}
+  '@middy/http-cors@7.3.3':
+    resolution: {integrity: sha512-yVH1+RH48U5Awv089iaAGL99wXxklkCIIZbMNp/3CZ/EQKImlFbLCOzLNh9teFXagzPJOn9wFwDQEdKZ6bZEtw==}
     engines: {node: '>=22'}
 
-  '@middy/http-error-handler@7.3.0':
-    resolution: {integrity: sha512-r1rNy6pRt3IY680CsCaaOZTyK3sW3OqmaqO7KGlpE4EbuS5D3icVPn8rcvDNaKj2Fxu2pjPZQDN72w+s1SY3sg==}
+  '@middy/http-error-handler@7.3.3':
+    resolution: {integrity: sha512-9BiuuhraTgPGoRpN8dzGz6aK/tK71+9N3e6XRCCSHFXTc7At108j+GxFRf0KJs30BHAQyHJVdS3fZlqYhBWESg==}
     engines: {node: '>=22'}
 
-  '@middy/http-security-headers@7.3.0':
-    resolution: {integrity: sha512-JDI7loY6Jls1Q1cwuXPgx2b413FKdsDXkfh68CgSHCOeUKQta+qNwQfNauyZz+T+xtku3hBpUQTJ/Cio66+29w==}
+  '@middy/http-security-headers@7.3.3':
+    resolution: {integrity: sha512-ex31yCtpAYLJZFo5bCv4ozLyzE3TuRn/HHaDTofASHV0D3LG7fKc4ZD2YoQJGdlBm48FHbYq+hIdjvR5DVktLQ==}
     engines: {node: '>=22'}
 
-  '@middy/util@7.3.0':
-    resolution: {integrity: sha512-vIVI0iqcLSJ6HztsZamYrc66t0eyrCY/t8VEafP6sXhDu7jsptfNC0x+vt5H7SrTCilOcmgrKnEyVcdB4GDTXA==}
+  '@middy/util@7.3.3':
+    resolution: {integrity: sha512-BR6zrbF3utbVobZfFa1eEbOu7u51uzrtQVJCAS3So/5dzlPF/8Q9Ediwu4lV8y1gLGzWAuhbZZL8JBWX6O4Bcg==}
     engines: {node: '>=22'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -3577,7 +3577,7 @@ snapshots:
       '@smithy/util-utf8': 2.3.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-cognito-identity@3.1032.0':
+  '@aws-sdk/client-cognito-identity@3.1037.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -3621,7 +3621,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-secrets-manager@3.1032.0':
+  '@aws-sdk/client-secrets-manager@3.1037.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -3665,7 +3665,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sqs@3.1032.0':
+  '@aws-sdk/client-sqs@3.1037.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -3842,9 +3842,9 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/credential-providers@3.1032.0':
+  '@aws-sdk/credential-providers@3.1037.0':
     dependencies:
-      '@aws-sdk/client-cognito-identity': 3.1032.0
+      '@aws-sdk/client-cognito-identity': 3.1037.0
       '@aws-sdk/core': 3.974.5
       '@aws-sdk/credential-provider-cognito-identity': 3.972.28
       '@aws-sdk/credential-provider-env': 3.972.31
@@ -3969,11 +3969,11 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/rds-signer@3.1032.0':
+  '@aws-sdk/rds-signer@3.1037.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/credential-providers': 3.1032.0
+      '@aws-sdk/credential-providers': 3.1037.0
       '@aws-sdk/util-format-url': 3.972.10
       '@smithy/config-resolver': 4.4.17
       '@smithy/hash-node': 4.2.14
@@ -5276,23 +5276,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@middy/core@7.3.0':
+  '@middy/core@7.3.3':
     dependencies:
-      '@middy/util': 7.3.0
+      '@middy/util': 7.3.3
 
-  '@middy/http-cors@7.3.0':
+  '@middy/http-cors@7.3.3':
     dependencies:
-      '@middy/util': 7.3.0
+      '@middy/util': 7.3.3
 
-  '@middy/http-error-handler@7.3.0':
+  '@middy/http-error-handler@7.3.3':
     dependencies:
-      '@middy/util': 7.3.0
+      '@middy/util': 7.3.3
 
-  '@middy/http-security-headers@7.3.0':
+  '@middy/http-security-headers@7.3.3':
     dependencies:
-      '@middy/util': 7.3.0
+      '@middy/util': 7.3.3
 
-  '@middy/util@7.3.0': {}
+  '@middy/util@7.3.3': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
