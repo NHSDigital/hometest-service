@@ -6,12 +6,16 @@ import { lambdaHandler } from "./index";
 
 const mockUpdateOrderStatusAndResultStatus = jest.fn();
 const mockRetrieveOrderDetails = jest.fn();
+const mockDispatch = jest.fn();
 
 jest.mock("./init", () => ({
   init: jest.fn(() => ({
     orderService: {
       updateOrderStatusAndResultStatus: mockUpdateOrderStatusAndResultStatus,
       retrieveOrderDetails: mockRetrieveOrderDetails,
+    },
+    orderStatusNotifyService: {
+      dispatch: mockDispatch,
     },
   })),
 }));
@@ -288,6 +292,24 @@ describe("result-status-lambda handler", () => {
         OrderStatus.Complete,
         ResultStatus.Result_Available,
         VALID_CORRELATION_ID,
+      );
+    });
+  });
+
+  describe("notification dispatch", () => {
+    beforeEach(() => {
+      mockRetrieveOrderDetails.mockResolvedValue({ patient_uid: VALID_PATIENT_UUID });
+    });
+
+    it("dispatches a notification", async () => {
+      await lambdaHandler(makeEvent(JSON.stringify(validTask), validEventHeaders));
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderId: VALID_ORDER_UUID,
+          patientId: VALID_PATIENT_UUID,
+          correlationId: VALID_CORRELATION_ID,
+          statusCode: "COMPLETE",
+        }),
       );
     });
   });

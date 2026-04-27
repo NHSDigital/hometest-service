@@ -1,54 +1,32 @@
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpErrorHandler from "@middy/http-error-handler";
+import httpSecurityHeaders from "@middy/http-security-headers";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { OrderResultSummary } from "../lib/db/order-db";
-import { OrderStatusCodes } from "../lib/db/order-status-db";
 import { createFhirErrorResponse, createFhirResponse } from "../lib/fhir-response";
-import { OrderStatus, ResultStatus } from "../lib/types/status";
+import { securityHeaders } from "../lib/http/security-headers";
+import { corsOptions } from "./cors-configuration";
 import { init } from "./init";
-import { Identifiers, InterpretationCode } from "./models";
-import {
-  extractAndValidateObservationFields,
-  extractInterpretationCodeFromFHIRObservation,
-  validateDBData,
-} from "./validation-service";
+import { extractAndValidateObservationFields, validateDBData } from "./validation-service";
 
 const name = "order-result-lambda";
 
-const { orderService, orderStatusNotifyService } = init();
-
-async function updateDatabase(
-  identifiers: Identifiers,
-  interpretationCode: InterpretationCode,
-): Promise<void> {
-  if (interpretationCode === InterpretationCode.Normal) {
-    await orderService.updateOrderStatusAndResultStatus(
-      identifiers.orderUid,
-      OrderStatus.Complete,
-      ResultStatus.Result_Available,
-      identifiers.correlationId,
-    );
-  }
-
-  if (interpretationCode === InterpretationCode.Abnormal) {
-    await orderService.updateOrderStatusAndResultStatus(
-      identifiers.orderUid,
-      OrderStatus.Received,
-      ResultStatus.Result_Withheld,
-      identifiers.correlationId,
-    );
-  }
-}
-
 /**
  * Lambda handler for POST /result endpoint
- * Accepts FHIR Observation resources and posts them to database after validation and business logic checks.
+ * Accepts FHIR Observation resources and posts them to processor lambdas after validation.
  * Returns appropriate FHIR responses for success and error cases.
  */
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
   console.info(name, "Received result submission request", {
     path: event.path,
     method: event.httpMethod,
   });
+
+  const { orderService, resultProcessingService } = init();
 
   const validationResult = extractAndValidateObservationFields(event);
   if (!validationResult.success) {
@@ -71,6 +49,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     console.error(name, "Failed to retrieve order details", {
       error,
       orderUid: identifiers.orderUid,
+      correlationId: identifiers.correlationId,
     });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
   }
@@ -78,6 +57,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   if (!testOrderResult) {
     console.error(name, "Test order not found for orderUid", {
       orderUid: identifiers.orderUid,
+      correlationId: identifiers.correlationId,
     });
     return createFhirErrorResponse(
       404,
@@ -103,31 +83,24 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return createFhirResponse(201, observation);
   }
 
-  const interpretationCode = extractInterpretationCodeFromFHIRObservation(observation);
-
   try {
-    await updateDatabase(identifiers, interpretationCode);
+    await resultProcessingService.processValidatedResult({
+      correlationId: identifiers.correlationId,
+      observation,
+    });
   } catch (error) {
-    console.error(name, "Database update failed", { error });
+    console.error(name, "Result processing failed", {
+      error,
+      orderUid: identifiers.orderUid,
+      correlationId: identifiers.correlationId,
+    });
     return createFhirErrorResponse(500, "exception", "An internal error occurred", "fatal");
-  }
-
-  if (interpretationCode === InterpretationCode.Normal) {
-    try {
-      await orderStatusNotifyService.dispatch({
-        orderId: identifiers.orderUid,
-        patientId: testOrderResult.patient_uid,
-        correlationId: identifiers.correlationId,
-        statusCode: OrderStatusCodes.COMPLETE,
-      });
-    } catch (error) {
-      console.error(name, "Failed to dispatch order result notification", {
-        correlationId: identifiers.correlationId,
-        orderId: identifiers.orderUid,
-        error,
-      });
-    }
   }
 
   return createFhirResponse(201, observation);
 };
+
+export const handler = middy(lambdaHandler)
+  .use(httpSecurityHeaders(securityHeaders))
+  .use(cors(corsOptions))
+  .use(httpErrorHandler());
