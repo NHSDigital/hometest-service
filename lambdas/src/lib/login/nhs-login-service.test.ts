@@ -2,7 +2,7 @@ import { type JwtHeader, type JwtPayload } from "jsonwebtoken";
 
 import { type INhsTokenResponseModel } from "../models/nhs-login/nhs-login-token-response-model";
 import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-user-info-response-model";
-import { type NhsCallbackLoginClient, NhsCallbackService } from "./nhs-callback-service";
+import { type NhsLoginLoginClient, NhsLoginService } from "./nhs-login-service";
 import {
   type INhsTokenVerifier,
   type NhsTokenVerificationResult,
@@ -66,9 +66,9 @@ function verificationFailure(
   };
 }
 
-describe("NhsCallbackService.executeCallback", () => {
+describe("NhsLoginService.executeCallback", () => {
   let nhsTokenVerifierMock: jest.Mocked<INhsTokenVerifier>;
-  let nhsLoginClientMock: jest.Mocked<NhsCallbackLoginClient>;
+  let nhsLoginClientMock: jest.Mocked<NhsLoginLoginClient>;
 
   beforeEach(() => {
     nhsTokenVerifierMock = {
@@ -89,7 +89,7 @@ describe("NhsCallbackService.executeCallback", () => {
       .mockResolvedValueOnce(verificationSuccess("user-123"));
     nhsLoginClientMock.getUserInfo.mockResolvedValue(userInfo);
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -115,7 +115,7 @@ describe("NhsCallbackService.executeCallback", () => {
   it("returns TOKEN_EXCHANGE_FAILED when code exchange fails", async () => {
     nhsLoginClientMock.getUserTokens.mockRejectedValue(new Error("Token endpoint error"));
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -136,7 +136,7 @@ describe("NhsCallbackService.executeCallback", () => {
       verificationFailure("INVALID_SIGNATURE", "Token signature is invalid"),
     );
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -157,7 +157,7 @@ describe("NhsCallbackService.executeCallback", () => {
       .mockResolvedValueOnce(verificationSuccess("user-123"))
       .mockResolvedValueOnce(verificationFailure("TOKEN_EXPIRED", "Token has expired"));
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -182,7 +182,7 @@ describe("NhsCallbackService.executeCallback", () => {
       })
       .mockResolvedValueOnce(verificationSuccess("user-123"));
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -204,7 +204,7 @@ describe("NhsCallbackService.executeCallback", () => {
       .mockResolvedValueOnce(verificationSuccess("user-123"));
     nhsLoginClientMock.getUserInfo.mockRejectedValue(new Error("Userinfo endpoint error"));
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -225,7 +225,7 @@ describe("NhsCallbackService.executeCallback", () => {
       .mockResolvedValueOnce(verificationSuccess("id-token-user"));
     nhsLoginClientMock.getUserInfo.mockResolvedValue(createUserInfo({ sub: "different-user" }));
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });
@@ -262,7 +262,7 @@ describe("NhsCallbackService.executeCallback", () => {
       .mockResolvedValueOnce(verificationSuccess("user-123"));
     nhsLoginClientMock.getUserInfo.mockResolvedValue(createUserInfo());
 
-    const service = new NhsCallbackService({
+    const service = new NhsLoginService({
       nhsTokenVerifier: nhsTokenVerifierMock,
       nhsLoginClient: nhsLoginClientMock,
     });

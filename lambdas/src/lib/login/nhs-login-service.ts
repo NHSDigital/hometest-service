@@ -3,14 +3,14 @@ import { type INhsUserInfoResponseModel } from "../models/nhs-login/nhs-login-us
 import { type INhsLoginClient } from "./nhs-login-client";
 import { type INhsTokenVerifier } from "./nhs-token-verifier";
 
-export interface INhsCallbackResult {
+export interface INhsLoginResult {
   userInfo: INhsUserInfoResponseModel;
   nhsAccessToken: string;
   nhsRefreshToken?: string;
   idTokenSubject: string;
 }
 
-export type NhsCallbackErrorCode =
+export type NhsLoginErrorCode =
   | "TOKEN_EXCHANGE_FAILED"
   | "ID_TOKEN_VERIFICATION_FAILED"
   | "ACCESS_TOKEN_VERIFICATION_FAILED"
@@ -18,44 +18,44 @@ export type NhsCallbackErrorCode =
   | "USER_INFO_FAILED"
   | "SUBJECT_MISMATCH";
 
-export interface NhsCallbackError {
-  code: NhsCallbackErrorCode;
+export interface NhsLoginError {
+  code: NhsLoginErrorCode;
   message: string;
 }
 
-export interface NhsCallbackSuccess {
+export interface NhsLoginSuccess {
   success: true;
-  result: INhsCallbackResult;
+  result: INhsLoginResult;
 }
 
-export interface NhsCallbackFailure {
+export interface NhsLoginFailure {
   success: false;
-  error: NhsCallbackError;
+  error: NhsLoginError;
 }
 
-export type NhsCallbackExecutionResult = NhsCallbackSuccess | NhsCallbackFailure;
+export type NhsLoginExecutionResult = NhsLoginSuccess | NhsLoginFailure;
 
-export interface INhsCallbackService {
-  executeCallback: (code: string) => Promise<NhsCallbackExecutionResult>;
+export interface INhsLoginService {
+  executeCallback: (code: string) => Promise<NhsLoginExecutionResult>;
 }
 
-export type NhsCallbackLoginClient = Pick<INhsLoginClient, "getUserTokens" | "getUserInfo">;
+export type NhsLoginLoginClient = Pick<INhsLoginClient, "getUserTokens" | "getUserInfo">;
 
-export interface NhsCallbackServiceParams {
+export interface NhsLoginServiceParams {
   nhsTokenVerifier: INhsTokenVerifier;
-  nhsLoginClient: NhsCallbackLoginClient;
+  nhsLoginClient: NhsLoginLoginClient;
 }
 
-export class NhsCallbackService implements INhsCallbackService {
+export class NhsLoginService implements INhsLoginService {
   private readonly nhsTokenVerifier: INhsTokenVerifier;
-  private readonly nhsLoginClient: NhsCallbackLoginClient;
+  private readonly nhsLoginClient: NhsLoginLoginClient;
 
-  constructor(params: NhsCallbackServiceParams) {
+  constructor(params: NhsLoginServiceParams) {
     this.nhsTokenVerifier = params.nhsTokenVerifier;
     this.nhsLoginClient = params.nhsLoginClient;
   }
 
-  public async executeCallback(code: string): Promise<NhsCallbackExecutionResult> {
+  public async executeCallback(code: string): Promise<NhsLoginExecutionResult> {
     let tokenResponse: INhsTokenResponseModel;
 
     try {
@@ -111,7 +111,7 @@ export class NhsCallbackService implements INhsCallbackService {
     };
   }
 
-  private failure(code: NhsCallbackErrorCode, message: string): NhsCallbackFailure {
+  private failure(code: NhsLoginErrorCode, message: string): NhsLoginFailure {
     return {
       success: false,
       error: {
