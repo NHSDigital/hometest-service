@@ -64,23 +64,6 @@ services:
       - ./wiremock/__files:/home/wiremock/__files
     command: ["--verbose"]
 
-  db-migrate:
-    build:
-      context: ./scripts/database
-      dockerfile: Dockerfile
-    image: hometest-db-migrate:local
-    container_name: db-migrate
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-    profiles:
-      - backend
-    volumes:
-      - ../database/00-delete.sql:/docker-entrypoint-initdb.d/00-delete.sql:ro
-      - ../database/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
-      - ../database/03-seed-hometest-data.sql:/docker-entrypoint-initdb.d/03-seed-hometest-data.sql:ro
-      - ../lambdas/goose-migrator-lambda/migrations:/docker-entrypoint-initdb.d/migrations:ro
-
 volumes:
   ui_node_modules:
   postgres_data:

@@ -159,7 +159,7 @@ build_migrator() {
   go mod download
   go mod verify
 
-  GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bootstrap main.go
+  GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -mod=readonly -trimpath -ldflags='-s -w' -o bootstrap main.go
   return 0
 }
 
