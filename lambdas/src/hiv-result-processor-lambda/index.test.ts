@@ -83,6 +83,15 @@ describe("hiv-results-processor handler", () => {
     expect(createFhirErrorResponse).toHaveBeenCalled();
   });
 
+  it("returns 400 when body is null", async () => {
+    const nullBodyEvent = { ...event, body: null };
+
+    const res = await lambdaHandler(nullBodyEvent as any);
+
+    expect(res.statusCode).toBe(400);
+    expect(createFhirErrorResponse).toHaveBeenCalled();
+  });
+
   it("returns 200 and ignores reactive results", async () => {
     extractInterpretationCodeFromFHIRObservation.mockReturnValue(InterpretationCode.Abnormal);
 
@@ -116,5 +125,14 @@ describe("hiv-results-processor handler", () => {
 
     expect(res.statusCode).toBe(500);
     expect(createFhirErrorResponse).toHaveBeenCalled();
+  });
+
+  it("returns 200 without calling status lambda for unknown interpretation codes", async () => {
+    extractInterpretationCodeFromFHIRObservation.mockReturnValue("U");
+
+    const res = await lambdaHandler(event);
+
+    expect(res.statusCode).toBe(200);
+    expect(initMock.resultStatusLambdaService.sendResult).not.toHaveBeenCalled();
   });
 });
