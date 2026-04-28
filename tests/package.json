@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "3.1036.0",
-    "@axe-core/playwright": "4.11.1",
+    "@axe-core/playwright": "4.11.2",
     "axe-core": "4.11.3",
     "axe-html-reporter": "2.2.11",
     "pg": "8.20.0",
